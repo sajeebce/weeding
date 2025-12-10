@@ -7,7 +7,14 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function createPrismaClient() {
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  // Use individual connection parameters to avoid URL encoding issues with special characters
+  const pool = new Pool({
+    host: process.env.DATABASE_HOST || "localhost",
+    port: parseInt(process.env.DATABASE_PORT || "5432"),
+    user: process.env.DATABASE_USER || "postgres",
+    password: process.env.DATABASE_PASSWORD,
+    database: process.env.DATABASE_NAME || "llcpad",
+  });
   const adapter = new PrismaPg(pool);
 
   return new PrismaClient({

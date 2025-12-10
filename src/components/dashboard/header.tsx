@@ -1,8 +1,9 @@
 "use client";
 
-import { Bell, Menu, Search } from "lucide-react";
+import { Bell, Menu, Search, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useLogout } from "@/hooks/use-logout";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,6 +26,9 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
     email: "john@example.com",
     initials: "JD",
   };
+
+  // Customer role redirects to home page on logout
+  const { logout } = useLogout({ userRole: "CUSTOMER" });
 
   return (
     <header className="flex h-16 items-center justify-between border-b bg-card px-4 lg:px-6">
@@ -119,7 +123,8 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
             <DropdownMenuItem>Billing</DropdownMenuItem>
             <DropdownMenuItem>Help Center</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">
+            <DropdownMenuItem className="text-destructive" onClick={logout}>
+              <LogOut className="mr-2 h-4 w-4" />
               Sign Out
             </DropdownMenuItem>
           </DropdownMenuContent>

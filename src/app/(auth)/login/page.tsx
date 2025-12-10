@@ -34,16 +34,27 @@ export default function LoginPage() {
     const password = formData.get("password") as string;
 
     try {
-      // TODO: Implement actual auth with NextAuth
-      console.log("Login attempt:", { email, password });
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const data = await response.json();
 
-      // Redirect to dashboard on success
-      router.push("/dashboard");
+      if (!response.ok) {
+        setError(data.error || "Invalid email or password. Please try again.");
+        return;
+      }
+
+      // Store user data in localStorage for demo purposes
+      // TODO: Use proper session management with NextAuth
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      // Redirect based on role (admin/staff -> /admin, customer -> /dashboard)
+      router.push(data.redirectUrl);
     } catch (err) {
-      setError("Invalid email or password. Please try again.");
+      setError("An error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }

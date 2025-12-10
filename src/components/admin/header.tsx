@@ -13,6 +13,7 @@ import {
   Menu,
   ExternalLink,
 } from "lucide-react";
+import { useLogout } from "@/hooks/use-logout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -55,6 +56,8 @@ const notifications = [
 
 export function AdminHeader() {
   const [isDark, setIsDark] = useState(false);
+  // TODO: Get actual user role from auth session
+  const { logout } = useLogout({ userRole: "ADMIN" });
 
   const toggleTheme = () => {
     setIsDark(!isDark);
@@ -188,7 +191,7 @@ export function AdminHeader() {
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">
+            <DropdownMenuItem className="text-destructive" onClick={logout}>
               <LogOut className="mr-2 h-4 w-4" />
               Log out
             </DropdownMenuItem>
