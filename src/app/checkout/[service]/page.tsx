@@ -167,7 +167,9 @@ function ServiceCheckoutForm() {
     if (currentStepConfig && validateStep(currentStepConfig)) {
       if (currentStep < formConfig.steps.length) {
         setCurrentStep(currentStep + 1);
-        window.scrollTo(0, 0);
+        if (typeof window !== "undefined") {
+          window.scrollTo(0, 0);
+        }
       }
     }
   };
@@ -175,7 +177,9 @@ function ServiceCheckoutForm() {
   const handleBack = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
-      window.scrollTo(0, 0);
+      if (typeof window !== "undefined") {
+        window.scrollTo(0, 0);
+      }
     }
   };
 
