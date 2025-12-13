@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
@@ -26,6 +27,7 @@ import {
   Mail,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useBusinessConfig } from "@/hooks/use-business-config";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -78,6 +80,7 @@ const navItems: NavItem[] = [
     icon: FileText,
     children: [
       { title: "Blog", href: "/admin/content/blog" },
+      { title: "Blog Categories", href: "/admin/content/blog-categories" },
       { title: "Testimonials", href: "/admin/content/testimonials" },
       { title: "FAQs", href: "/admin/content/faq" },
     ],
@@ -120,6 +123,7 @@ const navItems: NavItem[] = [
       { title: "General", href: "/admin/settings" },
       { title: "Payments", href: "/admin/settings/payments" },
       { title: "Email", href: "/admin/settings/email" },
+      { title: "Profile", href: "/admin/profile" },
     ],
   },
   {
@@ -131,6 +135,7 @@ const navItems: NavItem[] = [
 
 export function AdminSidebar() {
   const pathname = usePathname();
+  const { config } = useBusinessConfig();
   const [collapsed, setCollapsed] = useState(false);
   const [openItems, setOpenItems] = useState<string[]>([]);
 
@@ -163,10 +168,22 @@ export function AdminSidebar() {
         <div className="flex h-16 items-center justify-between border-b px-4">
           {!collapsed && (
             <Link href="/admin" className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <span className="text-sm font-bold">LP</span>
-              </div>
-              <span className="font-bold">LLCPad Admin</span>
+              {config.logo.url ? (
+                <Image
+                  src={config.logo.url}
+                  alt={config.name}
+                  width={32}
+                  height={32}
+                  className="h-8 w-8 rounded-lg object-contain"
+                />
+              ) : (
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                  <span className="text-sm font-bold">
+                    {config.logo.text || config.name.substring(0, 2)}
+                  </span>
+                </div>
+              )}
+              <span className="font-bold">{config.name} Admin</span>
             </Link>
           )}
           <Button
@@ -319,7 +336,7 @@ export function AdminSidebar() {
         {!collapsed && (
           <div className="border-t p-4">
             <p className="text-xs text-muted-foreground">
-              LLCPad Admin v1.0
+              {config.name} Admin v1.0
             </p>
           </div>
         )}

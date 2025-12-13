@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -43,6 +44,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { useBusinessConfig } from "@/hooks/use-business-config";
 
 interface LoggedInUser {
   id: string;
@@ -114,6 +116,7 @@ const navigation = [
 
 export function Header() {
   const router = useRouter();
+  const { config } = useBusinessConfig();
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
   const [user, setUser] = useState<LoggedInUser | null>(null);
@@ -174,12 +177,22 @@ export function Header() {
       <nav className="container mx-auto flex h-16 items-center justify-between px-4">
         {/* Logo */}
         <Link href="/" className="flex items-center space-x-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-            <span className="text-lg font-bold text-primary-foreground">L</span>
-          </div>
-          <span className="text-xl font-bold">
-            LLC<span className="text-primary">Pad</span>
-          </span>
+          {config.logo.url ? (
+            <Image
+              src={config.logo.url}
+              alt={config.name}
+              width={36}
+              height={36}
+              className="h-9 w-9 rounded-lg object-contain"
+            />
+          ) : (
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
+              <span className="text-lg font-bold text-primary-foreground">
+                {config.logo.text || config.name.charAt(0)}
+              </span>
+            </div>
+          )}
+          <span className="text-xl font-bold">{config.name}</span>
         </Link>
 
         {/* Desktop Navigation */}
@@ -351,12 +364,22 @@ export function Header() {
             <div className="flex flex-col gap-4 py-4">
               <div className="flex items-center justify-between">
                 <Link href="/" className="flex items-center space-x-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-                    <span className="font-bold text-primary-foreground">L</span>
-                  </div>
-                  <span className="text-lg font-bold">
-                    LLC<span className="text-primary">Pad</span>
-                  </span>
+                  {config.logo.url ? (
+                    <Image
+                      src={config.logo.url}
+                      alt={config.name}
+                      width={32}
+                      height={32}
+                      className="h-8 w-8 rounded-lg object-contain"
+                    />
+                  ) : (
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+                      <span className="font-bold text-primary-foreground">
+                        {config.logo.text || config.name.charAt(0)}
+                      </span>
+                    </div>
+                  )}
+                  <span className="text-lg font-bold">{config.name}</span>
                 </Link>
               </div>
 

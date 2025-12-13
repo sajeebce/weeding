@@ -56,12 +56,18 @@ import { StateSelector, type State } from "@/components/ui/state-selector";
 import { CountrySelector, ELIGIBLE_COUNTRIES } from "@/components/ui/country-selector";
 import { Header } from "@/components/layout/header";
 import { toast } from "sonner";
+import {
+  PaymentGatewaySelector,
+  type PaymentGateway,
+} from "@/components/checkout/payment-gateway-selector";
+import { PayPalButton } from "@/components/checkout/paypal-button";
 
 const steps = [
   { id: 1, name: "Package", icon: Building2 },
   { id: 2, name: "LLC Details", icon: FileText },
   { id: 3, name: "Owner Info", icon: User },
-  { id: 4, name: "Review", icon: CreditCard },
+  { id: 4, name: "Review", icon: FileText },
+  { id: 5, name: "Payment", icon: CreditCard },
 ];
 
 const llcTypes = [
@@ -133,6 +139,12 @@ function CheckoutForm() {
   );
   const [selectedState, setSelectedState] = useState<State | null>(null);
 
+  // Payment state
+  const [enabledGateways, setEnabledGateways] = useState<PaymentGateway[]>([]);
+  const [selectedGateway, setSelectedGateway] = useState<PaymentGateway | null>(null);
+  const [createdOrderId, setCreatedOrderId] = useState<string | null>(null);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+
   // Fetch services from API
   useEffect(() => {
     const fetchServices = async () => {
@@ -198,6 +210,26 @@ function CheckoutForm() {
       }));
     }
   }, [loggedInUser]);
+
+  // Fetch enabled payment gateways
+  useEffect(() => {
+    const fetchGateways = async () => {
+      try {
+        const res = await fetch("/api/checkout/gateways");
+        const data = await res.json();
+        if (data.gateways && data.gateways.length > 0) {
+          setEnabledGateways(data.gateways as PaymentGateway[]);
+          // Auto-select if only one gateway
+          if (data.gateways.length === 1) {
+            setSelectedGateway(data.gateways[0] as PaymentGateway);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching gateways:", error);
+      }
+    };
+    fetchGateways();
+  }, []);
 
   // Handle inline login
   const handleInlineLogin = async (e: React.FormEvent) => {
@@ -557,7 +589,7 @@ function CheckoutForm() {
 
   const handleNext = () => {
     if (validateStep(currentStep)) {
-      if (currentStep < 4) {
+      if (currentStep < 5) {
         setCurrentStep(currentStep + 1);
         window.scrollTo(0, 0);
       }
@@ -566,12 +598,18 @@ function CheckoutForm() {
 
   const handleBack = () => {
     if (currentStep > 1) {
+      // Don't allow going back from payment step if order is created
+      if (currentStep === 5 && createdOrderId) {
+        toast.error("Order already created. Please complete payment.");
+        return;
+      }
       setCurrentStep(currentStep - 1);
       window.scrollTo(0, 0);
     }
   };
 
-  const handleSubmit = async () => {
+  // Create order and proceed to payment (Step 4 -> Step 5)
+  const handleCreateOrder = async () => {
     if (!validateStep(4)) return;
 
     setIsLoading(true);
@@ -652,9 +690,13 @@ function CheckoutForm() {
         // Auto-login: store user data in localStorage
         if (data.user) {
           localStorage.setItem("user", JSON.stringify(data.user));
+          window.dispatchEvent(new Event("user-auth-change"));
         }
-        toast.success("Application submitted successfully!");
-        router.push(`/checkout/success?orderId=${data.orderId}`);
+        // Store order ID and proceed to payment step
+        setCreatedOrderId(data.orderNumber);
+        setCurrentStep(5);
+        window.scrollTo(0, 0);
+        toast.success("Order created! Please complete payment.");
       } else {
         const errorMsg = data.details ? `${data.error}: ${data.details}` : data.error;
         toast.error(errorMsg || "Failed to submit application");
@@ -666,6 +708,60 @@ function CheckoutForm() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Handle Stripe payment
+  const handleStripePayment = async () => {
+    if (!createdOrderId) return;
+
+    setIsProcessingPayment(true);
+    try {
+      const response = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderId: createdOrderId,
+          serviceId: selectedService,
+          packageId: selectedPackage,
+          stateCode: selectedState?.code,
+          llcName: formData.llcName,
+          contactInfo: {
+            fullName: `${formData.ownerFirstName} ${formData.ownerLastName}`,
+            email: formData.ownerEmail,
+            phone: formData.ownerPhone,
+            country: formData.ownerCountry,
+          },
+          total,
+          serviceFee,
+          stateFee,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.url) {
+        // Redirect to Stripe Checkout
+        window.location.href = data.url;
+      } else {
+        toast.error(data.error || "Failed to initiate payment");
+      }
+    } catch (error) {
+      console.error("Stripe payment error:", error);
+      toast.error("Payment failed. Please try again.");
+    } finally {
+      setIsProcessingPayment(false);
+    }
+  };
+
+  // Handle PayPal payment success
+  const handlePayPalSuccess = (transactionId: string) => {
+    toast.success("Payment successful!");
+    router.push(`/checkout/success?orderId=${createdOrderId}&gateway=paypal&txn=${transactionId}`);
+  };
+
+  // Handle PayPal payment error
+  const handlePayPalError = (error: string) => {
+    toast.error(error || "Payment failed. Please try again.");
   };
 
   // Show loading state while fetching services
@@ -1835,12 +1931,96 @@ function CheckoutForm() {
                 </Card>
               )}
 
+              {/* Step 5: Payment */}
+              {currentStep === 5 && createdOrderId && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Complete Payment</CardTitle>
+                    <CardDescription>
+                      Order #{createdOrderId} - Choose your payment method
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {enabledGateways.length === 0 ? (
+                      <div className="text-center py-8">
+                        <AlertCircle className="mx-auto h-12 w-12 text-muted-foreground" />
+                        <p className="mt-4 text-lg font-medium">No Payment Methods Available</p>
+                        <p className="text-muted-foreground">
+                          Please contact support to complete your order.
+                        </p>
+                      </div>
+                    ) : (
+                      <>
+                        <PaymentGatewaySelector
+                          enabledGateways={enabledGateways}
+                          selectedGateway={selectedGateway}
+                          onSelect={setSelectedGateway}
+                          disabled={isProcessingPayment}
+                        />
+
+                        {selectedGateway === "stripe" && (
+                          <div className="space-y-4">
+                            <Button
+                              onClick={handleStripePayment}
+                              disabled={isProcessingPayment}
+                              className="w-full"
+                              size="lg"
+                            >
+                              {isProcessingPayment ? (
+                                <>
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                  Processing...
+                                </>
+                              ) : (
+                                <>
+                                  <CreditCard className="mr-2 h-4 w-4" />
+                                  Pay ${total} with Card
+                                </>
+                              )}
+                            </Button>
+                            <p className="text-xs text-center text-muted-foreground">
+                              You will be redirected to Stripe's secure checkout
+                            </p>
+                          </div>
+                        )}
+
+                        {selectedGateway === "paypal" && (
+                          <div className="space-y-4">
+                            <PayPalButton
+                              orderId={createdOrderId}
+                              amount={total}
+                              onSuccess={handlePayPalSuccess}
+                              onError={handlePayPalError}
+                              disabled={isProcessingPayment}
+                            />
+                          </div>
+                        )}
+
+                        {!selectedGateway && enabledGateways.length > 0 && (
+                          <p className="text-center text-muted-foreground">
+                            Please select a payment method above
+                          </p>
+                        )}
+                      </>
+                    )}
+
+                    {/* Security Note */}
+                    <div className="flex items-center gap-2 rounded-lg bg-green-50 p-3 text-sm text-green-700">
+                      <Shield className="h-4 w-4" />
+                      <span>
+                        Your payment is secure and encrypted. We never store your card details.
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Navigation Buttons */}
               <div className="mt-6 flex justify-between">
                 <Button
                   variant="outline"
                   onClick={handleBack}
-                  disabled={currentStep === 1}
+                  disabled={currentStep === 1 || (currentStep === 5 && createdOrderId !== null)}
                 >
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   Back
@@ -1851,25 +2031,25 @@ function CheckoutForm() {
                     Continue
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
-                ) : (
+                ) : currentStep === 4 ? (
                   <Button
-                    onClick={handleSubmit}
+                    onClick={handleCreateOrder}
                     disabled={isLoading}
                     size="lg"
                   >
                     {isLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Submitting...
+                        Creating Order...
                       </>
                     ) : (
                       <>
-                        <Check className="mr-2 h-4 w-4" />
-                        Submit Application - ${total}
+                        <ArrowRight className="mr-2 h-4 w-4" />
+                        Continue to Payment - ${total}
                       </>
                     )}
                   </Button>
-                )}
+                ) : null}
               </div>
             </div>
 

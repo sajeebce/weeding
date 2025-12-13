@@ -1,13 +1,27 @@
+"use client";
+
 import Link from "next/link";
+import Image from "next/image";
 import {
   Facebook,
   Twitter,
   Linkedin,
   Instagram,
+  Youtube,
   Mail,
   Phone,
   MapPin,
 } from "lucide-react";
+import { useBusinessConfig } from "@/hooks/use-business-config";
+
+// TikTok icon component
+function TikTokIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z" />
+    </svg>
+  );
+}
 
 const footerLinks = {
   services: [
@@ -41,14 +55,19 @@ const footerLinks = {
   ],
 };
 
-const socialLinks = [
-  { name: "Facebook", href: "#", icon: Facebook },
-  { name: "Twitter", href: "#", icon: Twitter },
-  { name: "LinkedIn", href: "#", icon: Linkedin },
-  { name: "Instagram", href: "#", icon: Instagram },
-];
-
 export function Footer() {
+  const { config } = useBusinessConfig();
+
+  // Build social links from config
+  const socialLinks = [
+    { name: "Facebook", href: config.social.facebook, icon: Facebook },
+    { name: "Twitter", href: config.social.twitter, icon: Twitter },
+    { name: "LinkedIn", href: config.social.linkedin, icon: Linkedin },
+    { name: "Instagram", href: config.social.instagram, icon: Instagram },
+    { name: "YouTube", href: config.social.youtube, icon: Youtube },
+    { name: "TikTok", href: config.social.tiktok, icon: TikTokIcon },
+  ].filter((link) => link.href); // Only show links that have URLs
+
   return (
     <footer className="border-t bg-muted/30">
       <div className="container mx-auto px-4 py-12 lg:py-16">
@@ -56,40 +75,53 @@ export function Footer() {
           {/* Brand */}
           <div className="col-span-2 md:col-span-3 lg:col-span-2">
             <Link href="/" className="flex items-center space-x-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-                <span className="text-lg font-bold text-primary-foreground">
-                  L
-                </span>
-              </div>
-              <span className="text-xl font-bold">
-                LLC<span className="text-primary">Pad</span>
-              </span>
+              {config.logo.url ? (
+                <Image
+                  src={config.logo.url}
+                  alt={config.name}
+                  width={36}
+                  height={36}
+                  className="h-9 w-9 rounded-lg object-contain"
+                />
+              ) : (
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
+                  <span className="text-lg font-bold text-primary-foreground">
+                    {config.logo.text || config.name.charAt(0)}
+                  </span>
+                </div>
+              )}
+              <span className="text-xl font-bold">{config.name}</span>
             </Link>
             <p className="mt-4 max-w-xs text-sm text-muted-foreground">
-              Empowering global entrepreneurs to launch legitimate US businesses
-              and Amazon stores with zero complexity.
+              {config.description}
             </p>
 
             {/* Contact Info */}
             <div className="mt-6 space-y-3">
-              <a
-                href="mailto:support@llcpad.com"
-                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-              >
-                <Mail className="h-4 w-4" />
-                support@llcpad.com
-              </a>
-              <a
-                href="tel:+1234567890"
-                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-              >
-                <Phone className="h-4 w-4" />
-                +1 (234) 567-890
-              </a>
-              <p className="flex items-start gap-2 text-sm text-muted-foreground">
-                <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
-                30 N Gould St, Sheridan, WY 82801, USA
-              </p>
+              {config.contact.supportEmail && (
+                <a
+                  href={`mailto:${config.contact.supportEmail}`}
+                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+                >
+                  <Mail className="h-4 w-4" />
+                  {config.contact.supportEmail}
+                </a>
+              )}
+              {config.contact.phone && (
+                <a
+                  href={`tel:${config.contact.phone.replace(/[^+\d]/g, "")}`}
+                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+                >
+                  <Phone className="h-4 w-4" />
+                  {config.contact.phone}
+                </a>
+              )}
+              {config.address.full && (
+                <p className="flex items-start gap-2 text-sm text-muted-foreground">
+                  <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
+                  {config.address.full}
+                </p>
+              )}
             </div>
 
             {/* Social Links */}
@@ -182,10 +214,10 @@ export function Footer() {
         <div className="mt-12 border-t pt-8">
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
             <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} LLCPad. All rights reserved.
+              © {new Date().getFullYear()} {config.name}. All rights reserved.
             </p>
             <p className="max-w-xl text-center text-xs text-muted-foreground md:text-right">
-              <strong>Disclaimer:</strong> LLCPad is not a law firm and does not
+              <strong>Disclaimer:</strong> {config.name} is not a law firm and does not
               provide legal advice. The information provided is for general
               informational purposes only.
             </p>

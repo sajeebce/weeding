@@ -2,54 +2,62 @@ import { Star, Quote } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import prisma from "@/lib/db";
 
-const testimonials = [
+// Fallback testimonials if database is empty
+const fallbackTestimonials = [
   {
-    name: "Rakib Hassan",
-    country: "Bangladesh",
-    role: "Amazon FBA Seller",
-    content:
-      "LLCPad made it incredibly easy to start my US business from Bangladesh. The team handled everything from LLC formation to getting my EIN. Now I'm successfully selling on Amazon US!",
-    rating: 5,
-  },
-  {
+    id: "1",
     name: "Priya Sharma",
     country: "India",
-    role: "E-commerce Entrepreneur",
+    company: "Amazon FBA Seller",
     content:
-      "As a first-time international seller, I was worried about the complexity. LLCPad simplified everything. Their step-by-step guidance and quick response time exceeded my expectations.",
+      "I was hesitant about starting a US business from India, but LLCPad made it incredibly smooth. Within 10 days, I had my LLC, EIN, and Amazon seller account ready. Now I'm doing $50k/month in sales! Their expertise saved me months of research.",
     rating: 5,
   },
   {
+    id: "2",
     name: "Ahmed Al-Farsi",
     country: "UAE",
-    role: "Business Owner",
+    company: "E-commerce Business Owner",
     content:
-      "Professional service with excellent communication. Got my Wyoming LLC and business bank account set up within a week. Highly recommend for anyone looking to expand to the US market.",
+      "Outstanding service! LLCPad handled my Wyoming LLC formation, registered agent service, and US business bank account seamlessly. The team's professionalism and quick response time exceeded all expectations. Highly recommend for serious entrepreneurs.",
     rating: 5,
   },
   {
+    id: "3",
     name: "Imran Khan",
     country: "Pakistan",
-    role: "Dropshipping Business",
+    company: "Digital Marketing Agency",
     content:
-      "The Premium package was worth every penny. From LLC to Amazon seller account, everything was handled professionally. Their virtual address service is also top-notch.",
+      "After comparing 5+ services, I chose LLCPad for their transparency and expertise. Best decision ever! They guided me through LLC formation, EIN application, and even helped with my first US client contracts. True business partners, not just a service provider.",
     rating: 5,
   },
   {
-    name: "Fatima Begum",
-    country: "Bangladesh",
-    role: "Wholesale Seller",
-    content:
-      "Fast, reliable, and affordable. I compared many services before choosing LLCPad and I'm glad I did. The customer support team is always available to help.",
-    rating: 5,
-  },
-  {
+    id: "4",
     name: "Vijay Patel",
     country: "India",
-    role: "Tech Entrepreneur",
+    company: "SaaS Entrepreneur",
     content:
-      "Setting up my US LLC was seamless with LLCPad. The documentation was thorough and the process was transparent. Great value for money compared to US-based services.",
+      "LLCPad's Premium package was worth every penny. Got my Delaware LLC, business banking, and trademark registration done professionally. Their knowledge of international entrepreneur challenges is unmatched. Now my startup looks credible to US investors!",
+    rating: 5,
+  },
+  {
+    id: "5",
+    name: "Sarah Johnson",
+    country: "UK",
+    company: "Amazon Brand Owner",
+    content:
+      "I needed US presence for Amazon Brand Registry. LLCPad delivered everything - LLC, EIN, virtual address - within a week. Their step-by-step guidance made complex processes simple. My brand is now protected and sales have doubled!",
+    rating: 5,
+  },
+  {
+    id: "6",
+    name: "Omar Hassan",
+    country: "UAE",
+    company: "Import/Export Business",
+    content:
+      "Exceptional experience from start to finish! LLCPad helped me establish my US entity for international trade. The registered agent service is reliable, and their compliance support ensures I never miss important deadlines. Trustworthy partner for global business.",
     rating: 5,
   },
 ];
@@ -62,7 +70,28 @@ function getInitials(name: string) {
     .toUpperCase();
 }
 
-export function Testimonials() {
+async function getTestimonials() {
+  try {
+    const testimonials = await prisma.testimonial.findMany({
+      where: { isActive: true },
+      orderBy: { sortOrder: "asc" },
+      take: 6,
+    });
+
+    if (testimonials.length === 0) {
+      return fallbackTestimonials;
+    }
+
+    return testimonials;
+  } catch (error) {
+    console.error("Error fetching testimonials:", error);
+    return fallbackTestimonials;
+  }
+}
+
+export async function Testimonials() {
+  const testimonials = await getTestimonials();
+
   return (
     <section className="bg-muted/30 py-16 lg:py-24">
       <div className="container mx-auto px-4">
@@ -82,8 +111,8 @@ export function Testimonials() {
 
         {/* Testimonials Grid */}
         <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {testimonials.map((testimonial, index) => (
-            <Card key={index} className="relative">
+          {testimonials.map((testimonial) => (
+            <Card key={testimonial.id} className="relative">
               <CardContent className="p-6">
                 {/* Quote Icon */}
                 <Quote className="absolute right-6 top-6 h-8 w-8 text-primary/10" />
@@ -100,7 +129,7 @@ export function Testimonials() {
 
                 {/* Content */}
                 <p className="mb-6 text-sm text-muted-foreground">
-                  "{testimonial.content}"
+                  &ldquo;{testimonial.content}&rdquo;
                 </p>
 
                 {/* Author */}
@@ -115,7 +144,9 @@ export function Testimonials() {
                       {testimonial.name}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {testimonial.role} • {testimonial.country}
+                      {[testimonial.company, testimonial.country]
+                        .filter(Boolean)
+                        .join(" • ")}
                     </p>
                   </div>
                 </div>
@@ -128,10 +159,10 @@ export function Testimonials() {
         <div className="mt-12 flex flex-wrap items-center justify-center gap-8">
           <div className="flex items-center gap-2">
             <div className="flex -space-x-2">
-              {["RH", "PS", "AF", "IK"].map((initials, i) => (
+              {testimonials.slice(0, 4).map((t, i) => (
                 <Avatar key={i} className="border-2 border-background">
                   <AvatarFallback className="bg-primary/10 text-xs text-primary">
-                    {initials}
+                    {getInitials(t.name)}
                   </AvatarFallback>
                 </Avatar>
               ))}

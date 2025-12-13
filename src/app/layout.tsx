@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ToasterProvider } from "@/components/providers/toaster-provider";
+import { ScrollToTop } from "@/components/ui/scroll-to-top";
 import "./globals.css";
 
 const inter = Inter({
@@ -60,6 +61,7 @@ export default function RootLayout({
     <html lang="en" className={inter.variable}>
       <body className="min-h-screen bg-background font-sans antialiased">
         {children}
+        <ScrollToTop />
         <ToasterProvider />
       </body>
     </html>

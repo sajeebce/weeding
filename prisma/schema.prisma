@@ -473,9 +473,19 @@ model BlogCategory {
   name        String
   slug        String     @unique
   description String?
+
+  // Hierarchical relationship
+  parentId    String?
+  parent      BlogCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children    BlogCategory[] @relation("CategoryHierarchy")
+
   posts       BlogPost[]
 
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @default(now()) @updatedAt
+
   @@index([slug])
+  @@index([parentId])
 }
 
 model Testimonial {

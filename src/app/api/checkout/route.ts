@@ -3,10 +3,11 @@ import { z } from "zod";
 import { createCheckoutSession } from "@/lib/stripe";
 
 const checkoutSchema = z.object({
+  orderId: z.string().optional(), // Order number for existing orders
   serviceId: z.string(),
   packageId: z.string(),
-  stateCode: z.string(),
-  llcName: z.string().min(1, "LLC name is required"),
+  stateCode: z.string().optional(),
+  llcName: z.string().optional(),
   llcActivity: z.string().optional(),
   members: z.array(
     z.object({
@@ -18,8 +19,8 @@ const checkoutSchema = z.object({
   contactInfo: z.object({
     fullName: z.string().min(1, "Full name is required"),
     email: z.string().email("Valid email is required"),
-    phone: z.string().min(1, "Phone number is required"),
-    country: z.string().min(1, "Country is required"),
+    phone: z.string().optional(),
+    country: z.string().optional(),
   }),
   total: z.number(),
   serviceFee: z.number(),
@@ -64,18 +65,19 @@ export async function POST(request: NextRequest) {
       lineItems,
       customerEmail: validatedData.contactInfo.email,
       metadata: {
+        orderId: validatedData.orderId || "",
         serviceId: validatedData.serviceId,
         packageId: validatedData.packageId,
-        stateCode: validatedData.stateCode,
-        llcName: validatedData.llcName,
+        stateCode: validatedData.stateCode || "",
+        llcName: validatedData.llcName || "",
         llcActivity: validatedData.llcActivity || "",
         customerName: validatedData.contactInfo.fullName,
-        customerPhone: validatedData.contactInfo.phone,
-        customerCountry: validatedData.contactInfo.country,
+        customerPhone: validatedData.contactInfo.phone || "",
+        customerCountry: validatedData.contactInfo.country || "",
         members: JSON.stringify(validatedData.members || []),
       },
-      successUrl: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancelUrl: `${process.env.NEXT_PUBLIC_APP_URL}/checkout?service=${validatedData.serviceId}&package=${validatedData.packageId}&state=${validatedData.stateCode}`,
+      successUrl: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}&orderId=${validatedData.orderId || ""}`,
+      cancelUrl: `${process.env.NEXT_PUBLIC_APP_URL}/checkout?cancelled=true&orderId=${validatedData.orderId || ""}`,
     });
 
     return NextResponse.json({

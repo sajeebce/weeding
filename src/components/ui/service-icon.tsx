@@ -7,10 +7,12 @@ interface ServiceIconProps extends LucideProps {
   name: string;
 }
 
+// Type-safe icon lookup
+type IconMap = Record<string, React.ComponentType<LucideProps>>;
+
 export function ServiceIcon({ name, ...props }: ServiceIconProps) {
-  const IconComponent =
-    (LucideIcons as Record<string, React.ComponentType<LucideProps>>)[name] ||
-    LucideIcons.Package;
+  const icons = LucideIcons as unknown as IconMap;
+  const IconComponent = icons[name] || LucideIcons.Package;
 
   return <IconComponent {...props} />;
 }

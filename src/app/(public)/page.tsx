@@ -3,6 +3,7 @@ import { ServicesGrid } from "@/components/sections/services-grid";
 import { HowItWorks } from "@/components/sections/how-it-works";
 import { PricingTable } from "@/components/sections/pricing-table";
 import { Testimonials } from "@/components/sections/testimonials";
+import { BlogSection } from "@/components/sections/blog-section";
 import { FAQSection } from "@/components/sections/faq-section";
 import { CTASection } from "@/components/sections/cta-section";
 import { JsonLd, MultiJsonLd } from "@/components/seo/json-ld";
@@ -62,6 +63,7 @@ export default function HomePage() {
       <HowItWorks />
       <PricingTable />
       <Testimonials />
+      <BlogSection />
       <FAQSection />
       <CTASection />
     </>
