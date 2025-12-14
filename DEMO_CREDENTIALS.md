@@ -63,11 +63,15 @@ All demo users have the same password: `Demo@123`
 ## Database Connection
 
 ```
-Host: 127.0.0.1  # Use 127.0.0.1 instead of localhost for consistent IPv4 connection
+# Using DATABASE_URL from .env:
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/llcpad?schema=public"
+
+# Or individual components:
+Host: localhost
 Port: 5432
 Database: llcpad
 User: postgres
-Password: llcpad123
+Password: postgres
 ```
 
 ## URLs
@@ -82,13 +86,13 @@ Password: llcpad123
 npm install
 
 # Generate Prisma client
-npm run db:generate
+npx prisma generate
 
 # Push schema to database
-npm run db:push
+npx prisma db push
 
-# Seed demo data
-cat prisma/seed.sql | npx prisma db execute --stdin
+# Seed demo data (users, services, etc.)
+npx tsx prisma/seed.ts
 
 # Start development server
 npm run dev

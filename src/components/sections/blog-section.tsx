@@ -7,37 +7,37 @@ import { ArrowRight, Calendar } from "lucide-react";
 import prisma from "@/lib/db";
 import { formatDistanceToNow } from "date-fns";
 
-// Fallback blog posts if database is empty
+// Fallback blog posts if database is empty - slugs must match lib/data/blog.ts
 const fallbackPosts = [
   {
     id: "1",
-    title: "Complete Guide to Forming a Wyoming LLC for Non-US Residents",
-    slug: "wyoming-llc-guide-non-us-residents",
+    title: "How to Form a Wyoming LLC: Complete 2024 Guide",
+    slug: "how-to-form-wyoming-llc-complete-guide",
     excerpt:
-      "Learn everything you need to know about forming a Wyoming LLC as a non-US resident, including benefits, requirements, and step-by-step process.",
+      "Learn everything you need to know about forming a Wyoming LLC, including step-by-step instructions, costs, benefits, and common mistakes to avoid.",
     coverImage: "/images/blog/wyoming-llc.jpg",
-    tags: ["LLC", "Wyoming", "Guide"],
-    publishedAt: new Date("2024-01-15"),
+    tags: ["Wyoming", "LLC Formation", "Business Guide"],
+    publishedAt: new Date("2024-12-01"),
   },
   {
     id: "2",
-    title: "How to Get an EIN for Your LLC Without a Social Security Number",
-    slug: "ein-without-ssn",
+    title: "How to Get an EIN Without SSN: Guide for Non-US Residents",
+    slug: "ein-for-non-us-residents-complete-guide",
     excerpt:
-      "A comprehensive guide on obtaining an EIN (Employer Identification Number) for your US LLC when you don't have an SSN or ITIN.",
+      "A comprehensive guide for international entrepreneurs on obtaining an EIN (Employer Identification Number) for your US LLC without a Social Security Number.",
     coverImage: "/images/blog/ein-guide.jpg",
-    tags: ["EIN", "Tax", "International"],
-    publishedAt: new Date("2024-01-10"),
+    tags: ["EIN", "International", "Tax ID"],
+    publishedAt: new Date("2024-11-28"),
   },
   {
     id: "3",
-    title: "Starting Your Amazon FBA Business with a US LLC",
-    slug: "amazon-fba-us-llc",
+    title: "How to Sell on Amazon USA with a US LLC: International Seller Guide",
+    slug: "amazon-seller-us-llc-international-guide",
     excerpt:
-      "Discover how to set up your Amazon FBA business using a US LLC, including bank account setup and seller verification tips.",
+      "Everything international sellers need to know about setting up a US LLC for Amazon FBA, including account setup, tax considerations, and payment processing.",
     coverImage: "/images/blog/amazon-fba.jpg",
-    tags: ["Amazon", "E-commerce", "FBA"],
-    publishedAt: new Date("2024-01-05"),
+    tags: ["Amazon", "FBA", "E-commerce"],
+    publishedAt: new Date("2024-11-25"),
   },
 ];
 

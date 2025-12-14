@@ -4,13 +4,8 @@ import { Pool } from "pg";
 import bcrypt from "bcryptjs";
 import "dotenv/config";
 
-const pool = new Pool({
-  host: process.env.DATABASE_HOST || "127.0.0.1",
-  port: parseInt(process.env.DATABASE_PORT || "5432"),
-  user: process.env.DATABASE_USER || "postgres",
-  password: process.env.DATABASE_PASSWORD,
-  database: process.env.DATABASE_NAME || "llcpad",
-});
+// Use DATABASE_URL from .env for consistency
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 

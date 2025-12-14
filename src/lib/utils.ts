@@ -63,3 +63,11 @@ export function getInitials(name: string): string {
     .toUpperCase()
     .slice(0, 2);
 }
+
+export async function generateTicketNumber(
+  prisma: { supportTicket: { count: () => Promise<number> } }
+): Promise<string> {
+  const count = await prisma.supportTicket.count();
+  const number = (count + 1).toString().padStart(4, "0");
+  return `TKT-${number}`;
+}
