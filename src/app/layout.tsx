@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { AuthProvider } from "@/components/providers/auth-provider";
 import { ToasterProvider } from "@/components/providers/toaster-provider";
 import { ScrollToTop } from "@/components/ui/scroll-to-top";
 import "./globals.css";
@@ -60,9 +61,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable}>
       <body className="min-h-screen bg-background font-sans antialiased">
-        {children}
-        <ScrollToTop />
-        <ToasterProvider />
+        <AuthProvider>
+          {children}
+          <ScrollToTop />
+          <ToasterProvider />
+        </AuthProvider>
       </body>
     </html>
   );

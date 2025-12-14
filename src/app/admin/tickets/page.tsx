@@ -83,9 +83,9 @@ interface Stats {
 
 const statusColors: Record<string, string> = {
   OPEN: "bg-blue-100 text-blue-700",
-  WAITING_CUSTOMER: "bg-amber-100 text-amber-700",
-  WAITING_AGENT: "bg-orange-100 text-orange-700",
   IN_PROGRESS: "bg-purple-100 text-purple-700",
+  WAITING_FOR_CUSTOMER: "bg-amber-100 text-amber-700",
+  WAITING_FOR_AGENT: "bg-orange-100 text-orange-700",
   RESOLVED: "bg-green-100 text-green-700",
   CLOSED: "bg-gray-100 text-gray-700",
 };
@@ -99,9 +99,9 @@ const priorityColors: Record<string, string> = {
 
 const statusLabels: Record<string, string> = {
   OPEN: "Open",
-  WAITING_CUSTOMER: "Awaiting Customer",
-  WAITING_AGENT: "Awaiting Agent",
   IN_PROGRESS: "In Progress",
+  WAITING_FOR_CUSTOMER: "Awaiting Customer",
+  WAITING_FOR_AGENT: "Awaiting Agent",
   RESOLVED: "Resolved",
   CLOSED: "Closed",
 };
@@ -143,13 +143,11 @@ export default function AdminTicketsPage() {
       if (res.ok) {
         const data = await res.json();
         setStats({
-          open: data.byStatus.OPEN || 0,
-          waiting:
-            (data.byStatus.WAITING_CUSTOMER || 0) +
-            (data.byStatus.WAITING_AGENT || 0),
-          inProgress: data.byStatus.IN_PROGRESS || 0,
-          highPriority: (data.byPriority.HIGH || 0) + (data.byPriority.URGENT || 0),
-          total: data.total,
+          open: data.overview?.open || 0,
+          waiting: data.overview?.waiting || 0,
+          inProgress: data.overview?.inProgress || 0,
+          highPriority: (data.priority?.high || 0) + (data.priority?.urgent || 0),
+          total: data.overview?.total || 0,
         });
       }
     } catch (error) {
@@ -279,8 +277,8 @@ export default function AdminTicketsPage() {
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="OPEN">Open</SelectItem>
-                <SelectItem value="WAITING_CUSTOMER">Awaiting Customer</SelectItem>
-                <SelectItem value="WAITING_AGENT">Awaiting Agent</SelectItem>
+                <SelectItem value="WAITING_FOR_CUSTOMER">Awaiting Customer</SelectItem>
+                <SelectItem value="WAITING_FOR_AGENT">Awaiting Agent</SelectItem>
                 <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
                 <SelectItem value="RESOLVED">Resolved</SelectItem>
                 <SelectItem value="CLOSED">Closed</SelectItem>

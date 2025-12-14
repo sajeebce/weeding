@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -30,59 +30,69 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Pencil, Trash2, Copy, Search } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Plus, Pencil, Trash2, Copy, Search, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
-interface CannedResponsesSettingsProps {
-  onChangeDetected: () => void;
+interface CannedResponse {
+  id: string;
+  title: string;
+  content: string;
+  category: string | null;
+  useCount: number;
+  isPublic: boolean;
+  createdBy?: { id: string; name: string | null };
 }
 
-// Mock data
-const mockResponses = [
-  {
-    id: "1",
-    title: "Welcome Message",
-    content: "Hi! Thanks for reaching out to LLCPad support. How can I help you today?",
-    category: "General",
-    useCount: 145,
-  },
-  {
-    id: "2",
-    title: "LLC Formation Timeline",
-    content: "Great question! Wyoming LLC formation typically takes 1-2 business days after we submit your documents. You'll receive your approved Articles of Organization via email.",
-    category: "LLC",
-    useCount: 89,
-  },
-  {
-    id: "3",
-    title: "EIN Processing Time",
-    content: "For international clients without an SSN, EIN applications are submitted via fax to the IRS. Processing typically takes 4-6 weeks. We'll send you the EIN confirmation letter as soon as we receive it.",
-    category: "EIN",
-    useCount: 76,
-  },
-  {
-    id: "4",
-    title: "Bank Account Guidance",
-    content: "For US business bank accounts, we recommend Mercury or Relay for remote account opening. Both accept international LLC owners. I can share more details about the requirements if you'd like.",
-    category: "Banking",
-    useCount: 54,
-  },
-  {
-    id: "5",
-    title: "Closing Message",
-    content: "Is there anything else I can help you with? If not, I'll mark this ticket as resolved. Feel free to reach out anytime if you have more questions!",
-    category: "General",
-    useCount: 120,
-  },
-];
+const defaultCategories = ["General", "LLC", "EIN", "Banking", "Amazon", "Compliance"];
 
-const categories = ["General", "LLC", "EIN", "Banking", "Amazon", "Compliance"];
-
-export function CannedResponsesSettings({ onChangeDetected }: CannedResponsesSettingsProps) {
-  const [responses, setResponses] = useState(mockResponses);
+export function CannedResponsesSettings() {
+  const [responses, setResponses] = useState<CannedResponse[]>([]);
+  const [categories, setCategories] = useState<string[]>(defaultCategories);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [editingResponse, setEditingResponse] = useState<typeof mockResponses[0] | null>(null);
+  const [editingResponse, setEditingResponse] = useState<CannedResponse | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Form state
+  const [formTitle, setFormTitle] = useState("");
+  const [formContent, setFormContent] = useState("");
+  const [formCategory, setFormCategory] = useState("General");
+
+  // Load responses on mount
+  useEffect(() => {
+    loadResponses();
+  }, []);
+
+  const loadResponses = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch("/api/admin/canned-responses");
+      if (!response.ok) throw new Error("Failed to load responses");
+      const data = await response.json();
+      setResponses(data.responses || []);
+      if (data.categories?.length > 0) {
+        setCategories([...new Set([...defaultCategories, ...data.categories])]);
+      }
+    } catch (error) {
+      console.error("Error loading responses:", error);
+      toast.error("Failed to load canned responses");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const filteredResponses = responses.filter((response) => {
     const matchesSearch =
@@ -93,14 +103,88 @@ export function CannedResponsesSettings({ onChangeDetected }: CannedResponsesSet
     return matchesSearch && matchesCategory;
   });
 
-  const handleDelete = (id: string) => {
-    setResponses(responses.filter((r) => r.id !== id));
-    onChangeDetected();
+  const openEditDialog = (response: CannedResponse) => {
+    setEditingResponse(response);
+    setFormTitle(response.title);
+    setFormContent(response.content);
+    setFormCategory(response.category || "General");
+    setIsAddDialogOpen(true);
+  };
+
+  const openAddDialog = () => {
+    setEditingResponse(null);
+    setFormTitle("");
+    setFormContent("");
+    setFormCategory("General");
+    setIsAddDialogOpen(true);
+  };
+
+  const handleSave = async () => {
+    if (!formTitle.trim() || !formContent.trim()) {
+      toast.error("Title and content are required");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const url = editingResponse
+        ? `/api/admin/canned-responses/${editingResponse.id}`
+        : "/api/admin/canned-responses";
+
+      const response = await fetch(url, {
+        method: editingResponse ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: formTitle,
+          content: formContent,
+          category: formCategory,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Failed to save response");
+
+      toast.success(editingResponse ? "Response updated" : "Response created");
+      setIsAddDialogOpen(false);
+      loadResponses();
+    } catch (error) {
+      console.error("Error saving response:", error);
+      toast.error("Failed to save response");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteId) return;
+
+    try {
+      const response = await fetch(`/api/admin/canned-responses/${deleteId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) throw new Error("Failed to delete response");
+
+      toast.success("Response deleted");
+      setDeleteId(null);
+      loadResponses();
+    } catch (error) {
+      console.error("Error deleting response:", error);
+      toast.error("Failed to delete response");
+    }
   };
 
   const handleCopy = (content: string) => {
     navigator.clipboard.writeText(content);
+    toast.success("Copied to clipboard");
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -113,7 +197,7 @@ export function CannedResponsesSettings({ onChangeDetected }: CannedResponsesSet
         </div>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button onClick={openAddDialog}>
               <Plus className="mr-2 h-4 w-4" />
               Add Response
             </Button>
@@ -132,12 +216,13 @@ export function CannedResponsesSettings({ onChangeDetected }: CannedResponsesSet
                 <Label>Title</Label>
                 <Input
                   placeholder="e.g., Welcome Message"
-                  defaultValue={editingResponse?.title || ""}
+                  value={formTitle}
+                  onChange={(e) => setFormTitle(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
                 <Label>Category</Label>
-                <Select defaultValue={editingResponse?.category || "General"}>
+                <Select value={formCategory} onValueChange={setFormCategory}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -155,7 +240,8 @@ export function CannedResponsesSettings({ onChangeDetected }: CannedResponsesSet
                 <Textarea
                   placeholder="Enter the response text..."
                   rows={5}
-                  defaultValue={editingResponse?.content || ""}
+                  value={formContent}
+                  onChange={(e) => setFormContent(e.target.value)}
                 />
                 <p className="text-xs text-muted-foreground">
                   Tip: Use {"{customer_name}"} to insert the customer's name
@@ -163,17 +249,15 @@ export function CannedResponsesSettings({ onChangeDetected }: CannedResponsesSet
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => {
-                setIsAddDialogOpen(false);
-                setEditingResponse(null);
-              }}>
+              <Button
+                variant="outline"
+                onClick={() => setIsAddDialogOpen(false)}
+                disabled={isSaving}
+              >
                 Cancel
               </Button>
-              <Button onClick={() => {
-                setIsAddDialogOpen(false);
-                setEditingResponse(null);
-                onChangeDetected();
-              }}>
+              <Button onClick={handleSave} disabled={isSaving}>
+                {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {editingResponse ? "Update" : "Create"}
               </Button>
             </DialogFooter>
@@ -223,7 +307,9 @@ export function CannedResponsesSettings({ onChangeDetected }: CannedResponsesSet
             {filteredResponses.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                  No canned responses found
+                  {responses.length === 0
+                    ? "No canned responses yet. Create your first one!"
+                    : "No canned responses found matching your search"}
                 </TableCell>
               </TableRow>
             ) : (
@@ -231,7 +317,7 @@ export function CannedResponsesSettings({ onChangeDetected }: CannedResponsesSet
                 <TableRow key={response.id}>
                   <TableCell className="font-medium">{response.title}</TableCell>
                   <TableCell className="hidden sm:table-cell">
-                    <Badge variant="secondary">{response.category}</Badge>
+                    <Badge variant="secondary">{response.category || "General"}</Badge>
                   </TableCell>
                   <TableCell className="hidden md:table-cell max-w-[300px] truncate text-muted-foreground">
                     {response.content}
@@ -252,10 +338,7 @@ export function CannedResponsesSettings({ onChangeDetected }: CannedResponsesSet
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => {
-                          setEditingResponse(response);
-                          setIsAddDialogOpen(true);
-                        }}
+                        onClick={() => openEditDialog(response)}
                         title="Edit"
                       >
                         <Pencil className="h-4 w-4" />
@@ -263,7 +346,7 @@ export function CannedResponsesSettings({ onChangeDetected }: CannedResponsesSet
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleDelete(response.id)}
+                        onClick={() => setDeleteId(response.id)}
                         title="Delete"
                         className="text-destructive hover:text-destructive"
                       >
@@ -308,6 +391,24 @@ export function CannedResponsesSettings({ onChangeDetected }: CannedResponsesSet
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Canned Response?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the canned response.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

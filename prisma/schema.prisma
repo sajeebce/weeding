@@ -18,6 +18,7 @@ model User {
   image         String?
   password      String?
   role          UserRole  @default(CUSTOMER)
+  isActive      Boolean   @default(true)
 
   accounts      Account[]
   sessions      Session[]
@@ -44,6 +45,17 @@ enum UserRole {
   CONTENT_MANAGER
   SALES_AGENT
   SUPPORT_AGENT
+}
+
+// ============ ROLE PERMISSIONS ============
+model RolePermission {
+  id         String   @id @default(cuid())
+  role       UserRole
+  permission String   // e.g., "users.view", "blog.create"
+  createdAt  DateTime @default(now())
+
+  @@unique([role, permission])
+  @@index([role])
 }
 
 model Account {

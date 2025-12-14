@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
+import { isWithinOperatingHours } from "@/lib/operating-hours";
 
 export interface ChatMessage {
   id: string;
@@ -34,6 +35,7 @@ export interface ChatState {
   isSending: boolean;
   error: string | null;
   ticket: ChatTicket | null;
+  sessionToken: string | null; // For guest authentication
   messages: ChatMessage[];
   guestInfo: {
     name: string;
@@ -52,11 +54,12 @@ export function useChat() {
   const [state, setState] = useState<ChatState>({
     isOpen: false,
     isMinimized: false,
-    isOnline: true,
+    isOnline: isWithinOperatingHours(), // Check operating hours on init
     isLoading: false,
     isSending: false,
     error: null,
     ticket: null,
+    sessionToken: null,
     messages: [],
     guestInfo: null,
     hasMoreMessages: false,
@@ -66,6 +69,22 @@ export function useChat() {
 
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const lastMessageIdRef = useRef<string | null>(null);
+
+  // Check operating hours periodically (every minute)
+  useEffect(() => {
+    const checkOperatingHours = () => {
+      const isOnline = isWithinOperatingHours();
+      setState((prev) => ({ ...prev, isOnline }));
+    };
+
+    // Check immediately
+    checkOperatingHours();
+
+    // Then check every minute
+    const interval = setInterval(checkOperatingHours, 60000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Load saved state from localStorage
   useEffect(() => {
@@ -78,6 +97,7 @@ export function useChat() {
             ...prev,
             ticket: parsed.ticket,
             guestInfo: parsed.guestInfo,
+            sessionToken: parsed.sessionToken || null,
           }));
         }
       }
@@ -94,10 +114,11 @@ export function useChat() {
         JSON.stringify({
           ticket: state.ticket,
           guestInfo: state.guestInfo,
+          sessionToken: state.sessionToken,
         })
       );
     }
-  }, [state.ticket, state.guestInfo]);
+  }, [state.ticket, state.guestInfo, state.sessionToken]);
 
   // Check online status
   const checkStatus = useCallback(async () => {
@@ -125,7 +146,12 @@ export function useChat() {
             ? `/api/chat/${state.ticket!.id}/messages?cursor=${cursor}`
             : `/api/chat/${state.ticket!.id}/messages`;
 
-          const res = await fetch(url);
+          const headers: HeadersInit = {};
+          if (state.sessionToken) {
+            headers["x-session-token"] = state.sessionToken;
+          }
+
+          const res = await fetch(url, { headers });
           if (res.ok) {
             const data = await res.json();
             if (data.messages && data.messages.length > 0) {
@@ -161,7 +187,7 @@ export function useChat() {
         }
       };
     }
-  }, [state.isOpen, state.ticket, state.isMinimized]);
+  }, [state.isOpen, state.ticket, state.isMinimized, state.sessionToken]);
 
   // Open chat widget
   const openChat = useCallback(() => {
@@ -190,7 +216,7 @@ export function useChat() {
 
   // Start new chat
   const startChat = useCallback(
-    async (guestInfo: { name: string; email: string; phone?: string }) => {
+    async (guestInfo: { name: string; email: string; phone?: string; message?: string }) => {
       setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
       try {
@@ -198,9 +224,10 @@ export function useChat() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            guestName: guestInfo.name,
-            guestEmail: guestInfo.email,
-            guestPhone: guestInfo.phone,
+            name: guestInfo.name,
+            email: guestInfo.email,
+            phone: guestInfo.phone,
+            message: guestInfo.message || "Started a live chat",
             subject: "Live Chat",
           }),
         });
@@ -216,14 +243,15 @@ export function useChat() {
           ...prev,
           isLoading: false,
           ticket: {
-            id: data.ticket.id,
-            ticketNumber: data.ticket.ticketNumber,
-            subject: data.ticket.subject,
-            status: data.ticket.status,
-            createdAt: data.ticket.createdAt,
+            id: data.ticketId,
+            ticketNumber: data.ticketNumber,
+            subject: "Live Chat",
+            status: "OPEN",
+            createdAt: new Date().toISOString(),
           },
-          guestInfo,
-          messages: data.ticket.messages || [],
+          sessionToken: data.sessionToken || null,
+          guestInfo: { name: guestInfo.name, email: guestInfo.email, phone: guestInfo.phone },
+          messages: data.messages || [],
         }));
       } catch (e) {
         setState((prev) => ({
@@ -244,9 +272,14 @@ export function useChat() {
       setState((prev) => ({ ...prev, isSending: true, error: null }));
 
       try {
+        const headers: HeadersInit = { "Content-Type": "application/json" };
+        if (state.sessionToken) {
+          headers["x-session-token"] = state.sessionToken;
+        }
+
         const res = await fetch(`/api/chat/${state.ticket.id}/messages`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers,
           body: JSON.stringify({
             content,
             senderName: state.guestInfo?.name || "Guest",
@@ -259,15 +292,15 @@ export function useChat() {
           throw new Error(data.error || "Failed to send message");
         }
 
-        const data = await res.json();
+        const message = await res.json();
 
         setState((prev) => ({
           ...prev,
           isSending: false,
-          messages: [...prev.messages, data.message],
+          messages: [...prev.messages, message],
         }));
 
-        lastMessageIdRef.current = data.message.id;
+        lastMessageIdRef.current = message.id;
       } catch (e) {
         setState((prev) => ({
           ...prev,
@@ -276,7 +309,7 @@ export function useChat() {
         }));
       }
     },
-    [state.ticket, state.guestInfo]
+    [state.ticket, state.guestInfo, state.sessionToken]
   );
 
   // Upload file
@@ -320,8 +353,14 @@ export function useChat() {
     if (!oldestMessage) return;
 
     try {
+      const headers: HeadersInit = {};
+      if (state.sessionToken) {
+        headers["x-session-token"] = state.sessionToken;
+      }
+
       const res = await fetch(
-        `/api/chat/${state.ticket.id}/messages?before=${oldestMessage.id}`
+        `/api/chat/${state.ticket.id}/messages?before=${oldestMessage.id}`,
+        { headers }
       );
 
       if (res.ok) {
@@ -335,7 +374,7 @@ export function useChat() {
     } catch (e) {
       console.error("Failed to load more messages:", e);
     }
-  }, [state.ticket, state.messages, state.hasMoreMessages]);
+  }, [state.ticket, state.messages, state.hasMoreMessages, state.sessionToken]);
 
   // Clear chat (for new conversation)
   const clearChat = useCallback(() => {
@@ -349,6 +388,7 @@ export function useChat() {
       isSending: false,
       error: null,
       ticket: null,
+      sessionToken: null,
       messages: [],
       guestInfo: null,
       hasMoreMessages: false,
@@ -364,7 +404,12 @@ export function useChat() {
     setState((prev) => ({ ...prev, isLoading: true }));
 
     try {
-      const res = await fetch(`/api/chat/${state.ticket.id}/messages`);
+      const headers: HeadersInit = {};
+      if (state.sessionToken) {
+        headers["x-session-token"] = state.sessionToken;
+      }
+
+      const res = await fetch(`/api/chat/${state.ticket.id}/messages`, { headers });
       if (res.ok) {
         const data = await res.json();
         setState((prev) => ({
@@ -377,12 +422,27 @@ export function useChat() {
         if (data.messages && data.messages.length > 0) {
           lastMessageIdRef.current = data.messages[data.messages.length - 1].id;
         }
+      } else {
+        // If unauthorized, clear the chat state
+        if (res.status === 401) {
+          localStorage.removeItem(STORAGE_KEY);
+          setState((prev) => ({
+            ...prev,
+            isLoading: false,
+            ticket: null,
+            sessionToken: null,
+            guestInfo: null,
+            messages: [],
+          }));
+        } else {
+          setState((prev) => ({ ...prev, isLoading: false }));
+        }
       }
     } catch (e) {
       console.error("Failed to resume chat:", e);
       setState((prev) => ({ ...prev, isLoading: false }));
     }
-  }, [state.ticket]);
+  }, [state.ticket, state.sessionToken]);
 
   // Resume chat on mount if ticket exists
   useEffect(() => {

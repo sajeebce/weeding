@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
-import { triggerTyping, isPusherConfigured } from "@/lib/pusher";
+import { triggerTyping, isPusherConfiguredAsync } from "@/lib/pusher-server";
 
 // POST - Send typing indicator
 export async function POST(
@@ -11,7 +11,7 @@ export async function POST(
     const { ticketId } = await params;
 
     // Check if Pusher is configured
-    if (!isPusherConfigured()) {
+    if (!(await isPusherConfiguredAsync())) {
       return NextResponse.json({
         success: true,
         message: "Pusher not configured, typing indicator skipped",

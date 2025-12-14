@@ -3,7 +3,6 @@
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -11,206 +10,274 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface GeneralSettingsProps {
-  onChangeDetected: () => void;
+  settings: Record<string, unknown>;
+  onUpdate: (key: string, value: unknown) => void;
 }
 
-export function GeneralSettings({ onChangeDetected }: GeneralSettingsProps) {
-  return (
-    <div className="space-y-8">
-      {/* Support System Toggle */}
-      <div className="flex items-center justify-between">
-        <div className="space-y-0.5">
-          <Label className="text-base">Enable Support System</Label>
-          <p className="text-sm text-muted-foreground">
-            Turn the entire support system on or off
-          </p>
-        </div>
-        <Switch defaultChecked onCheckedChange={onChangeDetected} />
-      </div>
+interface BusinessHours {
+  enabled: boolean;
+  timezone: string;
+  schedule: Record<string, { enabled: boolean; start: string; end: string }>;
+}
 
-      <Separator />
+const defaultBusinessHours: BusinessHours = {
+  enabled: true,
+  timezone: "Asia/Dhaka",
+  schedule: {
+    monday: { enabled: true, start: "09:00", end: "18:00" },
+    tuesday: { enabled: true, start: "09:00", end: "18:00" },
+    wednesday: { enabled: true, start: "09:00", end: "18:00" },
+    thursday: { enabled: true, start: "09:00", end: "18:00" },
+    friday: { enabled: true, start: "09:00", end: "18:00" },
+    saturday: { enabled: true, start: "09:00", end: "15:00" },
+    sunday: { enabled: false, start: "", end: "" },
+  },
+};
+
+export function GeneralSettings({ settings, onUpdate }: GeneralSettingsProps) {
+  const businessHours = (settings.businessHours as BusinessHours) || defaultBusinessHours;
+
+  const updateBusinessHours = (updates: Partial<BusinessHours>) => {
+    onUpdate("businessHours", { ...businessHours, ...updates });
+  };
+
+  const updateDaySchedule = (day: string, field: string, value: string | boolean) => {
+    const newSchedule = {
+      ...businessHours.schedule,
+      [day]: {
+        ...businessHours.schedule[day],
+        [field]: value,
+      },
+    };
+    onUpdate("businessHours", { ...businessHours, schedule: newSchedule });
+  };
+
+  return (
+    <div className="space-y-6 max-w-4xl">
+      {/* Support System Toggle */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Support System Status</CardTitle>
+          <CardDescription>
+            Enable or disable the entire support system
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between max-w-md">
+            <Label htmlFor="enable-system">Enable Support System</Label>
+            <Switch
+              id="enable-system"
+              checked={settings.enabled !== false}
+              onCheckedChange={(checked) => onUpdate("enabled", checked)}
+            />
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Operating Hours */}
-      <div className="space-y-4">
-        <div>
-          <Label className="text-base">Operating Hours</Label>
-          <p className="text-sm text-muted-foreground">
+      <Card>
+        <CardHeader>
+          <CardTitle>Operating Hours</CardTitle>
+          <CardDescription>
             Set when your support team is available
-          </p>
-        </div>
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex items-center gap-2 max-w-md">
+            <Switch
+              id="use-hours"
+              checked={businessHours.enabled}
+              onCheckedChange={(checked) => updateBusinessHours({ enabled: checked })}
+            />
+            <Label htmlFor="use-hours">Use operating hours (show offline outside these hours)</Label>
+          </div>
 
-        <div className="flex items-center gap-2">
-          <Switch defaultChecked onCheckedChange={onChangeDetected} />
-          <Label>Use operating hours (show offline outside these hours)</Label>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label>Timezone</Label>
-            <Select defaultValue="asia-dhaka" onValueChange={onChangeDetected}>
-              <SelectTrigger>
+          <div className="space-y-2 max-w-sm">
+            <Label htmlFor="timezone">Timezone</Label>
+            <Select
+              value={businessHours.timezone || "Asia/Dhaka"}
+              onValueChange={(value) => updateBusinessHours({ timezone: value })}
+            >
+              <SelectTrigger id="timezone">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="asia-dhaka">Asia/Dhaka (GMT+6)</SelectItem>
-                <SelectItem value="america-new_york">America/New York (EST)</SelectItem>
-                <SelectItem value="europe-london">Europe/London (GMT)</SelectItem>
-                <SelectItem value="asia-dubai">Asia/Dubai (GMT+4)</SelectItem>
+                <SelectItem value="Asia/Dhaka">Asia/Dhaka (GMT+6)</SelectItem>
+                <SelectItem value="America/New_York">America/New York (EST)</SelectItem>
+                <SelectItem value="Europe/London">Europe/London (GMT)</SelectItem>
+                <SelectItem value="Asia/Dubai">Asia/Dubai (GMT+4)</SelectItem>
               </SelectContent>
             </Select>
           </div>
-        </div>
 
-        <div className="space-y-3">
-          {["Monday - Friday", "Saturday", "Sunday"].map((day, index) => (
-            <div key={day} className="flex items-center gap-4">
-              <Switch
-                defaultChecked={index < 2}
-                onCheckedChange={onChangeDetected}
-              />
-              <span className="w-32 text-sm">{day}</span>
-              <Input
-                type="time"
-                defaultValue={index === 2 ? "" : "09:00"}
-                className="w-28"
-                onChange={onChangeDetected}
-              />
-              <span className="text-sm text-muted-foreground">to</span>
-              <Input
-                type="time"
-                defaultValue={index === 2 ? "" : index === 1 ? "15:00" : "18:00"}
-                className="w-28"
-                onChange={onChangeDetected}
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <Separator />
+          <div className="space-y-3">
+            {Object.entries(businessHours.schedule).map(([day, schedule]) => (
+              <div key={day} className="flex items-center gap-4">
+                <Switch
+                  id={`day-${day}`}
+                  checked={schedule.enabled}
+                  onCheckedChange={(checked) => updateDaySchedule(day, "enabled", checked)}
+                />
+                <span className="w-28 text-sm font-medium capitalize">{day}</span>
+                <Input
+                  type="time"
+                  value={schedule.start}
+                  className="w-36"
+                  onChange={(e) => updateDaySchedule(day, "start", e.target.value)}
+                  aria-label={`${day} start time`}
+                  disabled={!schedule.enabled}
+                />
+                <span className="text-sm text-muted-foreground">to</span>
+                <Input
+                  type="time"
+                  value={schedule.end}
+                  className="w-36"
+                  onChange={(e) => updateDaySchedule(day, "end", e.target.value)}
+                  aria-label={`${day} end time`}
+                  disabled={!schedule.enabled}
+                />
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Ticket Settings */}
-      <div className="space-y-4">
-        <div>
-          <Label className="text-base">Ticket Settings</Label>
-          <p className="text-sm text-muted-foreground">
+      <Card>
+        <CardHeader>
+          <CardTitle>Ticket Settings</CardTitle>
+          <CardDescription>
             Configure ticket numbering and defaults
-          </p>
-        </div>
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="prefix">Ticket Number Prefix</Label>
+              <Input
+                id="prefix"
+                value={(settings.ticketPrefix as string) || "TKT"}
+                placeholder="TKT"
+                onChange={(e) => onUpdate("ticketPrefix", e.target.value)}
+              />
+            </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label>Ticket Number Prefix</Label>
-            <Input
-              defaultValue="TKT"
-              placeholder="TKT"
-              onChange={onChangeDetected}
-            />
+            <div className="space-y-2">
+              <Label htmlFor="priority">Default Priority</Label>
+              <Select
+                value={(settings.defaultPriority as string) || "MEDIUM"}
+                onValueChange={(value) => onUpdate("defaultPriority", value)}
+              >
+                <SelectTrigger id="priority">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="LOW">Low</SelectItem>
+                  <SelectItem value="MEDIUM">Medium</SelectItem>
+                  <SelectItem value="HIGH">High</SelectItem>
+                  <SelectItem value="URGENT">Urgent</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>Default Priority</Label>
-            <Select defaultValue="medium" onValueChange={onChangeDetected}>
-              <SelectTrigger>
+          <div className="space-y-2 max-w-md">
+            <Label htmlFor="assignment">Default Assignment</Label>
+            <Select
+              value={settings.autoAssign ? "round-robin" : "unassigned"}
+              onValueChange={(value) => onUpdate("autoAssign", value !== "unassigned")}
+            >
+              <SelectTrigger id="assignment">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="low">Low</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="high">High</SelectItem>
-                <SelectItem value="urgent">Urgent</SelectItem>
+                <SelectItem value="unassigned">Leave Unassigned</SelectItem>
+                <SelectItem value="round-robin">Round Robin (Auto-assign)</SelectItem>
               </SelectContent>
             </Select>
           </div>
-        </div>
+        </CardContent>
+      </Card>
 
-        <div className="space-y-2">
-          <Label>Default Assignment</Label>
-          <Select defaultValue="unassigned" onValueChange={onChangeDetected}>
-            <SelectTrigger className="w-full sm:w-[300px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="unassigned">Leave Unassigned</SelectItem>
-              <SelectItem value="round-robin">Round Robin (Auto-assign)</SelectItem>
-              <SelectItem value="least-busy">Assign to Least Busy Agent</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <Separator />
-
-      {/* Customer Requirements */}
-      <div className="space-y-4">
-        <div>
-          <Label className="text-base">Guest Chat Requirements</Label>
-          <p className="text-sm text-muted-foreground">
+      {/* Guest Chat Requirements */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Guest Chat Requirements</CardTitle>
+          <CardDescription>
             What information to collect from guests before chat
-          </p>
-        </div>
-
-        <div className="space-y-3">
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4 max-w-md">
           <div className="flex items-center justify-between">
-            <Label>Require Name</Label>
-            <Switch defaultChecked onCheckedChange={onChangeDetected} />
-          </div>
-          <div className="flex items-center justify-between">
-            <Label>Require Email</Label>
-            <Switch defaultChecked onCheckedChange={onChangeDetected} />
-          </div>
-          <div className="flex items-center justify-between">
-            <Label>Show Phone Field (Optional)</Label>
-            <Switch onCheckedChange={onChangeDetected} />
-          </div>
-          <div className="flex items-center justify-between">
-            <Label>Allow Anonymous Chat</Label>
-            <Switch onCheckedChange={onChangeDetected} />
-          </div>
-        </div>
-      </div>
-
-      <Separator />
-
-      {/* File Upload */}
-      <div className="space-y-4">
-        <div>
-          <Label className="text-base">File Upload Settings</Label>
-          <p className="text-sm text-muted-foreground">
-            Configure allowed file types and sizes
-          </p>
-        </div>
-
-        <div className="flex items-center justify-between">
-          <Label>Allow File Uploads</Label>
-          <Switch defaultChecked onCheckedChange={onChangeDetected} />
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label>Max File Size (MB)</Label>
-            <Input
-              type="number"
-              defaultValue="10"
-              min="1"
-              max="50"
-              onChange={onChangeDetected}
+            <Label htmlFor="req-name">Require Name</Label>
+            <Switch
+              id="req-name"
+              checked={settings.collectName !== false}
+              onCheckedChange={(checked) => onUpdate("collectName", checked)}
             />
           </div>
-
-          <div className="space-y-2">
-            <Label>Allowed File Types</Label>
-            <Input
-              defaultValue="jpg,png,gif,pdf,doc,docx"
-              placeholder="jpg,png,pdf"
-              onChange={onChangeDetected}
+          <div className="flex items-center justify-between">
+            <Label htmlFor="req-email">Require Email</Label>
+            <Switch
+              id="req-email"
+              checked={settings.collectEmail !== false}
+              onCheckedChange={(checked) => onUpdate("collectEmail", checked)}
             />
           </div>
-        </div>
-      </div>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="show-phone">Show Phone Field (Optional)</Label>
+            <Switch
+              id="show-phone"
+              checked={settings.collectPhone === true}
+              onCheckedChange={(checked) => onUpdate("collectPhone", checked)}
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="require-email">Require Email for Chat</Label>
+            <Switch
+              id="require-email"
+              checked={settings.requireEmailForChat !== false}
+              onCheckedChange={(checked) => onUpdate("requireEmailForChat", checked)}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Business Info */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Business Information</CardTitle>
+          <CardDescription>
+            Your support team details
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="business-name">Business Name</Label>
+              <Input
+                id="business-name"
+                value={(settings.businessName as string) || "LLCPad Support"}
+                placeholder="Your Business Name"
+                onChange={(e) => onUpdate("businessName", e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="support-email">Support Email</Label>
+              <Input
+                id="support-email"
+                type="email"
+                value={(settings.supportEmail as string) || "support@llcpad.com"}
+                placeholder="support@example.com"
+                onChange={(e) => onUpdate("supportEmail", e.target.value)}
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

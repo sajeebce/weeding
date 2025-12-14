@@ -71,9 +71,17 @@ export async function GET(
 }
 
 // Send a new message (customer)
+const attachmentSchema = z.object({
+  fileName: z.string(),
+  fileUrl: z.string(),
+  fileType: z.string(),
+  fileSize: z.number(),
+});
+
 const sendMessageSchema = z.object({
   content: z.string().min(1, "Message is required"),
   type: z.enum(["TEXT", "IMAGE", "DOCUMENT"]).optional().default("TEXT"),
+  attachments: z.array(attachmentSchema).optional(),
 });
 
 export async function POST(
@@ -115,7 +123,14 @@ export async function POST(
     // Determine sender name
     const senderName = session?.user?.name || ticket.guestName || "Guest";
 
-    // Create message
+    // Determine message type based on attachments
+    let messageType = data.type;
+    if (data.attachments && data.attachments.length > 0) {
+      const hasImage = data.attachments.some((a) => a.fileType === "image");
+      messageType = hasImage ? "IMAGE" : "DOCUMENT";
+    }
+
+    // Create message with attachments
     const message = await prisma.supportMessage.create({
       data: {
         ticketId,
@@ -123,7 +138,18 @@ export async function POST(
         senderType: "CUSTOMER",
         senderName,
         senderId: session?.user?.id,
-        type: data.type,
+        type: messageType,
+        // Create attachments if provided
+        ...(data.attachments && data.attachments.length > 0 && {
+          attachments: {
+            create: data.attachments.map((attachment) => ({
+              fileName: attachment.fileName,
+              fileUrl: attachment.fileUrl,
+              fileType: attachment.fileType,
+              fileSize: attachment.fileSize,
+            })),
+          },
+        }),
       },
       include: {
         attachments: true,

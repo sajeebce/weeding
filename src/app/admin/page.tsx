@@ -5,11 +5,9 @@ import {
   Users,
   MessageSquare,
   FileText,
-  TrendingUp,
   ArrowUpRight,
   Clock,
   CheckCircle,
-  AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -122,17 +120,12 @@ export default function AdminDashboardPage() {
             Welcome back! Here's what's happening today.
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" asChild>
-            <Link href="/admin/reports">View Reports</Link>
-          </Button>
-          <Button asChild>
-            <Link href="/admin/orders/new">
-              <Package className="mr-2 h-4 w-4" />
-              New Order
-            </Link>
-          </Button>
-        </div>
+        <Button asChild>
+          <Link href="/admin/orders/new">
+            <Package className="mr-2 h-4 w-4" />
+            New Order
+          </Link>
+        </Button>
       </div>
 
       {/* Stats Grid */}
@@ -186,23 +179,10 @@ export default function AdminDashboardPage() {
               </Link>
             </Button>
             <Button variant="outline" className="h-auto flex-col gap-2 py-4" asChild>
-              <Link href="/admin/documents?status=pending">
-                <FileText className="h-5 w-5" />
-                <span>Review Documents</span>
-                <Badge>7</Badge>
-              </Link>
-            </Button>
-            <Button variant="outline" className="h-auto flex-col gap-2 py-4" asChild>
               <Link href="/admin/tickets?status=open">
                 <MessageSquare className="h-5 w-5" />
                 <span>Open Tickets</span>
                 <Badge>5</Badge>
-              </Link>
-            </Button>
-            <Button variant="outline" className="h-auto flex-col gap-2 py-4" asChild>
-              <Link href="/admin/reports/sales">
-                <TrendingUp className="h-5 w-5" />
-                <span>Sales Report</span>
               </Link>
             </Button>
           </div>

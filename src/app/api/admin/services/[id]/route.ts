@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { z } from "zod";
+import { checkContentAccess, checkAdminOnly, authError } from "@/lib/admin-auth";
 
 // Validation schema for updating services
 const updateServiceSchema = z.object({
@@ -27,6 +28,11 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const accessCheck = await checkContentAccess();
+    if ("error" in accessCheck) {
+      return authError(accessCheck);
+    }
+
     const { id } = await params;
 
     const service = await prisma.service.findUnique({
@@ -107,6 +113,11 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const accessCheck = await checkContentAccess();
+    if ("error" in accessCheck) {
+      return authError(accessCheck);
+    }
+
     const { id } = await params;
     const body = await request.json();
     const validatedData = updateServiceSchema.parse(body);
@@ -182,12 +193,17 @@ export async function PUT(
   }
 }
 
-// DELETE /api/admin/services/[id] - Delete service
+// DELETE /api/admin/services/[id] - Delete service (Admin only)
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const accessCheck = await checkAdminOnly();
+    if ("error" in accessCheck) {
+      return authError(accessCheck);
+    }
+
     const { id } = await params;
 
     // Check if service exists

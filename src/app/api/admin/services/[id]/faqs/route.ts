@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { z } from "zod";
+import { checkContentAccess, authError } from "@/lib/admin-auth";
 
 const faqSchema = z.object({
   question: z.string().min(1, "Question is required"),
@@ -14,6 +15,11 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const accessCheck = await checkContentAccess();
+    if ("error" in accessCheck) {
+      return authError(accessCheck);
+    }
+
     const { id: serviceId } = await params;
     const body = await request.json();
     const validatedData = faqSchema.parse(body);

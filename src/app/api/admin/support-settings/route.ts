@@ -135,8 +135,6 @@ export async function GET() {
 }
 
 // PUT - Update support settings
-const updateSettingsSchema = z.record(z.record(z.unknown()));
-
 export async function PUT(request: NextRequest) {
   try {
     const accessCheck = await checkAdminAccess();
@@ -148,19 +146,34 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const data = updateSettingsSchema.parse(body);
+
+    // Validate body is an object
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return NextResponse.json(
+        { error: "Invalid request body - expected an object" },
+        { status: 400 }
+      );
+    }
 
     // Flatten nested object to key-value pairs
     const updates: Array<{ key: string; value: string }> = [];
 
-    for (const [category, settings] of Object.entries(data)) {
-      for (const [name, value] of Object.entries(
-        settings as Record<string, unknown>
-      )) {
+    for (const [category, settings] of Object.entries(body)) {
+      // Skip if settings is not an object
+      if (!settings || typeof settings !== "object" || Array.isArray(settings)) {
+        continue;
+      }
+
+      for (const [name, value] of Object.entries(settings as Record<string, unknown>)) {
+        // Skip undefined values
+        if (value === undefined) continue;
+
         const key = `${SUPPORT_SETTINGS_PREFIX}${category}.${name}`;
         let stringValue: string;
 
-        if (typeof value === "object") {
+        if (value === null) {
+          stringValue = "";
+        } else if (typeof value === "object") {
           stringValue = JSON.stringify(value);
         } else if (typeof value === "boolean") {
           stringValue = value.toString();
@@ -173,24 +186,20 @@ export async function PUT(request: NextRequest) {
     }
 
     // Upsert all settings
-    await Promise.all(
-      updates.map((update) =>
-        prisma.setting.upsert({
-          where: { key: update.key },
-          update: { value: update.value },
-          create: { key: update.key, value: update.value },
-        })
-      )
-    );
+    if (updates.length > 0) {
+      await Promise.all(
+        updates.map((update) =>
+          prisma.setting.upsert({
+            where: { key: update.key },
+            update: { value: update.value },
+            create: { key: update.key, value: update.value },
+          })
+        )
+      );
+    }
 
     return NextResponse.json({ success: true, updated: updates.length });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: "Validation error", details: error.issues },
-        { status: 400 }
-      );
-    }
     console.error("Error updating support settings:", error);
     return NextResponse.json(
       { error: "Failed to update support settings" },

@@ -183,7 +183,7 @@ export function ChatMessages({
       )}
 
       {/* Messages */}
-      {messages.map((message) => (
+      {messages.filter(Boolean).map((message) => (
         <MessageBubble key={message.id} message={message} />
       ))}
 

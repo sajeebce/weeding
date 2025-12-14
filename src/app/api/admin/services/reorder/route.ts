@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { z } from "zod";
+import { checkContentAccess, authError } from "@/lib/admin-auth";
 
 const reorderSchema = z.object({
   items: z.array(
@@ -14,6 +15,11 @@ const reorderSchema = z.object({
 // POST /api/admin/services/reorder - Reorder services
 export async function POST(request: NextRequest) {
   try {
+    const accessCheck = await checkContentAccess();
+    if ("error" in accessCheck) {
+      return authError(accessCheck);
+    }
+
     const body = await request.json();
     const { items } = reorderSchema.parse(body);
 

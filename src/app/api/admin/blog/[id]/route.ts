@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
+import { checkContentAccess, checkAdminOnly, authError } from "@/lib/admin-auth";
 
 // GET single blog post
 export async function GET(
@@ -7,6 +8,11 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const accessCheck = await checkContentAccess();
+    if ("error" in accessCheck) {
+      return authError(accessCheck);
+    }
+
     const { id } = await params;
     const post = await prisma.blogPost.findUnique({
       where: { id },
@@ -35,6 +41,11 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const accessCheck = await checkContentAccess();
+    if ("error" in accessCheck) {
+      return authError(accessCheck);
+    }
+
     const { id } = await params;
     const body = await request.json();
 
@@ -91,12 +102,17 @@ export async function PUT(
   }
 }
 
-// DELETE blog post
+// DELETE blog post (Admin only)
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const accessCheck = await checkAdminOnly();
+    if ("error" in accessCheck) {
+      return authError(accessCheck);
+    }
+
     const { id } = await params;
     await prisma.blogPost.delete({
       where: { id },

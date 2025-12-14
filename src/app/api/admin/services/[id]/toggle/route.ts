@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
+import { checkContentAccess, authError } from "@/lib/admin-auth";
 
 // PATCH /api/admin/services/[id]/toggle - Toggle service active status
 export async function PATCH(
@@ -7,6 +8,11 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const accessCheck = await checkContentAccess();
+    if ("error" in accessCheck) {
+      return authError(accessCheck);
+    }
+
     const { id } = await params;
 
     const service = await prisma.service.findUnique({

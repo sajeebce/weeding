@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 import { Eye, EyeOff, Mail, Lock, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,25 +35,30 @@ export default function LoginPage() {
     const password = formData.get("password") as string;
 
     try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+      // Use NextAuth signIn for proper session management
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.error || "Invalid email or password. Please try again.");
+      if (result?.error) {
+        setError("Invalid email or password. Please try again.");
         return;
       }
 
-      // Store user data in localStorage for demo purposes
-      // TODO: Use proper session management with NextAuth
-      localStorage.setItem("user", JSON.stringify(data.user));
-
-      // Redirect based on role (admin/staff -> /admin, customer -> /dashboard)
-      router.push(data.redirectUrl);
+      // Fetch user info to determine redirect
+      const userResponse = await fetch("/api/auth/me");
+      if (userResponse.ok) {
+        const userData = await userResponse.json();
+        const staffRoles = ["ADMIN", "CONTENT_MANAGER", "SALES_AGENT", "SUPPORT_AGENT"];
+        const redirectUrl = staffRoles.includes(userData.role) ? "/admin" : "/dashboard";
+        router.push(redirectUrl);
+        router.refresh();
+      } else {
+        router.push("/dashboard");
+        router.refresh();
+      }
     } catch (err) {
       setError("An error occurred. Please try again.");
     } finally {

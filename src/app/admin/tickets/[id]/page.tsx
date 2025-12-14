@@ -113,9 +113,9 @@ interface PageProps {
 
 const statusColors: Record<string, string> = {
   OPEN: "bg-blue-100 text-blue-700",
-  WAITING_CUSTOMER: "bg-amber-100 text-amber-700",
-  WAITING_AGENT: "bg-orange-100 text-orange-700",
   IN_PROGRESS: "bg-purple-100 text-purple-700",
+  WAITING_FOR_CUSTOMER: "bg-amber-100 text-amber-700",
+  WAITING_FOR_AGENT: "bg-orange-100 text-orange-700",
   RESOLVED: "bg-green-100 text-green-700",
   CLOSED: "bg-gray-100 text-gray-700",
 };
@@ -129,9 +129,9 @@ const priorityColors: Record<string, string> = {
 
 const statusLabels: Record<string, string> = {
   OPEN: "Open",
-  WAITING_CUSTOMER: "Awaiting Customer",
-  WAITING_AGENT: "Awaiting Agent",
   IN_PROGRESS: "In Progress",
+  WAITING_FOR_CUSTOMER: "Awaiting Customer",
+  WAITING_FOR_AGENT: "Awaiting Agent",
   RESOLVED: "Resolved",
   CLOSED: "Closed",
 };
@@ -245,13 +245,13 @@ export default function AdminTicketDetailPage({ params }: PageProps) {
       });
 
       if (res.ok) {
-        const data = await res.json();
+        const message = await res.json();
         setTicket((prev) => {
           if (!prev) return prev;
           return {
             ...prev,
-            messages: [...prev.messages, data.message],
-            status: data.ticket?.status || prev.status,
+            messages: [...prev.messages, message],
+            status: "WAITING_FOR_CUSTOMER",
           };
         });
         setReply("");
@@ -276,16 +276,18 @@ export default function AdminTicketDetailPage({ params }: PageProps) {
       });
 
       if (res.ok) {
-        const data = await res.json();
+        const note = await res.json();
         setTicket((prev) => {
           if (!prev) return prev;
           return {
             ...prev,
-            internalNotes: [...prev.internalNotes, data.note],
+            internalNotes: [...prev.internalNotes, note],
           };
         });
         setInternalNote("");
         toast.success("Note added");
+      } else {
+        toast.error("Failed to add note");
       }
     } catch (error) {
       console.error("Failed to add note:", error);
@@ -368,9 +370,9 @@ export default function AdminTicketDetailPage({ params }: PageProps) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="OPEN">Open</SelectItem>
-              <SelectItem value="WAITING_CUSTOMER">Awaiting Customer</SelectItem>
-              <SelectItem value="WAITING_AGENT">Awaiting Agent</SelectItem>
               <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+              <SelectItem value="WAITING_FOR_CUSTOMER">Awaiting Customer</SelectItem>
+              <SelectItem value="WAITING_FOR_AGENT">Awaiting Agent</SelectItem>
               <SelectItem value="RESOLVED">Resolved</SelectItem>
               <SelectItem value="CLOSED">Closed</SelectItem>
             </SelectContent>
@@ -390,8 +392,8 @@ export default function AdminTicketDetailPage({ params }: PageProps) {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Conversation */}
-        <div className="space-y-6 lg:col-span-2">
+        {/* Conversation - Scrollable */}
+        <div className="space-y-6 lg:col-span-2 lg:max-h-[calc(100vh-200px)] lg:overflow-y-auto lg:pr-2">
           {/* Messages */}
           <Card>
             <CardHeader>
@@ -399,7 +401,7 @@ export default function AdminTicketDetailPage({ params }: PageProps) {
               <CardDescription>{ticket.messages.length} messages</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {ticket.messages.map((message) => (
+              {ticket.messages.filter(Boolean).map((message) => (
                 <div
                   key={message.id}
                   className={`flex gap-4 ${
@@ -447,17 +449,33 @@ export default function AdminTicketDetailPage({ params }: PageProps) {
                         {message.content}
                       </p>
                       {message.attachments && message.attachments.length > 0 && (
-                        <div className="mt-2 space-y-1">
+                        <div className="mt-2 space-y-2">
                           {message.attachments.map((att) => (
-                            <a
-                              key={att.id}
-                              href={att.fileUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-xs text-primary hover:underline block"
-                            >
-                              {att.fileName}
-                            </a>
+                            <div key={att.id}>
+                              {att.fileType === "image" || att.fileType?.startsWith("image/") ? (
+                                <a
+                                  href={att.fileUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="block"
+                                >
+                                  <img
+                                    src={att.fileUrl}
+                                    alt={att.fileName}
+                                    className="max-w-50 max-h-50 rounded-lg object-cover hover:opacity-90 transition-opacity"
+                                  />
+                                </a>
+                              ) : (
+                                <a
+                                  href={att.fileUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xs text-primary hover:underline block"
+                                >
+                                  📎 {att.fileName}
+                                </a>
+                              )}
+                            </div>
                           ))}
                         </div>
                       )}
@@ -536,55 +554,10 @@ export default function AdminTicketDetailPage({ params }: PageProps) {
               </div>
             </CardContent>
           </Card>
-
-          {/* Internal Note */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Internal Notes</CardTitle>
-              <CardDescription>Only visible to staff members</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Existing notes */}
-              {ticket.internalNotes.length > 0 && (
-                <div className="space-y-3 mb-4">
-                  {ticket.internalNotes.map((note) => (
-                    <div key={note.id} className="rounded-lg bg-yellow-50 p-3">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-sm font-medium">
-                          {note.author.name || "Unknown"}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {formatDistanceToNow(new Date(note.createdAt), {
-                            addSuffix: true,
-                          })}
-                        </span>
-                      </div>
-                      <p className="text-sm">{note.content}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <Textarea
-                placeholder="Add an internal note..."
-                rows={3}
-                className="resize-none"
-                value={internalNote}
-                onChange={(e) => setInternalNote(e.target.value)}
-              />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleAddNote}
-                disabled={!internalNote.trim()}
-              >
-                Add Note
-              </Button>
-            </CardContent>
-          </Card>
         </div>
 
-        {/* Sidebar */}
-        <div className="space-y-6">
+        {/* Sidebar - Sticky */}
+        <div className="space-y-6 lg:sticky lg:top-4 lg:self-start lg:max-h-[calc(100vh-100px)] lg:overflow-y-auto">
           {/* Customer Info */}
           <Card>
             <CardHeader>
@@ -730,6 +703,52 @@ export default function AdminTicketDetailPage({ params }: PageProps) {
               </CardContent>
             </Card>
           )}
+
+          {/* Internal Notes */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Internal Notes</CardTitle>
+              <CardDescription className="text-xs">Only visible to staff</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {/* Existing notes */}
+              {ticket.internalNotes.length > 0 && (
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {ticket.internalNotes.map((note) => (
+                    <div key={note.id} className="rounded-lg bg-yellow-50 p-2 text-xs">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-medium">
+                          {note.author.name || "Unknown"}
+                        </span>
+                        <span className="text-muted-foreground">
+                          {formatDistanceToNow(new Date(note.createdAt), {
+                            addSuffix: true,
+                          })}
+                        </span>
+                      </div>
+                      <p>{note.content}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <Textarea
+                placeholder="Add an internal note..."
+                rows={2}
+                className="resize-none text-sm"
+                value={internalNote}
+                onChange={(e) => setInternalNote(e.target.value)}
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={handleAddNote}
+                disabled={!internalNote.trim()}
+              >
+                Add Note
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

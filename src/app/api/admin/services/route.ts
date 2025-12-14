@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { z } from "zod";
+import { checkContentAccess, authError } from "@/lib/admin-auth";
 
 // Validation schema for creating/updating services
 const serviceSchema = z.object({
@@ -24,6 +25,11 @@ const serviceSchema = z.object({
 // GET /api/admin/services - List all services (including inactive)
 export async function GET(request: NextRequest) {
   try {
+    const accessCheck = await checkContentAccess();
+    if ("error" in accessCheck) {
+      return authError(accessCheck);
+    }
+
     const searchParams = request.nextUrl.searchParams;
     const categoryId = searchParams.get("categoryId");
     const search = searchParams.get("search");
@@ -95,6 +101,11 @@ export async function GET(request: NextRequest) {
 // POST /api/admin/services - Create new service
 export async function POST(request: NextRequest) {
   try {
+    const accessCheck = await checkContentAccess();
+    if ("error" in accessCheck) {
+      return authError(accessCheck);
+    }
+
     const body = await request.json();
     const validatedData = serviceSchema.parse(body);
     const { features, ...serviceData } = validatedData;

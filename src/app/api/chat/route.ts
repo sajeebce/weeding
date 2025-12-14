@@ -100,36 +100,55 @@ export async function POST(request: NextRequest) {
 // Get chat status (online/offline)
 export async function GET() {
   try {
-    // Check if any support agent is online
-    // For now, we'll use a simple check based on business hours
-    // TODO: Implement real online status with Pusher presence
+    // Check operating hours config from database or use default
+    let isOnline = true; // Default to online
 
-    const now = new Date();
-    const hour = now.getHours();
-    const day = now.getDay();
+    try {
+      // Try to get operating hours config from database
+      const operatingHoursConfig = await prisma.setting.findUnique({
+        where: { key: "support.general.businessHours" },
+      });
 
-    // Business hours: Mon-Fri 9am-6pm, Sat 10am-3pm
-    let isOnline = false;
-    if (day >= 1 && day <= 5) {
-      // Monday to Friday
-      isOnline = hour >= 9 && hour < 18;
-    } else if (day === 6) {
-      // Saturday
-      isOnline = hour >= 10 && hour < 15;
+      if (operatingHoursConfig) {
+        const config = JSON.parse(operatingHoursConfig.value);
+
+        // If operating hours are disabled, always online
+        if (!config.enabled) {
+          isOnline = true;
+        } else {
+          // Check if current time is within operating hours
+          const now = new Date();
+          const dayNames = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+          const currentDay = dayNames[now.getDay()];
+          const dayConfig = config.schedule?.[currentDay];
+
+          if (!dayConfig || !dayConfig.enabled) {
+            isOnline = false;
+          } else {
+            const currentHours = now.getHours();
+            const currentMinutes = now.getMinutes();
+            const currentTimeInMinutes = currentHours * 60 + currentMinutes;
+
+            const [startHours, startMinutes] = (dayConfig.start || "09:00").split(":").map(Number);
+            const startTimeInMinutes = startHours * 60 + startMinutes;
+
+            const [endHours, endMinutes] = (dayConfig.end || "18:00").split(":").map(Number);
+            const endTimeInMinutes = endHours * 60 + endMinutes;
+
+            isOnline = currentTimeInMinutes >= startTimeInMinutes && currentTimeInMinutes < endTimeInMinutes;
+          }
+        }
+      }
+    } catch {
+      // If config fetch fails, default to online
+      isOnline = true;
     }
 
-    // TODO: Check actual agent presence from database or Pusher
-
     return NextResponse.json({
+      isOnline,
       online: isOnline,
       status: isOnline ? "online" : "offline",
       estimatedResponseTime: isOnline ? "Usually replies in a few minutes" : "We'll respond within 24 hours",
-      operatingHours: {
-        timezone: "GMT+6",
-        weekdays: "9:00 AM - 6:00 PM",
-        saturday: "10:00 AM - 3:00 PM",
-        sunday: "Closed",
-      },
     });
   } catch (error) {
     console.error("Error getting chat status:", error);

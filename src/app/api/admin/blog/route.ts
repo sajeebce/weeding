@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
+import { checkContentAccess, authError } from "@/lib/admin-auth";
 
 // GET all blog posts
 export async function GET(request: NextRequest) {
   try {
+    const accessCheck = await checkContentAccess();
+    if ("error" in accessCheck) {
+      return authError(accessCheck);
+    }
+
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status");
 
@@ -25,6 +31,11 @@ export async function GET(request: NextRequest) {
 // POST create new blog post
 export async function POST(request: NextRequest) {
   try {
+    const accessCheck = await checkContentAccess();
+    if ("error" in accessCheck) {
+      return authError(accessCheck);
+    }
+
     const body = await request.json();
 
     // Generate slug from title if not provided

@@ -27,6 +27,11 @@ export const authConfig = {
           return null;
         }
 
+        // Check if user is disabled
+        if (!user.isActive) {
+          throw new Error("Your account has been disabled. Please contact support.");
+        }
+
         const isPasswordValid = await compare(
           credentials.password as string,
           user.password

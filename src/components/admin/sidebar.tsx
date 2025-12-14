@@ -13,18 +13,12 @@ import {
   MessageSquare,
   Tag,
   MapPin,
-  BarChart3,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Newspaper,
-  Star,
-  HelpCircle,
   Receipt,
   Percent,
   UserCog,
-  CreditCard,
-  Mail,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useBusinessConfig } from "@/hooks/use-business-config";
@@ -95,11 +89,6 @@ const navItems: NavItem[] = [
     ],
   },
   {
-    title: "Documents",
-    href: "/admin/documents",
-    icon: FileText,
-  },
-  {
     title: "Invoices",
     href: "/admin/invoices",
     icon: Receipt,
@@ -129,11 +118,6 @@ const navItems: NavItem[] = [
       { title: "Profile", href: "/admin/profile" },
     ],
   },
-  {
-    title: "Reports",
-    href: "/admin/reports",
-    icon: BarChart3,
-  },
 ];
 
 export function AdminSidebar() {
@@ -151,8 +135,8 @@ export function AdminSidebar() {
   };
 
   const isActive = (href: string) => {
-    if (href === "/admin") return pathname === href;
-    return pathname.startsWith(href);
+    // Use exact match for all menu items
+    return pathname === href;
   };
 
   const isChildActive = (children: { href: string }[]) => {

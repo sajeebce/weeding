@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { z } from "zod";
-import { triggerMessageNew, isPusherConfigured } from "@/lib/pusher";
+import { triggerMessageNew, isPusherConfiguredAsync } from "@/lib/pusher-server";
 
 // POST - Send message to ticket
 const sendMessageSchema = z.object({
@@ -81,7 +81,7 @@ export async function POST(
     });
 
     // Trigger real-time event
-    if (isPusherConfigured()) {
+    if (await isPusherConfiguredAsync()) {
       await triggerMessageNew(id, {
         id: message.id,
         content: message.content,
