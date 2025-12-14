@@ -87,9 +87,12 @@ const navItems: NavItem[] = [
   },
   {
     title: "Tickets",
-    href: "/admin/tickets",
     icon: MessageSquare,
     badge: 3,
+    children: [
+      { title: "All Tickets", href: "/admin/tickets" },
+      { title: "Settings", href: "/admin/tickets/settings" },
+    ],
   },
   {
     title: "Documents",

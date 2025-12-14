@@ -1,3 +1,6 @@
+"use client";
+
+import { useState, useEffect, useCallback, use } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -9,6 +12,8 @@ import {
   UserPlus,
   CheckCircle,
   AlertCircle,
+  Loader2,
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -29,101 +34,294 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useTicketChannel } from "@/hooks/use-pusher";
+import { formatDistanceToNow, format } from "date-fns";
+import { toast } from "sonner";
+
+interface Message {
+  id: string;
+  content: string;
+  senderType: "CUSTOMER" | "AGENT" | "SYSTEM";
+  senderName: string;
+  createdAt: string;
+  attachments?: Array<{
+    id: string;
+    fileName: string;
+    fileUrl: string;
+    fileType: string;
+    fileSize: number;
+  }>;
+}
+
+interface InternalNote {
+  id: string;
+  content: string;
+  author: {
+    id: string;
+    name: string | null;
+  };
+  createdAt: string;
+}
+
+interface CannedResponse {
+  id: string;
+  title: string;
+  content: string;
+  category: string | null;
+}
+
+interface Ticket {
+  id: string;
+  ticketNumber: string;
+  subject: string;
+  status: string;
+  priority: string;
+  category: string | null;
+  customer: {
+    id: string;
+    name: string | null;
+    email: string;
+    phone: string | null;
+  } | null;
+  guestName: string | null;
+  guestEmail: string | null;
+  guestPhone: string | null;
+  assignedTo: {
+    id: string;
+    name: string | null;
+  } | null;
+  order: {
+    id: string;
+    orderNumber: string;
+  } | null;
+  messages: Message[];
+  internalNotes: InternalNote[];
+  createdAt: string;
+  updatedAt: string;
+  previousTickets?: Array<{
+    id: string;
+    ticketNumber: string;
+    subject: string;
+    status: string;
+    createdAt: string;
+  }>;
+}
 
 interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-// Mock ticket data
-const getTicket = (id: string) => ({
-  id,
-  subject: "Question about EIN timeline",
-  customer: {
-    id: "cust-001",
-    name: "John Doe",
-    email: "john@example.com",
-    phone: "+880 1712 345678",
-  },
-  status: "open",
-  priority: "high",
-  category: "Order Related",
-  assignedTo: "Admin",
-  relatedOrder: "LLC-2024-ABC123",
-  createdAt: "2024-12-10 10:30 AM",
-  updatedAt: "2024-12-10 02:30 PM",
-  messages: [
-    {
-      id: 1,
-      sender: "customer",
-      senderName: "John Doe",
-      content:
-        "Hello, I placed an order for LLC formation with EIN application 2 days ago. I wanted to know how long it typically takes to receive the EIN confirmation letter after the LLC is approved?\n\nAlso, can I use the EIN to open a bank account before receiving the official letter?",
-      timestamp: "2024-12-10 10:30 AM",
-    },
-    {
-      id: 2,
-      sender: "staff",
-      senderName: "Admin",
-      content:
-        "Hi John,\n\nThank you for reaching out! Great questions.\n\nRegarding your EIN timeline:\n- Once your LLC is approved by the state (typically 3-5 business days for Wyoming), we will immediately apply for your EIN.\n- The EIN is usually issued within 24-48 hours after application.\n- You'll receive your EIN confirmation letter via email as soon as it's ready.\n\nAs for opening a bank account - yes, you can use the EIN number itself to open a bank account. The official letter is not always required, though some banks may ask for it.\n\nIs there anything else I can help with?",
-      timestamp: "2024-12-10 11:45 AM",
-    },
-    {
-      id: 3,
-      sender: "customer",
-      senderName: "John Doe",
-      content:
-        "Thank you for the quick response! That's very helpful. One more question - which banks do you recommend for non-US residents to open a business account?",
-      timestamp: "2024-12-10 02:30 PM",
-    },
-  ],
-  previousTickets: [
-    {
-      id: "TKT-000",
-      subject: "Document upload help",
-      status: "resolved",
-      date: "2024-11-25",
-    },
-  ],
-});
-
 const statusColors: Record<string, string> = {
-  open: "bg-blue-100 text-blue-700",
-  waiting: "bg-amber-100 text-amber-700",
-  in_progress: "bg-purple-100 text-purple-700",
-  resolved: "bg-green-100 text-green-700",
-  closed: "bg-gray-100 text-gray-700",
+  OPEN: "bg-blue-100 text-blue-700",
+  WAITING_CUSTOMER: "bg-amber-100 text-amber-700",
+  WAITING_AGENT: "bg-orange-100 text-orange-700",
+  IN_PROGRESS: "bg-purple-100 text-purple-700",
+  RESOLVED: "bg-green-100 text-green-700",
+  CLOSED: "bg-gray-100 text-gray-700",
 };
 
 const priorityColors: Record<string, string> = {
-  low: "bg-gray-100 text-gray-700",
-  medium: "bg-blue-100 text-blue-700",
-  high: "bg-red-100 text-red-700",
-  urgent: "bg-red-500 text-white",
+  LOW: "bg-gray-100 text-gray-700",
+  MEDIUM: "bg-blue-100 text-blue-700",
+  HIGH: "bg-red-100 text-red-700",
+  URGENT: "bg-red-500 text-white",
 };
 
-// Canned responses
-const cannedResponses = [
-  {
-    title: "EIN Timeline",
-    content:
-      "The EIN is typically issued within 24-48 hours after your LLC is approved by the state. You'll receive confirmation via email.",
-  },
-  {
-    title: "LLC Processing Time",
-    content:
-      "Wyoming LLC formation typically takes 3-5 business days. You'll receive email updates at each stage of the process.",
-  },
-  {
-    title: "Document Request",
-    content:
-      "Please upload the required documents through your dashboard. Go to Dashboard > Documents > Upload Document.",
-  },
-];
+const statusLabels: Record<string, string> = {
+  OPEN: "Open",
+  WAITING_CUSTOMER: "Awaiting Customer",
+  WAITING_AGENT: "Awaiting Agent",
+  IN_PROGRESS: "In Progress",
+  RESOLVED: "Resolved",
+  CLOSED: "Closed",
+};
 
-export default async function AdminTicketDetailPage({ params }: PageProps) {
-  const { id } = await params;
-  const ticket = getTicket(id);
+export default function AdminTicketDetailPage({ params }: PageProps) {
+  const { id } = use(params);
+  const [ticket, setTicket] = useState<Ticket | null>(null);
+  const [cannedResponses, setCannedResponses] = useState<CannedResponse[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [reply, setReply] = useState("");
+  const [internalNote, setInternalNote] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  const [sendEmail, setSendEmail] = useState(true);
+  const [isTyping, setIsTyping] = useState(false);
+
+  const fetchTicket = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/admin/tickets/${id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setTicket(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch ticket:", error);
+      toast.error("Failed to load ticket");
+    }
+  }, [id]);
+
+  const fetchCannedResponses = useCallback(async () => {
+    try {
+      const res = await fetch("/api/admin/canned-responses");
+      if (res.ok) {
+        const data = await res.json();
+        setCannedResponses(data.responses);
+      }
+    } catch (error) {
+      console.error("Failed to fetch canned responses:", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true);
+      await Promise.all([fetchTicket(), fetchCannedResponses()]);
+      setIsLoading(false);
+    };
+    loadData();
+  }, [fetchTicket, fetchCannedResponses]);
+
+  // Real-time updates
+  useTicketChannel(id, {
+    onMessageNew: (event) => {
+      setTicket((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          messages: [...prev.messages, event.message as Message],
+        };
+      });
+    },
+    onTypingStart: () => setIsTyping(true),
+    onTypingStop: () => setIsTyping(false),
+  });
+
+  const handleStatusChange = async (status: string) => {
+    try {
+      const res = await fetch(`/api/admin/tickets/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      if (res.ok) {
+        setTicket((prev) => (prev ? { ...prev, status } : prev));
+        toast.success("Status updated");
+      }
+    } catch (error) {
+      console.error("Failed to update status:", error);
+      toast.error("Failed to update status");
+    }
+  };
+
+  const handlePriorityChange = async (priority: string) => {
+    try {
+      const res = await fetch(`/api/admin/tickets/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ priority }),
+      });
+      if (res.ok) {
+        setTicket((prev) => (prev ? { ...prev, priority } : prev));
+        toast.success("Priority updated");
+      }
+    } catch (error) {
+      console.error("Failed to update priority:", error);
+      toast.error("Failed to update priority");
+    }
+  };
+
+  const handleSendReply = async () => {
+    if (!reply.trim()) return;
+
+    setIsSending(true);
+    try {
+      const res = await fetch(`/api/admin/tickets/${id}/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content: reply,
+          sendEmail,
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setTicket((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            messages: [...prev.messages, data.message],
+            status: data.ticket?.status || prev.status,
+          };
+        });
+        setReply("");
+        toast.success("Reply sent");
+      }
+    } catch (error) {
+      console.error("Failed to send reply:", error);
+      toast.error("Failed to send reply");
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleAddNote = async () => {
+    if (!internalNote.trim()) return;
+
+    try {
+      const res = await fetch(`/api/admin/tickets/${id}/notes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: internalNote }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setTicket((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            internalNotes: [...prev.internalNotes, data.note],
+          };
+        });
+        setInternalNote("");
+        toast.success("Note added");
+      }
+    } catch (error) {
+      console.error("Failed to add note:", error);
+      toast.error("Failed to add note");
+    }
+  };
+
+  const useCannedResponse = (content: string) => {
+    setReply((prev) => (prev ? `${prev}\n\n${content}` : content));
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!ticket) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-muted-foreground">Ticket not found</p>
+        <Link href="/admin/tickets">
+          <Button variant="link">Back to Tickets</Button>
+        </Link>
+      </div>
+    );
+  }
+
+  const customer = ticket.customer || {
+    name: ticket.guestName || "Guest",
+    email: ticket.guestEmail || "",
+    phone: ticket.guestPhone || null,
+    id: null,
+  };
 
   return (
     <div className="space-y-6">
@@ -143,36 +341,50 @@ export default async function AdminTicketDetailPage({ params }: PageProps) {
             <h1 className="text-2xl font-bold">{ticket.subject}</h1>
           </div>
           <div className="mt-2 flex flex-wrap items-center gap-2">
-            <Badge variant="secondary" className={statusColors[ticket.status]}>
-              {ticket.status}
+            <Badge
+              variant="secondary"
+              className={statusColors[ticket.status] || ""}
+            >
+              {statusLabels[ticket.status] || ticket.status}
             </Badge>
             <Badge
               variant="secondary"
-              className={priorityColors[ticket.priority]}
+              className={priorityColors[ticket.priority] || ""}
             >
-              {ticket.priority} priority
+              {ticket.priority.toLowerCase()} priority
             </Badge>
             <span className="text-sm text-muted-foreground">
-              {ticket.id} • Created {ticket.createdAt}
+              {ticket.ticketNumber} • Created{" "}
+              {formatDistanceToNow(new Date(ticket.createdAt), {
+                addSuffix: true,
+              })}
             </span>
           </div>
         </div>
         <div className="flex gap-2">
-          <Select defaultValue={ticket.status}>
-            <SelectTrigger className="w-32">
+          <Select value={ticket.status} onValueChange={handleStatusChange}>
+            <SelectTrigger className="w-36">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="open">Open</SelectItem>
-              <SelectItem value="waiting">Waiting</SelectItem>
-              <SelectItem value="in_progress">In Progress</SelectItem>
-              <SelectItem value="resolved">Resolved</SelectItem>
-              <SelectItem value="closed">Closed</SelectItem>
+              <SelectItem value="OPEN">Open</SelectItem>
+              <SelectItem value="WAITING_CUSTOMER">Awaiting Customer</SelectItem>
+              <SelectItem value="WAITING_AGENT">Awaiting Agent</SelectItem>
+              <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+              <SelectItem value="RESOLVED">Resolved</SelectItem>
+              <SelectItem value="CLOSED">Closed</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" size="sm">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleStatusChange("RESOLVED")}
+          >
             <CheckCircle className="mr-2 h-4 w-4" />
             Resolve
+          </Button>
+          <Button variant="ghost" size="icon" onClick={fetchTicket}>
+            <RefreshCw className="h-4 w-4" />
           </Button>
         </div>
       </div>
@@ -184,22 +396,20 @@ export default async function AdminTicketDetailPage({ params }: PageProps) {
           <Card>
             <CardHeader>
               <CardTitle>Conversation</CardTitle>
-              <CardDescription>
-                {ticket.messages.length} messages
-              </CardDescription>
+              <CardDescription>{ticket.messages.length} messages</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {ticket.messages.map((message) => (
                 <div
                   key={message.id}
                   className={`flex gap-4 ${
-                    message.sender === "staff" ? "flex-row-reverse" : ""
+                    message.senderType === "AGENT" ? "flex-row-reverse" : ""
                   }`}
                 >
                   <Avatar className="h-10 w-10 shrink-0">
                     <AvatarFallback
                       className={
-                        message.sender === "staff"
+                        message.senderType === "AGENT"
                           ? "bg-primary text-primary-foreground"
                           : "bg-muted"
                       }
@@ -207,27 +417,28 @@ export default async function AdminTicketDetailPage({ params }: PageProps) {
                       {message.senderName
                         .split(" ")
                         .map((n) => n[0])
-                        .join("")}
+                        .join("")
+                        .toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div
                     className={`flex-1 space-y-1 ${
-                      message.sender === "staff" ? "text-right" : ""
+                      message.senderType === "AGENT" ? "text-right" : ""
                     }`}
                   >
                     <div
                       className={`flex items-center gap-2 ${
-                        message.sender === "staff" ? "justify-end" : ""
+                        message.senderType === "AGENT" ? "justify-end" : ""
                       }`}
                     >
                       <span className="font-medium">{message.senderName}</span>
                       <span className="text-xs text-muted-foreground">
-                        {message.timestamp}
+                        {format(new Date(message.createdAt), "MMM d, h:mm a")}
                       </span>
                     </div>
                     <div
                       className={`rounded-lg p-4 ${
-                        message.sender === "staff"
+                        message.senderType === "AGENT"
                           ? "bg-primary/10 text-left"
                           : "bg-muted text-left"
                       }`}
@@ -235,10 +446,41 @@ export default async function AdminTicketDetailPage({ params }: PageProps) {
                       <p className="whitespace-pre-wrap text-sm">
                         {message.content}
                       </p>
+                      {message.attachments && message.attachments.length > 0 && (
+                        <div className="mt-2 space-y-1">
+                          {message.attachments.map((att) => (
+                            <a
+                              key={att.id}
+                              href={att.fileUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-primary hover:underline block"
+                            >
+                              {att.fileName}
+                            </a>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
               ))}
+
+              {/* Typing indicator */}
+              {isTyping && (
+                <div className="flex gap-4">
+                  <Avatar className="h-10 w-10 shrink-0">
+                    <AvatarFallback className="bg-muted">...</AvatarFallback>
+                  </Avatar>
+                  <div className="rounded-lg bg-muted p-4">
+                    <div className="flex gap-1">
+                      <span className="h-2 w-2 rounded-full bg-gray-400 animate-bounce [animation-delay:-0.3s]" />
+                      <span className="h-2 w-2 rounded-full bg-gray-400 animate-bounce [animation-delay:-0.15s]" />
+                      <span className="h-2 w-2 rounded-full bg-gray-400 animate-bounce" />
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -249,27 +491,46 @@ export default async function AdminTicketDetailPage({ params }: PageProps) {
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Canned Responses */}
-              <div className="flex flex-wrap gap-2">
-                {cannedResponses.map((response, index) => (
-                  <Button key={index} variant="outline" size="sm">
-                    {response.title}
-                  </Button>
-                ))}
-              </div>
+              {cannedResponses.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {cannedResponses.slice(0, 5).map((response) => (
+                    <Button
+                      key={response.id}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => useCannedResponse(response.content)}
+                    >
+                      {response.title}
+                    </Button>
+                  ))}
+                </div>
+              )}
               <Textarea
                 placeholder="Type your reply..."
                 rows={5}
                 className="resize-none"
+                value={reply}
+                onChange={(e) => setReply(e.target.value)}
               />
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <input type="checkbox" id="sendEmail" className="rounded" />
+                  <input
+                    type="checkbox"
+                    id="sendEmail"
+                    className="rounded"
+                    checked={sendEmail}
+                    onChange={(e) => setSendEmail(e.target.checked)}
+                  />
                   <label htmlFor="sendEmail" className="text-sm">
                     Send email notification to customer
                   </label>
                 </div>
-                <Button>
-                  <Send className="mr-2 h-4 w-4" />
+                <Button onClick={handleSendReply} disabled={isSending || !reply.trim()}>
+                  {isSending ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="mr-2 h-4 w-4" />
+                  )}
                   Send Reply
                 </Button>
               </div>
@@ -279,18 +540,43 @@ export default async function AdminTicketDetailPage({ params }: PageProps) {
           {/* Internal Note */}
           <Card>
             <CardHeader>
-              <CardTitle>Internal Note</CardTitle>
-              <CardDescription>
-                Only visible to staff members
-              </CardDescription>
+              <CardTitle>Internal Notes</CardTitle>
+              <CardDescription>Only visible to staff members</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Existing notes */}
+              {ticket.internalNotes.length > 0 && (
+                <div className="space-y-3 mb-4">
+                  {ticket.internalNotes.map((note) => (
+                    <div key={note.id} className="rounded-lg bg-yellow-50 p-3">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-sm font-medium">
+                          {note.author.name || "Unknown"}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {formatDistanceToNow(new Date(note.createdAt), {
+                            addSuffix: true,
+                          })}
+                        </span>
+                      </div>
+                      <p className="text-sm">{note.content}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
               <Textarea
                 placeholder="Add an internal note..."
                 rows={3}
                 className="resize-none"
+                value={internalNote}
+                onChange={(e) => setInternalNote(e.target.value)}
               />
-              <Button variant="outline" size="sm">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleAddNote}
+                disabled={!internalNote.trim()}
+              >
                 Add Note
               </Button>
             </CardContent>
@@ -311,29 +597,36 @@ export default async function AdminTicketDetailPage({ params }: PageProps) {
               <div className="flex items-center gap-3">
                 <Avatar>
                   <AvatarFallback className="bg-primary/10 text-primary">
-                    {ticket.customer.name
-                      .split(" ")
+                    {customer.name
+                      ?.split(" ")
                       .map((n) => n[0])
-                      .join("")}
+                      .join("")
+                      .toUpperCase() || "G"}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <Link
-                    href={`/admin/customers/${ticket.customer.id}`}
-                    className="font-medium hover:underline"
-                  >
-                    {ticket.customer.name}
-                  </Link>
-                  <p className="text-sm text-muted-foreground">
-                    {ticket.customer.email}
-                  </p>
+                  {ticket.customer?.id ? (
+                    <Link
+                      href={`/admin/customers/${ticket.customer.id}`}
+                      className="font-medium hover:underline"
+                    >
+                      {customer.name}
+                    </Link>
+                  ) : (
+                    <span className="font-medium">{customer.name}</span>
+                  )}
+                  <p className="text-sm text-muted-foreground">{customer.email}</p>
                 </div>
               </div>
-              <Separator />
-              <div className="text-sm">
-                <p className="text-muted-foreground">Phone</p>
-                <p>{ticket.customer.phone}</p>
-              </div>
+              {customer.phone && (
+                <>
+                  <Separator />
+                  <div className="text-sm">
+                    <p className="text-muted-foreground">Phone</p>
+                    <p>{customer.phone}</p>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
 
@@ -348,38 +641,33 @@ export default async function AdminTicketDetailPage({ params }: PageProps) {
                   <Tag className="h-4 w-4 text-muted-foreground" />
                   <span>Category</span>
                 </div>
-                <span className="text-sm font-medium">{ticket.category}</span>
+                <span className="text-sm font-medium">
+                  {ticket.category || "Uncategorized"}
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-sm">
                   <UserPlus className="h-4 w-4 text-muted-foreground" />
                   <span>Assigned</span>
                 </div>
-                <Select defaultValue={ticket.assignedTo || "unassigned"}>
-                  <SelectTrigger className="h-8 w-28">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="unassigned">Unassigned</SelectItem>
-                    <SelectItem value="Admin">Admin</SelectItem>
-                    <SelectItem value="Support">Support</SelectItem>
-                  </SelectContent>
-                </Select>
+                <span className="text-sm font-medium">
+                  {ticket.assignedTo?.name || "Unassigned"}
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-sm">
                   <AlertCircle className="h-4 w-4 text-muted-foreground" />
                   <span>Priority</span>
                 </div>
-                <Select defaultValue={ticket.priority}>
+                <Select value={ticket.priority} onValueChange={handlePriorityChange}>
                   <SelectTrigger className="h-8 w-28">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="low">Low</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                    <SelectItem value="urgent">Urgent</SelectItem>
+                    <SelectItem value="LOW">Low</SelectItem>
+                    <SelectItem value="MEDIUM">Medium</SelectItem>
+                    <SelectItem value="HIGH">High</SelectItem>
+                    <SelectItem value="URGENT">Urgent</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -387,7 +675,7 @@ export default async function AdminTicketDetailPage({ params }: PageProps) {
           </Card>
 
           {/* Related Order */}
-          {ticket.relatedOrder && (
+          {ticket.order && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -397,20 +685,17 @@ export default async function AdminTicketDetailPage({ params }: PageProps) {
               </CardHeader>
               <CardContent>
                 <Link
-                  href={`/admin/orders/${ticket.relatedOrder}`}
+                  href={`/admin/orders/${ticket.order.id}`}
                   className="font-medium text-primary hover:underline"
                 >
-                  {ticket.relatedOrder}
+                  {ticket.order.orderNumber}
                 </Link>
-                <p className="text-sm text-muted-foreground">
-                  LLC Formation - Wyoming
-                </p>
               </CardContent>
             </Card>
           )}
 
           {/* Previous Tickets */}
-          {ticket.previousTickets.length > 0 && (
+          {ticket.previousTickets && ticket.previousTickets.length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -421,10 +706,7 @@ export default async function AdminTicketDetailPage({ params }: PageProps) {
               <CardContent>
                 <div className="space-y-3">
                   {ticket.previousTickets.map((prev) => (
-                    <div
-                      key={prev.id}
-                      className="flex items-center justify-between"
-                    >
+                    <div key={prev.id} className="flex items-center justify-between">
                       <div>
                         <Link
                           href={`/admin/tickets/${prev.id}`}
@@ -433,14 +715,14 @@ export default async function AdminTicketDetailPage({ params }: PageProps) {
                           {prev.subject}
                         </Link>
                         <p className="text-xs text-muted-foreground">
-                          {prev.date}
+                          {prev.ticketNumber}
                         </p>
                       </div>
                       <Badge
                         variant="secondary"
-                        className={statusColors[prev.status]}
+                        className={statusColors[prev.status] || ""}
                       >
-                        {prev.status}
+                        {statusLabels[prev.status] || prev.status}
                       </Badge>
                     </div>
                   ))}

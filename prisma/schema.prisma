@@ -23,7 +23,13 @@ model User {
   sessions      Session[]
   orders        Order[]
   documents     Document[]
-  tickets       Ticket[]
+
+  // Support ticket relations
+  customerTickets   SupportTicket[]   @relation("CustomerTickets")
+  assignedTickets   SupportTicket[]   @relation("AssignedTickets")
+  sentMessages      SupportMessage[]  @relation("SentMessages")
+  authoredNotes     InternalNote[]    @relation("AuthoredNotes")
+  cannedResponses   CannedResponse[]  @relation("CreatedCannedResponses")
 
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -249,6 +255,7 @@ model Order {
   documents       Document[]
   notes           OrderNote[]
   invoices        Invoice[]
+  tickets         SupportTicket[]
 
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
@@ -389,27 +396,58 @@ enum InvoiceStatus {
 }
 
 // ============ SUPPORT TICKETS ============
-model Ticket {
-  id          String       @id @default(cuid())
-  userId      String
-  subject     String
-  status      TicketStatus @default(OPEN)
-  priority    TicketPriority @default(MEDIUM)
+model SupportTicket {
+  id              String         @id @default(cuid())
+  ticketNumber    String         @unique // TKT-001, TKT-002
+  subject         String
+  status          TicketStatus   @default(OPEN)
+  priority        TicketPriority @default(MEDIUM)
+  category        String?
 
-  user        User         @relation(fields: [userId], references: [id])
-  messages    TicketMessage[]
+  // Customer (registered or guest)
+  customerId      String?
+  customer        User?          @relation("CustomerTickets", fields: [customerId], references: [id])
+  guestName       String?
+  guestEmail      String?
+  guestPhone      String?
 
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  // Assignment
+  assignedToId    String?
+  assignedTo      User?          @relation("AssignedTickets", fields: [assignedToId], references: [id])
 
-  @@index([userId])
+  // Related order
+  orderId         String?
+  order           Order?         @relation(fields: [orderId], references: [id])
+
+  // Source & metadata
+  source          TicketSource   @default(LIVE_CHAT)
+  ipAddress       String?
+  userAgent       String?
+
+  // Timestamps
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  firstResponseAt DateTime?
+  resolvedAt      DateTime?
+  closedAt        DateTime?
+
+  // Relations
+  messages        SupportMessage[]
+  internalNotes   InternalNote[]
+
+  @@index([customerId])
+  @@index([assignedToId])
   @@index([status])
+  @@index([priority])
+  @@index([ticketNumber])
+  @@index([createdAt])
 }
 
 enum TicketStatus {
   OPEN
   IN_PROGRESS
   WAITING_FOR_CUSTOMER
+  WAITING_FOR_AGENT
   RESOLVED
   CLOSED
 }
@@ -421,18 +459,112 @@ enum TicketPriority {
   URGENT
 }
 
-model TicketMessage {
-  id          String   @id @default(cuid())
+enum TicketSource {
+  LIVE_CHAT
+  EMAIL
+  MANUAL
+  API
+}
+
+model SupportMessage {
+  id          String      @id @default(cuid())
   ticketId    String
-  authorId    String?
-  content     String   @db.Text
-  isStaff     Boolean  @default(false)
+  ticket      SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
 
-  ticket      Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  // Message content
+  content     String      @db.Text
+  contentHtml String?     @db.Text
 
-  createdAt   DateTime @default(now())
+  // Sender info
+  senderId    String?
+  sender      User?       @relation("SentMessages", fields: [senderId], references: [id])
+  senderType  SenderType  // CUSTOMER, AGENT, SYSTEM
+  senderName  String      // Display name (for guests)
+
+  // Message type
+  type        MessageType @default(TEXT)
+
+  // Attachments
+  attachments MessageAttachment[]
+
+  // Status
+  isRead      Boolean     @default(false)
+  readAt      DateTime?
+
+  createdAt   DateTime    @default(now())
 
   @@index([ticketId])
+  @@index([senderId])
+  @@index([createdAt])
+}
+
+enum SenderType {
+  CUSTOMER
+  AGENT
+  SYSTEM
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  DOCUMENT
+  AUDIO
+  SYSTEM
+}
+
+model MessageAttachment {
+  id          String         @id @default(cuid())
+  messageId   String
+  message     SupportMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  fileName    String
+  fileUrl     String
+  fileType    String         // image/jpeg, application/pdf, etc.
+  fileSize    Int            // in bytes
+
+  createdAt   DateTime       @default(now())
+
+  @@index([messageId])
+}
+
+model InternalNote {
+  id          String        @id @default(cuid())
+  ticketId    String
+  ticket      SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  content     String        @db.Text
+  authorId    String
+  author      User          @relation("AuthoredNotes", fields: [authorId], references: [id])
+
+  // Mentions (array of user IDs)
+  mentions    String[]
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([ticketId])
+  @@index([authorId])
+}
+
+model CannedResponse {
+  id          String   @id @default(cuid())
+  title       String
+  content     String   @db.Text
+  category    String?
+
+  // Usage tracking
+  useCount    Int      @default(0)
+
+  // Ownership
+  createdById String
+  createdBy   User     @relation("CreatedCannedResponses", fields: [createdById], references: [id])
+  isPublic    Boolean  @default(true) // Available to all agents
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+  @@index([createdById])
 }
 
 // ============ CONTENT ============
