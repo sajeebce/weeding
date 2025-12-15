@@ -55,7 +55,14 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@/components/ui/alert";
-import { cn } from "@/lib/utils";
+import {
+  cn,
+  sanitizePhone,
+  sanitizeName,
+  sanitizeEmail,
+  sanitizeText,
+  INPUT_LIMITS
+} from "@/lib/utils";
 import {
   getServiceForm,
   type ServiceFormConfig,
@@ -247,9 +254,31 @@ function ServiceCheckoutForm() {
     }
   }, []);
 
-  // Handle account field changes
+  // Handle account field changes with sanitization
   const handleAccountChange = (field: keyof AccountData, value: string) => {
-    setAccountData(prev => ({ ...prev, [field]: value }));
+    let sanitizedValue = value;
+
+    // Apply field-specific sanitization
+    switch (field) {
+      case "phone":
+        sanitizedValue = sanitizePhone(value);
+        break;
+      case "firstName":
+      case "lastName":
+        sanitizedValue = sanitizeName(value, INPUT_LIMITS.firstName.max);
+        break;
+      case "email":
+        sanitizedValue = sanitizeEmail(value);
+        break;
+      case "password":
+      case "confirmPassword":
+        sanitizedValue = value.slice(0, INPUT_LIMITS.password.max);
+        break;
+      default:
+        sanitizedValue = sanitizeText(value, 200);
+    }
+
+    setAccountData(prev => ({ ...prev, [field]: sanitizedValue }));
     if (errors[`account_${field}`]) {
       setErrors(prev => ({ ...prev, [`account_${field}`]: "" }));
     }
@@ -323,9 +352,40 @@ function ServiceCheckoutForm() {
     return currentValue === value;
   };
 
-  // Handle input changes
-  const handleInputChange = (name: string, value: string | boolean | number | File | null) => {
-    setFormValues((prev) => ({ ...prev, [name]: value }));
+  // Handle input changes with sanitization based on field type
+  const handleInputChange = (name: string, value: string | boolean | number | File | null, fieldType?: string) => {
+    let sanitizedValue = value;
+
+    // Only sanitize string values
+    if (typeof value === "string") {
+      switch (fieldType) {
+        case "phone":
+          sanitizedValue = sanitizePhone(value);
+          break;
+        case "email":
+          sanitizedValue = sanitizeEmail(value);
+          break;
+        case "textarea":
+          sanitizedValue = sanitizeText(value, INPUT_LIMITS.description.max);
+          break;
+        default:
+          // Apply general text sanitization for text fields
+          if (fieldType === "text" || !fieldType) {
+            // Check if field name suggests a specific type
+            if (name.toLowerCase().includes("name") || name.toLowerCase().includes("firstname") || name.toLowerCase().includes("lastname")) {
+              sanitizedValue = sanitizeName(value, INPUT_LIMITS.name.max);
+            } else if (name.toLowerCase().includes("address")) {
+              sanitizedValue = sanitizeText(value, INPUT_LIMITS.address.max);
+            } else if (name.toLowerCase().includes("city")) {
+              sanitizedValue = sanitizeText(value, INPUT_LIMITS.city.max);
+            } else {
+              sanitizedValue = sanitizeText(value, 500);
+            }
+          }
+      }
+    }
+
+    setFormValues((prev) => ({ ...prev, [name]: sanitizedValue }));
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
@@ -610,10 +670,15 @@ function ServiceCheckoutForm() {
               type={field.type === "phone" ? "tel" : field.type}
               placeholder={field.placeholder}
               value={(value as string) || ""}
-              onChange={(e) => handleInputChange(field.name, e.target.value)}
+              onChange={(e) => handleInputChange(field.name, e.target.value, field.type)}
               className={fieldError ? "border-destructive" : ""}
               min={field.validation?.min}
               max={field.validation?.max}
+              maxLength={
+                field.type === "phone" ? INPUT_LIMITS.phone.max :
+                field.type === "email" ? INPUT_LIMITS.email.max :
+                field.validation?.maxLength || 500
+              }
             />
             {fieldError && (
               <p className="text-sm text-destructive">{fieldError}</p>
@@ -643,9 +708,10 @@ function ServiceCheckoutForm() {
               id={field.name}
               placeholder={field.placeholder}
               value={(value as string) || ""}
-              onChange={(e) => handleInputChange(field.name, e.target.value)}
+              onChange={(e) => handleInputChange(field.name, e.target.value, "textarea")}
               className={fieldError ? "border-destructive" : ""}
               rows={3}
+              maxLength={field.validation?.maxLength || INPUT_LIMITS.description.max}
             />
             {fieldError && (
               <p className="text-sm text-destructive">{fieldError}</p>

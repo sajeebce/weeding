@@ -51,7 +51,16 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
+import {
+  cn,
+  sanitizePhone,
+  sanitizeName,
+  sanitizeEmail,
+  sanitizeText,
+  sanitizePassportNumber,
+  sanitizeZipCode,
+  INPUT_LIMITS
+} from "@/lib/utils";
 import { StateSelector, type State } from "@/components/ui/state-selector";
 import { CountrySelector, ELIGIBLE_COUNTRIES } from "@/components/ui/country-selector";
 import { Header } from "@/components/layout/header";
@@ -348,7 +357,52 @@ function CheckoutForm() {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    let sanitizedValue = value;
+
+    // Apply field-specific sanitization
+    switch (name) {
+      case "ownerPhone":
+        sanitizedValue = sanitizePhone(value);
+        break;
+      case "ownerFirstName":
+      case "ownerLastName":
+        sanitizedValue = sanitizeName(value, INPUT_LIMITS.firstName.max);
+        break;
+      case "ownerEmail":
+        sanitizedValue = sanitizeEmail(value);
+        break;
+      case "ownerPassportNumber":
+        sanitizedValue = sanitizePassportNumber(value);
+        break;
+      case "ownerPostalCode":
+        sanitizedValue = sanitizeZipCode(value);
+        break;
+      case "ownerAddress":
+        sanitizedValue = sanitizeText(value, INPUT_LIMITS.address.max);
+        break;
+      case "ownerCity":
+        sanitizedValue = sanitizeText(value, INPUT_LIMITS.city.max);
+        break;
+      case "llcName":
+      case "llcName2":
+      case "llcName3":
+        sanitizedValue = sanitizeText(value, INPUT_LIMITS.llcName.max);
+        break;
+      case "businessIndustry":
+        sanitizedValue = sanitizeText(value, INPUT_LIMITS.businessIndustry.max);
+        break;
+      case "businessPurpose":
+        sanitizedValue = sanitizeText(value, INPUT_LIMITS.description.max);
+        break;
+      case "password":
+      case "confirmPassword":
+        sanitizedValue = value.slice(0, INPUT_LIMITS.password.max);
+        break;
+      default:
+        sanitizedValue = sanitizeText(value, 500);
+    }
+
+    setFormData((prev) => ({ ...prev, [name]: sanitizedValue }));
     // Clear error when user types
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
@@ -396,19 +450,63 @@ function CheckoutForm() {
 
   // Update a member's field
   const updateMember = (index: number, field: string, value: string | number) => {
+    let sanitizedValue = value;
+    if (typeof value === "string") {
+      switch (field) {
+        case "phone":
+          sanitizedValue = sanitizePhone(value);
+          break;
+        case "firstName":
+        case "lastName":
+          sanitizedValue = sanitizeName(value, INPUT_LIMITS.firstName.max);
+          break;
+        case "email":
+          sanitizedValue = sanitizeEmail(value);
+          break;
+        case "address":
+          sanitizedValue = sanitizeText(value, INPUT_LIMITS.address.max);
+          break;
+        case "city":
+          sanitizedValue = sanitizeText(value, INPUT_LIMITS.city.max);
+          break;
+        default:
+          sanitizedValue = sanitizeText(value, 200);
+      }
+    }
     setFormData((prev) => ({
       ...prev,
       additionalMembers: prev.additionalMembers.map((member, i) =>
-        i === index ? { ...member, [field]: value } : member
+        i === index ? { ...member, [field]: sanitizedValue } : member
       ),
     }));
   };
 
   // Update non-member manager field
   const updateNonMemberManager = (field: string, value: string) => {
+    let sanitizedValue = value;
+    switch (field) {
+      case "phone":
+        sanitizedValue = sanitizePhone(value);
+        break;
+      case "firstName":
+      case "lastName":
+        sanitizedValue = sanitizeName(value, INPUT_LIMITS.firstName.max);
+        break;
+      case "email":
+        sanitizedValue = sanitizeEmail(value);
+        break;
+      case "address":
+        sanitizedValue = sanitizeText(value, INPUT_LIMITS.address.max);
+        break;
+      case "city":
+        sanitizedValue = sanitizeText(value, INPUT_LIMITS.city.max);
+        break;
+      default:
+        sanitizedValue = sanitizeText(value, 200);
+    }
     setFormData((prev) => ({
       ...prev,
-      nonMemberManager: { ...prev.nonMemberManager, [field]: value },
+      nonMemberManager: { ...prev.nonMemberManager, [field]: sanitizedValue },
     }));
   };
 

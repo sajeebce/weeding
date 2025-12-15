@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { User, Mail, Phone, Globe, Lock, Bell, Save, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { User, Mail, Phone, Globe, Lock, Save, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,15 +23,21 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { toast } from "sonner";
+import {
+  sanitizePhone,
+  sanitizeName,
+  INPUT_LIMITS
+} from "@/lib/utils";
 
-// Mock user data
-const user = {
-  name: "John Doe",
-  email: "john@example.com",
-  phone: "+880 1712 345678",
-  country: "BD",
-  initials: "JD",
-};
+interface UserProfile {
+  id: string;
+  name: string | null;
+  email: string;
+  phone: string | null;
+  country: string | null;
+  image: string | null;
+}
 
 const countries = [
   { code: "BD", name: "Bangladesh" },
@@ -42,16 +48,151 @@ const countries = [
   { code: "MY", name: "Malaysia" },
   { code: "SG", name: "Singapore" },
   { code: "GB", name: "United Kingdom" },
+  { code: "US", name: "United States" },
 ];
 
 export default function ProfilePage() {
+  const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    country: ""
+  });
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: ""
+  });
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const fetchProfile = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch("/api/customer/profile");
+      if (!response.ok) throw new Error("Failed to fetch profile");
+      const data = await response.json();
+      setUser(data.user);
+      setFormData({
+        name: data.user.name || "",
+        email: data.user.email || "",
+        phone: data.user.phone || "",
+        country: data.user.country || ""
+      });
+    } catch {
+      toast.error("Failed to load profile");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    let sanitizedValue = value;
+
+    switch (name) {
+      case "name":
+        sanitizedValue = sanitizeName(value, INPUT_LIMITS.name.max);
+        break;
+      case "phone":
+        sanitizedValue = sanitizePhone(value);
+        break;
+    }
+
+    setFormData(prev => ({ ...prev, [name]: sanitizedValue }));
+  };
 
   const handleSave = async () => {
-    setIsSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSaving(false);
+    try {
+      setIsSaving(true);
+      const response = await fetch("/api/customer/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.name,
+          phone: formData.phone || null,
+          country: formData.country || null,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to update profile");
+      }
+
+      const data = await response.json();
+      setUser(data.user);
+      toast.success("Profile updated successfully");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to update profile");
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  const handleChangePassword = async () => {
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast.error("Passwords don't match");
+      return;
+    }
+    if (passwordData.newPassword.length < 8) {
+      toast.error("Password must be at least 8 characters");
+      return;
+    }
+
+    try {
+      setIsChangingPassword(true);
+      const response = await fetch("/api/customer/profile/password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(passwordData),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to change password");
+      }
+
+      toast.success("Password updated successfully");
+      setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to change password");
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
+  const getInitials = (name: string | null) => {
+    if (!name) return "U";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Profile Settings</h1>
+          <p className="text-muted-foreground">
+            Manage your account settings and preferences
+          </p>
+        </div>
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -83,7 +224,7 @@ export default function ProfilePage() {
             <CardContent className="flex items-center gap-6">
               <Avatar className="h-20 w-20">
                 <AvatarFallback className="bg-primary text-2xl text-primary-foreground">
-                  {user.initials}
+                  {getInitials(user?.name || null)}
                 </AvatarFallback>
               </Avatar>
               <div className="space-y-2">
@@ -113,7 +254,10 @@ export default function ProfilePage() {
                     <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
                       id="name"
-                      defaultValue={user.name}
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      maxLength={INPUT_LIMITS.name.max}
                       className="pl-9"
                     />
                   </div>
@@ -124,11 +268,16 @@ export default function ProfilePage() {
                     <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
                       id="email"
+                      name="email"
                       type="email"
-                      defaultValue={user.email}
-                      className="pl-9"
+                      value={formData.email}
+                      disabled
+                      className="pl-9 bg-muted"
                     />
                   </div>
+                  <p className="text-xs text-muted-foreground">
+                    Email cannot be changed
+                  </p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone">Phone Number</Label>
@@ -136,18 +285,25 @@ export default function ProfilePage() {
                     <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
                       id="phone"
+                      name="phone"
                       type="tel"
-                      defaultValue={user.phone}
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      maxLength={INPUT_LIMITS.phone.max}
+                      placeholder="+1 234 567 8900"
                       className="pl-9"
                     />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="country">Country</Label>
-                  <Select defaultValue={user.country}>
+                  <Select
+                    value={formData.country}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, country: value }))}
+                  >
                     <SelectTrigger>
                       <Globe className="mr-2 h-4 w-4 text-muted-foreground" />
-                      <SelectValue />
+                      <SelectValue placeholder="Select country" />
                     </SelectTrigger>
                     <SelectContent>
                       {countries.map((country) => (
@@ -195,6 +351,8 @@ export default function ProfilePage() {
                   <Input
                     id="currentPassword"
                     type="password"
+                    value={passwordData.currentPassword}
+                    onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
                     className="pl-9"
                   />
                 </div>
@@ -204,7 +362,13 @@ export default function ProfilePage() {
                   <Label htmlFor="newPassword">New Password</Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input id="newPassword" type="password" className="pl-9" />
+                    <Input
+                      id="newPassword"
+                      type="password"
+                      value={passwordData.newPassword}
+                      onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
+                      className="pl-9"
+                    />
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -214,13 +378,24 @@ export default function ProfilePage() {
                     <Input
                       id="confirmPassword"
                       type="password"
+                      value={passwordData.confirmPassword}
+                      onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
                       className="pl-9"
                     />
                   </div>
                 </div>
               </div>
               <div className="flex justify-end">
-                <Button>Update Password</Button>
+                <Button onClick={handleChangePassword} disabled={isChangingPassword}>
+                  {isChangingPassword ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Updating...
+                    </>
+                  ) : (
+                    "Update Password"
+                  )}
+                </Button>
               </div>
             </CardContent>
           </Card>

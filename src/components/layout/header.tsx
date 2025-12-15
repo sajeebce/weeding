@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
 import {
   Menu,
   ChevronDown,
@@ -23,7 +24,6 @@ import {
   Target,
   AlertTriangle,
   BookOpen,
-  Users,
   User,
   LogOut,
   LayoutDashboard,
@@ -117,13 +117,26 @@ const navigation = [
 export function Header() {
   const router = useRouter();
   const { config } = useBusinessConfig();
+  const { data: session, status } = useSession();
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
   const [user, setUser] = useState<LoggedInUser | null>(null);
 
-  // Check for logged-in user on mount
+  // Check for logged-in user - prefer NextAuth session, fallback to localStorage
   useEffect(() => {
     const checkUser = () => {
+      // First check NextAuth session
+      if (session?.user) {
+        setUser({
+          id: session.user.id || "",
+          email: session.user.email || "",
+          name: session.user.name || "",
+          role: (session.user as { role?: string }).role || "CUSTOMER",
+        });
+        return;
+      }
+
+      // Fallback to localStorage for backward compatibility
       const storedUser = localStorage.getItem("user");
       if (storedUser) {
         try {
@@ -148,14 +161,16 @@ export function Header() {
       window.removeEventListener("storage", checkUser);
       window.removeEventListener("user-auth-change", checkUser);
     };
-  }, []);
+  }, [session]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    // Clear localStorage
     localStorage.removeItem("user");
     setUser(null);
     // Dispatch event to notify other components
     window.dispatchEvent(new Event("user-auth-change"));
-    router.push("/");
+    // Sign out from NextAuth
+    await signOut({ callbackUrl: "/" });
   };
 
   const getInitials = (name: string) => {
@@ -302,23 +317,25 @@ export function Header() {
 
         {/* Desktop CTA */}
         <div className="hidden lg:flex lg:items-center lg:gap-x-4">
-          {user ? (
+          {status === "loading" ? (
+            <div className="h-8 w-8 animate-pulse rounded-full bg-muted" />
+          ) : user || session?.user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="flex items-center gap-2 px-2">
                   <Avatar className="h-8 w-8">
                     <AvatarFallback className="bg-primary text-primary-foreground text-sm">
-                      {getInitials(user.name)}
+                      {getInitials(user?.name || session?.user?.name || "U")}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="max-w-[120px] truncate font-medium">{user.name}</span>
+                  <span className="max-w-[120px] truncate font-medium">{user?.name || session?.user?.name}</span>
                   <ChevronDown className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <div className="px-2 py-1.5">
-                  <p className="text-sm font-medium">{user.name}</p>
-                  <p className="text-xs text-muted-foreground">{user.email}</p>
+                  <p className="text-sm font-medium">{user?.name || session?.user?.name}</p>
+                  <p className="text-xs text-muted-foreground">{user?.email || session?.user?.email}</p>
                 </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
@@ -483,18 +500,26 @@ export function Header() {
               </div>
 
               <div className="mt-6 flex flex-col gap-2">
-                {user ? (
+                {status === "loading" ? (
+                  <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
+                    <div className="h-10 w-10 animate-pulse rounded-full bg-muted-foreground/20" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 w-24 animate-pulse rounded bg-muted-foreground/20" />
+                      <div className="h-3 w-32 animate-pulse rounded bg-muted-foreground/20" />
+                    </div>
+                  </div>
+                ) : user || session?.user ? (
                   <>
                     {/* User Info */}
                     <div className="flex items-center gap-3 rounded-lg bg-muted p-3 mb-2">
                       <Avatar className="h-10 w-10">
                         <AvatarFallback className="bg-primary text-primary-foreground">
-                          {getInitials(user.name)}
+                          {getInitials(user?.name || session?.user?.name || "U")}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">{user.name}</p>
-                        <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+                        <p className="font-medium truncate">{user?.name || session?.user?.name}</p>
+                        <p className="text-sm text-muted-foreground truncate">{user?.email || session?.user?.email}</p>
                       </div>
                     </div>
                     <SheetClose asChild>

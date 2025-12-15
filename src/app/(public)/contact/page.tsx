@@ -15,6 +15,13 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  sanitizePhone,
+  sanitizeName,
+  sanitizeEmail,
+  sanitizeText,
+  INPUT_LIMITS
+} from "@/lib/utils";
 
 const contactInfo = [
   {
@@ -55,6 +62,39 @@ const subjects = [
 export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    subject: "",
+    message: ""
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    let sanitizedValue = value;
+
+    switch (name) {
+      case "firstName":
+      case "lastName":
+        sanitizedValue = sanitizeName(value, INPUT_LIMITS.firstName.max);
+        break;
+      case "email":
+        sanitizedValue = sanitizeEmail(value);
+        break;
+      case "phone":
+        sanitizedValue = sanitizePhone(value);
+        break;
+      case "message":
+        sanitizedValue = sanitizeText(value, INPUT_LIMITS.message.max);
+        break;
+      default:
+        sanitizedValue = sanitizeText(value, 200);
+    }
+
+    setFormData(prev => ({ ...prev, [name]: sanitizedValue }));
+  };
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -170,6 +210,9 @@ export default function ContactPage() {
                           id="firstName"
                           name="firstName"
                           placeholder="John"
+                          value={formData.firstName}
+                          onChange={handleInputChange}
+                          maxLength={INPUT_LIMITS.firstName.max}
                           required
                         />
                       </div>
@@ -179,6 +222,9 @@ export default function ContactPage() {
                           id="lastName"
                           name="lastName"
                           placeholder="Doe"
+                          value={formData.lastName}
+                          onChange={handleInputChange}
+                          maxLength={INPUT_LIMITS.lastName.max}
                           required
                         />
                       </div>
@@ -192,6 +238,9 @@ export default function ContactPage() {
                           name="email"
                           type="email"
                           placeholder="john@example.com"
+                          value={formData.email}
+                          onChange={handleInputChange}
+                          maxLength={INPUT_LIMITS.email.max}
                           required
                         />
                       </div>
@@ -202,13 +251,21 @@ export default function ContactPage() {
                           name="phone"
                           type="tel"
                           placeholder="+1 234 567 890"
+                          value={formData.phone}
+                          onChange={handleInputChange}
+                          maxLength={INPUT_LIMITS.phone.max}
                         />
                       </div>
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="subject">Subject *</Label>
-                      <Select name="subject" required>
+                      <Select
+                        name="subject"
+                        value={formData.subject}
+                        onValueChange={(value) => setFormData(prev => ({ ...prev, subject: value }))}
+                        required
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Select a subject" />
                         </SelectTrigger>
@@ -228,7 +285,10 @@ export default function ContactPage() {
                         id="message"
                         name="message"
                         placeholder="Tell us how we can help you..."
+                        value={formData.message}
+                        onChange={handleInputChange}
                         rows={5}
+                        maxLength={INPUT_LIMITS.message.max}
                         required
                       />
                     </div>

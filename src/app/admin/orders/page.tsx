@@ -121,6 +121,8 @@ export default function AdminOrdersPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalOrders, setTotalOrders] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [isBulkUpdating, setIsBulkUpdating] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [stats, setStats] = useState({
     pending: 0,
     processing: 0,
@@ -237,6 +239,105 @@ export default function AdminOrdersPage() {
     return `$${parseFloat(price).toFixed(0)}`;
   };
 
+  // Bulk status update
+  const handleBulkStatusUpdate = async (newStatus: OrderStatus) => {
+    if (selectedOrders.length === 0) return;
+
+    setIsBulkUpdating(true);
+    try {
+      const response = await fetch("/api/orders/bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderIds: selectedOrders,
+          action: "updateStatus",
+          status: newStatus,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        toast.success(data.message);
+        setSelectedOrders([]);
+        fetchOrders();
+      } else {
+        toast.error("Failed to update orders");
+      }
+    } catch (error) {
+      console.error("Error bulk updating:", error);
+      toast.error("Failed to update orders");
+    } finally {
+      setIsBulkUpdating(false);
+    }
+  };
+
+  // Bulk delete
+  const handleBulkDelete = async () => {
+    if (selectedOrders.length === 0) return;
+
+    if (!confirm(`Are you sure you want to delete ${selectedOrders.length} order(s)? This action cannot be undone.`)) {
+      return;
+    }
+
+    setIsBulkUpdating(true);
+    try {
+      const response = await fetch("/api/orders/bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderIds: selectedOrders,
+          action: "delete",
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        toast.success(data.message);
+        setSelectedOrders([]);
+        fetchOrders();
+      } else {
+        toast.error("Failed to delete orders");
+      }
+    } catch (error) {
+      console.error("Error bulk deleting:", error);
+      toast.error("Failed to delete orders");
+    } finally {
+      setIsBulkUpdating(false);
+    }
+  };
+
+  // Export orders
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const params = new URLSearchParams();
+      if (statusFilter !== "all") params.append("status", statusFilter);
+      if (paymentFilter !== "all") params.append("paymentStatus", paymentFilter);
+
+      const response = await fetch(`/api/orders/export?${params}`);
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `orders-export-${new Date().toISOString().split("T")[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        toast.success("Orders exported successfully");
+      } else {
+        toast.error("Failed to export orders");
+      }
+    } catch (error) {
+      console.error("Error exporting:", error);
+      toast.error("Failed to export orders");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -252,8 +353,12 @@ export default function AdminOrdersPage() {
             <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
             Refresh
           </Button>
-          <Button variant="outline">
-            <Download className="mr-2 h-4 w-4" />
+          <Button variant="outline" onClick={handleExport} disabled={isExporting}>
+            {isExporting ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Download className="mr-2 h-4 w-4" />
+            )}
             Export
           </Button>
           <Button asChild>
@@ -343,15 +448,40 @@ export default function AdminOrdersPage() {
               {selectedOrders.length} order(s) selected
             </span>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleBulkStatusUpdate("PROCESSING")}
+                disabled={isBulkUpdating}
+              >
                 Mark as Processing
               </Button>
-              <Button variant="outline" size="sm">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleBulkStatusUpdate("COMPLETED")}
+                disabled={isBulkUpdating}
+              >
                 Mark as Completed
               </Button>
-              <Button variant="outline" size="sm">
-                <Mail className="mr-2 h-4 w-4" />
-                Send Email
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleBulkStatusUpdate("CANCELLED")}
+                disabled={isBulkUpdating}
+              >
+                Mark as Cancelled
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleBulkDelete}
+                disabled={isBulkUpdating}
+              >
+                {isBulkUpdating ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : null}
+                Delete Selected
               </Button>
             </div>
           </CardContent>

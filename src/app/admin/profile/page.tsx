@@ -9,6 +9,13 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
+import {
+  sanitizePhone,
+  sanitizeName,
+  sanitizeEmail,
+  sanitizeText,
+  INPUT_LIMITS
+} from "@/lib/utils";
 
 interface UserProfile {
   id: string;
@@ -247,9 +254,10 @@ export default function AdminProfilePage() {
                     id="name"
                     value={formData.name}
                     onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
+                      setFormData({ ...formData, name: sanitizeName(e.target.value, INPUT_LIMITS.name.max) })
                     }
                     placeholder="Enter your full name"
+                    maxLength={INPUT_LIMITS.name.max}
                   />
                 </div>
                 <div className="space-y-2">
@@ -259,9 +267,10 @@ export default function AdminProfilePage() {
                     type="email"
                     value={formData.email}
                     onChange={(e) =>
-                      setFormData({ ...formData, email: e.target.value })
+                      setFormData({ ...formData, email: sanitizeEmail(e.target.value) })
                     }
                     placeholder="your@email.com"
+                    maxLength={INPUT_LIMITS.email.max}
                     required
                   />
                 </div>
@@ -272,11 +281,13 @@ export default function AdminProfilePage() {
                   <Label htmlFor="phone">Phone</Label>
                   <Input
                     id="phone"
+                    type="tel"
                     value={formData.phone}
                     onChange={(e) =>
-                      setFormData({ ...formData, phone: e.target.value })
+                      setFormData({ ...formData, phone: sanitizePhone(e.target.value) })
                     }
-                    placeholder="+1 (555) 123-4567"
+                    placeholder="+1 234 567 890"
+                    maxLength={INPUT_LIMITS.phone.max}
                   />
                 </div>
                 <div className="space-y-2">
@@ -285,9 +296,10 @@ export default function AdminProfilePage() {
                     id="country"
                     value={formData.country}
                     onChange={(e) =>
-                      setFormData({ ...formData, country: e.target.value })
+                      setFormData({ ...formData, country: sanitizeText(e.target.value, INPUT_LIMITS.country.max) })
                     }
                     placeholder="United States"
+                    maxLength={INPUT_LIMITS.country.max}
                   />
                 </div>
               </div>

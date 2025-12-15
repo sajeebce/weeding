@@ -5,6 +5,12 @@ import { MessageCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  sanitizePhone,
+  sanitizeName,
+  sanitizeEmail,
+  INPUT_LIMITS
+} from "@/lib/utils";
 
 interface ChatPreFormProps {
   onSubmit: (data: { name: string; email: string; phone?: string }) => void;
@@ -76,10 +82,11 @@ export function ChatPreForm({
             placeholder="Your name"
             value={name}
             onChange={(e) => {
-              setName(e.target.value);
+              setName(sanitizeName(e.target.value, INPUT_LIMITS.name.max));
               setErrors((prev) => ({ ...prev, name: undefined }));
             }}
             disabled={isLoading}
+            maxLength={INPUT_LIMITS.name.max}
             className={errors.name ? "border-red-500" : ""}
           />
           {errors.name && (
@@ -95,10 +102,11 @@ export function ChatPreForm({
             placeholder="your@email.com"
             value={email}
             onChange={(e) => {
-              setEmail(e.target.value);
+              setEmail(sanitizeEmail(e.target.value));
               setErrors((prev) => ({ ...prev, email: undefined }));
             }}
             disabled={isLoading}
+            maxLength={INPUT_LIMITS.email.max}
             className={errors.email ? "border-red-500" : ""}
           />
           {errors.email && (
@@ -112,10 +120,11 @@ export function ChatPreForm({
             <Input
               id="chat-phone"
               type="tel"
-              placeholder="+1 (555) 123-4567"
+              placeholder="+1 234 567 890"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e) => setPhone(sanitizePhone(e.target.value))}
               disabled={isLoading}
+              maxLength={INPUT_LIMITS.phone.max}
             />
           </div>
         )}

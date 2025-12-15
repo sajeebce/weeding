@@ -1,6 +1,8 @@
 "use client";
 
-import { Bell, Menu, Search, LogOut } from "lucide-react";
+import Link from "next/link";
+import { Bell, Menu, Search, LogOut, User, CreditCard, HelpCircle } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLogout } from "@/hooks/use-logout";
@@ -20,12 +22,17 @@ interface DashboardHeaderProps {
 }
 
 export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
-  // Mock user data - replace with actual auth data
-  const user = {
-    name: "John Doe",
-    email: "john@example.com",
-    initials: "JD",
-  };
+  const { data: session } = useSession();
+
+  // Get user data from session
+  const userName = session?.user?.name || "User";
+  const userEmail = session?.user?.email || "";
+  const userInitials = userName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 
   // Customer role redirects to home page on logout
   const { logout } = useLogout({ userRole: "CUSTOMER" });
@@ -101,27 +108,42 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
             <Button variant="ghost" className="gap-2 px-2">
               <Avatar className="h-8 w-8">
                 <AvatarFallback className="bg-primary/10 text-primary">
-                  {user.initials}
+                  {userInitials}
                 </AvatarFallback>
               </Avatar>
               <span className="hidden text-sm font-medium md:inline-block">
-                {user.name}
+                {userName}
               </span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>
               <div className="flex flex-col">
-                <span>{user.name}</span>
+                <span>{userName}</span>
                 <span className="text-xs font-normal text-muted-foreground">
-                  {user.email}
+                  {userEmail}
                 </span>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Profile Settings</DropdownMenuItem>
-            <DropdownMenuItem>Billing</DropdownMenuItem>
-            <DropdownMenuItem>Help Center</DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/dashboard/profile" className="flex items-center gap-2 cursor-pointer">
+                <User className="h-4 w-4" />
+                Profile Settings
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/dashboard/billing" className="flex items-center gap-2 cursor-pointer">
+                <CreditCard className="h-4 w-4" />
+                Billing
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/dashboard/help" className="flex items-center gap-2 cursor-pointer">
+                <HelpCircle className="h-4 w-4" />
+                Help Center
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="text-destructive" onClick={logout}>
               <LogOut className="mr-2 h-4 w-4" />

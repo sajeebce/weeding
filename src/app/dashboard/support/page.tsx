@@ -39,7 +39,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface Ticket {
   id: string;
@@ -113,7 +113,6 @@ export default function SupportPage() {
   const [submitting, setSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const { toast } = useToast();
 
   // Form state
   const [formData, setFormData] = useState({
@@ -137,15 +136,11 @@ export default function SupportPage() {
       setTickets(data.tickets);
       setStats(data.stats);
     } catch {
-      toast({
-        title: "Error",
-        description: "Failed to load tickets",
-        variant: "destructive",
-      });
+      toast.error("Failed to load tickets");
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, statusFilter, toast]);
+  }, [searchQuery, statusFilter]);
 
   useEffect(() => {
     fetchTickets();
@@ -153,11 +148,7 @@ export default function SupportPage() {
 
   const handleCreateTicket = async () => {
     if (!formData.subject.trim() || !formData.message.trim()) {
-      toast({
-        title: "Validation Error",
-        description: "Subject and message are required",
-        variant: "destructive",
-      });
+      toast.error("Subject and message are required");
       return;
     }
 
@@ -180,20 +171,13 @@ export default function SupportPage() {
       }
 
       const data = await response.json();
-      toast({
-        title: "Ticket Created",
-        description: `Your ticket ${data.ticket.ticketNumber} has been created`,
-      });
+      toast.success(`Your ticket ${data.ticket.ticketNumber} has been created`);
 
       setNewTicketOpen(false);
       setFormData({ subject: "", category: "", priority: "MEDIUM", message: "" });
       fetchTickets();
     } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to create ticket",
-        variant: "destructive",
-      });
+      toast.error(error instanceof Error ? error.message : "Failed to create ticket");
     } finally {
       setSubmitting(false);
     }

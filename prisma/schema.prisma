@@ -20,10 +20,11 @@ model User {
   role          UserRole  @default(CUSTOMER)
   isActive      Boolean   @default(true)
 
-  accounts      Account[]
-  sessions      Session[]
-  orders        Order[]
-  documents     Document[]
+  accounts       Account[]
+  sessions       Session[]
+  orders         Order[]
+  documents      Document[]
+  paymentMethods PaymentMethod[]
 
   // Support ticket relations
   customerTickets   SupportTicket[]   @relation("CustomerTickets")
@@ -724,6 +725,35 @@ enum CouponType {
   FIXED
 }
 
+// ============ PAYMENT METHODS ============
+model PaymentMethod {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Card details (stored securely - only last 4 digits)
+  type            String   @default("card") // card, bank, paypal
+  brand           String?  // visa, mastercard, amex
+  last4           String   // last 4 digits of card
+  expiryMonth     Int?
+  expiryYear      Int?
+  cardholderName  String?
+
+  // Stripe/Payment provider ID
+  stripePaymentMethodId String?  @unique
+  stripeCustomerId      String?
+
+  // Status
+  isDefault       Boolean  @default(false)
+  isActive        Boolean  @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+  @@index([stripePaymentMethodId])
+}
+
 // ============ ACTIVITY LOG ============
 model ActivityLog {
   id          String   @id @default(cuid())
@@ -739,4 +769,27 @@ model ActivityLog {
   @@index([userId])
   @@index([entity])
   @@index([createdAt])
+}
+
+// ============ LEGAL PAGES ============
+model LegalPage {
+  id          String   @id @default(cuid())
+  slug        String   @unique // "terms", "privacy", "refund-policy", "disclaimer"
+  title       String   // "Terms of Service"
+  content     String   @db.Text // Rich HTML content (Sun Editor)
+  isActive    Boolean  @default(true)
+
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+
+  // Version tracking
+  version     Int      @default(1)
+  lastUpdatedBy String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([slug])
+  @@index([isActive])
 }
