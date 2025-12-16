@@ -876,22 +876,31 @@ function generateHeaderCSS(config: HeaderConfig): string {
 
 ---
 
-### Phase 6: Advanced Features (Day 11-12)
+### Phase 6: Import/Export & Version Control (Day 11-12)
 
-1. **Preset Templates**
-   - 5+ Header presets
-   - 5+ Footer presets
-   - One-click apply
-
-2. **Import/Export**
+1. **Import/Export System**
    - Export header/footer config as JSON
-   - Import from JSON
-   - Reset to defaults
+   - Import from JSON file
+   - Export as CSS file (generated styles)
+   - Bulk export (header + footer + menu + widgets)
+   - Reset to defaults with confirmation
 
-3. **Preview Mode**
-   - Live preview in admin
-   - Mobile preview toggle
-   - Dark mode preview
+2. **Configuration Versioning**
+   - Save configuration versions/snapshots
+   - Rollback to previous versions
+   - Compare versions (diff view)
+   - Auto-save drafts before publish
+   - Version history with timestamps
+
+3. **Multi-site Support (Future)**
+   - Clone configuration to other sites
+   - Sync settings across environments
+   - Configuration sharing via URL/code
+
+4. **Backup & Restore**
+   - Scheduled automatic backups
+   - One-click restore from backup
+   - Export backup to cloud storage (S3/R2)
 
 ---
 
