@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useMemo } from "react";
 import { useSession, signOut } from "next-auth/react";
 import {
   Menu,
@@ -27,6 +26,8 @@ import {
   User,
   LogOut,
   LayoutDashboard,
+  LucideIcon,
+  Folder,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -45,6 +46,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { useBusinessConfig } from "@/hooks/use-business-config";
+import { useHeaderConfig, getMegaMenuCategories, getMainNavigation } from "@/hooks/use-header-config";
 
 interface LoggedInUser {
   id: string;
@@ -53,74 +55,129 @@ interface LoggedInUser {
   role: string;
 }
 
-const serviceCategories = [
+// Icon mapping for dynamic icons from database
+const iconMap: Record<string, LucideIcon> = {
+  "building-2": Building2,
+  "building2": Building2,
+  "file-text": FileText,
+  "filetext": FileText,
+  "shopping-cart": ShoppingCart,
+  "shoppingcart": ShoppingCart,
+  "map-pin": MapPin,
+  "mappin": MapPin,
+  landmark: Landmark,
+  shield: Shield,
+  "badge-check": BadgeCheck,
+  "badgecheck": BadgeCheck,
+  stamp: Stamp,
+  calculator: Calculator,
+  "file-check": FileCheck,
+  "filecheck": FileCheck,
+  "scroll-text": ScrollText,
+  "scrolltext": ScrollText,
+  package: Package,
+  sparkles: Sparkles,
+  target: Target,
+  "alert-triangle": AlertTriangle,
+  "alerttriangle": AlertTriangle,
+  "book-open": BookOpen,
+  "bookopen": BookOpen,
+  folder: Folder,
+};
+
+function getIcon(iconName: string | undefined | null): LucideIcon {
+  if (!iconName) return Folder;
+  const normalizedName = iconName.toLowerCase().replace(/[-_\s]/g, "");
+  return iconMap[normalizedName] || iconMap[iconName.toLowerCase()] || Folder;
+}
+
+// Fallback hardcoded data (used when API fails or during loading)
+const fallbackServiceCategories = [
   {
     name: "Formation & Legal",
     description: "Start your US business",
-    icon: Building2,
+    icon: "building-2",
     services: [
-      { name: "LLC Formation", href: "/services/llc-formation", icon: Building2, popular: true },
-      { name: "EIN Application", href: "/services/ein-application", icon: FileText },
-      { name: "ITIN Application", href: "/services/itin-application", icon: FileCheck },
-      { name: "Trademark Registration", href: "/services/trademark-registration", icon: Stamp, popular: true },
-      { name: "DBA / Trade Name", href: "/services/dba-filing", icon: FileText },
-      { name: "Operating Agreement", href: "/services/operating-agreement", icon: ScrollText },
+      { name: "LLC Formation", href: "/services/llc-formation", popular: true },
+      { name: "EIN Application", href: "/services/ein-application" },
+      { name: "ITIN Application", href: "/services/itin-application" },
+      { name: "Trademark Registration", href: "/services/trademark-registration", popular: true },
+      { name: "DBA / Trade Name", href: "/services/dba-filing" },
+      { name: "Operating Agreement", href: "/services/operating-agreement" },
     ],
   },
   {
     name: "Compliance & Documents",
     description: "Keep your business compliant",
-    icon: Shield,
+    icon: "shield",
     services: [
-      { name: "Registered Agent", href: "/services/registered-agent", icon: Shield },
-      { name: "Annual Compliance", href: "/services/compliance", icon: FileCheck },
-      { name: "Virtual US Address", href: "/services/virtual-address", icon: MapPin },
-      { name: "Amendment Filing", href: "/services/amendment-filing", icon: FileText },
-      { name: "Certificate of Good Standing", href: "/services/certificate-good-standing", icon: FileCheck },
-      { name: "Apostille Service", href: "/services/apostille-service", icon: Stamp },
+      { name: "Registered Agent", href: "/services/registered-agent" },
+      { name: "Annual Compliance", href: "/services/compliance" },
+      { name: "Virtual US Address", href: "/services/virtual-address" },
+      { name: "Amendment Filing", href: "/services/amendment-filing" },
+      { name: "Certificate of Good Standing", href: "/services/certificate-good-standing" },
+      { name: "Apostille Service", href: "/services/apostille-service" },
     ],
   },
   {
     name: "Amazon Services",
     description: "Sell on Amazon with confidence",
-    icon: ShoppingCart,
+    icon: "shopping-cart",
     services: [
-      { name: "Amazon Seller Account", href: "/services/amazon-seller", icon: ShoppingCart, popular: true },
-      { name: "Brand Registry", href: "/services/brand-registry", icon: BadgeCheck, popular: true },
-      { name: "Category Ungating", href: "/services/category-ungating", icon: Package },
-      { name: "Listing Optimization", href: "/services/product-listing-optimization", icon: Target },
-      { name: "A+ Content Creation", href: "/services/a-plus-content", icon: Sparkles },
-      { name: "Account Reinstatement", href: "/services/account-reinstatement", icon: AlertTriangle },
+      { name: "Amazon Seller Account", href: "/services/amazon-seller", popular: true },
+      { name: "Brand Registry", href: "/services/brand-registry", popular: true },
+      { name: "Category Ungating", href: "/services/category-ungating" },
+      { name: "Listing Optimization", href: "/services/product-listing-optimization" },
+      { name: "A+ Content Creation", href: "/services/a-plus-content" },
+      { name: "Account Reinstatement", href: "/services/account-reinstatement" },
     ],
   },
   {
     name: "Tax & Finance",
     description: "Financial services",
-    icon: Calculator,
+    icon: "calculator",
     services: [
-      { name: "Business Banking", href: "/services/business-banking", icon: Landmark, popular: true },
-      { name: "Bookkeeping", href: "/services/bookkeeping", icon: BookOpen },
-      { name: "Tax Filing", href: "/services/tax-filing", icon: Calculator },
+      { name: "Business Banking", href: "/services/business-banking", popular: true },
+      { name: "Bookkeeping", href: "/services/bookkeeping" },
+      { name: "Tax Filing", href: "/services/tax-filing" },
     ],
   },
 ];
 
-const navigation = [
-  { name: "Home", href: "/" },
+const fallbackNavigation = [
+  { name: "Home", href: "/", hasDropdown: false },
   { name: "Services", href: "/services", hasDropdown: true },
-  { name: "Pricing", href: "/pricing" },
-  { name: "About", href: "/about" },
-  { name: "Blog", href: "/blog" },
-  { name: "Contact", href: "/contact" },
+  { name: "Pricing", href: "/pricing", hasDropdown: false },
+  { name: "About", href: "/about", hasDropdown: false },
+  { name: "Blog", href: "/blog", hasDropdown: false },
+  { name: "Contact", href: "/contact", hasDropdown: false },
 ];
 
 export function Header() {
-  const router = useRouter();
-  const { config } = useBusinessConfig();
+  const { config: businessConfig } = useBusinessConfig();
+  const { config: headerConfig } = useHeaderConfig();
   const { data: session, status } = useSession();
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
   const [user, setUser] = useState<LoggedInUser | null>(null);
+
+  // Process menu data from API
+  const navigation = useMemo(() => {
+    if (headerConfig?.menu && headerConfig.menu.length > 0) {
+      return getMainNavigation(headerConfig.menu);
+    }
+    return fallbackNavigation;
+  }, [headerConfig?.menu]);
+
+  const serviceCategories = useMemo(() => {
+    if (headerConfig?.menu && headerConfig.menu.length > 0) {
+      const categories = getMegaMenuCategories(headerConfig.menu);
+      if (categories.length > 0) {
+        return categories;
+      }
+    }
+    return fallbackServiceCategories;
+  }, [headerConfig?.menu]);
 
   // Check for logged-in user - prefer NextAuth session, fallback to localStorage
   useEffect(() => {
@@ -187,27 +244,51 @@ export function Header() {
     return user.role === "ADMIN" || user.role === "STAFF" ? "/admin" : "/dashboard";
   };
 
+  // Get styling from header config
+  const headerStyle = {
+    ...(headerConfig?.styling?.bgColor && { backgroundColor: headerConfig.styling.bgColor }),
+    ...(headerConfig?.styling?.textColor && { color: headerConfig.styling.textColor }),
+  };
+
+  const headerHeight = headerConfig?.height || 64;
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <nav className="container mx-auto flex h-16 items-center justify-between px-4">
+    <header
+      className={cn(
+        "w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50",
+        headerConfig?.sticky && "sticky top-0"
+      )}
+      style={headerStyle}
+    >
+      <nav
+        className="container mx-auto flex items-center justify-between px-4"
+        style={{ height: `${headerHeight}px` }}
+      >
         {/* Logo */}
         <Link href="/" className="flex items-center space-x-2">
-          {config.logo.url ? (
+          {businessConfig.logo.url ? (
             <Image
-              src={config.logo.url}
-              alt={config.name}
-              width={36}
-              height={36}
-              className="h-9 w-9 rounded-lg object-contain"
+              src={businessConfig.logo.url}
+              alt={businessConfig.name}
+              width={headerConfig?.logo?.maxHeight || 36}
+              height={headerConfig?.logo?.maxHeight || 36}
+              className="rounded-lg object-contain"
+              style={{ height: `${headerConfig?.logo?.maxHeight || 36}px`, width: "auto" }}
             />
           ) : (
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
+            <div
+              className="flex items-center justify-center rounded-lg bg-primary"
+              style={{
+                height: `${headerConfig?.logo?.maxHeight || 36}px`,
+                width: `${headerConfig?.logo?.maxHeight || 36}px`,
+              }}
+            >
               <span className="text-lg font-bold text-primary-foreground">
-                {config.logo.text || config.name.charAt(0)}
+                {businessConfig.logo.text || businessConfig.name.charAt(0)}
               </span>
             </div>
           )}
-          <span className="text-xl font-bold">{config.name}</span>
+          <span className="text-xl font-bold">{businessConfig.name}</span>
         </Link>
 
         {/* Desktop Navigation */}
@@ -257,33 +338,36 @@ export function Header() {
                     </div>
 
                     <div className="grid grid-cols-4 gap-6">
-                      {serviceCategories.map((category) => (
-                        <div key={category.name}>
-                          <div className="mb-3 flex items-center gap-2">
-                            <category.icon className="h-4 w-4 text-primary" />
-                            <h4 className="text-sm font-semibold text-foreground">
-                              {category.name}
-                            </h4>
+                      {serviceCategories.map((category) => {
+                        const CategoryIcon = getIcon(category.icon);
+                        return (
+                          <div key={category.name}>
+                            <div className="mb-3 flex items-center gap-2">
+                              <CategoryIcon className="h-4 w-4 text-primary" />
+                              <h4 className="text-sm font-semibold text-foreground">
+                                {category.name}
+                              </h4>
+                            </div>
+                            <ul className="space-y-1">
+                              {category.services.map((service) => (
+                                <li key={service.name}>
+                                  <Link
+                                    href={service.href}
+                                    className="group flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                                  >
+                                    <span className="flex-1">{service.name}</span>
+                                    {service.popular && (
+                                      <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+                                        Popular
+                                      </span>
+                                    )}
+                                  </Link>
+                                </li>
+                              ))}
+                            </ul>
                           </div>
-                          <ul className="space-y-1">
-                            {category.services.map((service) => (
-                              <li key={service.name}>
-                                <Link
-                                  href={service.href}
-                                  className="group flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                                >
-                                  <span className="flex-1">{service.name}</span>
-                                  {service.popular && (
-                                    <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
-                                      Popular
-                                    </span>
-                                  )}
-                                </Link>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
 
                     {/* Quick Links */}
@@ -359,12 +443,26 @@ export function Header() {
             </DropdownMenu>
           ) : (
             <>
-              <Button variant="ghost" asChild>
-                <Link href="/login">Sign In</Link>
-              </Button>
-              <Button asChild>
-                <Link href="/services/llc-formation">Get Started</Link>
-              </Button>
+              {headerConfig?.auth?.showButtons && (
+                <Button variant="ghost" asChild>
+                  <Link href="/login">{headerConfig?.auth?.loginText || "Sign In"}</Link>
+                </Button>
+              )}
+              {headerConfig?.cta && headerConfig.cta.length > 0 ? (
+                headerConfig.cta.map((cta, index) => (
+                  <Button
+                    key={index}
+                    variant={cta.variant === "outline" ? "outline" : "default"}
+                    asChild
+                  >
+                    <Link href={cta.url}>{cta.text}</Link>
+                  </Button>
+                ))
+              ) : (
+                <Button asChild>
+                  <Link href="/services/llc-formation">Get Started</Link>
+                </Button>
+              )}
             </>
           )}
         </div>
@@ -381,10 +479,10 @@ export function Header() {
             <div className="flex flex-col gap-4 py-4">
               <div className="flex items-center justify-between">
                 <Link href="/" className="flex items-center space-x-2">
-                  {config.logo.url ? (
+                  {businessConfig.logo.url ? (
                     <Image
-                      src={config.logo.url}
-                      alt={config.name}
+                      src={businessConfig.logo.url}
+                      alt={businessConfig.name}
                       width={32}
                       height={32}
                       className="h-8 w-8 rounded-lg object-contain"
@@ -392,111 +490,86 @@ export function Header() {
                   ) : (
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
                       <span className="font-bold text-primary-foreground">
-                        {config.logo.text || config.name.charAt(0)}
+                        {businessConfig.logo.text || businessConfig.name.charAt(0)}
                       </span>
                     </div>
                   )}
-                  <span className="text-lg font-bold">{config.name}</span>
+                  <span className="text-lg font-bold">{businessConfig.name}</span>
                 </Link>
               </div>
 
               <div className="mt-6 flex flex-col gap-1">
-                {/* Home */}
-                <SheetClose asChild>
-                  <Link
-                    href="/"
-                    className="block rounded-md px-3 py-2 text-base font-medium text-foreground hover:bg-muted"
-                  >
-                    Home
-                  </Link>
-                </SheetClose>
-
-                {/* Services Accordion */}
-                <div>
-                  <button
-                    onClick={() => setMobileServicesOpen(!mobileServicesOpen)}
-                    className="flex w-full items-center justify-between rounded-md px-3 py-2 text-base font-medium text-foreground hover:bg-muted"
-                  >
-                    Services
-                    <ChevronDown
-                      className={cn(
-                        "h-4 w-4 transition-transform",
-                        mobileServicesOpen && "rotate-180"
-                      )}
-                    />
-                  </button>
-
-                  {mobileServicesOpen && (
-                    <div className="ml-2 mt-2 space-y-4 border-l-2 border-muted pl-4">
-                      {serviceCategories.map((category) => (
-                        <div key={category.name}>
-                          <div className="mb-2 flex items-center gap-2">
-                            <category.icon className="h-4 w-4 text-primary" />
-                            <span className="text-sm font-semibold text-foreground">
-                              {category.name}
-                            </span>
-                          </div>
-                          <ul className="space-y-1">
-                            {category.services.map((service) => (
-                              <li key={service.name}>
-                                <SheetClose asChild>
-                                  <Link
-                                    href={service.href}
-                                    className="block rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
-                                  >
-                                    {service.name}
-                                  </Link>
-                                </SheetClose>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      ))}
-                      <SheetClose asChild>
-                        <Link
-                          href="/services"
-                          className="block rounded-md px-2 py-2 text-sm font-medium text-primary hover:bg-muted"
+                {navigation.map((item) => {
+                  if (item.hasDropdown) {
+                    return (
+                      <div key={item.name}>
+                        <button
+                          onClick={() => setMobileServicesOpen(!mobileServicesOpen)}
+                          className="flex w-full items-center justify-between rounded-md px-3 py-2 text-base font-medium text-foreground hover:bg-muted"
                         >
-                          View All Services →
-                        </Link>
-                      </SheetClose>
-                    </div>
-                  )}
-                </div>
+                          {item.name}
+                          <ChevronDown
+                            className={cn(
+                              "h-4 w-4 transition-transform",
+                              mobileServicesOpen && "rotate-180"
+                            )}
+                          />
+                        </button>
 
-                {/* Other Navigation Items */}
-                <SheetClose asChild>
-                  <Link
-                    href="/pricing"
-                    className="block rounded-md px-3 py-2 text-base font-medium text-foreground hover:bg-muted"
-                  >
-                    Pricing
-                  </Link>
-                </SheetClose>
-                <SheetClose asChild>
-                  <Link
-                    href="/about"
-                    className="block rounded-md px-3 py-2 text-base font-medium text-foreground hover:bg-muted"
-                  >
-                    About
-                  </Link>
-                </SheetClose>
-                <SheetClose asChild>
-                  <Link
-                    href="/blog"
-                    className="block rounded-md px-3 py-2 text-base font-medium text-foreground hover:bg-muted"
-                  >
-                    Blog
-                  </Link>
-                </SheetClose>
-                <SheetClose asChild>
-                  <Link
-                    href="/contact"
-                    className="block rounded-md px-3 py-2 text-base font-medium text-foreground hover:bg-muted"
-                  >
-                    Contact
-                  </Link>
-                </SheetClose>
+                        {mobileServicesOpen && (
+                          <div className="ml-2 mt-2 space-y-4 border-l-2 border-muted pl-4">
+                            {serviceCategories.map((category) => {
+                              const CategoryIcon = getIcon(category.icon);
+                              return (
+                                <div key={category.name}>
+                                  <div className="mb-2 flex items-center gap-2">
+                                    <CategoryIcon className="h-4 w-4 text-primary" />
+                                    <span className="text-sm font-semibold text-foreground">
+                                      {category.name}
+                                    </span>
+                                  </div>
+                                  <ul className="space-y-1">
+                                    {category.services.map((service) => (
+                                      <li key={service.name}>
+                                        <SheetClose asChild>
+                                          <Link
+                                            href={service.href}
+                                            className="block rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                                          >
+                                            {service.name}
+                                          </Link>
+                                        </SheetClose>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              );
+                            })}
+                            <SheetClose asChild>
+                              <Link
+                                href="/services"
+                                className="block rounded-md px-2 py-2 text-sm font-medium text-primary hover:bg-muted"
+                              >
+                                View All Services →
+                              </Link>
+                            </SheetClose>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <SheetClose key={item.name} asChild>
+                      <Link
+                        href={item.href}
+                        className="block rounded-md px-3 py-2 text-base font-medium text-foreground hover:bg-muted"
+                      >
+                        {item.name}
+                      </Link>
+                    </SheetClose>
+                  );
+                })}
               </div>
 
               <div className="mt-6 flex flex-col gap-2">
@@ -541,12 +614,14 @@ export function Header() {
                   <>
                     <SheetClose asChild>
                       <Button variant="outline" asChild className="w-full">
-                        <Link href="/login">Sign In</Link>
+                        <Link href="/login">{headerConfig?.auth?.loginText || "Sign In"}</Link>
                       </Button>
                     </SheetClose>
                     <SheetClose asChild>
                       <Button asChild className="w-full">
-                        <Link href="/services/llc-formation">Get Started</Link>
+                        <Link href={headerConfig?.cta?.[0]?.url || "/services/llc-formation"}>
+                          {headerConfig?.cta?.[0]?.text || "Get Started"}
+                        </Link>
                       </Button>
                     </SheetClose>
                   </>

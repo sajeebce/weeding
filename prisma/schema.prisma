@@ -1062,3 +1062,230 @@ enum SubmissionStatus {
   REJECTED
   NEEDS_REVISION
 }
+
+// ============================================
+// DYNAMIC HEADER & FOOTER BUILDER
+// ============================================
+
+// Header Configuration
+model HeaderConfig {
+  id              String       @id @default(cuid())
+  name            String       @default("Default Header")
+  isActive        Boolean      @default(true)
+
+  // Layout Settings
+  layout          HeaderLayout @default(DEFAULT)
+  sticky          Boolean      @default(true)
+  transparent     Boolean      @default(false)
+
+  // Top Bar
+  topBarEnabled   Boolean      @default(false)
+  topBarContent   Json?        // { text, links, showSocial }
+  topBarBgColor   String?
+  topBarTextColor String?
+
+  // Logo Settings
+  logoPosition    LogoPosition @default(LEFT)
+  logoMaxHeight   Int          @default(40)
+
+  // CTA Buttons
+  ctaButtons      Json?        // [{ text, url, variant, icon }]
+
+  // Auth Buttons
+  showAuthButtons Boolean      @default(true)
+  loginText       String       @default("Sign In")
+  registerText    String       @default("Get Started")
+  registerUrl     String       @default("/services/llc-formation")
+
+  // Search
+  searchEnabled   Boolean      @default(false)
+
+  // Mobile Settings
+  mobileBreakpoint Int         @default(1024)
+
+  // Styling
+  bgColor         String?
+  textColor       String?
+  accentColor     String?
+  borderColor     String?
+  height          Int          @default(64)
+
+  // Relations
+  menuItems       MenuItem[]
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+}
+
+enum HeaderLayout {
+  DEFAULT       // Logo left, Nav center, CTA right
+  CENTERED      // Logo center, Nav below
+  SPLIT         // Logo center, Nav split left/right
+  MINIMAL       // Logo left, Hamburger right
+  MEGA          // Full mega menu style
+}
+
+enum LogoPosition {
+  LEFT
+  CENTER
+  RIGHT
+}
+
+// Navigation Menu Items (for both Header and Footer)
+model MenuItem {
+  id              String     @id @default(cuid())
+
+  // Basic Info
+  label           String
+  url             String?
+  target          String     @default("_self") // _self, _blank
+  icon            String?    // Lucide icon name
+
+  // Hierarchy
+  parentId        String?
+  parent          MenuItem?  @relation("MenuHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children        MenuItem[] @relation("MenuHierarchy")
+
+  // Mega Menu Content (for parent items)
+  isMegaMenu      Boolean    @default(false)
+  megaMenuColumns Int?       @default(4)
+  megaMenuContent Json?      // Custom content blocks
+
+  // Visibility
+  isVisible       Boolean    @default(true)
+  visibleOnMobile Boolean    @default(true)
+  requiredRole    String?    // null = public, CUSTOMER, ADMIN
+
+  // Badge/Label
+  badge           String?    // "New", "Popular", "Sale"
+  badgeColor      String?
+
+  // Category grouping (for mega menu)
+  categoryName    String?    // "Formation & Legal"
+  categoryIcon    String?    // "building-2"
+  categoryDesc    String?    // "Start your US business"
+
+  // Ordering
+  sortOrder       Int        @default(0)
+
+  // Relations
+  headerId        String?
+  header          HeaderConfig? @relation(fields: [headerId], references: [id], onDelete: Cascade)
+
+  footerWidgetId  String?
+  footerWidget    FooterWidget? @relation(fields: [footerWidgetId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@index([parentId])
+  @@index([headerId])
+  @@index([footerWidgetId])
+  @@index([sortOrder])
+}
+
+// Footer Configuration
+model FooterConfig {
+  id                   String       @id @default(cuid())
+  name                 String       @default("Default Footer")
+  isActive             Boolean      @default(true)
+
+  // Layout
+  layout               FooterLayout @default(MULTI_COLUMN)
+  columns              Int          @default(4)
+
+  // Newsletter
+  newsletterEnabled    Boolean      @default(true)
+  newsletterTitle      String       @default("Subscribe to our newsletter")
+  newsletterSubtitle   String?
+  newsletterProvider   String?      // mailchimp, convertkit, custom
+  newsletterFormAction String?
+
+  // Social Links (override from business config)
+  showSocialLinks      Boolean      @default(true)
+  socialPosition       String       @default("brand") // brand, bottom, separate-column
+
+  // Contact Info
+  showContactInfo      Boolean      @default(true)
+  contactPosition      String       @default("brand") // brand, separate-column
+
+  // Bottom Bar
+  bottomBarEnabled     Boolean      @default(true)
+  copyrightText        String?
+  showDisclaimer       Boolean      @default(true)
+  disclaimerText       String?
+  bottomLinks          Json?        // [{ label, url }]
+
+  // Trust Badges
+  showTrustBadges      Boolean      @default(false)
+  trustBadges          Json?        // [{ image, alt, url }]
+
+  // Styling
+  bgColor              String?
+  textColor            String?
+  accentColor          String?
+  borderColor          String?
+
+  // Spacing
+  paddingTop           Int          @default(48)
+  paddingBottom        Int          @default(32)
+
+  // Relations
+  widgets              FooterWidget[]
+
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+}
+
+enum FooterLayout {
+  MULTI_COLUMN   // Traditional multi-column
+  CENTERED       // Centered stacked
+  MINIMAL        // Just copyright and links
+  MEGA           // Full sitemap style
+}
+
+// Footer Widgets
+model FooterWidget {
+  id              String           @id @default(cuid())
+  footerId        String
+  footer          FooterConfig     @relation(fields: [footerId], references: [id], onDelete: Cascade)
+
+  // Widget Type
+  type            FooterWidgetType
+
+  // Basic Settings
+  title           String?
+  showTitle       Boolean          @default(true)
+
+  // Content based on type
+  content         Json?            // Varies by widget type
+
+  // Position
+  column          Int              @default(1) // 1-6
+  sortOrder       Int              @default(0)
+
+  // Styling
+  customClass     String?
+
+  // Relations (for LINKS type)
+  menuItems       MenuItem[]
+
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([footerId])
+  @@index([column, sortOrder])
+}
+
+enum FooterWidgetType {
+  BRAND           // Logo + description
+  LINKS           // Link list
+  CONTACT         // Contact info
+  NEWSLETTER      // Email subscription
+  SOCIAL          // Social icons
+  TEXT            // Custom text/HTML
+  RECENT_POSTS    // Latest blog posts
+  SERVICES        // Services list (auto-populated)
+  STATES          // Popular states (auto-populated)
+  CUSTOM_HTML     // Raw HTML
+}

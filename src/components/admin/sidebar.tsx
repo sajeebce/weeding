@@ -19,6 +19,7 @@ import {
   Receipt,
   Percent,
   UserCog,
+  Palette,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useBusinessConfig } from "@/hooks/use-business-config";
@@ -108,6 +109,15 @@ const navItems: NavItem[] = [
     title: "Users",
     href: "/admin/users",
     icon: UserCog,
+  },
+  {
+    title: "Appearance",
+    icon: Palette,
+    children: [
+      { title: "Header Builder", href: "/admin/appearance/header" },
+      { title: "Menu Builder", href: "/admin/appearance/header/menu" },
+      { title: "Footer Builder", href: "/admin/appearance/footer" },
+    ],
   },
   {
     title: "Settings",
