@@ -89,9 +89,9 @@ export default function LegalPagesAdmin() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Legal Pages</h1>
+          <h1 className="text-2xl font-bold">Pages</h1>
           <p className="text-muted-foreground">
-            Manage terms of service, privacy policy, and other legal content
+            Manage website pages and content
           </p>
         </div>
         <Link href="/admin/content/legal/new">
@@ -106,9 +106,9 @@ export default function LegalPagesAdmin() {
       {missingPages.length > 0 && (
         <Card className="border-amber-200 bg-amber-50">
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg text-amber-800">Missing Legal Pages</CardTitle>
+            <CardTitle className="text-lg text-amber-800">Recommended Pages</CardTitle>
             <CardDescription className="text-amber-700">
-              The following recommended legal pages haven&apos;t been created yet:
+              The following recommended pages haven&apos;t been created yet:
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -129,20 +129,20 @@ export default function LegalPagesAdmin() {
       {/* Pages Table */}
       <Card>
         <CardHeader>
-          <CardTitle>All Legal Pages</CardTitle>
+          <CardTitle>All Pages</CardTitle>
         </CardHeader>
         <CardContent>
           {pages.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <FileText className="h-12 w-12 text-muted-foreground/50" />
-              <h3 className="mt-4 text-lg font-medium">No legal pages yet</h3>
+              <h3 className="mt-4 text-lg font-medium">No pages yet</h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                Create your first legal page to get started
+                Create your first page to get started
               </p>
               <Link href="/admin/content/legal/new" className="mt-4">
                 <Button>
                   <Plus className="mr-2 h-4 w-4" />
-                  Create Legal Page
+                  Create Page
                 </Button>
               </Link>
             </div>

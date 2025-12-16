@@ -1,10 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Enable React Compiler (Next.js 15 syntax)
-  experimental: {
-    reactCompiler: true,
-  },
+  // Enable React Compiler (Next.js 16 syntax)
+  reactCompiler: true,
 
   // Standalone output for VPS deployment
   output: "standalone",

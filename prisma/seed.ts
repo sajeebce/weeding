@@ -2016,6 +2016,340 @@ async function main() {
     console.log(`  ✓ ${page.title}`);
   }
 
+  // Create Header Configuration
+  console.log("\n🎨 Creating header configuration...");
+
+  // First, clean up existing header config
+  await prisma.menuItem.deleteMany({ where: { headerId: { not: null } } });
+  await prisma.headerConfig.deleteMany({});
+
+  const headerConfig = await prisma.headerConfig.create({
+    data: {
+      name: "Default Header",
+      isActive: true,
+      layout: "DEFAULT",
+      sticky: true,
+      transparent: false,
+      topBarEnabled: false,
+      logoPosition: "LEFT",
+      logoMaxHeight: 36,
+      ctaButtons: JSON.stringify([
+        { text: "Get Started", url: "/services/llc-formation", variant: "primary" }
+      ]),
+      showAuthButtons: true,
+      loginText: "Sign In",
+      registerText: "Get Started",
+      registerUrl: "/services/llc-formation",
+      searchEnabled: false,
+      mobileBreakpoint: 1024,
+      height: 64,
+    },
+  });
+  console.log("  ✓ Header config created");
+
+  // Create menu items for header
+  const menuItems = [
+    { label: "Home", url: "/", sortOrder: 0 },
+    {
+      label: "Services",
+      url: "/services",
+      sortOrder: 1,
+      isMegaMenu: true,
+      megaMenuColumns: 4,
+    },
+    { label: "Pricing", url: "/pricing", sortOrder: 2 },
+    { label: "About", url: "/about", sortOrder: 3 },
+    { label: "Blog", url: "/blog", sortOrder: 4 },
+    { label: "Contact", url: "/contact", sortOrder: 5 },
+  ];
+
+  for (const item of menuItems) {
+    const menuItem = await prisma.menuItem.create({
+      data: {
+        ...item,
+        headerId: headerConfig.id,
+        target: "_self",
+        isVisible: true,
+        visibleOnMobile: true,
+      },
+    });
+
+    // Add mega menu categories for Services
+    if (item.isMegaMenu) {
+      const categories = [
+        {
+          categoryName: "Formation & Legal",
+          categoryIcon: "building-2",
+          categoryDesc: "Start your US business",
+          children: [
+            { label: "LLC Formation", url: "/services/llc-formation", badge: "Popular" },
+            { label: "EIN Application", url: "/services/ein-application" },
+            { label: "ITIN Application", url: "/services/itin-application" },
+            { label: "Trademark Registration", url: "/services/trademark-registration", badge: "Popular" },
+            { label: "DBA / Trade Name", url: "/services/dba-filing" },
+            { label: "Operating Agreement", url: "/services/operating-agreement" },
+          ],
+        },
+        {
+          categoryName: "Compliance & Documents",
+          categoryIcon: "shield",
+          categoryDesc: "Keep your business compliant",
+          children: [
+            { label: "Registered Agent", url: "/services/registered-agent" },
+            { label: "Annual Compliance", url: "/services/annual-report" },
+            { label: "Virtual US Address", url: "/services/virtual-address" },
+            { label: "Amendment Filing", url: "/services/amendment-filing" },
+            { label: "Certificate of Good Standing", url: "/services/certificate-good-standing" },
+            { label: "Apostille Service", url: "/services/apostille-service" },
+          ],
+        },
+        {
+          categoryName: "Amazon Services",
+          categoryIcon: "shopping-cart",
+          categoryDesc: "Sell on Amazon with confidence",
+          children: [
+            { label: "Amazon Seller Account", url: "/services/amazon-seller", badge: "Popular" },
+            { label: "Brand Registry", url: "/services/brand-registry", badge: "Popular" },
+            { label: "Category Ungating", url: "/services/category-ungating" },
+            { label: "Listing Optimization", url: "/services/listing-optimization" },
+            { label: "A+ Content Creation", url: "/services/a-plus-content" },
+            { label: "Account Reinstatement", url: "/services/account-reinstatement" },
+          ],
+        },
+        {
+          categoryName: "Tax & Finance",
+          categoryIcon: "calculator",
+          categoryDesc: "Financial services",
+          children: [
+            { label: "Business Banking", url: "/services/business-banking", badge: "Popular" },
+            { label: "Bookkeeping", url: "/services/bookkeeping" },
+            { label: "Tax Filing", url: "/services/tax-filing" },
+          ],
+        },
+      ];
+
+      for (let i = 0; i < categories.length; i++) {
+        const cat = categories[i];
+        const categoryMenuItem = await prisma.menuItem.create({
+          data: {
+            label: cat.categoryName,
+            url: "#",
+            headerId: headerConfig.id,
+            parentId: menuItem.id,
+            categoryName: cat.categoryName,
+            categoryIcon: cat.categoryIcon,
+            categoryDesc: cat.categoryDesc,
+            sortOrder: i,
+            target: "_self",
+            isVisible: true,
+            visibleOnMobile: true,
+          },
+        });
+
+        // Add children services
+        for (let j = 0; j < cat.children.length; j++) {
+          const child = cat.children[j];
+          await prisma.menuItem.create({
+            data: {
+              label: child.label,
+              url: child.url,
+              headerId: headerConfig.id,
+              parentId: categoryMenuItem.id,
+              badge: child.badge || null,
+              sortOrder: j,
+              target: "_self",
+              isVisible: true,
+              visibleOnMobile: true,
+            },
+          });
+        }
+      }
+    }
+  }
+  console.log("  ✓ Header menu items created");
+
+  // Create Footer Configuration
+  console.log("\n🦶 Creating footer configuration...");
+
+  // Clean up existing footer config
+  await prisma.menuItem.deleteMany({ where: { footerWidgetId: { not: null } } });
+  await prisma.footerWidget.deleteMany({});
+  await prisma.footerConfig.deleteMany({});
+
+  const footerConfig = await prisma.footerConfig.create({
+    data: {
+      name: "Default Footer",
+      isActive: true,
+      layout: "MULTI_COLUMN",
+      columns: 6,
+      newsletterEnabled: true,
+      newsletterTitle: "Subscribe to our newsletter",
+      newsletterSubtitle: "Get updates on new services and offers",
+      showSocialLinks: true,
+      socialPosition: "brand",
+      showContactInfo: true,
+      contactPosition: "brand",
+      bottomBarEnabled: true,
+      showDisclaimer: true,
+      disclaimerText: "LLCPad is not a law firm and does not provide legal advice. The information provided is for general informational purposes only.",
+      showTrustBadges: false,
+      paddingTop: 48,
+      paddingBottom: 32,
+    },
+  });
+  console.log("  ✓ Footer config created");
+
+  // Create footer widgets
+  // Widget 1: Brand (column 1-2)
+  await prisma.footerWidget.create({
+    data: {
+      footerId: footerConfig.id,
+      type: "BRAND",
+      title: "LLCPad",
+      showTitle: false,
+      column: 1,
+      sortOrder: 0,
+    },
+  });
+
+  // Widget 2: Services (column 3)
+  const servicesWidget = await prisma.footerWidget.create({
+    data: {
+      footerId: footerConfig.id,
+      type: "LINKS",
+      title: "Services",
+      showTitle: true,
+      column: 3,
+      sortOrder: 0,
+    },
+  });
+
+  const serviceLinks = [
+    { label: "LLC Formation", url: "/services/llc-formation" },
+    { label: "EIN Application", url: "/services/ein-application" },
+    { label: "Amazon Seller Account", url: "/services/amazon-seller" },
+    { label: "Registered Agent", url: "/services/registered-agent" },
+    { label: "Virtual Address", url: "/services/virtual-address" },
+    { label: "Business Banking", url: "/services/business-banking" },
+  ];
+
+  for (let i = 0; i < serviceLinks.length; i++) {
+    await prisma.menuItem.create({
+      data: {
+        label: serviceLinks[i].label,
+        url: serviceLinks[i].url,
+        footerWidgetId: servicesWidget.id,
+        sortOrder: i,
+        target: "_self",
+        isVisible: true,
+        visibleOnMobile: true,
+      },
+    });
+  }
+
+  // Widget 3: Company (column 4)
+  const companyWidget = await prisma.footerWidget.create({
+    data: {
+      footerId: footerConfig.id,
+      type: "LINKS",
+      title: "Company",
+      showTitle: true,
+      column: 4,
+      sortOrder: 0,
+    },
+  });
+
+  const companyLinks = [
+    { label: "About Us", url: "/about" },
+    { label: "Pricing", url: "/pricing" },
+    { label: "Blog", url: "/blog" },
+    { label: "FAQs", url: "/faq" },
+    { label: "Contact", url: "/contact" },
+    { label: "Testimonials", url: "/testimonials" },
+  ];
+
+  for (let i = 0; i < companyLinks.length; i++) {
+    await prisma.menuItem.create({
+      data: {
+        label: companyLinks[i].label,
+        url: companyLinks[i].url,
+        footerWidgetId: companyWidget.id,
+        sortOrder: i,
+        target: "_self",
+        isVisible: true,
+        visibleOnMobile: true,
+      },
+    });
+  }
+
+  // Widget 4: Popular States (column 5)
+  const statesWidget = await prisma.footerWidget.create({
+    data: {
+      footerId: footerConfig.id,
+      type: "LINKS",
+      title: "Popular States",
+      showTitle: true,
+      column: 5,
+      sortOrder: 0,
+    },
+  });
+
+  const stateLinks = [
+    { label: "Wyoming LLC", url: "/llc/wyoming" },
+    { label: "Delaware LLC", url: "/llc/delaware" },
+    { label: "New Mexico LLC", url: "/llc/new-mexico" },
+    { label: "Texas LLC", url: "/llc/texas" },
+    { label: "Florida LLC", url: "/llc/florida" },
+  ];
+
+  for (let i = 0; i < stateLinks.length; i++) {
+    await prisma.menuItem.create({
+      data: {
+        label: stateLinks[i].label,
+        url: stateLinks[i].url,
+        footerWidgetId: statesWidget.id,
+        sortOrder: i,
+        target: "_self",
+        isVisible: true,
+        visibleOnMobile: true,
+      },
+    });
+  }
+
+  // Widget 5: Legal (column 6)
+  const legalWidget = await prisma.footerWidget.create({
+    data: {
+      footerId: footerConfig.id,
+      type: "LINKS",
+      title: "Legal",
+      showTitle: true,
+      column: 6,
+      sortOrder: 0,
+    },
+  });
+
+  const legalLinks = [
+    { label: "Privacy Policy", url: "/privacy" },
+    { label: "Terms of Service", url: "/terms" },
+    { label: "Refund Policy", url: "/refund-policy" },
+    { label: "Disclaimer", url: "/disclaimer" },
+  ];
+
+  for (let i = 0; i < legalLinks.length; i++) {
+    await prisma.menuItem.create({
+      data: {
+        label: legalLinks[i].label,
+        url: legalLinks[i].url,
+        footerWidgetId: legalWidget.id,
+        sortOrder: i,
+        target: "_self",
+        isVisible: true,
+        visibleOnMobile: true,
+      },
+    });
+  }
+  console.log("  ✓ Footer widgets created");
+
   console.log("\n✅ Seeding completed!");
 }
 

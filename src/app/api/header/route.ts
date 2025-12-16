@@ -45,6 +45,8 @@ export async function GET() {
       url: item.url,
       target: item.target,
       icon: item.icon,
+      isVisible: item.isVisible,
+      parentId: item.parentId,
       isMegaMenu: item.isMegaMenu,
       megaMenuColumns: item.megaMenuColumns,
       badge: item.badge,

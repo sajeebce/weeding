@@ -29,7 +29,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import type { HeaderConfig, HeaderLayout, LogoPosition, CTAButton } from "@/lib/header-footer/types";
+import type { HeaderConfig, HeaderLayout, CTAButton } from "@/lib/header-footer/types";
 
 const layoutOptions: { value: HeaderLayout; label: string; description: string }[] = [
   { value: "DEFAULT", label: "Default", description: "Logo left, Nav center, CTA right" },
@@ -39,11 +39,7 @@ const layoutOptions: { value: HeaderLayout; label: string; description: string }
   { value: "MEGA", label: "Mega", description: "Full mega menu style" },
 ];
 
-const logoPositions: { value: LogoPosition; label: string }[] = [
-  { value: "LEFT", label: "Left" },
-  { value: "CENTER", label: "Center" },
-  { value: "RIGHT", label: "Right" },
-];
+// Logo position is now determined by layout choice, not a separate setting
 
 export default function HeaderBuilderPage() {
   const [loading, setLoading] = useState(true);
@@ -58,7 +54,6 @@ export default function HeaderBuilderPage() {
     sticky: true,
     transparent: false,
     topBarEnabled: false,
-    logoPosition: "LEFT" as LogoPosition,
     logoMaxHeight: 40,
     showAuthButtons: true,
     loginText: "Sign In",
@@ -91,7 +86,6 @@ export default function HeaderBuilderPage() {
           sticky: activeHeader.sticky,
           transparent: activeHeader.transparent,
           topBarEnabled: activeHeader.topBarEnabled,
-          logoPosition: activeHeader.logoPosition,
           logoMaxHeight: activeHeader.logoMaxHeight,
           showAuthButtons: activeHeader.showAuthButtons,
           loginText: activeHeader.loginText,
@@ -232,63 +226,211 @@ export default function HeaderBuilderPage() {
               "mx-auto overflow-hidden rounded-lg border bg-background transition-all",
               previewMode === "mobile" ? "max-w-[375px]" : "w-full"
             )}
+            style={{
+              backgroundColor: formData.bgColor || undefined,
+              color: formData.textColor || undefined,
+            }}
           >
-            {/* Preview Header */}
-            <div
-              className="flex items-center justify-between px-4"
-              style={{
-                height: `${formData.height}px`,
-                backgroundColor: formData.bgColor || undefined,
-                color: formData.textColor || undefined,
-              }}
-            >
-              {/* Logo Area */}
+            {/* Layout-specific Preview */}
+            {formData.layout === "DEFAULT" && (
+              /* DEFAULT: Logo left, Nav center, CTA right */
               <div
-                className={cn(
-                  "flex items-center gap-2",
-                  formData.logoPosition === "CENTER" && "absolute left-1/2 -translate-x-1/2",
-                  formData.logoPosition === "RIGHT" && "order-last"
-                )}
+                className="flex items-center justify-between px-4"
+                style={{ height: `${formData.height}px` }}
               >
-                <div
-                  className="rounded bg-primary/20 px-3 py-1.5 font-bold text-primary"
-                  style={{ height: `${formData.logoMaxHeight}px` }}
-                >
-                  LP
+                <div className="flex items-center gap-2">
+                  <div
+                    className="flex items-center justify-center rounded bg-primary/20 px-3 font-bold text-primary"
+                    style={{ height: `${formData.logoMaxHeight}px` }}
+                  >
+                    LP
+                  </div>
+                </div>
+                {previewMode === "desktop" && (
+                  <nav className="flex items-center gap-4 text-sm">
+                    <span className="cursor-pointer hover:text-primary">Home</span>
+                    <span className="cursor-pointer hover:text-primary">Services</span>
+                    <span className="cursor-pointer hover:text-primary">Pricing</span>
+                    <span className="cursor-pointer hover:text-primary">About</span>
+                  </nav>
+                )}
+                <div className="flex items-center gap-2">
+                  {formData.showAuthButtons && previewMode === "desktop" && (
+                    <Button variant="ghost" size="sm">{formData.loginText}</Button>
+                  )}
+                  {formData.ctaButtons.slice(0, 1).map((btn, i) => (
+                    <Button key={i} size="sm" variant={btn.variant === "outline" ? "outline" : "default"}>
+                      {btn.text}
+                    </Button>
+                  ))}
+                  {formData.ctaButtons.length === 0 && (
+                    <Button size="sm">Get Started</Button>
+                  )}
+                  {previewMode === "mobile" && <Menu className="h-5 w-5" />}
                 </div>
               </div>
+            )}
 
-              {/* Navigation (Placeholder) */}
-              {previewMode === "desktop" && formData.layout !== "MINIMAL" && (
-                <nav className="flex items-center gap-4 text-sm">
-                  <span className="hover:text-primary cursor-pointer">Home</span>
-                  <span className="hover:text-primary cursor-pointer">Services</span>
-                  <span className="hover:text-primary cursor-pointer">Pricing</span>
-                  <span className="hover:text-primary cursor-pointer">About</span>
-                </nav>
-              )}
-
-              {/* CTA / Auth Area */}
-              <div className="flex items-center gap-2">
-                {formData.showAuthButtons && previewMode === "desktop" && (
-                  <>
-                    <Button variant="ghost" size="sm">
-                      {formData.loginText}
-                    </Button>
-                  </>
-                )}
-                {formData.ctaButtons.slice(0, 1).map((btn, i) => (
-                  <Button
-                    key={i}
-                    size="sm"
-                    variant={btn.variant === "outline" ? "outline" : "default"}
+            {formData.layout === "CENTERED" && (
+              /* CENTERED: Two rows - Logo centered top, Nav centered below */
+              <div>
+                <div
+                  className="relative flex items-center justify-center px-4 border-b border-border/30"
+                  style={{ height: `${Math.floor(formData.height * 0.6)}px` }}
+                >
+                  <div
+                    className="flex items-center justify-center rounded bg-primary/20 px-3 font-bold text-primary"
+                    style={{ height: `${formData.logoMaxHeight}px` }}
                   >
-                    {btn.text}
-                  </Button>
-                ))}
-                {previewMode === "mobile" && <Menu className="h-5 w-5" />}
+                    LP
+                  </div>
+                  {previewMode === "mobile" && (
+                    <div className="absolute right-4">
+                      <Menu className="h-5 w-5" />
+                    </div>
+                  )}
+                </div>
+                {previewMode === "desktop" && (
+                  <div
+                    className="flex items-center justify-center gap-6 px-4"
+                    style={{ height: `${Math.floor(formData.height * 0.5)}px` }}
+                  >
+                    <nav className="flex items-center gap-6 text-sm">
+                      <span className="cursor-pointer hover:text-primary">Home</span>
+                      <span className="cursor-pointer hover:text-primary">Services</span>
+                      <span className="cursor-pointer hover:text-primary">Pricing</span>
+                      <span className="cursor-pointer hover:text-primary">About</span>
+                    </nav>
+                    <div className="flex items-center gap-2">
+                      {formData.showAuthButtons && (
+                        <Button variant="ghost" size="sm">{formData.loginText}</Button>
+                      )}
+                      {formData.ctaButtons.slice(0, 1).map((btn, i) => (
+                        <Button key={i} size="sm" variant={btn.variant === "outline" ? "outline" : "default"}>
+                          {btn.text}
+                        </Button>
+                      ))}
+                      {formData.ctaButtons.length === 0 && (
+                        <Button size="sm">Get Started</Button>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
+            )}
+
+            {formData.layout === "SPLIT" && (
+              /* SPLIT: Nav left, Logo center, Nav + CTA right */
+              <div
+                className="relative flex items-center justify-between px-4"
+                style={{ height: `${formData.height}px` }}
+              >
+                {previewMode === "desktop" && (
+                  <nav className="flex items-center gap-4 text-sm">
+                    <span className="cursor-pointer hover:text-primary">Home</span>
+                    <span className="cursor-pointer hover:text-primary">Services</span>
+                  </nav>
+                )}
+                {previewMode === "mobile" && <div />}
+                <div className="absolute left-1/2 -translate-x-1/2">
+                  <div
+                    className="flex items-center justify-center rounded bg-primary/20 px-3 font-bold text-primary"
+                    style={{ height: `${formData.logoMaxHeight}px` }}
+                  >
+                    LP
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  {previewMode === "desktop" && (
+                    <>
+                      <nav className="flex items-center gap-4 text-sm">
+                        <span className="cursor-pointer hover:text-primary">Pricing</span>
+                        <span className="cursor-pointer hover:text-primary">About</span>
+                      </nav>
+                      <div className="flex items-center gap-2">
+                        {formData.showAuthButtons && (
+                          <Button variant="ghost" size="sm">{formData.loginText}</Button>
+                        )}
+                        {formData.ctaButtons.slice(0, 1).map((btn, i) => (
+                          <Button key={i} size="sm" variant={btn.variant === "outline" ? "outline" : "default"}>
+                            {btn.text}
+                          </Button>
+                        ))}
+                        {formData.ctaButtons.length === 0 && (
+                          <Button size="sm">Get Started</Button>
+                        )}
+                      </div>
+                    </>
+                  )}
+                  {previewMode === "mobile" && <Menu className="h-5 w-5" />}
+                </div>
+              </div>
+            )}
+
+            {formData.layout === "MINIMAL" && (
+              /* MINIMAL: Logo left, Hamburger right (always) */
+              <div
+                className="flex items-center justify-between px-4"
+                style={{ height: `${formData.height}px` }}
+              >
+                <div className="flex items-center gap-2">
+                  <div
+                    className="flex items-center justify-center rounded bg-primary/20 px-3 font-bold text-primary"
+                    style={{ height: `${formData.logoMaxHeight}px` }}
+                  >
+                    LP
+                  </div>
+                </div>
+                <Menu className="h-5 w-5 cursor-pointer" />
+              </div>
+            )}
+
+            {formData.layout === "MEGA" && (
+              /* MEGA: Two rows - Logo+CTA top, full-width nav bar below */
+              <div>
+                <div
+                  className="flex items-center justify-between px-4 border-b border-border/30"
+                  style={{ height: `${Math.floor(formData.height * 0.65)}px` }}
+                >
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="flex items-center justify-center rounded bg-primary/20 px-3 font-bold text-primary"
+                      style={{ height: `${formData.logoMaxHeight}px` }}
+                    >
+                      LP
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {formData.showAuthButtons && previewMode === "desktop" && (
+                      <Button variant="ghost" size="sm">{formData.loginText}</Button>
+                    )}
+                    {formData.ctaButtons.slice(0, 1).map((btn, i) => (
+                      <Button key={i} size="sm" variant={btn.variant === "outline" ? "outline" : "default"}>
+                        {btn.text}
+                      </Button>
+                    ))}
+                    {formData.ctaButtons.length === 0 && previewMode === "desktop" && (
+                      <Button size="sm">Get Started</Button>
+                    )}
+                    {previewMode === "mobile" && <Menu className="h-5 w-5" />}
+                  </div>
+                </div>
+                {previewMode === "desktop" && (
+                  <div
+                    className="flex items-center px-4 bg-muted/30"
+                    style={{ height: `${Math.floor(formData.height * 0.55)}px` }}
+                  >
+                    <nav className="flex items-center gap-1">
+                      <span className="cursor-pointer rounded px-3 py-1.5 text-sm hover:bg-background hover:shadow-sm">Home</span>
+                      <span className="cursor-pointer rounded px-3 py-1.5 text-sm hover:bg-background hover:shadow-sm">Services ▾</span>
+                      <span className="cursor-pointer rounded px-3 py-1.5 text-sm hover:bg-background hover:shadow-sm">Pricing</span>
+                      <span className="cursor-pointer rounded px-3 py-1.5 text-sm hover:bg-background hover:shadow-sm">About</span>
+                      <span className="cursor-pointer rounded px-3 py-1.5 text-sm hover:bg-background hover:shadow-sm">Contact</span>
+                    </nav>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -297,7 +439,6 @@ export default function HeaderBuilderPage() {
       <Tabs defaultValue="layout" className="space-y-4">
         <TabsList>
           <TabsTrigger value="layout">Layout</TabsTrigger>
-          <TabsTrigger value="logo">Logo</TabsTrigger>
           <TabsTrigger value="cta">CTA Buttons</TabsTrigger>
           <TabsTrigger value="auth">Auth Buttons</TabsTrigger>
           <TabsTrigger value="style">Styling</TabsTrigger>
@@ -410,6 +551,26 @@ export default function HeaderBuilderPage() {
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
+                    <Label>Logo Max Height</Label>
+                    <span className="text-sm text-muted-foreground">{formData.logoMaxHeight}px</span>
+                  </div>
+                  <Slider
+                    value={[formData.logoMaxHeight]}
+                    onValueChange={(value) => setFormData({ ...formData, logoMaxHeight: value[0] })}
+                    min={24}
+                    max={80}
+                    step={4}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Logo image is configured in{" "}
+                    <Link href="/admin/settings" className="text-primary hover:underline">
+                      General Settings
+                    </Link>
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
                     <Label>Mobile Breakpoint</Label>
                     <span className="text-sm text-muted-foreground">{formData.mobileBreakpoint}px</span>
                   </div>
@@ -421,61 +582,6 @@ export default function HeaderBuilderPage() {
                     step={64}
                   />
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Logo Tab */}
-        <TabsContent value="logo" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Logo Settings</CardTitle>
-              <CardDescription>Configure logo position and size</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label>Logo Position</Label>
-                <Select
-                  value={formData.logoPosition}
-                  onValueChange={(value: LogoPosition) =>
-                    setFormData({ ...formData, logoPosition: value })
-                  }
-                >
-                  <SelectTrigger className="w-48">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {logoPositions.map((pos) => (
-                      <SelectItem key={pos.value} value={pos.value}>
-                        {pos.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label>Logo Max Height</Label>
-                  <span className="text-sm text-muted-foreground">{formData.logoMaxHeight}px</span>
-                </div>
-                <Slider
-                  value={[formData.logoMaxHeight]}
-                  onValueChange={(value) => setFormData({ ...formData, logoMaxHeight: value[0] })}
-                  min={24}
-                  max={80}
-                  step={4}
-                />
-              </div>
-
-              <div className="rounded-lg bg-muted/50 p-4">
-                <p className="text-sm text-muted-foreground">
-                  Logo image is configured in{" "}
-                  <Link href="/admin/settings" className="text-primary hover:underline">
-                    General Settings
-                  </Link>
-                </p>
               </div>
             </CardContent>
           </Card>

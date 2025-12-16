@@ -78,7 +78,7 @@ const navItems: NavItem[] = [
       { title: "Blog Categories", href: "/admin/content/blog-categories" },
       { title: "Testimonials", href: "/admin/content/testimonials" },
       { title: "FAQs", href: "/admin/content/faq" },
-      { title: "Legal Pages", href: "/admin/content/legal" },
+      { title: "Pages", href: "/admin/content/legal" },
     ],
   },
   {

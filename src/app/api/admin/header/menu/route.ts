@@ -6,19 +6,19 @@ import { checkAdminAccess, authError } from "@/lib/admin-auth";
 // Validation schema for menu items
 const menuItemSchema = z.object({
   label: z.string().min(1, "Label is required"),
-  url: z.string().optional(),
+  url: z.string().optional().nullable(),
   target: z.enum(["_self", "_blank"]).default("_self"),
-  icon: z.string().optional(),
+  icon: z.string().optional().nullable(),
   parentId: z.string().optional().nullable(),
   headerId: z.string(),
   isMegaMenu: z.boolean().default(false),
   megaMenuColumns: z.number().default(4),
   isVisible: z.boolean().default(true),
   visibleOnMobile: z.boolean().default(true),
-  badge: z.string().optional(),
-  categoryName: z.string().optional(),
-  categoryIcon: z.string().optional(),
-  categoryDesc: z.string().optional(),
+  badge: z.string().optional().nullable(),
+  categoryName: z.string().optional().nullable(),
+  categoryIcon: z.string().optional().nullable(),
+  categoryDesc: z.string().optional().nullable(),
   sortOrder: z.number().default(0),
 });
 
