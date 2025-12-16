@@ -467,7 +467,14 @@ enum FooterWidgetType {
    - Sticky/Transparent toggles ✅
    - Height & spacing controls ✅
    - Color pickers ✅
-   - Live preview with desktop/mobile toggle ✅
+   - **Live Preview** ✅
+     - Desktop/Mobile toggle ✅
+     - **Layout-aware preview** - Each layout shows actual structure ✅
+       - DEFAULT: Logo left, Nav center, CTA right
+       - CENTERED: Two rows - Logo center top, Nav+CTA below
+       - SPLIT: Nav left, Logo center, Nav+CTA right
+       - MINIMAL: Logo left, Hamburger right (always)
+       - MEGA: Two rows - Logo+CTA top, Nav bar below
 
 2. **Menu Builder** (`/admin/appearance/header/menu`) ✅
    - Tree view with expand/collapse ✅
@@ -507,16 +514,36 @@ enum FooterWidgetType {
 
 ### Phase 4: Frontend Integration (Day 7-8) ✅ COMPLETED
 
-1. **Dynamic Header Component** ✅
-   - Fetch config from API (with SWR caching) ✅
-   - Render based on layout type ✅
-   - Mobile responsive menu ✅
-   - Mega menu support ✅
-   - Sticky header behavior ✅
-   - Fallback to hardcoded defaults on API failure ✅
-   - Icon mapping for dynamic Lucide icons ✅
+1. **Modular Header System** ✅ (New Architecture)
+   - Created modular folder structure: `src/components/layout/header/` ✅
+   - **Components:**
+     - `Logo.tsx` - Reusable logo component ✅
+     - `TopBar.tsx` - Announcement bar component ✅
+     - `UserMenu.tsx` - User dropdown menu ✅
+     - `CTAButtons.tsx` - Call-to-action buttons ✅
+     - `Navigation.tsx` - Desktop navigation with mega menu ✅
+     - `MobileMenu.tsx` - Mobile hamburger menu ✅
+   - **Hooks:**
+     - `useScrollTransparency.ts` - Transparent header on hero ✅
+     - `useTopBarDismiss.ts` - Dismissable top bar ✅
+   - **5 Functional Layouts:**
+     - `HeaderDefault.tsx` - Logo left, Nav center, CTA right ✅
+     - `HeaderCentered.tsx` - Two rows: Logo center, Nav below ✅
+     - `HeaderSplit.tsx` - Nav left, Logo center, Nav + CTA right ✅
+     - `HeaderMinimal.tsx` - Logo left, Hamburger always visible ✅
+     - `HeaderMega.tsx` - Two rows: Logo+CTA top, Full-width nav bar ✅
+   - **Orchestrator:**
+     - `index.tsx` - Selects layout based on config from API ✅
+   - **Type Definitions:**
+     - `types.ts` - TypeScript interfaces ✅
 
-2. **Dynamic Footer Component** ✅
+2. **Layout Rendering** ✅
+   - Admin saves layout → DB stores layout type ✅
+   - Frontend fetches config → Renders correct layout ✅
+   - Each layout has unique structure and behavior ✅
+   - Turbopack compatible (useEffect for mounted state) ✅
+
+3. **Dynamic Footer Component** ✅
    - Fetch config from API ✅
    - Widget rendering system ✅
    - Newsletter form integration ✅
@@ -524,12 +551,17 @@ enum FooterWidgetType {
    - FooterWidgetRenderer component ✅
    - Fallback links when API fails ✅
 
-3. **Performance Optimization** ✅
+4. **Performance Optimization** ✅
    - API response caching (60s) ✅
    - Loading states ✅
    - Graceful degradation with fallbacks ✅
+   - Icon mapping for dynamic Lucide icons ✅
 
-### Phase 5: Advanced Styling & Theming (Day 9-10)
+### Phase 5: Advanced Styling & Theming (Day 9-10) 🔄 IN PROGRESS
+
+**Current Status:**
+- Basic styling (bgColor, textColor) ✅ Implemented
+- Advanced styling features below are planned for future
 
 **Research Sources (2025 Trends):**
 - [Elementor 2025 Web Design Trends](https://elementor.com/blog/2025-web-design-trends-best-practices/)
@@ -876,80 +908,121 @@ function generateHeaderCSS(config: HeaderConfig): string {
 
 ---
 
-### Phase 6: Import/Export & Version Control (Day 11-12)
+### Phase 6: Polish & Enhancement (Day 11-12) 📋 TODO
 
-1. **Import/Export System**
-   - Export header/footer config as JSON
-   - Import from JSON file
-   - Export as CSS file (generated styles)
-   - Bulk export (header + footer + menu + widgets)
-   - Reset to defaults with confirmation
+**Priority 1 - Functional Improvements:**
 
-2. **Configuration Versioning**
-   - Save configuration versions/snapshots
-   - Rollback to previous versions
-   - Compare versions (diff view)
-   - Auto-save drafts before publish
-   - Version history with timestamps
+1. **Search Functionality**
+   - [ ] Add search icon to header layouts
+   - [ ] Search modal/popover component
+   - [ ] Connect to existing search API
 
-3. **Multi-site Support (Future)**
-   - Clone configuration to other sites
-   - Sync settings across environments
-   - Configuration sharing via URL/code
+2. **TopBar (Announcement Bar) Integration**
+   - [ ] Enable TopBar in admin settings
+   - [ ] Dismissable with localStorage persistence
+   - [ ] Link support in announcement text
 
-4. **Backup & Restore**
-   - Scheduled automatic backups
-   - One-click restore from backup
-   - Export backup to cloud storage (S3/R2)
+3. **Transparent Header on Hero**
+   - [ ] useScrollTransparency hook is ready ✅
+   - [ ] Apply transparency when transparent=true in config
+   - [ ] Smooth color transition on scroll
+
+**Priority 2 - Footer Enhancement:**
+
+4. **Footer Layout Variants**
+   - [ ] Create modular footer system similar to header
+   - [ ] FooterCentered layout
+   - [ ] FooterMinimal layout
+   - [ ] FooterMega (sitemap style) layout
+
+**Priority 3 - Import/Export:**
+
+5. **Configuration Export/Import**
+   - [ ] Export header/footer config as JSON
+   - [ ] Import from JSON file
+   - [ ] Reset to defaults with confirmation
+
+6. **Configuration Versioning** (Future)
+   - [ ] Save configuration snapshots
+   - [ ] Rollback to previous versions
+   - [ ] Auto-save drafts
+
+**Priority 4 - Performance:**
+
+7. **Optimization**
+   - [ ] Lazy load mega menu content
+   - [ ] Optimize images in header/footer
+   - [ ] Add prefetch for common navigation links
 
 ---
 
-## File Structure
+## File Structure (Updated)
 
 ```
 src/
 ├── app/
 │   ├── admin/
 │   │   └── appearance/
-│   │       ├── page.tsx              # Appearance overview
+│   │       ├── page.tsx                    # Appearance overview
 │   │       ├── header/
-│   │       │   ├── page.tsx          # Header builder
+│   │       │   ├── page.tsx                # Header builder (with layout-aware preview)
 │   │       │   └── menu/
-│   │       │       └── page.tsx      # Menu builder
+│   │       │       └── page.tsx            # Menu builder
 │   │       └── footer/
-│   │           └── page.tsx          # Footer builder
+│   │           └── page.tsx                # Footer builder
+│   ├── (marketing)/
+│   │   └── [slug]/
+│   │       └── page.tsx                    # Dynamic marketing pages
 │   └── api/
 │       ├── admin/
 │       │   ├── header/
-│       │   │   ├── route.ts          # Header config CRUD
+│       │   │   ├── route.ts                # Header config CRUD
 │       │   │   └── menu/
-│       │   │       ├── route.ts      # Menu items CRUD
+│       │   │       ├── route.ts            # Menu items CRUD
 │       │   │       └── [id]/
-│       │   │           └── route.ts  # Single menu item
+│       │   │           └── route.ts        # Single menu item
 │       │   └── footer/
-│       │       ├── route.ts          # Footer config CRUD
+│       │       ├── route.ts                # Footer config CRUD
 │       │       └── widgets/
-│       │           ├── route.ts      # Widgets CRUD
+│       │           ├── route.ts            # Widgets CRUD
 │       │           └── [id]/
-│       │               └── route.ts  # Single widget
+│       │               └── route.ts        # Single widget
 │       ├── header/
-│       │   └── route.ts              # Public header API
+│       │   └── route.ts                    # Public header API
 │       └── footer/
-│           └── route.ts              # Public footer API
+│           └── route.ts                    # Public footer API
 │
 ├── components/
 │   └── layout/
-│       ├── header.tsx                # Dynamic header (updated)
-│       ├── footer.tsx                # Dynamic footer (updated)
-│       ├── header/
-│       │   ├── header-default.tsx    # Default layout
-│       │   ├── header-centered.tsx   # Centered layout
-│       │   ├── header-split.tsx      # Split layout
-│       │   ├── header-minimal.tsx    # Minimal layout
-│       │   ├── header-mega.tsx       # Mega menu layout
-│       │   ├── mega-menu.tsx         # Mega menu component
-│       │   ├── mobile-menu.tsx       # Mobile menu
-│       │   └── top-bar.tsx           # Announcement bar
+│       ├── header.tsx                      # Re-exports from header/index.tsx
+│       ├── footer.tsx                      # Dynamic footer
+│       │
+│       ├── header/                         # ✅ NEW MODULAR STRUCTURE
+│       │   ├── index.tsx                   # Orchestrator - selects layout
+│       │   ├── types.ts                    # TypeScript interfaces
+│       │   │
+│       │   ├── components/                 # Shared components
+│       │   │   ├── index.ts                # Barrel export
+│       │   │   ├── Logo.tsx                # Logo component
+│       │   │   ├── TopBar.tsx              # Announcement bar
+│       │   │   ├── UserMenu.tsx            # User dropdown
+│       │   │   ├── CTAButtons.tsx          # CTA buttons
+│       │   │   ├── Navigation.tsx          # Desktop nav + mega menu
+│       │   │   └── MobileMenu.tsx          # Mobile hamburger menu
+│       │   │
+│       │   ├── hooks/                      # Custom hooks
+│       │   │   ├── index.ts                # Barrel export
+│       │   │   ├── useScrollTransparency.ts # Transparent on hero
+│       │   │   └── useTopBarDismiss.ts     # Dismissable top bar
+│       │   │
+│       │   └── layouts/                    # 5 Layout variants
+│       │       ├── index.ts                # Barrel export
+│       │       ├── HeaderDefault.tsx       # Logo left, Nav center, CTA right
+│       │       ├── HeaderCentered.tsx      # Two rows: Logo center, Nav below
+│       │       ├── HeaderSplit.tsx         # Nav left, Logo center, Nav+CTA right
+│       │       ├── HeaderMinimal.tsx       # Logo left, Hamburger always
+│       │       └── HeaderMega.tsx          # Two rows: Logo+CTA, Full-width nav
+│       │
 │       └── footer/
 │           ├── footer-multi-column.tsx
 │           ├── footer-centered.tsx
@@ -963,14 +1036,14 @@ src/
 │               └── custom-html-widget.tsx
 │
 ├── hooks/
-│   ├── use-header-config.ts          # Header config hook
-│   └── use-footer-config.ts          # Footer config hook
+│   ├── use-header-config.ts                # Header config hook (SWR)
+│   └── use-footer-config.ts                # Footer config hook (SWR)
 │
 └── lib/
     └── header-footer/
-        ├── types.ts                  # TypeScript types
-        ├── defaults.ts               # Default configurations
-        └── presets.ts                # Preset templates
+        ├── types.ts                        # TypeScript types
+        ├── defaults.ts                     # Default configurations
+        └── presets.ts                      # Preset templates
 ```
 
 ---
