@@ -37,6 +37,7 @@ export interface HeaderLayoutProps {
   serviceCategories: ServiceCategory[];
   user: LoggedInUser | null;
   session: Session | null;
+  sessionStatus: "loading" | "authenticated" | "unauthenticated";
   isScrolled: boolean;
   businessConfig: BusinessConfig;
   onLogout: () => void;
@@ -100,5 +101,6 @@ export interface CTAButtonsProps {
   };
   user: LoggedInUser | null;
   session: Session | null;
+  sessionStatus?: "loading" | "authenticated" | "unauthenticated";
   onLogout: () => void;
 }

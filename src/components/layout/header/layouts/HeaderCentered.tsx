@@ -19,6 +19,7 @@ export function HeaderCentered({
   serviceCategories,
   user,
   session,
+  sessionStatus,
   businessConfig,
   onLogout,
 }: HeaderLayoutProps) {
@@ -87,6 +88,7 @@ export function HeaderCentered({
             }}
             user={user}
             session={session}
+            sessionStatus={sessionStatus}
             onLogout={onLogout}
           />
         </div>

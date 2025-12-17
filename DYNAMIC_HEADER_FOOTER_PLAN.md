@@ -561,7 +561,134 @@ enum FooterWidgetType {
 
 **Current Status:**
 - Basic styling (bgColor, textColor) ✅ Implemented
-- Advanced styling features below are planned for future
+- CTA Button variant dropdown (Primary, Outline) ✅ Implemented
+- Advanced styling features below are planned for implementation
+
+---
+
+#### 🔧 **IMPLEMENTATION STRATEGY: Variant + Custom Override (Option B)**
+
+**Problem:** Existing `variant` dropdown (Primary, Outline) conflicts with full custom styling.
+
+**Solution:** Variant acts as quick preset, custom `style` object overrides when set.
+
+**Data Structure Migration:**
+```typescript
+// Current (Existing)
+interface CTAButton {
+  text: string;
+  url: string;
+  variant: 'primary' | 'outline' | 'secondary' | 'ghost';
+}
+
+// New (Backward Compatible)
+interface CTAButton {
+  text: string;
+  url: string;
+  variant: 'primary' | 'outline' | 'secondary' | 'ghost';  // Kept as preset/fallback
+  style?: ButtonCustomStyle;  // Optional custom override
+}
+
+interface ButtonCustomStyle {
+  // Colors
+  bgColor?: string;
+  textColor?: string;
+  borderColor?: string;
+
+  // Border
+  borderWidth?: number;
+  borderRadius?: number;
+
+  // Hover
+  hoverBgColor?: string;
+  hoverTextColor?: string;
+  hoverBorderColor?: string;
+
+  // Effects
+  hoverEffect?: ButtonHoverEffect;
+  shadow?: string;
+  hoverShadow?: string;
+}
+```
+
+**Rendering Priority:**
+1. If `style` exists and has values → Use custom styles
+2. If `style` is empty/undefined → Use `variant` preset
+3. Variant always provides fallback defaults
+
+**Admin UI Approach:**
+```
+┌─────────────────────────────────────────────────────────────┐
+│ CTA Button Configuration                                     │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  Button Text: [Order Now        ]                           │
+│  URL:         [/services/llc    ]                           │
+│                                                              │
+│  Style Mode:  ○ Preset  ● Custom                            │
+│               ─────────────────────                         │
+│  [Preset Mode]                                              │
+│  Variant: [Primary ▼]                                       │
+│                                                              │
+│  [Custom Mode - Accordion Expanded]                         │
+│  ┌─ Colors ─────────────────────────────────────────────┐  │
+│  │ Background: [■ #2563eb] Text: [■ #ffffff]            │  │
+│  │ Border: [■ #2563eb] Width: [1]px Radius: [6]px      │  │
+│  └──────────────────────────────────────────────────────┘  │
+│  ┌─ Hover Effects ──────────────────────────────────────┐  │
+│  │ Effect: [Shadow Lift ▼]                               │  │
+│  │ Hover Bg: [■ #1d4ed8] Hover Text: [■ #ffffff]        │  │
+│  └──────────────────────────────────────────────────────┘  │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Backward Compatibility Checklist:**
+- [x] Existing buttons with only `variant` continue to work
+  - `hasCustomStyle()` returns false for buttons without style object
+  - Falls back to shadcn Button with variant prop
+- [x] New `style` field is optional (not breaking)
+  - TypeScript: `style?: ButtonCustomStyle` (optional field)
+  - Admin UI: defaults to "Preset" mode for existing buttons
+- [x] Database migration not required (JSON field)
+  - `ctaButtons` stored as JSON string in PostgreSQL
+  - Zod schema uses `z.any().optional()` for flexibility
+- [x] API accepts both old and new format
+  - GET/PUT/POST endpoints pass through JSON as-is
+  - No validation on ctaButtons structure
+- [x] Frontend renders correctly with either format
+  - `CTAButtonItem` checks for custom styles before rendering
+  - Preview uses `PreviewCTAButton` with same logic
+
+**Implementation Order:**
+1. ✅ Update TypeScript types (add optional `style` field) - COMPLETED
+   - Added `ButtonHoverEffect` type with 12 effects
+   - Added `ButtonCustomStyle` interface
+   - Updated `CTAButton` interface with optional `style` field
+   - Added `ghost` variant for more options
+2. ✅ Update Admin UI (add Style Mode toggle + custom fields) - COMPLETED
+   - Added Style Mode radio toggle (Preset/Custom)
+   - Added accordion sections: Colors, Border, Hover Effects, Shadow
+   - Added live button preview in admin
+   - Added `ghost` variant to preset dropdown
+   - Backward compatible - existing buttons show in Preset mode
+3. ✅ Update CTAButtons component (apply custom styles) - COMPLETED
+   - Added `hasCustomStyle()` detection function
+   - Added `getHoverEffectClass()` for Tailwind hover classes
+   - Added `CTAButtonItem` component with custom/preset rendering
+   - Inline style hover handling with onMouseEnter/onMouseLeave
+   - Skeleton loading state during session check
+4. ✅ Update Live Preview (show custom styles) - COMPLETED
+   - Added `getPreviewHoverClass()` for Tailwind hover classes
+   - Added `PreviewCTAButton` component with hover state management
+   - Updated all 4 layout preview sections to use PreviewCTAButton
+   - Real-time preview of custom colors, borders, and hover effects
+5. ✅ Test backward compatibility - VERIFIED
+   - All 5 checklist items verified and documented above
+   - No database migration required
+   - Existing buttons continue to work as expected
+
+---
 
 **Research Sources (2025 Trends):**
 - [Elementor 2025 Web Design Trends](https://elementor.com/blog/2025-web-design-trends-best-practices/)

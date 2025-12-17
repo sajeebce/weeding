@@ -17,6 +17,7 @@ export function HeaderDefault({
   serviceCategories,
   user,
   session,
+  sessionStatus,
   businessConfig,
   onLogout,
 }: HeaderLayoutProps) {
@@ -61,6 +62,7 @@ export function HeaderDefault({
           }}
           user={user}
           session={session}
+          sessionStatus={sessionStatus}
           onLogout={onLogout}
         />
       </div>

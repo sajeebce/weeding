@@ -7,11 +7,73 @@
 export type HeaderLayout = "DEFAULT" | "CENTERED" | "SPLIT" | "MINIMAL" | "MEGA";
 export type LogoPosition = "LEFT" | "CENTER" | "RIGHT";
 
+// Button Hover Effects (Phase 5)
+export type ButtonHoverEffect =
+  | "none"
+  | "darken"
+  | "lighten"
+  | "shadow-lift"
+  | "shadow-press"
+  | "scale-up"
+  | "scale-down"
+  | "slide-fill"
+  | "border-fill"
+  | "gradient-shift"
+  | "glow-pulse"
+  | "ripple";
+
+// Gradient direction for button backgrounds
+export type GradientDirection =
+  | "to-r"      // left to right
+  | "to-l"      // right to left
+  | "to-t"      // bottom to top
+  | "to-b"      // top to bottom
+  | "to-tr"     // bottom-left to top-right
+  | "to-tl"     // bottom-right to top-left
+  | "to-br"     // top-left to bottom-right
+  | "to-bl";    // top-right to bottom-left
+
+// Custom Button Styling (Phase 5 - Option B: Variant + Custom Override)
+export interface ButtonCustomStyle {
+  // Colors
+  bgColor?: string;
+  textColor?: string;
+  borderColor?: string;
+
+  // Gradient (overrides bgColor if set)
+  useGradient?: boolean;
+  gradientFrom?: string;
+  gradientTo?: string;
+  gradientDirection?: GradientDirection;
+
+  // Border
+  borderWidth?: number;
+  borderRadius?: number;
+
+  // Hover
+  hoverBgColor?: string;
+  hoverTextColor?: string;
+  hoverBorderColor?: string;
+
+  // Hover Gradient (overrides hoverBgColor if set)
+  hoverUseGradient?: boolean;
+  hoverGradientFrom?: string;
+  hoverGradientTo?: string;
+  hoverGradientDirection?: GradientDirection;
+
+  // Effects
+  hoverEffect?: ButtonHoverEffect;
+  shadow?: string;
+  hoverShadow?: string;
+}
+
 export interface CTAButton {
   text: string;
   url: string;
-  variant: "primary" | "secondary" | "outline";
+  variant: "primary" | "secondary" | "outline" | "ghost";
   icon?: string;
+  // Phase 5: Optional custom style override (backward compatible)
+  style?: ButtonCustomStyle;
 }
 
 export interface TopBarContent {
