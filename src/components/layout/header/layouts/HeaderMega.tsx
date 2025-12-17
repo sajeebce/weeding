@@ -149,6 +149,7 @@ export function HeaderMega({
   serviceCategories,
   user,
   session,
+  sessionStatus,
   businessConfig,
   onLogout,
 }: HeaderLayoutProps) {
@@ -185,6 +186,7 @@ export function HeaderMega({
               }}
               user={user}
               session={session}
+              sessionStatus={sessionStatus}
               onLogout={onLogout}
             />
           </div>

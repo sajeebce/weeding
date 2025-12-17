@@ -17,6 +17,7 @@ export function HeaderMinimal({
   serviceCategories,
   user,
   session,
+  sessionStatus: _sessionStatus,
   businessConfig,
   onLogout,
 }: HeaderLayoutProps) {

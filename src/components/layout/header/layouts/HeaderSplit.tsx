@@ -18,6 +18,7 @@ export function HeaderSplit({
   serviceCategories,
   user,
   session,
+  sessionStatus,
   businessConfig,
   onLogout,
 }: HeaderLayoutProps) {
@@ -72,6 +73,7 @@ export function HeaderSplit({
             }}
             user={user}
             session={session}
+            sessionStatus={sessionStatus}
             onLogout={onLogout}
           />
         </div>

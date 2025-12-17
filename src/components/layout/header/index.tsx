@@ -157,6 +157,7 @@ export function Header() {
     serviceCategories,
     user,
     session,
+    sessionStatus: status,
     isScrolled,
     businessConfig: {
       name: businessConfig.name,
