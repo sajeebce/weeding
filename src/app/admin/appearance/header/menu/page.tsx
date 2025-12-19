@@ -1,7 +1,27 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import {
+  DndContext,
+  DragOverlay,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DragStartEvent,
+  type UniqueIdentifier,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import {
   ArrowLeft,
   Plus,
@@ -59,7 +79,7 @@ interface MenuItemWithChildren extends MenuItem {
 const defaultFormData = {
   label: "",
   url: "",
-  target: "_self" as const,
+  target: "_self" as "_self" | "_blank",
   icon: "",
   isMegaMenu: false,
   megaMenuColumns: 4,
@@ -84,6 +104,21 @@ export default function MenuBuilderPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [formData, setFormData] = useState(defaultFormData);
+
+  // Drag and drop state
+  const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
+
+  // DnD sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   useEffect(() => {
     fetchData();
@@ -250,22 +285,177 @@ export default function MenuBuilderPage() {
     }
   }
 
-  // Recursive render function for menu items
-  function renderMenuItem(item: MenuItemWithChildren, depth: number = 0) {
+  // Helper to find item by id in tree
+  function findItemById(items: MenuItemWithChildren[], id: string): MenuItemWithChildren | null {
+    for (const item of items) {
+      if (item.id === id) return item;
+      if (item.children) {
+        const found = findItemById(item.children, id);
+        if (found) return found;
+      }
+    }
+    return null;
+  }
+
+  // Helper to find parent id of an item
+  function findParentId(items: MenuItemWithChildren[], id: string, parentId: string | null = null): string | null {
+    for (const item of items) {
+      if (item.id === id) return parentId;
+      if (item.children) {
+        const found = findParentId(item.children, id, item.id);
+        if (found !== undefined) return found;
+      }
+    }
+    return null;
+  }
+
+  // Get siblings (items at the same level with the same parent)
+  function getSiblings(items: MenuItemWithChildren[], id: string): MenuItemWithChildren[] {
+    // Check if it's a root item
+    const rootIndex = items.findIndex(item => item.id === id);
+    if (rootIndex !== -1) return items;
+
+    // Find in children
+    for (const item of items) {
+      if (item.children) {
+        const childIndex = item.children.findIndex(child => child.id === id);
+        if (childIndex !== -1) return item.children;
+        const found = getSiblings(item.children, id);
+        if (found.length > 0) return found;
+      }
+    }
+    return [];
+  }
+
+  // Drag start handler
+  function handleDragStart(event: DragStartEvent) {
+    setActiveId(event.active.id);
+  }
+
+  // Drag end handler
+  async function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    setActiveId(null);
+
+    if (!over || active.id === over.id) return;
+
+    const activeItem = findItemById(menuItems, active.id as string);
+    const overItem = findItemById(menuItems, over.id as string);
+
+    if (!activeItem || !overItem) return;
+
+    // Get the parent of the active item
+    const activeParentId = activeItem.parentId;
+    const overParentId = overItem.parentId;
+
+    // Only allow reordering within the same parent
+    if (activeParentId !== overParentId) {
+      toast.error("Items can only be reordered within the same level");
+      return;
+    }
+
+    // Get siblings
+    const siblings = getSiblings(menuItems, active.id as string);
+    const oldIndex = siblings.findIndex(item => item.id === active.id);
+    const newIndex = siblings.findIndex(item => item.id === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    // Reorder locally
+    const reorderedSiblings = arrayMove(siblings, oldIndex, newIndex);
+
+    // Update state optimistically
+    if (activeParentId === null) {
+      // Root level
+      setMenuItems(reorderedSiblings);
+    } else {
+      // Child level - update parent's children
+      setMenuItems(prevItems => {
+        const updateChildren = (items: MenuItemWithChildren[]): MenuItemWithChildren[] => {
+          return items.map(item => {
+            if (item.id === activeParentId) {
+              return { ...item, children: reorderedSiblings };
+            }
+            if (item.children) {
+              return { ...item, children: updateChildren(item.children) };
+            }
+            return item;
+          });
+        };
+        return updateChildren(prevItems);
+      });
+    }
+
+    // Save to backend
+    try {
+      const itemsToUpdate = reorderedSiblings.map((item, index) => ({
+        id: item.id,
+        sortOrder: index,
+      }));
+
+      const res = await fetch("/api/admin/header/menu/reorder", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items: itemsToUpdate }),
+      });
+
+      if (!res.ok) throw new Error("Failed to save");
+      toast.success("Menu order updated");
+    } catch (error) {
+      toast.error("Failed to save menu order");
+      fetchData(); // Revert to server state
+    }
+  }
+
+  // Get the active item for drag overlay
+  const activeItem = activeId ? findItemById(menuItems, activeId as string) : null;
+
+  // Sortable Menu Item Component
+  function SortableMenuItem({
+    item,
+    depth = 0,
+  }: {
+    item: MenuItemWithChildren;
+    depth?: number;
+  }) {
+    const {
+      attributes,
+      listeners,
+      setNodeRef,
+      transform,
+      transition,
+      isDragging,
+    } = useSortable({ id: item.id });
+
+    const style = {
+      transform: CSS.Transform.toString(transform),
+      transition,
+    };
+
     const hasChildren = item.children && item.children.length > 0;
     const isExpanded = expandedItems.has(item.id);
 
+    // Get child IDs for sortable context
+    const childIds = hasChildren ? item.children.map((c) => c.id) : [];
+
     return (
-      <div key={item.id}>
+      <div ref={setNodeRef} style={style}>
         <div
           className={cn(
             "flex items-center gap-2 rounded-lg border bg-card p-3 transition-colors hover:bg-muted/50",
             !item.isVisible && "opacity-50",
-            depth > 0 && "ml-6 border-l-4 border-l-primary/20"
+            depth > 0 && "ml-6 border-l-4 border-l-primary/20",
+            isDragging && "opacity-50 shadow-lg ring-2 ring-primary"
           )}
         >
           {/* Drag Handle */}
-          <GripVertical className="h-4 w-4 cursor-grab text-muted-foreground" />
+          <div
+            {...attributes}
+            {...listeners}
+            className="cursor-grab active:cursor-grabbing touch-none"
+          >
+            <GripVertical className="h-4 w-4 text-muted-foreground" />
+          </div>
 
           {/* Expand/Collapse */}
           {hasChildren ? (
@@ -348,15 +538,47 @@ export default function MenuBuilderPage() {
           </div>
         </div>
 
-        {/* Children */}
+        {/* Children with their own sortable context */}
         {hasChildren && isExpanded && (
           <div className="mt-2 space-y-2">
-            {item.children.map((child) => renderMenuItem(child, depth + 1))}
+            <SortableContext items={childIds} strategy={verticalListSortingStrategy}>
+              {item.children.map((child) => (
+                <SortableMenuItem key={child.id} item={child} depth={depth + 1} />
+              ))}
+            </SortableContext>
           </div>
         )}
       </div>
     );
   }
+
+  // Drag overlay item (non-interactive version for drag preview)
+  function DragOverlayItem({ item }: { item: MenuItemWithChildren }) {
+    return (
+      <div
+        className={cn(
+          "flex items-center gap-2 rounded-lg border bg-card p-3 shadow-xl ring-2 ring-primary",
+          !item.isVisible && "opacity-50"
+        )}
+      >
+        <GripVertical className="h-4 w-4 text-muted-foreground" />
+        <div className="w-6" />
+        <span className="flex-1 font-medium">{item.label}</span>
+        {item.url && (
+          <span className="text-xs text-muted-foreground">{item.url}</span>
+        )}
+        {item.isMegaMenu && (
+          <Badge variant="secondary" className="text-xs">
+            <LayoutGrid className="mr-1 h-3 w-3" />
+            Mega Menu
+          </Badge>
+        )}
+      </div>
+    );
+  }
+
+  // Get root item IDs for sortable context
+  const rootItemIds = useMemo(() => menuItems.map((item) => item.id), [menuItems]);
 
   if (loading) {
     return (
@@ -416,9 +638,23 @@ export default function MenuBuilderPage() {
               </Button>
             </div>
           ) : (
-            <div className="space-y-2">
-              {menuItems.map((item) => renderMenuItem(item))}
-            </div>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext items={rootItemIds} strategy={verticalListSortingStrategy}>
+                <div className="space-y-2">
+                  {menuItems.map((item) => (
+                    <SortableMenuItem key={item.id} item={item} />
+                  ))}
+                </div>
+              </SortableContext>
+              <DragOverlay>
+                {activeItem ? <DragOverlayItem item={activeItem} /> : null}
+              </DragOverlay>
+            </DndContext>
           )}
         </CardContent>
       </Card>

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
+import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { checkAdminAccess, authError } from "@/lib/admin-auth";
 
@@ -94,7 +95,7 @@ export async function POST(request: NextRequest) {
     const widget = await prisma.footerWidget.create({
       data: {
         ...widgetData,
-        content: content ? JSON.stringify(content) : null,
+        content: content ? JSON.stringify(content) : Prisma.DbNull,
         sortOrder: (maxSortOrder._max.sortOrder ?? -1) + 1,
       },
     });

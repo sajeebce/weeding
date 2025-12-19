@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import "dotenv/config";
@@ -82,12 +82,12 @@ async function main() {
           order: field.order,
           width: field.width,
           required: field.required,
-          validation: field.validation ?? null,
-          options: field.options ?? null,
+          validation: (field.validation ?? Prisma.DbNull) as Prisma.InputJsonValue | typeof Prisma.DbNull,
+          options: (field.options ?? Prisma.DbNull) as Prisma.InputJsonValue | typeof Prisma.DbNull,
           dataSourceType: field.dataSourceType ?? null,
           dataSourceKey: field.dataSourceKey ?? null,
           dependsOn: field.dependsOn ?? null,
-          conditionalLogic: field.conditionalLogic ?? null,
+          conditionalLogic: (field.conditionalLogic ?? Prisma.DbNull) as Prisma.InputJsonValue | typeof Prisma.DbNull,
           defaultValue: field.defaultValue ?? null,
         },
       });

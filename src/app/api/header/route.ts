@@ -39,7 +39,8 @@ export async function GET() {
     }
 
     // Transform menu items to nested structure
-    const transformMenuItem = (item: typeof header.menuItems[0]): object => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const transformMenuItem = (item: any): object => ({
       id: item.id,
       label: item.label,
       url: item.url,

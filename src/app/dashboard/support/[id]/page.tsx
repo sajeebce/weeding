@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useTicketChannel } from "@/hooks/use-pusher";
 
 interface Attachment {
@@ -67,7 +67,6 @@ const priorityConfig: Record<string, string> = {
 export default function TicketDetailPage() {
   const params = useParams();
   const ticketId = params.id as string;
-  const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const [ticket, setTicket] = useState<Ticket | null>(null);
@@ -110,10 +109,8 @@ export default function TicketDetailPage() {
       const response = await fetch(`/api/customer/tickets/${ticketId}`);
       if (!response.ok) {
         if (response.status === 404) {
-          toast({
-            title: "Ticket Not Found",
+          toast.error("Ticket Not Found", {
             description: "This ticket does not exist or you don't have access to it",
-            variant: "destructive",
           });
           return;
         }
@@ -122,15 +119,11 @@ export default function TicketDetailPage() {
       const data = await response.json();
       setTicket(data.ticket);
     } catch {
-      toast({
-        title: "Error",
-        description: "Failed to load ticket details",
-        variant: "destructive",
-      });
+      toast.error("Failed to load ticket details");
     } finally {
       setLoading(false);
     }
-  }, [ticketId, toast]);
+  }, [ticketId]);
 
   useEffect(() => {
     fetchTicket();
@@ -149,10 +142,8 @@ export default function TicketDetailPage() {
 
     const validFiles = newFiles.filter((file) => {
       if (file.size > maxSize) {
-        toast({
-          title: "File too large",
+        toast.error("File too large", {
           description: `${file.name} exceeds the 10MB limit`,
-          variant: "destructive",
         });
         return false;
       }
@@ -247,11 +238,7 @@ export default function TicketDetailPage() {
       setReply("");
       setAttachments([]);
     } catch {
-      toast({
-        title: "Error",
-        description: "Failed to send message",
-        variant: "destructive",
-      });
+      toast.error("Failed to send message");
     } finally {
       setIsSending(false);
     }

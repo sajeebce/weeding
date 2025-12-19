@@ -71,11 +71,11 @@ export async function POST(
       },
     });
 
-    // Update ticket status to WAITING_AGENT
+    // Update ticket status to WAITING_FOR_AGENT
     await prisma.supportTicket.update({
       where: { id },
       data: {
-        status: "WAITING_AGENT",
+        status: "WAITING_FOR_AGENT",
         updatedAt: new Date(),
       },
     });

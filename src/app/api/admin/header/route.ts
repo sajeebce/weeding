@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
+import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { checkAdminAccess, authError } from "@/lib/admin-auth";
 
@@ -90,8 +91,8 @@ export async function POST(request: NextRequest) {
     const header = await prisma.headerConfig.create({
       data: {
         ...headerData,
-        ctaButtons: ctaButtons ? JSON.stringify(ctaButtons) : null,
-        topBarContent: topBarContent ? JSON.stringify(topBarContent) : null,
+        ctaButtons: ctaButtons ? JSON.stringify(ctaButtons) : Prisma.DbNull,
+        topBarContent: topBarContent ? JSON.stringify(topBarContent) : Prisma.DbNull,
       },
     });
 

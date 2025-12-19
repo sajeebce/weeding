@@ -1,4 +1,5 @@
 import prisma from "../src/lib/db";
+import { Prisma } from "@prisma/client";
 
 // Helper interface matching the schema
 interface FieldConfig {
@@ -76,12 +77,12 @@ async function main() {
           order: field.order,
           width: field.width,
           required: field.required,
-          validation: field.validation ?? null,
-          options: field.options ?? null,
+          validation: (field.validation ?? Prisma.DbNull) as Prisma.InputJsonValue | typeof Prisma.DbNull,
+          options: (field.options ?? Prisma.DbNull) as Prisma.InputJsonValue | typeof Prisma.DbNull,
           dataSourceType: field.dataSourceType ?? null,
           dataSourceKey: field.dataSourceKey ?? null,
           dependsOn: field.dependsOn ?? null,
-          conditionalLogic: field.conditionalLogic ?? null,
+          conditionalLogic: (field.conditionalLogic ?? Prisma.DbNull) as Prisma.InputJsonValue | typeof Prisma.DbNull,
           defaultValue: field.defaultValue ?? null,
           accept: field.accept ?? null,
           maxSize: field.maxSize ?? null,

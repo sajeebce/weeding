@@ -100,7 +100,7 @@ export async function GET() {
       type: doc.type || "Document",
       status: doc.status.toLowerCase(),
       date: doc.createdAt.toISOString().split("T")[0],
-      url: doc.url,
+      url: doc.fileUrl,
       orderNumber: doc.order?.orderNumber,
     }));
 

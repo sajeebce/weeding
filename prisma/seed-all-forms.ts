@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import "dotenv/config";
@@ -135,8 +135,8 @@ async function seedServiceForm(slug: string) {
           order: i + 1,
           width: "FULL",
           required: field.required,
-          validation: field.validation ? field.validation : null,
-          options: field.options ? field.options : null,
+          validation: field.validation ? field.validation : Prisma.DbNull,
+          options: field.options ? field.options : Prisma.DbNull,
           dataSourceType: getDataSourceType(prismaFieldType) as any,
           dataSourceKey: getDataSourceKey(prismaFieldType),
           dependsOn: field.conditionalOn?.field || null,
@@ -145,7 +145,7 @@ async function seedServiceForm(slug: string) {
             when: field.conditionalOn.field,
             operator: "equals",
             value: field.conditionalOn.value,
-          } : null,
+          } : Prisma.DbNull,
           accept: field.accept || null,
           maxSize: field.type === "file" ? 10 : null,
           defaultValue: null,

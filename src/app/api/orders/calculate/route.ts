@@ -119,12 +119,12 @@ export async function POST(request: NextRequest) {
       if (coupon) {
         // Check usage limit
         const usageAllowed =
-          coupon.maxUses === null || coupon.usedCount < coupon.maxUses;
+          coupon.usageLimit === null || coupon.usedCount < coupon.usageLimit;
 
         // Check minimum order
         const meetsMinimum =
-          coupon.minOrderAmount === null ||
-          Number(coupon.minOrderAmount) <= breakdown.subtotal;
+          coupon.minOrder === null ||
+          Number(coupon.minOrder) <= breakdown.subtotal;
 
         if (usageAllowed && meetsMinimum) {
           breakdown.couponCode = coupon.code;

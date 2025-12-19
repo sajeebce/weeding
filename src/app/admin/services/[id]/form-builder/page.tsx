@@ -78,6 +78,11 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -953,12 +958,68 @@ export default function FormBuilderPage() {
             <CardContent>
               {!currentTab?.fields.length ? (
                 <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12">
+                  <FileText className="mb-4 h-12 w-12 text-muted-foreground/50" />
                   <p className="mb-4 text-muted-foreground">
                     No fields in this tab yet
                   </p>
-                  <p className="text-sm text-muted-foreground">
-                    Click on a field type in the sidebar to add it
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Click on a field type in the sidebar or use the button below
                   </p>
+                  {/* Add Field Button for empty state */}
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="border-dashed">
+                        <Plus className="mr-2 h-4 w-4" />
+                        Add First Field
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-80 p-4" align="center">
+                      <div className="space-y-4">
+                        <div>
+                          <h4 className="font-medium text-sm mb-3">Choose Field Type</h4>
+                          <div className="grid grid-cols-2 gap-2">
+                            {FIELD_TYPES.slice(0, 8).map((fieldType) => {
+                              const Icon = fieldType.icon;
+                              return (
+                                <Button
+                                  key={fieldType.type}
+                                  variant="outline"
+                                  size="sm"
+                                  className="justify-start h-9 text-xs"
+                                  onClick={() => addField(fieldType.type)}
+                                  disabled={isSaving}
+                                >
+                                  <Icon className="mr-2 h-3.5 w-3.5" />
+                                  {fieldType.label}
+                                </Button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                        <div className="pt-2 border-t">
+                          <p className="text-xs text-muted-foreground mb-2">More Options</p>
+                          <div className="grid grid-cols-2 gap-2">
+                            {FIELD_TYPES.slice(8).map((fieldType) => {
+                              const Icon = fieldType.icon;
+                              return (
+                                <Button
+                                  key={fieldType.type}
+                                  variant="ghost"
+                                  size="sm"
+                                  className="justify-start h-8 text-xs text-muted-foreground hover:text-foreground"
+                                  onClick={() => addField(fieldType.type)}
+                                  disabled={isSaving}
+                                >
+                                  <Icon className="mr-2 h-3.5 w-3.5" />
+                                  {fieldType.label}
+                                </Button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </div>
               ) : (
                 <DndContext
@@ -984,6 +1045,68 @@ export default function FormBuilderPage() {
                   </SortableContext>
                 </DndContext>
               )}
+
+              {/* Add Field Button with Popover */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full mt-4 border-dashed border-2 hover:border-primary hover:bg-primary/5"
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Field
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80 p-4" align="center">
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="font-medium text-sm mb-3">Choose Field Type</h4>
+                      {/* Common Field Types - 2 columns */}
+                      <div className="grid grid-cols-2 gap-2">
+                        {FIELD_TYPES.slice(0, 8).map((fieldType) => {
+                          const Icon = fieldType.icon;
+                          return (
+                            <Button
+                              key={fieldType.type}
+                              variant="outline"
+                              size="sm"
+                              className="justify-start h-9 text-xs"
+                              onClick={() => addField(fieldType.type)}
+                              disabled={isSaving}
+                            >
+                              <Icon className="mr-2 h-3.5 w-3.5" />
+                              {fieldType.label}
+                            </Button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* More Options - Collapsible or smaller */}
+                    <div className="pt-2 border-t">
+                      <p className="text-xs text-muted-foreground mb-2">More Options</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {FIELD_TYPES.slice(8).map((fieldType) => {
+                          const Icon = fieldType.icon;
+                          return (
+                            <Button
+                              key={fieldType.type}
+                              variant="ghost"
+                              size="sm"
+                              className="justify-start h-8 text-xs text-muted-foreground hover:text-foreground"
+                              onClick={() => addField(fieldType.type)}
+                              disabled={isSaving}
+                            >
+                              <Icon className="mr-2 h-3.5 w-3.5" />
+                              {fieldType.label}
+                            </Button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
             </CardContent>
           </Card>
         </div>

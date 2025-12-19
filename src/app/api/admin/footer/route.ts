@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
+import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { checkAdminAccess, authError } from "@/lib/admin-auth";
 
@@ -100,8 +101,8 @@ export async function POST(request: NextRequest) {
     const footer = await prisma.footerConfig.create({
       data: {
         ...footerData,
-        bottomLinks: bottomLinks ? JSON.stringify(bottomLinks) : null,
-        trustBadges: trustBadges ? JSON.stringify(trustBadges) : null,
+        bottomLinks: bottomLinks ? JSON.stringify(bottomLinks) : Prisma.DbNull,
+        trustBadges: trustBadges ? JSON.stringify(trustBadges) : Prisma.DbNull,
       },
     });
 
