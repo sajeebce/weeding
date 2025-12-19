@@ -3,6 +3,7 @@ import prisma from "@/lib/db";
 import { z } from "zod";
 import { checkAdminOnly, authError } from "@/lib/admin-auth";
 import { FieldType, FieldWidth, DataSourceType } from "@prisma/client";
+import { generateFieldName } from "@/lib/utils";
 
 // Validation schema for updating field
 const updateFieldSchema = z.object({
@@ -74,9 +75,59 @@ export async function PUT(
     const body = await request.json();
     const validatedData = updateFieldSchema.parse(body);
 
+    const updateData = { ...validatedData };
+
+    // Auto-generate unique name from label if label is provided
+    if (validatedData.label) {
+      // Get current field with template info
+      const currentField = await prisma.formField.findUnique({
+        where: { id: fieldId },
+        include: {
+          tab: {
+            include: {
+              template: {
+                include: {
+                  tabs: {
+                    include: {
+                      fields: {
+                        select: { id: true, name: true },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (currentField) {
+        // Get all existing field names in this template, excluding current field
+        const existingNames = new Set(
+          currentField.tab.template.tabs
+            .flatMap((t) => t.fields)
+            .filter((f) => f.id !== fieldId)
+            .map((f) => f.name)
+        );
+
+        // Generate unique field name from label
+        let baseName = generateFieldName(validatedData.label);
+        let fieldName = baseName;
+        let suffix = 2;
+
+        // If duplicate exists, append suffix until unique
+        while (existingNames.has(fieldName)) {
+          fieldName = `${baseName}${suffix}`;
+          suffix++;
+        }
+
+        updateData.name = fieldName;
+      }
+    }
+
     const field = await prisma.formField.update({
       where: { id: fieldId },
-      data: validatedData,
+      data: updateData,
     });
 
     return NextResponse.json(field);

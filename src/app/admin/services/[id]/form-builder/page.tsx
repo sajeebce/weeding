@@ -4,6 +4,23 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import {
   ArrowLeft,
   Save,
   Loader2,
@@ -163,6 +180,179 @@ const defaultTab: FormTab = {
   fields: [],
 };
 
+// Sortable Tab Item Component
+interface SortableTabItemProps {
+  tab: FormTab;
+  index: number;
+  isSelected: boolean;
+  onSelect: () => void;
+  onEdit: (e: React.MouseEvent) => void;
+  onDelete: (e: React.MouseEvent) => void;
+  canDelete: boolean;
+}
+
+function SortableTabItem({
+  tab,
+  index,
+  isSelected,
+  onSelect,
+  onEdit,
+  onDelete,
+  canDelete,
+}: SortableTabItemProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: tab.id || `tab-${index}` });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 1000 : "auto",
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        "group flex cursor-pointer items-center justify-between rounded-md px-3 py-2 text-sm transition-colors",
+        isSelected
+          ? "bg-primary text-primary-foreground"
+          : "hover:bg-muted"
+      )}
+      onClick={onSelect}
+    >
+      <div className="flex items-center gap-2">
+        <div
+          {...attributes}
+          {...listeners}
+          className="cursor-grab active:cursor-grabbing"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <GripVertical className="h-4 w-4 opacity-50 hover:opacity-100" />
+        </div>
+        <span className="truncate">{tab.name}</span>
+      </div>
+      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-6 w-6"
+          onClick={onEdit}
+        >
+          <Settings2 className="h-3 w-3" />
+        </Button>
+        {canDelete && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 text-destructive"
+            onClick={onDelete}
+          >
+            <Trash2 className="h-3 w-3" />
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Sortable Field Item Component
+interface SortableFieldItemProps {
+  field: FormField;
+  index: number;
+  onEdit: () => void;
+  onDelete: () => void;
+}
+
+function SortableFieldItem({
+  field,
+  index,
+  onEdit,
+  onDelete,
+}: SortableFieldItemProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: field.id || `field-${index}` });
+
+  const fieldType = FIELD_TYPES.find((ft) => ft.type === field.type);
+  const Icon = fieldType?.icon || Type;
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 1000 : "auto",
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        "group flex items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50 bg-background",
+        field.width === "HALF" && "w-1/2",
+        field.width === "THIRD" && "w-1/3",
+        field.width === "TWO_THIRD" && "w-2/3"
+      )}
+    >
+      <div
+        {...attributes}
+        {...listeners}
+        className="cursor-grab active:cursor-grabbing"
+      >
+        <GripVertical className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+      </div>
+      <Icon className="h-4 w-4 text-muted-foreground" />
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="font-medium truncate">
+            {field.label}
+          </span>
+          {field.required && (
+            <Badge variant="secondary" className="text-xs">
+              Required
+            </Badge>
+          )}
+        </div>
+        <p className="text-xs text-muted-foreground">
+          {fieldType?.label} • {field.name}
+        </p>
+      </div>
+      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={onEdit}
+        >
+          <Settings2 className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-destructive"
+          onClick={onDelete}
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </div>
+      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+    </div>
+  );
+}
+
 export default function FormBuilderPage() {
   const params = useParams();
   const router = useRouter();
@@ -186,6 +376,104 @@ export default function FormBuilderPage() {
 
   // Custom lists for data sources
   const [customLists, setCustomLists] = useState<Array<{ id: string; key: string; name: string }>>([]);
+
+  // DnD sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Handle tab reorder
+  const handleTabDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id || !template) return;
+
+    const oldIndex = template.tabs.findIndex((tab) => (tab.id || `tab-${template.tabs.indexOf(tab)}`) === active.id);
+    const newIndex = template.tabs.findIndex((tab) => (tab.id || `tab-${template.tabs.indexOf(tab)}`) === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    // Optimistically update UI
+    const newTabs = arrayMove(template.tabs, oldIndex, newIndex);
+    setTemplate({ ...template, tabs: newTabs });
+
+    // Adjust selected tab index if needed
+    if (selectedTabIndex === oldIndex) {
+      setSelectedTabIndex(newIndex);
+    } else if (oldIndex < selectedTabIndex && newIndex >= selectedTabIndex) {
+      setSelectedTabIndex(selectedTabIndex - 1);
+    } else if (oldIndex > selectedTabIndex && newIndex <= selectedTabIndex) {
+      setSelectedTabIndex(selectedTabIndex + 1);
+    }
+
+    // Persist to server
+    try {
+      const tabIds = newTabs.map((tab) => tab.id).filter(Boolean);
+      const response = await fetch(`/api/admin/form-templates/${serviceId}/tabs/reorder`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tabIds }),
+      });
+
+      if (!response.ok) {
+        // Revert on error
+        fetchTemplate();
+        toast.error("Failed to reorder tabs");
+      }
+    } catch (error) {
+      console.error("Error reordering tabs:", error);
+      fetchTemplate();
+      toast.error("Failed to reorder tabs");
+    }
+  };
+
+  // Handle field reorder
+  const handleFieldDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id || !template) return;
+
+    const currentTab = template.tabs[selectedTabIndex];
+    if (!currentTab?.id) return;
+
+    const oldIndex = currentTab.fields.findIndex((field) => (field.id || `field-${currentTab.fields.indexOf(field)}`) === active.id);
+    const newIndex = currentTab.fields.findIndex((field) => (field.id || `field-${currentTab.fields.indexOf(field)}`) === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    // Optimistically update UI
+    const newFields = arrayMove(currentTab.fields, oldIndex, newIndex);
+    const newTabs = [...template.tabs];
+    newTabs[selectedTabIndex] = { ...currentTab, fields: newFields };
+    setTemplate({ ...template, tabs: newTabs });
+
+    // Persist to server
+    try {
+      const fieldIds = newFields.map((field) => field.id).filter(Boolean);
+      const response = await fetch(`/api/admin/form-templates/${serviceId}/tabs/${currentTab.id}/fields/reorder`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fieldIds }),
+      });
+
+      if (!response.ok) {
+        // Revert on error
+        fetchTemplate();
+        toast.error("Failed to reorder fields");
+      }
+    } catch (error) {
+      console.error("Error reordering fields:", error);
+      fetchTemplate();
+      toast.error("Failed to reorder fields");
+    }
+  };
 
   const fetchTemplate = useCallback(async () => {
     setIsLoading(true);
@@ -551,22 +839,21 @@ export default function FormBuilderPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" asChild>
-            <Link href={`/admin/services/${serviceId}`}>
-              <ArrowLeft className="h-5 w-5" />
-            </Link>
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold">Form Builder</h1>
-            <p className="text-muted-foreground">{service?.name}</p>
-          </div>
+        <div>
+          <h1 className="text-2xl font-bold">Form Builder</h1>
+          <p className="text-muted-foreground">{service?.name}</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
           <Button variant="outline" asChild>
             <Link href={`/checkout/${service?.slug}`} target="_blank">
               <Eye className="mr-2 h-4 w-4" />
               Preview
+            </Link>
+          </Button>
+          <Button variant="outline" asChild>
+            <Link href={`/admin/services/${serviceId}`}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back
             </Link>
           </Button>
         </div>
@@ -586,49 +873,35 @@ export default function FormBuilderPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-1">
-              {template.tabs.map((tab, index) => (
-                <div
-                  key={tab.id || index}
-                  className={cn(
-                    "group flex cursor-pointer items-center justify-between rounded-md px-3 py-2 text-sm transition-colors",
-                    selectedTabIndex === index
-                      ? "bg-primary text-primary-foreground"
-                      : "hover:bg-muted"
-                  )}
-                  onClick={() => setSelectedTabIndex(index)}
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleTabDragEnd}
+              >
+                <SortableContext
+                  items={template.tabs.map((tab, i) => tab.id || `tab-${i}`)}
+                  strategy={verticalListSortingStrategy}
                 >
-                  <div className="flex items-center gap-2">
-                    <GripVertical className="h-4 w-4 opacity-50" />
-                    <span className="truncate">{tab.name}</span>
-                  </div>
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
-                      onClick={(e) => {
+                  {template.tabs.map((tab, index) => (
+                    <SortableTabItem
+                      key={tab.id || `tab-${index}`}
+                      tab={tab}
+                      index={index}
+                      isSelected={selectedTabIndex === index}
+                      onSelect={() => setSelectedTabIndex(index)}
+                      onEdit={(e) => {
                         e.stopPropagation();
                         openTabDialog(tab, index);
                       }}
-                    >
-                      <Settings2 className="h-3 w-3" />
-                    </Button>
-                    {template.tabs.length > 1 && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 text-destructive"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteTab(index);
-                        }}
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))}
+                      onDelete={(e) => {
+                        e.stopPropagation();
+                        deleteTab(index);
+                      }}
+                      canDelete={template.tabs.length > 1}
+                    />
+                  ))}
+                </SortableContext>
+              </DndContext>
             </CardContent>
           </Card>
 
@@ -688,63 +961,28 @@ export default function FormBuilderPage() {
                   </p>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {currentTab.fields.map((field, index) => {
-                    const fieldType = FIELD_TYPES.find(
-                      (ft) => ft.type === field.type
-                    );
-                    const Icon = fieldType?.icon || Type;
-
-                    return (
-                      <div
-                        key={field.id || index}
-                        className={cn(
-                          "group flex items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50",
-                          field.width === "HALF" && "w-1/2",
-                          field.width === "THIRD" && "w-1/3",
-                          field.width === "TWO_THIRD" && "w-2/3"
-                        )}
-                      >
-                        <GripVertical className="h-4 w-4 cursor-grab text-muted-foreground" />
-                        <Icon className="h-4 w-4 text-muted-foreground" />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium truncate">
-                              {field.label}
-                            </span>
-                            {field.required && (
-                              <Badge variant="secondary" className="text-xs">
-                                Required
-                              </Badge>
-                            )}
-                          </div>
-                          <p className="text-xs text-muted-foreground">
-                            {fieldType?.label} • {field.name}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => openFieldEditor(field, index)}
-                          >
-                            <Settings2 className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-destructive"
-                            onClick={() => deleteField(index)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                    );
-                  })}
-                </div>
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleFieldDragEnd}
+                >
+                  <SortableContext
+                    items={currentTab.fields.map((field, i) => field.id || `field-${i}`)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div className="space-y-3">
+                      {currentTab.fields.map((field, index) => (
+                        <SortableFieldItem
+                          key={field.id || `field-${index}`}
+                          field={field}
+                          index={index}
+                          onEdit={() => openFieldEditor(field, index)}
+                          onDelete={() => deleteField(index)}
+                        />
+                      ))}
+                    </div>
+                  </SortableContext>
+                </DndContext>
               )}
             </CardContent>
           </Card>
@@ -819,87 +1057,97 @@ export default function FormBuilderPage() {
             <SheetTitle>Field Settings</SheetTitle>
             <SheetDescription>Configure field properties</SheetDescription>
           </SheetHeader>
-          {editingField && (
+          {editingField && (() => {
+            // Determine which settings to show based on field type
+            const fieldType = editingField.type;
+            const isDisplayOnly = ["HEADING", "PARAGRAPH", "DIVIDER"].includes(fieldType);
+            const hasPlaceholder = ["TEXT", "EMAIL", "PHONE", "NUMBER", "DATE", "TEXTAREA", "SELECT", "MULTI_SELECT", "COUNTRY_SELECT", "STATE_SELECT"].includes(fieldType);
+            const hasHelpText = !["HEADING", "PARAGRAPH", "DIVIDER"].includes(fieldType);
+            const hasWidth = !["DIVIDER"].includes(fieldType);
+            const hasRequired = !["HEADING", "PARAGRAPH", "DIVIDER"].includes(fieldType);
+            const hasOptions = ["SELECT", "MULTI_SELECT", "RADIO", "CHECKBOX_GROUP"].includes(fieldType);
+            const hasFileSettings = ["FILE_UPLOAD", "IMAGE_UPLOAD"].includes(fieldType);
+
+            return (
             <div className="mt-6 space-y-6 pr-2">
+              {/* Field Type - At the top since other fields depend on it */}
+              <div className="space-y-2">
+                <Label>Field Type</Label>
+                <Select
+                  value={editingField.type}
+                  onValueChange={(v) =>
+                    setEditingField({ ...editingField, type: v })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {FIELD_TYPES.map((ft) => (
+                      <SelectItem key={ft.type} value={ft.type}>
+                        {ft.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               {/* Basic Settings */}
               <div className="space-y-4">
                 <h4 className="text-sm font-semibold text-foreground">Basic Settings</h4>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label>Label *</Label>
-                    <Input
-                      value={editingField.label}
-                      onChange={(e) =>
-                        setEditingField({ ...editingField, label: e.target.value })
-                      }
-                      placeholder="Field label"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Name *</Label>
-                    <Input
-                      value={editingField.name}
-                      onChange={(e) =>
-                        setEditingField({ ...editingField, name: e.target.value })
-                      }
-                      placeholder="field_name"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Unique identifier (no spaces)
-                    </p>
-                  </div>
-                </div>
 
+                {/* Label */}
                 <div className="space-y-2">
-                  <Label>Placeholder</Label>
+                  <Label>Label *</Label>
                   <Input
-                    value={editingField.placeholder || ""}
+                    value={editingField.label}
                     onChange={(e) =>
-                      setEditingField({
-                        ...editingField,
-                        placeholder: e.target.value,
-                      })
+                      setEditingField({ ...editingField, label: e.target.value })
                     }
-                    placeholder="Placeholder text..."
+                    placeholder={isDisplayOnly ? "Heading text..." : "Field label"}
                   />
+                  <p className="text-xs text-muted-foreground">
+                    The text shown to users for this field
+                  </p>
                 </div>
 
-                <div className="space-y-2">
-                  <Label>Help Text</Label>
-                  <Textarea
-                    value={editingField.helpText || ""}
-                    onChange={(e) =>
-                      setEditingField({
-                        ...editingField,
-                        helpText: e.target.value,
-                      })
-                    }
-                    placeholder="Help text shown below the field..."
-                    rows={2}
-                  />
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-2">
+                {/* Placeholder - Only for text-based inputs */}
+                {hasPlaceholder && (
                   <div className="space-y-2">
-                    <Label>Field Type</Label>
-                    <Select
-                      value={editingField.type}
-                      onValueChange={(v) =>
-                        setEditingField({ ...editingField, type: v })
+                    <Label>Placeholder</Label>
+                    <Input
+                      value={editingField.placeholder || ""}
+                      onChange={(e) =>
+                        setEditingField({
+                          ...editingField,
+                          placeholder: e.target.value,
+                        })
                       }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {FIELD_TYPES.map((ft) => (
-                          <SelectItem key={ft.type} value={ft.type}>
-                            {ft.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      placeholder="Placeholder text..."
+                    />
                   </div>
+                )}
+
+                {/* Help Text - For most fields */}
+                {hasHelpText && (
+                  <div className="space-y-2">
+                    <Label>Help Text</Label>
+                    <Textarea
+                      value={editingField.helpText || ""}
+                      onChange={(e) =>
+                        setEditingField({
+                          ...editingField,
+                          helpText: e.target.value,
+                        })
+                      }
+                      placeholder="Help text shown below the field..."
+                      rows={2}
+                    />
+                  </div>
+                )}
+
+                {/* Width */}
+                {hasWidth && (
                   <div className="space-y-2">
                     <Label>Width</Label>
                     <Select
@@ -920,22 +1168,25 @@ export default function FormBuilderPage() {
                       </SelectContent>
                     </Select>
                   </div>
-                </div>
+                )}
 
-                <div className="flex items-center justify-between rounded-lg border p-3">
-                  <div>
-                    <Label>Required</Label>
-                    <p className="text-xs text-muted-foreground">
-                      Make this field mandatory
-                    </p>
+                {/* Required Toggle - For input fields */}
+                {hasRequired && (
+                  <div className="flex items-center justify-between rounded-lg border p-3">
+                    <div>
+                      <Label>Required</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Make this field mandatory
+                      </p>
+                    </div>
+                    <Switch
+                      checked={editingField.required}
+                      onCheckedChange={(v) =>
+                        setEditingField({ ...editingField, required: v })
+                      }
+                    />
                   </div>
-                  <Switch
-                    checked={editingField.required}
-                    onCheckedChange={(v) =>
-                      setEditingField({ ...editingField, required: v })
-                    }
-                  />
-                </div>
+                )}
               </div>
 
               {/* Options for Select/Radio fields */}
@@ -1111,7 +1362,8 @@ export default function FormBuilderPage() {
                 </Button>
               </div>
             </div>
-          )}
+            );
+          })()}
         </SheetContent>
       </Sheet>
     </div>

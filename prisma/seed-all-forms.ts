@@ -1,5 +1,13 @@
-import prisma from "../src/lib/db";
+import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
+import "dotenv/config";
 import { serviceForms, FormField, FormStep } from "../src/lib/data/service-forms";
+
+// Use DATABASE_URL from .env for consistency
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 // Map service-forms.ts field types to Prisma FieldType enum
 const fieldTypeMap: Record<string, string> = {

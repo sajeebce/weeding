@@ -155,18 +155,65 @@ function ServiceCheckoutForm() {
     packages: ServicePackage[];
   }
 
+  // Dynamic form template from database
+  interface DynamicFormField {
+    id: string;
+    name: string;
+    label: string;
+    type: string;
+    placeholder?: string | null;
+    helpText?: string | null;
+    width: string;
+    required: boolean;
+    validation?: Record<string, unknown> | null;
+    options?: Array<{ value: string; label: string; description?: string }> | null;
+    dataSourceType?: string | null;
+    dataSourceKey?: string | null;
+    dependsOn?: string | null;
+    conditionalLogic?: { when: string; operator: string; value: string } | null;
+    accept?: string | null;
+    maxSize?: number | null;
+    defaultValue?: string | null;
+  }
+
+  interface DynamicFormTab {
+    id: string;
+    name: string;
+    description?: string | null;
+    icon: string;
+    order: number;
+    fields: DynamicFormField[];
+  }
+
+  interface DynamicFormTemplate {
+    id: string;
+    version: number;
+    tabs: DynamicFormTab[];
+  }
+
   const [service, setService] = useState<ServiceInfo | null>(null);
+  const [dynamicTemplate, setDynamicTemplate] = useState<DynamicFormTemplate | null>(null);
   const [isLoadingService, setIsLoadingService] = useState(true);
 
-  // Fetch service data from API
+  // Fetch service data and dynamic form from API
   useEffect(() => {
-    const fetchService = async () => {
+    const fetchServiceAndForm = async () => {
       setIsLoadingService(true);
       try {
-        const response = await fetch(`/api/services/${serviceSlug}`);
-        if (response.ok) {
-          const data = await response.json();
+        // Fetch service data
+        const serviceResponse = await fetch(`/api/services/${serviceSlug}`);
+        if (serviceResponse.ok) {
+          const data = await serviceResponse.json();
           setService(data);
+        }
+
+        // Fetch dynamic form template
+        const formResponse = await fetch(`/api/services/${serviceSlug}/form`);
+        if (formResponse.ok) {
+          const formData = await formResponse.json();
+          if (formData.template) {
+            setDynamicTemplate(formData.template);
+          }
         }
       } catch (error) {
         console.error("Error fetching service:", error);
@@ -174,7 +221,7 @@ function ServiceCheckoutForm() {
         setIsLoadingService(false);
       }
     };
-    fetchService();
+    fetchServiceAndForm();
   }, [serviceSlug]);
 
   // Check for logged-in user on mount
@@ -193,13 +240,83 @@ function ServiceCheckoutForm() {
     }
   }, []);
 
-  // Load form configuration
+  // Load form configuration - prefer dynamic template from DB, fall back to static
   useEffect(() => {
-    const config = getServiceForm(serviceSlug);
-    if (config) {
-      setFormConfig(config);
+    if (dynamicTemplate && dynamicTemplate.tabs.length > 0) {
+      // Convert dynamic template to ServiceFormConfig format
+      const dynamicConfig: ServiceFormConfig = {
+        slug: serviceSlug,
+        serviceName: service?.name || serviceSlug,
+        steps: dynamicTemplate.tabs.map((tab, index) => ({
+          id: index + 1,
+          name: tab.name,
+          description: tab.description || undefined,
+          fields: tab.fields.map((field) => {
+            // Convert field type to match static config format
+            const fieldType = field.type.toLowerCase();
+            // Map database types to form types
+            const typeMap: Record<string, string> = {
+              text: "text",
+              email: "email",
+              phone: "phone",
+              select: "select",
+              textarea: "textarea",
+              date: "date",
+              number: "number",
+              checkbox: "checkbox",
+              radio: "radio",
+              file_upload: "file",
+              file: "file",
+              country_select: "country",
+              country: "country",
+              state_select: "state",
+              state: "state",
+              heading: "heading",
+              paragraph: "paragraph",
+              divider: "divider",
+              multi_select: "multi_select",
+            };
+
+            return {
+              name: field.name,
+              label: field.label,
+              type: typeMap[fieldType] || fieldType,
+              placeholder: field.placeholder || undefined,
+              helpText: field.helpText || undefined,
+              required: field.required,
+              options: field.options || undefined,
+              validation: field.validation ? {
+                min: (field.validation as Record<string, unknown>).min as number | undefined,
+                max: (field.validation as Record<string, unknown>).max as number | undefined,
+                maxLength: (field.validation as Record<string, unknown>).maxLength as number | undefined,
+                pattern: (field.validation as Record<string, unknown>).pattern as string | undefined,
+              } : undefined,
+              conditionalOn: field.conditionalLogic ? {
+                field: field.conditionalLogic.when,
+                value: field.conditionalLogic.value,
+              } : undefined,
+              accept: field.accept || undefined,
+            } as FormField;
+          }),
+        })),
+        faqs: [], // FAQs will come from static config as fallback
+      };
+
+      // Merge FAQs from static config if available
+      const staticConfig = getServiceForm(serviceSlug);
+      if (staticConfig?.faqs) {
+        dynamicConfig.faqs = staticConfig.faqs;
+      }
+
+      setFormConfig(dynamicConfig);
+    } else {
+      // Fall back to static config
+      const config = getServiceForm(serviceSlug);
+      if (config) {
+        setFormConfig(config);
+      }
     }
-  }, [serviceSlug]);
+  }, [serviceSlug, dynamicTemplate, service?.name]);
 
   // Auto-populate contact fields from logged-in user (so backend still gets the data)
   useEffect(() => {

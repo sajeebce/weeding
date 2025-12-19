@@ -267,6 +267,11 @@ export function Footer() {
     return columns;
   }, [footerConfig?.widgets, footerConfig?.columns]);
 
+  // Get all widgets as flat array for centered/mega layouts
+  const allWidgets = useMemo(() => {
+    return footerConfig?.widgets || [];
+  }, [footerConfig?.widgets]);
+
   // Get styling from footer config
   const footerStyle = {
     ...(footerConfig?.styling?.bgColor && { backgroundColor: footerConfig.styling.bgColor }),
@@ -278,6 +283,366 @@ export function Footer() {
   // If we have dynamic widgets, use them
   const hasDynamicWidgets = widgetsByColumn && Object.values(widgetsByColumn).some((w) => w.length > 0);
 
+  // Get layout type
+  const layout = footerConfig?.layout || "MULTI_COLUMN";
+
+  // Bottom bar component (shared across layouts)
+  const BottomBar = () => (
+    footerConfig?.bottomBar?.enabled !== false ? (
+      <div
+        className="mt-12 border-t pt-8"
+        style={{ paddingBottom: `${footerConfig?.styling?.paddingBottom || 32}px` }}
+      >
+        <div className={`flex flex-col items-center justify-between gap-4 ${layout === "CENTERED" ? "" : "md:flex-row"}`}>
+          <p className="text-sm text-muted-foreground">
+            {footerConfig?.bottomBar?.copyrightText ||
+              `© ${new Date().getFullYear()} ${businessConfig.name}. All rights reserved.`}
+          </p>
+          {footerConfig?.bottomBar?.showDisclaimer && (
+            <p className={`max-w-xl text-center text-xs text-muted-foreground ${layout === "CENTERED" ? "" : "md:text-right"}`}>
+              <strong>Disclaimer:</strong>{" "}
+              {footerConfig?.bottomBar?.disclaimerText ||
+                `${businessConfig.name} is not a law firm and does not provide legal advice. The information provided is for general informational purposes only.`}
+            </p>
+          )}
+        </div>
+
+        {/* Bottom Links */}
+        {footerConfig?.bottomBar?.links && footerConfig.bottomBar.links.length > 0 && (
+          <div className={`mt-4 flex flex-wrap gap-4 ${layout === "CENTERED" ? "justify-center" : "justify-center md:justify-start"}`}>
+            {footerConfig.bottomBar.links.map((link, index) => (
+              <Link
+                key={index}
+                href={link.url}
+                className="text-xs text-muted-foreground hover:text-foreground"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+    ) : null
+  );
+
+  // ============== MINIMAL LAYOUT ==============
+  // Just copyright and links - no widgets shown
+  if (layout === "MINIMAL") {
+    return (
+      <footer className="border-t bg-muted/30" style={footerConfig?.styling?.bgColor ? footerStyle : undefined}>
+        <div
+          className="container mx-auto px-4"
+          style={{ paddingTop: `${footerConfig?.styling?.paddingTop || 24}px` }}
+        >
+          <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
+            {/* Logo */}
+            <Link href="/" className="flex items-center space-x-2">
+              {businessConfig.logo.url ? (
+                <Image
+                  src={businessConfig.logo.url}
+                  alt={businessConfig.name}
+                  width={32}
+                  height={32}
+                  className="h-8 w-8 rounded-lg object-contain"
+                />
+              ) : (
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+                  <span className="text-sm font-bold text-primary-foreground">
+                    {businessConfig.logo.text || businessConfig.name.charAt(0)}
+                  </span>
+                </div>
+              )}
+              <span className="font-semibold">{businessConfig.name}</span>
+            </Link>
+
+            {/* Bottom Links inline */}
+            {footerConfig?.bottomBar?.links && footerConfig.bottomBar.links.length > 0 && (
+              <div className="flex flex-wrap justify-center gap-4">
+                {footerConfig.bottomBar.links.map((link, index) => (
+                  <Link
+                    key={index}
+                    href={link.url}
+                    className="text-sm text-muted-foreground hover:text-foreground"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            )}
+
+            {/* Social Links */}
+            {socialLinks.length > 0 && (
+              <div className="flex gap-3">
+                {socialLinks.map((social) => (
+                  <a
+                    key={social.name}
+                    href={social.href}
+                    className="text-muted-foreground transition-colors hover:text-foreground"
+                    aria-label={social.name}
+                  >
+                    <social.icon className="h-5 w-5" />
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Copyright */}
+          <div
+            className="mt-6 border-t pt-6 text-center"
+            style={{ paddingBottom: `${footerConfig?.styling?.paddingBottom || 24}px` }}
+          >
+            <p className="text-sm text-muted-foreground">
+              {footerConfig?.bottomBar?.copyrightText ||
+                `© ${new Date().getFullYear()} ${businessConfig.name}. All rights reserved.`}
+            </p>
+          </div>
+        </div>
+      </footer>
+    );
+  }
+
+  // ============== CENTERED LAYOUT ==============
+  // Logo centered, then links in a row, all centered
+  if (layout === "CENTERED") {
+    // Get link widgets for centered display
+    const linkWidgets = allWidgets.filter(w => w.type === "LINKS");
+
+    return (
+      <footer className="border-t bg-muted/30" style={footerConfig?.styling?.bgColor ? footerStyle : undefined}>
+        <div
+          className="container mx-auto px-4"
+          style={{ paddingTop: `${footerConfig?.styling?.paddingTop || 48}px` }}
+        >
+          {/* Centered Logo & Description */}
+          <div className="flex flex-col items-center text-center">
+            <Link href="/" className="flex items-center space-x-2">
+              {businessConfig.logo.url ? (
+                <Image
+                  src={businessConfig.logo.url}
+                  alt={businessConfig.name}
+                  width={48}
+                  height={48}
+                  className="h-12 w-12 rounded-lg object-contain"
+                />
+              ) : (
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
+                  <span className="text-xl font-bold text-primary-foreground">
+                    {businessConfig.logo.text || businessConfig.name.charAt(0)}
+                  </span>
+                </div>
+              )}
+              <span className="text-2xl font-bold">{businessConfig.name}</span>
+            </Link>
+            <p className="mt-4 max-w-md text-sm text-muted-foreground">
+              {businessConfig.description}
+            </p>
+
+            {/* Social Links */}
+            {socialLinks.length > 0 && (
+              <div className="mt-6 flex gap-4">
+                {socialLinks.map((social) => (
+                  <a
+                    key={social.name}
+                    href={social.href}
+                    className="rounded-lg bg-muted p-2 text-muted-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
+                    aria-label={social.name}
+                  >
+                    <social.icon className="h-5 w-5" />
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Link sections in a row */}
+          {linkWidgets.length > 0 && (
+            <div className="mt-10 flex flex-wrap justify-center gap-12">
+              {linkWidgets.map((widget) => {
+                const links = getWidgetLinks(widget);
+                return (
+                  <div key={widget.id} className="text-center">
+                    {widget.showTitle && widget.title && (
+                      <h3 className="text-sm font-semibold text-foreground">{widget.title}</h3>
+                    )}
+                    <ul className="mt-3 space-y-2">
+                      {links.map((link) => (
+                        <li key={link.id}>
+                          <Link
+                            href={link.url}
+                            className="text-sm text-muted-foreground hover:text-foreground"
+                          >
+                            {link.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          <BottomBar />
+        </div>
+      </footer>
+    );
+  }
+
+  // ============== MEGA LAYOUT ==============
+  // Full sitemap style - all widgets displayed with more space
+  if (layout === "MEGA") {
+    return (
+      <footer className="border-t bg-muted/30" style={footerConfig?.styling?.bgColor ? footerStyle : undefined}>
+        <div
+          className="container mx-auto px-4"
+          style={{ paddingTop: `${footerConfig?.styling?.paddingTop || 48}px` }}
+        >
+          {/* Top section with logo and newsletter */}
+          <div className="flex flex-col items-start justify-between gap-8 border-b pb-10 md:flex-row md:items-center">
+            <div className="flex items-center space-x-3">
+              {businessConfig.logo.url ? (
+                <Image
+                  src={businessConfig.logo.url}
+                  alt={businessConfig.name}
+                  width={48}
+                  height={48}
+                  className="h-12 w-12 rounded-lg object-contain"
+                />
+              ) : (
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
+                  <span className="text-xl font-bold text-primary-foreground">
+                    {businessConfig.logo.text || businessConfig.name.charAt(0)}
+                  </span>
+                </div>
+              )}
+              <div>
+                <span className="text-xl font-bold">{businessConfig.name}</span>
+                <p className="text-sm text-muted-foreground">{businessConfig.description}</p>
+              </div>
+            </div>
+
+            {/* Social Links */}
+            {socialLinks.length > 0 && (
+              <div className="flex gap-3">
+                {socialLinks.map((social) => (
+                  <a
+                    key={social.name}
+                    href={social.href}
+                    className="rounded-full bg-muted p-3 text-muted-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
+                    aria-label={social.name}
+                  >
+                    <social.icon className="h-5 w-5" />
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Mega grid - more columns */}
+          <div className="mt-10 grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-6">
+            {hasDynamicWidgets ? (
+              Object.entries(widgetsByColumn!).map(([column, widgets]) => (
+                <div key={column}>
+                  {widgets.map((widget) => (
+                    <FooterWidgetRenderer
+                      key={widget.id}
+                      widget={widget}
+                      businessConfig={businessConfig}
+                      socialLinks={socialLinks}
+                    />
+                  ))}
+                </div>
+              ))
+            ) : (
+              <>
+                {/* Services */}
+                <div>
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Services</h3>
+                  <ul className="mt-4 space-y-3">
+                    {fallbackLinks.services.map((link) => (
+                      <li key={link.name}>
+                        <Link href={link.href} className="text-sm text-muted-foreground hover:text-foreground">
+                          {link.name}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                {/* Company */}
+                <div>
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Company</h3>
+                  <ul className="mt-4 space-y-3">
+                    {fallbackLinks.company.map((link) => (
+                      <li key={link.name}>
+                        <Link href={link.href} className="text-sm text-muted-foreground hover:text-foreground">
+                          {link.name}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                {/* States */}
+                <div>
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Popular States</h3>
+                  <ul className="mt-4 space-y-3">
+                    {fallbackLinks.states.map((link) => (
+                      <li key={link.name}>
+                        <Link href={link.href} className="text-sm text-muted-foreground hover:text-foreground">
+                          {link.name}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                {/* Legal */}
+                <div>
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Legal</h3>
+                  <ul className="mt-4 space-y-3">
+                    {fallbackLinks.legal.map((link) => (
+                      <li key={link.name}>
+                        <Link href={link.href} className="text-sm text-muted-foreground hover:text-foreground">
+                          {link.name}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                {/* Contact */}
+                <div className="col-span-2">
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Contact Us</h3>
+                  <div className="mt-4 space-y-3">
+                    {businessConfig.contact.supportEmail && (
+                      <a href={`mailto:${businessConfig.contact.supportEmail}`} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+                        <Mail className="h-4 w-4" />
+                        {businessConfig.contact.supportEmail}
+                      </a>
+                    )}
+                    {businessConfig.contact.phone && (
+                      <a href={`tel:${businessConfig.contact.phone.replace(/[^+\d]/g, "")}`} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+                        <Phone className="h-4 w-4" />
+                        {businessConfig.contact.phone}
+                      </a>
+                    )}
+                    {businessConfig.address.full && (
+                      <p className="flex items-start gap-2 text-sm text-muted-foreground">
+                        <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
+                        {businessConfig.address.full}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
+          <BottomBar />
+        </div>
+      </footer>
+    );
+  }
+
+  // ============== MULTI_COLUMN LAYOUT (Default) ==============
   return (
     <footer className="border-t bg-muted/30" style={footerConfig?.styling?.bgColor ? footerStyle : undefined}>
       <div
@@ -445,42 +810,7 @@ export function Footer() {
           </div>
         )}
 
-        {/* Bottom Bar */}
-        {footerConfig?.bottomBar?.enabled !== false && (
-          <div
-            className="mt-12 border-t pt-8"
-            style={{ paddingBottom: `${footerConfig?.styling?.paddingBottom || 32}px` }}
-          >
-            <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-              <p className="text-sm text-muted-foreground">
-                {footerConfig?.bottomBar?.copyrightText ||
-                  `© ${new Date().getFullYear()} ${businessConfig.name}. All rights reserved.`}
-              </p>
-              {footerConfig?.bottomBar?.showDisclaimer && (
-                <p className="max-w-xl text-center text-xs text-muted-foreground md:text-right">
-                  <strong>Disclaimer:</strong>{" "}
-                  {footerConfig?.bottomBar?.disclaimerText ||
-                    `${businessConfig.name} is not a law firm and does not provide legal advice. The information provided is for general informational purposes only.`}
-                </p>
-              )}
-            </div>
-
-            {/* Bottom Links */}
-            {footerConfig?.bottomBar?.links && footerConfig.bottomBar.links.length > 0 && (
-              <div className="mt-4 flex flex-wrap justify-center gap-4 md:justify-start">
-                {footerConfig.bottomBar.links.map((link, index) => (
-                  <Link
-                    key={index}
-                    href={link.url}
-                    className="text-xs text-muted-foreground hover:text-foreground"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+        <BottomBar />
       </div>
     </footer>
   );

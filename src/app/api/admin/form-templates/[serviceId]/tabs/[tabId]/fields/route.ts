@@ -3,10 +3,11 @@ import prisma from "@/lib/db";
 import { z } from "zod";
 import { checkAdminOnly, authError } from "@/lib/admin-auth";
 import { FieldType, FieldWidth, DataSourceType } from "@prisma/client";
+import { generateFieldName } from "@/lib/utils";
 
 // Validation schema for creating/updating fields
 const fieldSchema = z.object({
-  name: z.string().min(1, "Field name is required"),
+  name: z.string().optional(), // Auto-generated from label
   label: z.string().min(1, "Field label is required"),
   type: z.nativeEnum(FieldType),
   placeholder: z.string().optional().nullable(),
@@ -72,13 +73,24 @@ export async function POST(
     const body = await request.json();
     const validatedData = fieldSchema.parse(body);
 
-    // Check if tab exists
+    // Check if tab exists and get template info
     const tab = await prisma.formTab.findUnique({
       where: { id: tabId },
       include: {
         fields: {
           orderBy: { order: "desc" },
           take: 1,
+        },
+        template: {
+          include: {
+            tabs: {
+              include: {
+                fields: {
+                  select: { name: true },
+                },
+              },
+            },
+          },
         },
       },
     });
@@ -93,10 +105,26 @@ export async function POST(
     // Calculate next order
     const nextOrder = validatedData.order ?? (tab.fields[0]?.order ?? 0) + 1;
 
+    // Get all existing field names in this template (across all tabs)
+    const existingNames = new Set(
+      tab.template.tabs.flatMap((t) => t.fields.map((f) => f.name))
+    );
+
+    // Generate unique field name from label
+    let baseName = generateFieldName(validatedData.label);
+    let fieldName = baseName;
+    let suffix = 2;
+
+    // If duplicate exists, append suffix until unique
+    while (existingNames.has(fieldName)) {
+      fieldName = `${baseName}${suffix}`;
+      suffix++;
+    }
+
     const field = await prisma.formField.create({
       data: {
         tabId,
-        name: validatedData.name,
+        name: fieldName,
         label: validatedData.label,
         type: validatedData.type,
         placeholder: validatedData.placeholder,

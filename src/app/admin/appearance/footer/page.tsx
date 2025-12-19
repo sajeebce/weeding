@@ -302,6 +302,12 @@ export default function FooterBuilderPage() {
     return footer.widgets.filter((w) => w.column === column);
   }
 
+  // Get orphan widgets (widgets in columns beyond current column count)
+  function getOrphanWidgets(): FooterWidget[] {
+    if (!footer?.widgets) return [];
+    return footer.widgets.filter((w) => w.column > formData.columns);
+  }
+
   if (loading) {
     return (
       <div className="flex h-96 items-center justify-center">
@@ -342,8 +348,7 @@ export default function FooterBuilderPage() {
       {/* Settings Tabs */}
       <Tabs defaultValue="layout" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="layout">Layout</TabsTrigger>
-          <TabsTrigger value="widgets">Widgets</TabsTrigger>
+          <TabsTrigger value="layout">Layout & Widgets</TabsTrigger>
           <TabsTrigger value="newsletter">Newsletter</TabsTrigger>
           <TabsTrigger value="bottombar">Bottom Bar</TabsTrigger>
           <TabsTrigger value="style">Styling</TabsTrigger>
@@ -454,10 +459,8 @@ export default function FooterBuilderPage() {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
 
-        {/* Widgets Tab */}
-        <TabsContent value="widgets" className="space-y-4">
+          {/* Widget Areas - Same page as layout */}
           <Card>
             <CardHeader>
               <CardTitle>Widget Areas</CardTitle>
@@ -465,7 +468,18 @@ export default function FooterBuilderPage() {
                 Manage footer widgets in each column. Click + to add widgets.
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
+              {/* Warning for orphan widgets */}
+              {getOrphanWidgets().length > 0 && (
+                <div className="rounded-lg border border-yellow-500/50 bg-yellow-50 p-4 dark:bg-yellow-900/20">
+                  <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                    ⚠️ {getOrphanWidgets().length} widget(s) are in columns beyond the current {formData.columns}-column layout.
+                  </p>
+                  <p className="mt-1 text-xs text-yellow-700 dark:text-yellow-300">
+                    These widgets won&apos;t be visible. Increase columns or reassign them.
+                  </p>
+                </div>
+              )}
               <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${formData.columns}, 1fr)` }}>
                 {Array.from({ length: formData.columns }, (_, i) => i + 1).map((column) => (
                   <div key={column} className="space-y-2">

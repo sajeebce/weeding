@@ -256,3 +256,32 @@ export function handleEmailInput(
   const sanitized = sanitizeEmail(e.target.value);
   setter(sanitized);
 }
+
+/**
+ * Generate a camelCase field name from a label
+ * Examples:
+ *   "Brand Name" → "brandName"
+ *   "Amazon Seller ID" → "amazonSellerId"
+ *   "Contact Email" → "contactEmail"
+ *   "LLC Name (Required)" → "llcNameRequired"
+ */
+export function generateFieldName(label: string): string {
+  if (!label || typeof label !== "string") return "";
+
+  // Remove special characters except spaces and alphanumeric
+  const cleaned = label.replace(/[^a-zA-Z0-9\s]/g, "");
+
+  // Split by spaces and filter empty strings
+  const words = cleaned.split(/\s+/).filter(Boolean);
+
+  if (words.length === 0) return "";
+
+  // Convert to camelCase: first word lowercase, rest capitalized
+  return words
+    .map((word, index) => {
+      const lowered = word.toLowerCase();
+      if (index === 0) return lowered;
+      return lowered.charAt(0).toUpperCase() + lowered.slice(1);
+    })
+    .join("");
+}
