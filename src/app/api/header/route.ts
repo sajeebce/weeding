@@ -67,7 +67,7 @@ export async function GET() {
       height: header.height,
       topBar: {
         enabled: header.topBarEnabled,
-        content: header.topBarContent,
+        content: header.topBarContent ? JSON.parse(header.topBarContent as string) : null,
         bgColor: header.topBarBgColor,
         textColor: header.topBarTextColor,
       },
@@ -80,8 +80,11 @@ export async function GET() {
       auth: {
         showButtons: header.showAuthButtons,
         loginText: header.loginText,
+        loginUrl: header.loginUrl,
+        loginStyle: header.loginStyle ? JSON.parse(header.loginStyle as string) : null,
         registerText: header.registerText,
         registerUrl: header.registerUrl,
+        registerStyle: header.registerStyle ? JSON.parse(header.registerStyle as string) : null,
       },
       search: {
         enabled: header.searchEnabled,

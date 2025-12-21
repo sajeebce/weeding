@@ -11,14 +11,21 @@ import {
   Loader2,
   ExternalLink,
   ChevronDown,
+  ChevronRight,
   X,
   GripVertical,
+  Plus,
+  Megaphone,
+  Pin,
+  Layers,
+  Search,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
@@ -32,7 +39,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import type { HeaderConfig, HeaderLayout, CTAButton, ButtonHoverEffect, ButtonCustomStyle, GradientDirection } from "@/lib/header-footer/types";
+import type { HeaderConfig, HeaderLayout, CTAButton, ButtonHoverEffect, ButtonCustomStyle, GradientDirection, TopBarContent, AnnouncementBarStyle, AnnouncementBarPreset } from "@/lib/header-footer/types";
 import {
   Accordion,
   AccordionContent,
@@ -263,6 +270,109 @@ const buttonStylePresets: ButtonStylePreset[] = [
   },
 ];
 
+// Announcement Bar Style Presets (adapted from button presets)
+const announcementBarPresets: AnnouncementBarPreset[] = [
+  {
+    id: "ocean-blue",
+    name: "Ocean Blue",
+    description: "Professional blue background",
+    style: {
+      bgColor: "#1e40af",
+      textColor: "#ffffff",
+      linkColor: "#fbbf24",
+      linkHoverColor: "#fcd34d",
+      linkStyle: "bold",
+    },
+  },
+  {
+    id: "sunset-gradient",
+    name: "Sunset Gradient",
+    description: "Vibrant orange to pink gradient",
+    style: {
+      useGradient: true,
+      gradientFrom: "#FF6B35",
+      gradientTo: "#F72585",
+      gradientDirection: "to-r",
+      textColor: "#ffffff",
+      linkColor: "#ffffff",
+      linkHoverColor: "#fef3c7",
+      linkStyle: "underline",
+    },
+  },
+  {
+    id: "emerald-success",
+    name: "Emerald Success",
+    description: "Green for positive announcements",
+    style: {
+      bgColor: "#059669",
+      textColor: "#ffffff",
+      linkColor: "#fbbf24",
+      linkHoverColor: "#fcd34d",
+      linkStyle: "bold",
+    },
+  },
+  {
+    id: "red-alert",
+    name: "Red Alert",
+    description: "Urgent red for important notices",
+    style: {
+      bgColor: "#DC2626",
+      textColor: "#ffffff",
+      linkColor: "#fef08a",
+      linkHoverColor: "#fef9c3",
+      linkStyle: "bold",
+    },
+  },
+  {
+    id: "midnight-gold",
+    name: "Midnight Gold",
+    description: "Premium dark with gold accents",
+    style: {
+      bgColor: "#1a1a2e",
+      textColor: "#FFD700",
+      linkColor: "#FFD700",
+      linkHoverColor: "#FFF8DC",
+      linkStyle: "underline",
+    },
+  },
+  {
+    id: "glass-morph",
+    name: "Glass Morph",
+    description: "Modern frosted glass effect",
+    style: {
+      bgColor: "rgba(30, 41, 59, 0.9)",
+      textColor: "#f8fafc",
+      linkColor: "#94a3b8",
+      linkHoverColor: "#e2e8f0",
+      linkStyle: "underline",
+    },
+  },
+  {
+    id: "coral-soft",
+    name: "Coral Soft",
+    description: "Friendly warm coral",
+    style: {
+      bgColor: "#FF6F61",
+      textColor: "#ffffff",
+      linkColor: "#ffffff",
+      linkHoverColor: "#fef3c7",
+      linkStyle: "bold",
+    },
+  },
+  {
+    id: "warning-yellow",
+    name: "Warning Yellow",
+    description: "Attention-grabbing yellow",
+    style: {
+      bgColor: "#FCD34D",
+      textColor: "#1f2937",
+      linkColor: "#1f2937",
+      linkHoverColor: "#374151",
+      linkStyle: "underline",
+    },
+  },
+];
+
 // Convert gradient direction to CSS
 function getGradientCSS(direction?: GradientDirection): string {
   switch (direction) {
@@ -473,6 +583,24 @@ export default function HeaderBuilderPage() {
   // Auth button position: index where auth button appears (null = at end after all CTA buttons)
   const [authButtonPosition, setAuthButtonPosition] = useState<number | null>(null);
 
+  // Default top bar content
+  const defaultTopBarContent: TopBarContent = {
+    text: "🎉 Welcome! Get 10% off your first order with code WELCOME10",
+    links: [],
+    style: {
+      bgColor: "#1e40af",
+      textColor: "#ffffff",
+      linkColor: "#fbbf24",
+      linkHoverColor: "#fcd34d",
+      linkStyle: "bold",
+    },
+    dismissible: true,
+    position: "fixed",
+    entranceAnimation: "slide-down",
+    animationDuration: 300,
+    enableMarquee: false,
+  };
+
   // Form state
   const [formData, setFormData] = useState({
     name: "Default Header",
@@ -480,6 +608,7 @@ export default function HeaderBuilderPage() {
     sticky: true,
     transparent: false,
     topBarEnabled: false,
+    topBarContent: defaultTopBarContent,
     logoMaxHeight: 40,
     showAuthButtons: true,
     loginText: "Sign In",
@@ -527,6 +656,7 @@ export default function HeaderBuilderPage() {
           sticky: activeHeader.sticky,
           transparent: activeHeader.transparent,
           topBarEnabled: activeHeader.topBarEnabled,
+          topBarContent: activeHeader.topBarContent || defaultTopBarContent,
           logoMaxHeight: activeHeader.logoMaxHeight,
           showAuthButtons: activeHeader.showAuthButtons,
           loginText: activeHeader.loginText,
@@ -576,23 +706,32 @@ export default function HeaderBuilderPage() {
 
     setSaving(true);
     try {
+      const payload = {
+        id: header.id,
+        ...formData,
+        bgColor: formData.bgColor || null,
+        textColor: formData.textColor || null,
+      };
+      console.log("Saving header with payload:", JSON.stringify(payload, null, 2));
+
       const res = await fetch("/api/admin/header", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: header.id,
-          ...formData,
-          bgColor: formData.bgColor || null,
-          textColor: formData.textColor || null,
-        }),
+        body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error("Failed to save");
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        const details = data.details ? `: ${typeof data.details === 'string' ? data.details : JSON.stringify(data.details)}` : '';
+        throw new Error(data.error || "Failed to save" + details);
+      }
 
       toast.success("Header configuration saved");
       fetchHeader();
     } catch (error) {
-      toast.error("Failed to save header configuration");
+      const message = error instanceof Error ? error.message : "Failed to save header configuration";
+      toast.error(message);
+      console.error("Save error:", error);
     } finally {
       setSaving(false);
     }
@@ -1052,58 +1191,532 @@ export default function HeaderBuilderPage() {
 
               <Separator />
 
-              {/* Behavior Settings */}
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="flex items-center justify-between rounded-lg border p-4">
-                  <div>
-                    <Label className="text-base">Sticky Header</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Header stays fixed when scrolling
-                    </p>
+              {/* Behavior Settings - Vertical Collapsible Cards */}
+              <div className="space-y-3">
+                {/* 1. Sticky Header */}
+                <div className="rounded-lg border">
+                  <div className="flex items-center justify-between p-4">
+                    <div className="flex items-center gap-3">
+                      <Pin className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <Label className="text-base">Sticky Header</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Header stays fixed when scrolling
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={formData.sticky}
+                      onCheckedChange={(checked) => setFormData({ ...formData, sticky: checked })}
+                    />
                   </div>
-                  <Switch
-                    checked={formData.sticky}
-                    onCheckedChange={(checked) => setFormData({ ...formData, sticky: checked })}
-                  />
                 </div>
 
-                <div className="flex items-center justify-between rounded-lg border p-4">
-                  <div>
-                    <Label className="text-base">Transparent on Hero</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Transparent background over hero section
-                    </p>
+                {/* 2. Transparent on Hero */}
+                <div className="rounded-lg border">
+                  <div className="flex items-center justify-between p-4">
+                    <div className="flex items-center gap-3">
+                      <Layers className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <Label className="text-base">Transparent on Hero</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Transparent background over hero section
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={formData.transparent}
+                      onCheckedChange={(checked) => setFormData({ ...formData, transparent: checked })}
+                    />
                   </div>
-                  <Switch
-                    checked={formData.transparent}
-                    onCheckedChange={(checked) => setFormData({ ...formData, transparent: checked })}
-                  />
                 </div>
 
-                <div className="flex items-center justify-between rounded-lg border p-4">
-                  <div>
-                    <Label className="text-base">Enable Search</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Show search icon in header
-                    </p>
+                {/* 3. Enable Search */}
+                <div className="rounded-lg border">
+                  <div className="flex items-center justify-between p-4">
+                    <div className="flex items-center gap-3">
+                      <Search className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <Label className="text-base">Enable Search</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Show search icon in header
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={formData.searchEnabled}
+                      onCheckedChange={(checked) => setFormData({ ...formData, searchEnabled: checked })}
+                    />
                   </div>
-                  <Switch
-                    checked={formData.searchEnabled}
-                    onCheckedChange={(checked) => setFormData({ ...formData, searchEnabled: checked })}
-                  />
                 </div>
 
-                <div className="flex items-center justify-between rounded-lg border p-4">
-                  <div>
-                    <Label className="text-base">Top Announcement Bar</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Show promotional bar above header
-                    </p>
+                {/* 4. Top Announcement Bar - Collapsible */}
+                <div className="rounded-lg border">
+                  <div className="flex items-center justify-between p-4">
+                    <div className="flex items-center gap-3">
+                      <Megaphone className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <Label className="text-base">Top Announcement Bar</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Show promotional bar above header
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={formData.topBarEnabled}
+                      onCheckedChange={(checked) => setFormData({ ...formData, topBarEnabled: checked })}
+                    />
                   </div>
-                  <Switch
-                    checked={formData.topBarEnabled}
-                    onCheckedChange={(checked) => setFormData({ ...formData, topBarEnabled: checked })}
-                  />
+
+                  {/* Expanded Settings when enabled */}
+                  {formData.topBarEnabled && (
+                    <div className="border-t px-4 pb-4 pt-4 space-y-4">
+                      {/* Announcement Text */}
+                      <div className="space-y-2">
+                        <Label>Announcement Text</Label>
+                        <Input
+                          value={formData.topBarContent.text}
+                          onChange={(e) => setFormData({
+                            ...formData,
+                            topBarContent: { ...formData.topBarContent, text: e.target.value }
+                          })}
+                          placeholder="🎉 Welcome! Get 10% off your first order..."
+                        />
+                      </div>
+
+                      {/* Links */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Label>Links (optional)</Label>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setFormData({
+                              ...formData,
+                              topBarContent: {
+                                ...formData.topBarContent,
+                                links: [...(formData.topBarContent.links || []), { label: "Learn More", url: "/", target: "_self" }]
+                              }
+                            })}
+                          >
+                            <Plus className="h-4 w-4 mr-1" /> Add Link
+                          </Button>
+                        </div>
+                        {formData.topBarContent.links && formData.topBarContent.links.length > 0 && (
+                          <div className="space-y-3">
+                            {formData.topBarContent.links.map((link, idx) => (
+                              <div key={idx} className="space-y-2 p-3 rounded-lg bg-muted/30">
+                                <div className="flex gap-2 items-center">
+                                  <Input
+                                    value={link.label}
+                                    onChange={(e) => {
+                                      const newLinks = [...(formData.topBarContent.links || [])];
+                                      newLinks[idx] = { ...newLinks[idx], label: e.target.value };
+                                      setFormData({
+                                        ...formData,
+                                        topBarContent: { ...formData.topBarContent, links: newLinks }
+                                      });
+                                    }}
+                                    placeholder="Label"
+                                    className="flex-1"
+                                  />
+                                  <Input
+                                    value={link.url}
+                                    onChange={(e) => {
+                                      const newLinks = [...(formData.topBarContent.links || [])];
+                                      newLinks[idx] = { ...newLinks[idx], url: e.target.value };
+                                      setFormData({
+                                        ...formData,
+                                        topBarContent: { ...formData.topBarContent, links: newLinks }
+                                      });
+                                    }}
+                                    placeholder="URL"
+                                    className="flex-1"
+                                  />
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => {
+                                      const newLinks = (formData.topBarContent.links || []).filter((_, i) => i !== idx);
+                                      setFormData({
+                                        ...formData,
+                                        topBarContent: { ...formData.topBarContent, links: newLinks }
+                                      });
+                                    }}
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Checkbox
+                                    id={`link-newtab-${idx}`}
+                                    checked={link.target === "_blank"}
+                                    onCheckedChange={(checked) => {
+                                      const newLinks = [...(formData.topBarContent.links || [])];
+                                      newLinks[idx] = { ...newLinks[idx], target: checked ? "_blank" : "_self" };
+                                      setFormData({
+                                        ...formData,
+                                        topBarContent: { ...formData.topBarContent, links: newLinks }
+                                      });
+                                    }}
+                                  />
+                                  <Label htmlFor={`link-newtab-${idx}`} className="text-xs text-muted-foreground cursor-pointer">
+                                    Open in new tab
+                                  </Label>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Style Presets */}
+                      <div className="space-y-2">
+                        <Label>Quick Style Presets</Label>
+                        <p className="text-xs text-muted-foreground">Click to apply. Customize further below.</p>
+                        <div className="grid grid-cols-4 gap-2">
+                          {announcementBarPresets.map((preset) => {
+                            const previewBg = preset.style.useGradient
+                              ? `linear-gradient(${getGradientCSS(preset.style.gradientDirection)}, ${preset.style.gradientFrom}, ${preset.style.gradientTo})`
+                              : preset.style.bgColor || "#1e40af";
+                            return (
+                              <button
+                                key={preset.id}
+                                type="button"
+                                onClick={() => setFormData({
+                                  ...formData,
+                                  topBarContent: {
+                                    ...formData.topBarContent,
+                                    style: { ...preset.style }
+                                  }
+                                })}
+                                className="group relative flex flex-col items-center p-2 rounded-lg border hover:border-primary hover:bg-muted/50 transition-all"
+                                title={preset.description}
+                              >
+                                <span
+                                  className="w-full h-6 rounded text-[10px] flex items-center justify-center font-medium"
+                                  style={{
+                                    background: previewBg,
+                                    color: preset.style.textColor || "#ffffff",
+                                  }}
+                                >
+                                  Sample
+                                </span>
+                                <span className="text-[10px] text-muted-foreground group-hover:text-foreground mt-1">
+                                  {preset.name}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Custom Styling */}
+                      <Accordion type="multiple" className="w-full">
+                        <AccordionItem value="colors">
+                          <AccordionTrigger className="text-sm">
+                            Colors
+                            {(formData.topBarContent.style?.bgColor || formData.topBarContent.style?.useGradient) && (
+                              <Badge variant="secondary" className="ml-2 text-xs">Customized</Badge>
+                            )}
+                          </AccordionTrigger>
+                          <AccordionContent className="space-y-4 pt-2">
+                            {/* Gradient Toggle */}
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <Label className="text-xs">Use Gradient Background</Label>
+                                <p className="text-xs text-muted-foreground">Enable gradient instead of solid color</p>
+                              </div>
+                              <Switch
+                                checked={formData.topBarContent.style?.useGradient || false}
+                                onCheckedChange={(checked) => setFormData({
+                                  ...formData,
+                                  topBarContent: {
+                                    ...formData.topBarContent,
+                                    style: {
+                                      ...formData.topBarContent.style,
+                                      useGradient: checked,
+                                      gradientFrom: checked ? (formData.topBarContent.style?.gradientFrom || "#FF6B35") : formData.topBarContent.style?.gradientFrom,
+                                      gradientTo: checked ? (formData.topBarContent.style?.gradientTo || "#F72585") : formData.topBarContent.style?.gradientTo,
+                                    }
+                                  }
+                                })}
+                              />
+                            </div>
+
+                            {formData.topBarContent.style?.useGradient ? (
+                              <div className="rounded-lg border p-3 space-y-3 bg-muted/30">
+                                <div className="grid gap-4 md:grid-cols-3">
+                                  <div className="space-y-2">
+                                    <Label className="text-xs">Gradient From</Label>
+                                    <div className="flex gap-2">
+                                      <Input
+                                        type="color"
+                                        value={formData.topBarContent.style?.gradientFrom || "#FF6B35"}
+                                        onChange={(e) => setFormData({
+                                          ...formData,
+                                          topBarContent: {
+                                            ...formData.topBarContent,
+                                            style: { ...formData.topBarContent.style, gradientFrom: e.target.value }
+                                          }
+                                        })}
+                                        className="h-9 w-12 cursor-pointer p-1"
+                                      />
+                                      <Input
+                                        value={formData.topBarContent.style?.gradientFrom || ""}
+                                        onChange={(e) => setFormData({
+                                          ...formData,
+                                          topBarContent: {
+                                            ...formData.topBarContent,
+                                            style: { ...formData.topBarContent.style, gradientFrom: e.target.value }
+                                          }
+                                        })}
+                                        className="flex-1 text-xs"
+                                      />
+                                    </div>
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label className="text-xs">Gradient To</Label>
+                                    <div className="flex gap-2">
+                                      <Input
+                                        type="color"
+                                        value={formData.topBarContent.style?.gradientTo || "#F72585"}
+                                        onChange={(e) => setFormData({
+                                          ...formData,
+                                          topBarContent: {
+                                            ...formData.topBarContent,
+                                            style: { ...formData.topBarContent.style, gradientTo: e.target.value }
+                                          }
+                                        })}
+                                        className="h-9 w-12 cursor-pointer p-1"
+                                      />
+                                      <Input
+                                        value={formData.topBarContent.style?.gradientTo || ""}
+                                        onChange={(e) => setFormData({
+                                          ...formData,
+                                          topBarContent: {
+                                            ...formData.topBarContent,
+                                            style: { ...formData.topBarContent.style, gradientTo: e.target.value }
+                                          }
+                                        })}
+                                        className="flex-1 text-xs"
+                                      />
+                                    </div>
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label className="text-xs">Direction</Label>
+                                    <Select
+                                      value={formData.topBarContent.style?.gradientDirection || "to-r"}
+                                      onValueChange={(value: GradientDirection) => setFormData({
+                                        ...formData,
+                                        topBarContent: {
+                                          ...formData.topBarContent,
+                                          style: { ...formData.topBarContent.style, gradientDirection: value }
+                                        }
+                                      })}
+                                    >
+                                      <SelectTrigger className="text-xs">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {gradientDirectionOptions.map((opt) => (
+                                          <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="space-y-2">
+                                <Label className="text-xs">Background Color</Label>
+                                <div className="flex gap-2">
+                                  <Input
+                                    type="color"
+                                    value={formData.topBarContent.style?.bgColor || "#1e40af"}
+                                    onChange={(e) => setFormData({
+                                      ...formData,
+                                      topBarContent: {
+                                        ...formData.topBarContent,
+                                        style: { ...formData.topBarContent.style, bgColor: e.target.value }
+                                      }
+                                    })}
+                                    className="h-9 w-12 cursor-pointer p-1"
+                                  />
+                                  <Input
+                                    value={formData.topBarContent.style?.bgColor || ""}
+                                    onChange={(e) => setFormData({
+                                      ...formData,
+                                      topBarContent: {
+                                        ...formData.topBarContent,
+                                        style: { ...formData.topBarContent.style, bgColor: e.target.value }
+                                      }
+                                    })}
+                                    placeholder="#1e40af"
+                                    className="flex-1 text-xs"
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                            <div className="grid gap-4 md:grid-cols-2">
+                              <div className="space-y-2">
+                                <Label className="text-xs">Text Color</Label>
+                                <div className="flex gap-2">
+                                  <Input
+                                    type="color"
+                                    value={formData.topBarContent.style?.textColor || "#ffffff"}
+                                    onChange={(e) => setFormData({
+                                      ...formData,
+                                      topBarContent: {
+                                        ...formData.topBarContent,
+                                        style: { ...formData.topBarContent.style, textColor: e.target.value }
+                                      }
+                                    })}
+                                    className="h-9 w-12 cursor-pointer p-1"
+                                  />
+                                  <Input
+                                    value={formData.topBarContent.style?.textColor || ""}
+                                    onChange={(e) => setFormData({
+                                      ...formData,
+                                      topBarContent: {
+                                        ...formData.topBarContent,
+                                        style: { ...formData.topBarContent.style, textColor: e.target.value }
+                                      }
+                                    })}
+                                    placeholder="#ffffff"
+                                    className="flex-1 text-xs"
+                                  />
+                                </div>
+                              </div>
+                              <div className="space-y-2">
+                                <Label className="text-xs">Link Color</Label>
+                                <div className="flex gap-2">
+                                  <Input
+                                    type="color"
+                                    value={formData.topBarContent.style?.linkColor || "#fbbf24"}
+                                    onChange={(e) => setFormData({
+                                      ...formData,
+                                      topBarContent: {
+                                        ...formData.topBarContent,
+                                        style: { ...formData.topBarContent.style, linkColor: e.target.value }
+                                      }
+                                    })}
+                                    className="h-9 w-12 cursor-pointer p-1"
+                                  />
+                                  <Input
+                                    value={formData.topBarContent.style?.linkColor || ""}
+                                    onChange={(e) => setFormData({
+                                      ...formData,
+                                      topBarContent: {
+                                        ...formData.topBarContent,
+                                        style: { ...formData.topBarContent.style, linkColor: e.target.value }
+                                      }
+                                    })}
+                                    placeholder="#fbbf24"
+                                    className="flex-1 text-xs"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label className="text-xs">Link Style</Label>
+                              <Select
+                                value={formData.topBarContent.style?.linkStyle || "bold"}
+                                onValueChange={(value: "underline" | "bold" | "button") => setFormData({
+                                  ...formData,
+                                  topBarContent: {
+                                    ...formData.topBarContent,
+                                    style: { ...formData.topBarContent.style, linkStyle: value }
+                                  }
+                                })}
+                              >
+                                <SelectTrigger className="text-xs">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="underline">Underlined</SelectItem>
+                                  <SelectItem value="bold">Bold</SelectItem>
+                                  <SelectItem value="button">Button Style</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+
+                        <AccordionItem value="behavior">
+                          <AccordionTrigger className="text-sm">Behavior</AccordionTrigger>
+                          <AccordionContent className="space-y-4 pt-2">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <Label className="text-xs">Allow Dismiss</Label>
+                                <p className="text-xs text-muted-foreground">Show close button</p>
+                              </div>
+                              <Switch
+                                checked={formData.topBarContent.dismissible !== false}
+                                onCheckedChange={(checked) => setFormData({
+                                  ...formData,
+                                  topBarContent: { ...formData.topBarContent, dismissible: checked }
+                                })}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="text-xs">Entrance Animation</Label>
+                              <Select
+                                value={formData.topBarContent.entranceAnimation || "slide-down"}
+                                onValueChange={(value: "none" | "slide-down" | "fade-in") => setFormData({
+                                  ...formData,
+                                  topBarContent: { ...formData.topBarContent, entranceAnimation: value }
+                                })}
+                              >
+                                <SelectTrigger className="text-xs">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="none">None</SelectItem>
+                                  <SelectItem value="slide-down">Slide Down</SelectItem>
+                                  <SelectItem value="fade-in">Fade In</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      </Accordion>
+
+                      {/* Preview */}
+                      <div className="space-y-2 pt-2">
+                        <Label className="text-xs text-muted-foreground">Preview</Label>
+                        <div
+                          className="rounded-lg overflow-hidden text-sm py-2 px-4 flex items-center justify-center gap-4"
+                          style={{
+                            background: formData.topBarContent.style?.useGradient
+                              ? `linear-gradient(${getGradientCSS(formData.topBarContent.style?.gradientDirection)}, ${formData.topBarContent.style?.gradientFrom || "#FF6B35"}, ${formData.topBarContent.style?.gradientTo || "#F72585"})`
+                              : formData.topBarContent.style?.bgColor || "#1e40af",
+                            color: formData.topBarContent.style?.textColor || "#ffffff",
+                          }}
+                        >
+                          <span>{formData.topBarContent.text || "Your announcement here..."}</span>
+                          {formData.topBarContent.links && formData.topBarContent.links.length > 0 && (
+                            <span
+                              style={{
+                                color: formData.topBarContent.style?.linkColor || "#fbbf24",
+                                fontWeight: formData.topBarContent.style?.linkStyle === "bold" ? "bold" : "normal",
+                                textDecoration: formData.topBarContent.style?.linkStyle === "underline" ? "underline" : "none",
+                              }}
+                            >
+                              {formData.topBarContent.links[0].label}
+                            </span>
+                          )}
+                          {formData.topBarContent.dismissible !== false && (
+                            <X className="h-4 w-4 opacity-70" />
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 

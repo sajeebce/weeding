@@ -77,9 +77,64 @@ export interface CTAButton {
   style?: ButtonCustomStyle;
 }
 
+// Announcement Bar Link
+export interface TopBarLink {
+  label: string;
+  url: string;
+  target?: "_self" | "_blank";
+  icon?: string;
+}
+
+// Announcement Bar Style (adapted from ButtonCustomStyle)
+export interface AnnouncementBarStyle {
+  // Background
+  bgColor?: string;
+  useGradient?: boolean;
+  gradientFrom?: string;
+  gradientTo?: string;
+  gradientDirection?: GradientDirection;
+
+  // Text
+  textColor?: string;
+
+  // Links
+  linkColor?: string;
+  linkHoverColor?: string;
+  linkStyle?: "underline" | "bold" | "button";
+
+  // Border
+  borderBottom?: boolean;
+  borderColor?: string;
+}
+
+// Announcement Bar Style Preset
+export interface AnnouncementBarPreset {
+  id: string;
+  name: string;
+  description: string;
+  style: AnnouncementBarStyle;
+}
+
+// Enhanced TopBarContent with styling support
 export interface TopBarContent {
+  // Content
   text: string;
-  links?: { label: string; url: string }[];
+  links?: TopBarLink[];
+
+  // Styling (inline in content for flexibility)
+  style?: AnnouncementBarStyle;
+
+  // Behavior
+  dismissible?: boolean;
+  autoHideSeconds?: number;
+  position?: "fixed" | "static";
+
+  // Animation
+  entranceAnimation?: "none" | "slide-down" | "fade-in";
+  animationDuration?: number;
+  enableMarquee?: boolean;
+
+  // Legacy support
   showSocial?: boolean;
 }
 
@@ -116,8 +171,11 @@ export interface HeaderConfig {
   ctaButtons?: CTAButton[];
   showAuthButtons: boolean;
   loginText: string;
+  loginUrl?: string;
+  loginStyle?: ButtonCustomStyle | null;
   registerText: string;
   registerUrl: string;
+  registerStyle?: ButtonCustomStyle | null;
   searchEnabled: boolean;
   mobileBreakpoint: number;
   bgColor?: string | null;
@@ -249,6 +307,8 @@ export interface PublicHeaderResponse {
   auth: {
     showButtons: boolean;
     loginText: string;
+    loginUrl?: string;
+    loginStyle?: ButtonCustomStyle;
     registerText: string;
     registerUrl: string;
   };
