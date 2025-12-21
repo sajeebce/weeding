@@ -181,6 +181,8 @@ export function HeaderMega({
               showAuth={config.auth?.showButtons ?? true}
               authConfig={{
                 loginText: config.auth?.loginText || "Sign In",
+                loginUrl: config.auth?.loginUrl || "/auth/signin",
+                loginStyle: config.auth?.loginStyle,
                 registerText: config.auth?.registerText || "Get Started",
                 registerUrl: config.auth?.registerUrl || "/services/llc-formation",
               }}

@@ -21,6 +21,8 @@ import {
   FileText,
   MapPin,
   Building2,
+  Monitor,
+  Smartphone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -92,6 +94,7 @@ export default function FooterBuilderPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [footer, setFooter] = useState<FooterConfig | null>(null);
+  const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
 
   // Widget dialog
   const [widgetDialogOpen, setWidgetDialogOpen] = useState(false);
@@ -344,6 +347,297 @@ export default function FooterBuilderPage() {
           </Button>
         </div>
       </div>
+
+      {/* Live Preview */}
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base">Live Preview</CardTitle>
+            <div className="flex items-center gap-1 rounded-lg bg-muted p-1">
+              <Button
+                variant={previewMode === "desktop" ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => setPreviewMode("desktop")}
+              >
+                <Monitor className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={previewMode === "mobile" ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => setPreviewMode("mobile")}
+              >
+                <Smartphone className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div
+            className={cn(
+              "mx-auto overflow-hidden rounded-lg border transition-all",
+              previewMode === "mobile" ? "max-w-[375px]" : "w-full"
+            )}
+            style={{
+              backgroundColor: formData.bgColor || "#f9fafb",
+              color: formData.textColor || undefined,
+            }}
+          >
+            {/* Footer Preview Content */}
+            <div
+              className="px-4"
+              style={{
+                paddingTop: `${formData.paddingTop}px`,
+                paddingBottom: `${formData.paddingBottom}px`,
+              }}
+            >
+              {/* MULTI_COLUMN Layout */}
+              {formData.layout === "MULTI_COLUMN" && (
+                <div>
+                  <div
+                    className={cn(
+                      "grid gap-4",
+                      previewMode === "mobile" ? "grid-cols-2" : ""
+                    )}
+                    style={previewMode === "desktop" ? { gridTemplateColumns: `repeat(${formData.columns}, 1fr)` } : undefined}
+                  >
+                    {Array.from({ length: formData.columns }, (_, i) => i + 1).map((column) => {
+                      const widgets = getWidgetsByColumn(column);
+                      return (
+                        <div key={column} className="space-y-2">
+                          {widgets.length === 0 ? (
+                            <div className="rounded border border-dashed border-gray-300 p-3 text-center">
+                              <span className="text-xs text-muted-foreground">Column {column}</span>
+                            </div>
+                          ) : (
+                            widgets.map((widget) => (
+                              <div key={widget.id} className="space-y-1">
+                                {widget.showTitle && widget.title && (
+                                  <h4 className="text-xs font-semibold">{widget.title}</h4>
+                                )}
+                                <div className="text-xs text-muted-foreground">
+                                  {widget.type === "BRAND" && (
+                                    <div className="flex items-center gap-2">
+                                      <div className="h-6 w-6 rounded bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary">LP</div>
+                                      <span className="font-semibold text-foreground">LLCPad</span>
+                                    </div>
+                                  )}
+                                  {widget.type === "LINKS" && (
+                                    <ul className="space-y-0.5">
+                                      {widget.menuItems && widget.menuItems.length > 0 ? (
+                                        widget.menuItems.slice(0, 4).map((item, idx) => (
+                                          <li key={idx} className="hover:text-foreground cursor-pointer">{item.label}</li>
+                                        ))
+                                      ) : (
+                                        <>
+                                          <li className="hover:text-foreground cursor-pointer">Link 1</li>
+                                          <li className="hover:text-foreground cursor-pointer">Link 2</li>
+                                          <li className="hover:text-foreground cursor-pointer">Link 3</li>
+                                        </>
+                                      )}
+                                    </ul>
+                                  )}
+                                  {widget.type === "CONTACT" && (
+                                    <div className="space-y-0.5">
+                                      <div className="flex items-center gap-1"><Mail className="h-3 w-3" /> email@example.com</div>
+                                      <div className="flex items-center gap-1"><Phone className="h-3 w-3" /> +1 234 567 890</div>
+                                    </div>
+                                  )}
+                                  {widget.type === "SOCIAL" && (
+                                    <div className="flex gap-2">
+                                      <div className="h-5 w-5 rounded bg-muted flex items-center justify-center"><Share2 className="h-3 w-3" /></div>
+                                      <div className="h-5 w-5 rounded bg-muted flex items-center justify-center"><Share2 className="h-3 w-3" /></div>
+                                      <div className="h-5 w-5 rounded bg-muted flex items-center justify-center"><Share2 className="h-3 w-3" /></div>
+                                    </div>
+                                  )}
+                                  {widget.type === "TEXT" && <p>Custom text content...</p>}
+                                  {widget.type === "NEWSLETTER" && (
+                                    <div className="flex gap-1">
+                                      <div className="flex-1 h-6 rounded border bg-background"></div>
+                                      <div className="h-6 px-2 rounded bg-primary text-[10px] text-primary-foreground flex items-center">Subscribe</div>
+                                    </div>
+                                  )}
+                                  {widget.type === "SERVICES" && <span className="italic">Auto: Services</span>}
+                                  {widget.type === "STATES" && <span className="italic">Auto: States</span>}
+                                  {widget.type === "RECENT_POSTS" && <span className="italic">Recent Posts</span>}
+                                  {widget.type === "CUSTOM_HTML" && <span className="italic">Custom HTML</span>}
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* CENTERED Layout */}
+              {formData.layout === "CENTERED" && (
+                <div className="text-center">
+                  <div className="flex flex-col items-center">
+                    <div className="h-10 w-10 rounded-lg bg-primary/20 flex items-center justify-center font-bold text-primary">LP</div>
+                    <span className="mt-2 font-semibold">LLCPad</span>
+                    <p className="mt-1 max-w-xs text-xs text-muted-foreground">Your trusted partner for LLC formation and business services.</p>
+                    {formData.showSocialLinks && (
+                      <div className="mt-3 flex gap-2">
+                        <div className="h-6 w-6 rounded bg-muted flex items-center justify-center"><Share2 className="h-3 w-3" /></div>
+                        <div className="h-6 w-6 rounded bg-muted flex items-center justify-center"><Share2 className="h-3 w-3" /></div>
+                        <div className="h-6 w-6 rounded bg-muted flex items-center justify-center"><Share2 className="h-3 w-3" /></div>
+                      </div>
+                    )}
+                  </div>
+                  {/* Link sections */}
+                  <div className="mt-6 flex flex-wrap justify-center gap-6">
+                    {getWidgetsByColumn(1).concat(getWidgetsByColumn(2)).concat(getWidgetsByColumn(3)).filter(w => w.type === "LINKS").slice(0, 3).map((widget) => (
+                      <div key={widget.id}>
+                        {widget.showTitle && widget.title && (
+                          <h4 className="text-xs font-semibold">{widget.title}</h4>
+                        )}
+                        <ul className="mt-1 space-y-0.5 text-xs text-muted-foreground">
+                          {widget.menuItems && widget.menuItems.length > 0 ? (
+                            widget.menuItems.slice(0, 3).map((item, idx) => (
+                              <li key={idx}>{item.label}</li>
+                            ))
+                          ) : (
+                            <>
+                              <li>Link 1</li>
+                              <li>Link 2</li>
+                            </>
+                          )}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* MINIMAL Layout */}
+              {formData.layout === "MINIMAL" && (
+                <div className={cn(
+                  "flex items-center justify-between gap-4",
+                  previewMode === "mobile" ? "flex-col text-center" : ""
+                )}>
+                  <div className="flex items-center gap-2">
+                    <div className="h-6 w-6 rounded bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">LP</div>
+                    <span className="text-sm font-semibold">LLCPad</span>
+                  </div>
+                  <div className="flex flex-wrap justify-center gap-3 text-xs text-muted-foreground">
+                    {formData.bottomLinks.length > 0 ? (
+                      formData.bottomLinks.slice(0, 4).map((link, idx) => (
+                        <span key={idx} className="hover:text-foreground cursor-pointer">{link.label}</span>
+                      ))
+                    ) : (
+                      <>
+                        <span className="hover:text-foreground cursor-pointer">Privacy</span>
+                        <span className="hover:text-foreground cursor-pointer">Terms</span>
+                        <span className="hover:text-foreground cursor-pointer">Contact</span>
+                      </>
+                    )}
+                  </div>
+                  {formData.showSocialLinks && (
+                    <div className="flex gap-2">
+                      <Share2 className="h-4 w-4 text-muted-foreground" />
+                      <Share2 className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* MEGA Layout */}
+              {formData.layout === "MEGA" && (
+                <div>
+                  {/* Top section */}
+                  <div className={cn(
+                    "flex items-center justify-between gap-4 border-b pb-4",
+                    previewMode === "mobile" ? "flex-col" : ""
+                  )}>
+                    <div className="flex items-center gap-2">
+                      <div className="h-8 w-8 rounded-lg bg-primary/20 flex items-center justify-center font-bold text-primary">LP</div>
+                      <div>
+                        <span className="font-semibold">LLCPad</span>
+                        <p className="text-xs text-muted-foreground">Your trusted partner</p>
+                      </div>
+                    </div>
+                    {formData.showSocialLinks && (
+                      <div className="flex gap-2">
+                        <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center"><Share2 className="h-3 w-3" /></div>
+                        <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center"><Share2 className="h-3 w-3" /></div>
+                        <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center"><Share2 className="h-3 w-3" /></div>
+                      </div>
+                    )}
+                  </div>
+                  {/* Mega grid */}
+                  <div className={cn(
+                    "mt-4 grid gap-4",
+                    previewMode === "mobile" ? "grid-cols-2" : "grid-cols-6"
+                  )}>
+                    {Array.from({ length: Math.min(formData.columns, 6) }, (_, i) => i + 1).map((column) => {
+                      const widgets = getWidgetsByColumn(column);
+                      return (
+                        <div key={column}>
+                          {widgets.length === 0 ? (
+                            <div className="text-xs text-muted-foreground">Col {column}</div>
+                          ) : (
+                            widgets.map((widget) => (
+                              <div key={widget.id}>
+                                {widget.showTitle && widget.title && (
+                                  <h4 className="text-xs font-semibold uppercase tracking-wider">{widget.title}</h4>
+                                )}
+                                <ul className="mt-1 space-y-0.5 text-xs text-muted-foreground">
+                                  {widget.menuItems?.slice(0, 4).map((item, idx) => (
+                                    <li key={idx}>{item.label}</li>
+                                  )) || (
+                                    <>
+                                      <li>Item 1</li>
+                                      <li>Item 2</li>
+                                    </>
+                                  )}
+                                </ul>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Bottom Bar (all layouts) */}
+              {formData.bottomBarEnabled && (
+                <div className={cn(
+                  "mt-4 border-t pt-4",
+                  formData.layout === "CENTERED" ? "text-center" : ""
+                )}
+                  style={{ borderColor: formData.borderColor || undefined }}
+                >
+                  <div className={cn(
+                    "flex items-center justify-between gap-2 text-xs text-muted-foreground",
+                    formData.layout === "CENTERED" || previewMode === "mobile" ? "flex-col" : ""
+                  )}>
+                    <p>{formData.copyrightText || `© ${new Date().getFullYear()} LLCPad. All rights reserved.`}</p>
+                    {formData.showDisclaimer && (
+                      <p className="max-w-md text-[10px]">
+                        <strong>Disclaimer:</strong> {formData.disclaimerText || "LLCPad is not a law firm..."}
+                      </p>
+                    )}
+                  </div>
+                  {formData.bottomLinks.length > 0 && (
+                    <div className={cn(
+                      "mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground",
+                      formData.layout === "CENTERED" ? "justify-center" : ""
+                    )}>
+                      {formData.bottomLinks.map((link, idx) => (
+                        <span key={idx} className="hover:text-foreground cursor-pointer">{link.label}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Settings Tabs */}
       <Tabs defaultValue="layout" className="space-y-4">

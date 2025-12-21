@@ -1326,3 +1326,275 @@ src/
 - [DEV Community - 16 Best CMS Platforms 2025](https://dev.to/serveravatar/16-best-cms-platforms-for-websites-in-2025-46co)
 - [CodeCanyon - Active eCommerce CMS](https://codecanyon.net/item/active-ecommerce-cms/23471405)
 - [JetPack - WordPress Mega Menu Guide](https://jetpack.com/resources/wordpress-mega-menu/)
+
+---
+
+## Phase 7: Top Announcement Bar Enhancement 📋 PLANNED
+
+### Overview
+
+Top Announcement Bar হলো header এর উপরে একটি promotional bar যা important messages, offers, বা updates দেখায়। বর্তমানে basic implementation আছে কিন্তু admin UI তে full configuration options নেই।
+
+### Current Implementation Status
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Toggle On/Off | ✅ Working | `topBarEnabled` field |
+| Display Bar | ✅ Working | `TopBar.tsx` component renders |
+| Dismiss Button | ✅ Working | localStorage persistence |
+| Custom Text | ⚠️ Partial | Field exists but no admin UI |
+| Custom Links | ⚠️ Partial | Field exists but no admin UI |
+| Custom Colors | ⚠️ Partial | Uses header styling colors |
+| Animation | ❌ Not implemented | No entrance/exit animations |
+
+### Admin UI Configuration (To Implement)
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  Top Announcement Bar Settings                                       │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  [✓] Enable Top Announcement Bar                                    │
+│                                                                      │
+│  ┌─ Content ──────────────────────────────────────────────────────┐ │
+│  │                                                                  │ │
+│  │  Announcement Text:                                             │ │
+│  │  ┌──────────────────────────────────────────────────────────┐  │ │
+│  │  │ 🎉 Free consultation for new customers! Limited time     │  │ │
+│  │  └──────────────────────────────────────────────────────────┘  │ │
+│  │                                                                  │ │
+│  │  Links (optional):                                              │ │
+│  │  ┌────────────────────┬────────────────────┬─────────┐         │ │
+│  │  │ Label              │ URL                │ Action  │         │ │
+│  │  ├────────────────────┼────────────────────┼─────────┤         │ │
+│  │  │ Learn More         │ /promotions        │ [×]     │         │ │
+│  │  │ Call Now           │ tel:+1234567890    │ [×]     │         │ │
+│  │  └────────────────────┴────────────────────┴─────────┘         │ │
+│  │  [+ Add Link]                                                   │ │
+│  │                                                                  │ │
+│  └──────────────────────────────────────────────────────────────────┘ │
+│                                                                      │
+│  ┌─ Styling ──────────────────────────────────────────────────────┐ │
+│  │                                                                  │ │
+│  │  Background Color: [■ #1e40af]    Text Color: [■ #ffffff]      │ │
+│  │                                                                  │ │
+│  │  Link Style:                                                    │ │
+│  │  ○ Underlined  ● Bold  ○ Button Style                          │ │
+│  │                                                                  │ │
+│  │  Link Color: [■ #fbbf24]    Link Hover: [■ #fcd34d]            │ │
+│  │                                                                  │ │
+│  └──────────────────────────────────────────────────────────────────┘ │
+│                                                                      │
+│  ┌─ Behavior ─────────────────────────────────────────────────────┐ │
+│  │                                                                  │ │
+│  │  [✓] Allow users to dismiss (show close button)                │ │
+│  │  [ ] Auto-hide after ___ seconds (0 = never)                   │ │
+│  │  [ ] Show only on specific pages                               │ │
+│  │                                                                  │ │
+│  │  Display Position:                                              │ │
+│  │  ● Above Header (fixed)                                         │ │
+│  │  ○ Above Header (scrolls away)                                 │ │
+│  │                                                                  │ │
+│  └──────────────────────────────────────────────────────────────────┘ │
+│                                                                      │
+│  ┌─ Animation ────────────────────────────────────────────────────┐ │
+│  │                                                                  │ │
+│  │  Entrance Animation: [Slide Down ▼]                            │ │
+│  │  Animation Duration: [300] ms                                   │ │
+│  │                                                                  │ │
+│  │  [ ] Enable text marquee (scrolling text for long messages)    │ │
+│  │                                                                  │ │
+│  └──────────────────────────────────────────────────────────────────┘ │
+│                                                                      │
+│  ┌─ Preview ──────────────────────────────────────────────────────┐ │
+│  │ ┌────────────────────────────────────────────────────────────┐ │ │
+│  │ │ 🎉 Free consultation for new customers! Learn More  [×]   │ │ │
+│  │ └────────────────────────────────────────────────────────────┘ │ │
+│  └──────────────────────────────────────────────────────────────────┘ │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Database Schema (Already Exists)
+
+```prisma
+model HeaderConfig {
+  // Top Bar fields (already in schema)
+  topBarEnabled   Boolean  @default(false)
+  topBarContent   Json?    // { text, links, showSocial }
+  topBarBgColor   String?
+  topBarTextColor String?
+}
+```
+
+### Enhanced TopBarContent Type
+
+```typescript
+interface TopBarContent {
+  // Content
+  text: string;                    // Main announcement text
+  links?: TopBarLink[];            // Optional action links
+
+  // Styling
+  bgColor?: string;                // Background color (override)
+  textColor?: string;              // Text color (override)
+  linkColor?: string;              // Link color
+  linkHoverColor?: string;         // Link hover color
+  linkStyle?: 'underline' | 'bold' | 'button';
+
+  // Behavior
+  dismissible?: boolean;           // Show close button (default: true)
+  autoHideSeconds?: number;        // Auto-hide after X seconds (0 = never)
+  showOnPages?: string[];          // Show only on specific paths (empty = all)
+  position?: 'fixed' | 'static';   // Fixed or scrolls away
+
+  // Animation
+  entranceAnimation?: 'none' | 'slide-down' | 'fade-in';
+  animationDuration?: number;      // ms
+  enableMarquee?: boolean;         // Scrolling text for long messages
+}
+
+interface TopBarLink {
+  label: string;
+  url: string;
+  target?: '_self' | '_blank';
+  icon?: string;                   // Optional Lucide icon
+}
+```
+
+### Implementation Tasks
+
+#### Admin UI Updates (`/admin/appearance/header`)
+
+- [ ] Add collapsible "Top Bar Settings" section
+- [ ] Add text input for announcement message
+- [ ] Add dynamic link list with add/remove
+- [ ] Add color pickers for background, text, links
+- [ ] Add link style selector (underline/bold/button)
+- [ ] Add dismissible toggle
+- [ ] Add auto-hide seconds input
+- [ ] Add position selector (fixed/static)
+- [ ] Add animation selector
+- [ ] Add marquee toggle
+- [ ] Add live preview of top bar
+
+#### Frontend Updates (`TopBar.tsx`)
+
+- [ ] Support all new configuration options
+- [ ] Implement entrance animations
+- [ ] Implement auto-hide countdown
+- [ ] Implement marquee scrolling text
+- [ ] Support page-specific visibility
+- [ ] Support fixed vs static position
+
+#### API Updates
+
+- [ ] Update validation schema for topBarContent
+- [ ] Ensure backward compatibility with existing data
+
+### Use Cases
+
+1. **Promotional Offer**
+   - Text: "🎉 50% OFF on all services! Use code: WELCOME50"
+   - Link: "Shop Now" → /services
+   - Style: Bold yellow on blue background
+
+2. **Important Notice**
+   - Text: "⚠️ Our office will be closed on Dec 25th"
+   - No links needed
+   - Style: White on red background
+
+3. **New Feature Announcement**
+   - Text: "✨ New: Amazon Brand Registry service is now available!"
+   - Link: "Learn More" → /services/brand-registry
+   - Style: White on green background
+
+4. **Contact CTA**
+   - Text: "Questions? Call us 24/7"
+   - Links: "Call Now" → tel:+1234567890, "WhatsApp" → wa.me link
+   - Style: White on dark background
+
+### Style Presets (Same Pattern as CTA Buttons)
+
+> ⚠️ **IMPORTANT: Code Reuse Directive**
+>
+> Announcement Bar এর styling system CTA Button এর code থেকে **copy/adapt** করতে হবে। নতুন করে লেখার দরকার নেই।
+>
+> **Source Files to Copy From:**
+> - `src/app/admin/appearance/header/page.tsx` → `buttonStylePresets` array
+> - `src/lib/header-footer/types.ts` → `ButtonCustomStyle`, `GradientDirection` types
+> - `src/components/layout/header/components/CTAButtons.tsx` → `getGradientCSS()`, `getNormalBackground()` functions
+>
+> **Adaptation Notes:**
+> - Rename `ButtonCustomStyle` → `AnnouncementBarStyle`
+> - Rename `buttonStylePresets` → `announcementBarPresets`
+> - Remove button-specific fields (borderRadius, hoverEffect, shadow)
+> - Add bar-specific fields (linkColor, linkHoverColor, linkStyle)
+
+#### Preset Examples (Adapt from Button Presets)
+
+| Preset | Background | Text | Link | Use Case |
+|--------|------------|------|------|----------|
+| **Ocean Blue** | `#1e40af` | `#ffffff` | `#fbbf24` | Professional |
+| **Sunset Gradient** | `#FF6B35 → #F72585` | `#ffffff` | `#ffffff` | Sales/Promo |
+| **Emerald Success** | `#059669` | `#ffffff` | `#fbbf24` | New Feature |
+| **Red Alert** | `#DC2626` | `#ffffff` | `#fef08a` | Urgent |
+| **Midnight Gold** | `#1a1a2e` | `#FFD700` | `#FFD700` | Premium |
+| **Glass Morph** | `rgba(30,41,59,0.9)` | `#f8fafc` | `#94a3b8` | Modern |
+| **Coral Soft** | `#FF6F61` | `#ffffff` | `#ffffff` | Friendly |
+| **Warning Yellow** | `#FCD34D` | `#1f2937` | `#1f2937` | Alert |
+
+#### Admin UI for Presets
+
+```
+┌─ Quick Style Presets ──────────────────────────────────────────┐
+│  Click to apply. Customize further after applying.             │
+│                                                                 │
+│  ┌─────────┬─────────┬─────────┬─────────┬─────────┐          │
+│  │ Ocean   │ Sunset  │ Emerald │  Red    │Midnight │          │
+│  │  Blue   │ Gradient│ Success │ Alert   │  Gold   │          │
+│  └─────────┴─────────┴─────────┴─────────┴─────────┘          │
+│  ┌─────────┬─────────┬─────────┐                               │
+│  │  Glass  │  Coral  │ Warning │                               │
+│  │  Morph  │  Soft   │ Yellow  │                               │
+│  └─────────┴─────────┴─────────┘                               │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### Type Definition (Simplified from ButtonCustomStyle)
+
+```typescript
+// Copy structure from ButtonCustomStyle, adapt for announcement bar
+interface AnnouncementBarStyle {
+  // Background (same as button)
+  bgColor?: string;
+  useGradient?: boolean;
+  gradientFrom?: string;
+  gradientTo?: string;
+  gradientDirection?: GradientDirection;  // Reuse from button types
+
+  // Text
+  textColor?: string;
+
+  // Links (bar-specific)
+  linkColor?: string;
+  linkHoverColor?: string;
+  linkStyle?: 'underline' | 'bold' | 'button';
+
+  // Border (optional)
+  borderBottom?: boolean;
+  borderColor?: string;
+}
+
+interface AnnouncementBarPreset {
+  id: string;
+  name: string;
+  description: string;
+  style: AnnouncementBarStyle;
+}
+```
+
+### Priority
+
+**Medium** - The basic functionality works. Enhancement improves admin UX and adds more customization options for marketing use cases.

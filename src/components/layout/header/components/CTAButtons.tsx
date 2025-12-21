@@ -308,13 +308,101 @@ export function CTAButtons({
     );
   }
 
+  // Render auth button with custom style if available
+  const renderAuthButton = () => {
+    if (!showAuth) return null;
+
+    const loginUrl = authConfig.loginUrl || "/login";
+    const loginStyle = authConfig.loginStyle;
+
+    // If loginStyle has custom styles, render as custom button
+    if (loginStyle && hasCustomStyle(loginStyle)) {
+      const hoverClass = getHoverEffectClass(loginStyle.hoverEffect);
+      const normalBg = getNormalBackground(loginStyle);
+      const hoverBg = getHoverBackground(loginStyle);
+      const hasComplex = isComplexHoverEffect(loginStyle.hoverEffect);
+      const complexHoverStyles = hasComplex ? getComplexEffectHoverStyles(loginStyle) : {};
+      const complexNormalStyles = hasComplex ? getComplexEffectNormalStyles(loginStyle) : {};
+
+      const getBackground = (isHover: boolean) => {
+        if (loginStyle?.hoverEffect === "gradient-shift") {
+          return getGradientShiftBackground(loginStyle);
+        }
+        if (loginStyle?.hoverEffect === "slide-fill" || loginStyle?.hoverEffect === "border-fill") {
+          return normalBg;
+        }
+        return isHover ? hoverBg : normalBg;
+      };
+
+      return (
+        <Link
+          href={loginUrl}
+          className={cn(
+            "inline-flex items-center justify-center px-4 py-2 text-sm font-medium overflow-hidden",
+            hoverClass,
+            hasComplex ? "transition-all duration-500 ease-out" : "transition-all duration-300"
+          )}
+          style={{
+            background: getBackground(false),
+            color: loginStyle.textColor || "#374151",
+            borderWidth: `${loginStyle.borderWidth ?? 0}px`,
+            borderStyle: "solid",
+            borderColor: loginStyle.borderColor || "transparent",
+            borderRadius: `${loginStyle.borderRadius ?? 6}px`,
+            ...(hasComplex ? complexNormalStyles : { boxShadow: loginStyle.shadow }),
+          }}
+          onMouseEnter={(e) => {
+            if (hasComplex) {
+              if (complexHoverStyles.boxShadow) {
+                e.currentTarget.style.boxShadow = complexHoverStyles.boxShadow;
+              }
+              if (complexHoverStyles.backgroundPosition) {
+                e.currentTarget.style.backgroundPosition = complexHoverStyles.backgroundPosition;
+              }
+              if (!loginStyle?.hoverEffect || loginStyle.hoverEffect === "ripple") {
+                e.currentTarget.style.background = hoverBg;
+              }
+            } else {
+              e.currentTarget.style.background = hoverBg;
+              if (loginStyle?.hoverShadow) {
+                e.currentTarget.style.boxShadow = loginStyle.hoverShadow;
+              }
+            }
+            if (loginStyle?.hoverTextColor) {
+              e.currentTarget.style.color = loginStyle.hoverTextColor;
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (hasComplex) {
+              if (complexNormalStyles.boxShadow !== undefined) {
+                e.currentTarget.style.boxShadow = complexNormalStyles.boxShadow;
+              }
+              if (complexNormalStyles.backgroundPosition) {
+                e.currentTarget.style.backgroundPosition = complexNormalStyles.backgroundPosition;
+              }
+            } else {
+              e.currentTarget.style.background = normalBg;
+              e.currentTarget.style.boxShadow = loginStyle?.shadow || "";
+            }
+            e.currentTarget.style.color = loginStyle?.textColor || "#374151";
+          }}
+        >
+          {authConfig.loginText || "Sign In"}
+        </Link>
+      );
+    }
+
+    // Default ghost button
+    return (
+      <Button variant="ghost" asChild>
+        <Link href={loginUrl}>{authConfig.loginText || "Sign In"}</Link>
+      </Button>
+    );
+  };
+
   return (
     <div className="flex items-center gap-x-4">
-      {showAuth && (
-        <Button variant="ghost" asChild>
-          <Link href="/login">{authConfig.loginText || "Sign In"}</Link>
-        </Button>
-      )}
+      {renderAuthButton()}
 
       {buttons && buttons.length > 0 ? (
         buttons.map((btn, index) => (

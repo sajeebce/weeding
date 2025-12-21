@@ -1,7 +1,7 @@
 "use client";
 
 import type { Session } from "next-auth";
-import type { PublicHeaderResponse, CTAButton } from "@/lib/header-footer/types";
+import type { PublicHeaderResponse, CTAButton, ButtonCustomStyle, TopBarContent } from "@/lib/header-footer/types";
 
 export interface LoggedInUser {
   id: string;
@@ -83,10 +83,7 @@ export interface MobileMenuProps {
 
 export interface TopBarProps {
   enabled: boolean;
-  content?: {
-    text?: string;
-    links?: { label: string; url: string }[];
-  };
+  content?: TopBarContent;
   bgColor?: string;
   textColor?: string;
 }
@@ -96,8 +93,11 @@ export interface CTAButtonsProps {
   showAuth: boolean;
   authConfig: {
     loginText: string;
+    loginUrl?: string;
+    loginStyle?: ButtonCustomStyle | null;
     registerText: string;
     registerUrl: string;
+    registerStyle?: ButtonCustomStyle | null;
   };
   user: LoggedInUser | null;
   session: Session | null;
