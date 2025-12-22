@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   Facebook,
   Twitter,
@@ -12,10 +12,15 @@ import {
   Mail,
   Phone,
   MapPin,
+  Send,
+  CheckCircle,
+  Loader2,
 } from "lucide-react";
 import { useBusinessConfig } from "@/hooks/use-business-config";
 import { useFooterConfig, getWidgetsByColumn, getWidgetLinks } from "@/hooks/use-footer-config";
-import type { FooterWidget } from "@/lib/header-footer/types";
+import type { FooterWidget, PublicFooterResponse } from "@/lib/header-footer/types";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 // TikTok icon component
 function TikTokIcon({ className }: { className?: string }) {
@@ -59,15 +64,137 @@ const fallbackLinks = {
   ],
 };
 
+// Newsletter form component
+function NewsletterForm({
+  title,
+  subtitle,
+  formAction,
+}: {
+  title?: string;
+  subtitle?: string;
+  formAction?: string;
+}) {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+
+    setStatus("loading");
+
+    try {
+      if (formAction) {
+        // Custom form action
+        const response = await fetch(formAction, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        });
+        if (!response.ok) throw new Error("Subscription failed");
+      } else {
+        // Default API endpoint
+        const response = await fetch("/api/newsletter/subscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        });
+        if (!response.ok) throw new Error("Subscription failed");
+      }
+      setStatus("success");
+      setEmail("");
+      setTimeout(() => setStatus("idle"), 3000);
+    } catch {
+      setStatus("error");
+      setTimeout(() => setStatus("idle"), 3000);
+    }
+  };
+
+  return (
+    <div>
+      {title && <h3 className="text-sm font-semibold text-foreground">{title}</h3>}
+      {subtitle && <p className="mt-2 text-sm text-muted-foreground">{subtitle}</p>}
+      <form onSubmit={handleSubmit} className="mt-4 flex gap-2">
+        <Input
+          type="email"
+          placeholder="Enter your email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="flex-1"
+          disabled={status === "loading" || status === "success"}
+          required
+        />
+        <Button type="submit" size="icon" disabled={status === "loading" || status === "success"}>
+          {status === "loading" ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : status === "success" ? (
+            <CheckCircle className="h-4 w-4" />
+          ) : (
+            <Send className="h-4 w-4" />
+          )}
+        </Button>
+      </form>
+      {status === "success" && (
+        <p className="mt-2 text-sm text-green-600">Successfully subscribed!</p>
+      )}
+      {status === "error" && (
+        <p className="mt-2 text-sm text-destructive">Failed to subscribe. Please try again.</p>
+      )}
+    </div>
+  );
+}
+
+// Trust badges component
+function TrustBadges({
+  badges,
+}: {
+  badges: { image: string; alt: string; url?: string }[];
+}) {
+  if (!badges || badges.length === 0) return null;
+
+  return (
+    <div className="flex flex-wrap items-center justify-center gap-4">
+      {badges.map((badge, index) => {
+        const badgeImage = (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={badge.image}
+            alt={badge.alt}
+            className="h-10 w-auto max-w-25 object-contain opacity-70 transition-opacity hover:opacity-100"
+          />
+        );
+
+        if (badge.url) {
+          return (
+            <a
+              key={index}
+              href={badge.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex"
+            >
+              {badgeImage}
+            </a>
+          );
+        }
+
+        return <span key={index}>{badgeImage}</span>;
+      })}
+    </div>
+  );
+}
+
 // Widget renderer component
 function FooterWidgetRenderer({
   widget,
   businessConfig,
   socialLinks,
+  footerConfig,
 }: {
   widget: FooterWidget;
   businessConfig: ReturnType<typeof useBusinessConfig>["config"];
-  socialLinks: { name: string; href: string; icon: React.ComponentType<{ className?: string }> }[];
+  socialLinks: { name: string; href: string; icon: React.ComponentType<{ className?: string }>; color: string }[];
+  footerConfig?: PublicFooterResponse | null;
 }) {
   const links = getWidgetLinks(widget);
 
@@ -126,12 +253,13 @@ function FooterWidgetRenderer({
           </div>
 
           {/* Social Links */}
-          <div className="mt-6 flex gap-4">
+          <div className="mt-6 flex flex-wrap gap-3">
             {socialLinks.map((social) => (
               <a
                 key={social.name}
                 href={social.href}
-                className="rounded-lg bg-muted p-2 text-muted-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
+                className="rounded-lg bg-muted p-2 transition-all hover:scale-110"
+                style={{ color: social.color }}
                 aria-label={social.name}
               >
                 <social.icon className="h-5 w-5" />
@@ -203,12 +331,13 @@ function FooterWidgetRenderer({
           {widget.showTitle && widget.title && (
             <h3 className="text-sm font-semibold text-foreground">{widget.title}</h3>
           )}
-          <div className={widget.showTitle && widget.title ? "mt-4 flex gap-4" : "flex gap-4"}>
+          <div className={widget.showTitle && widget.title ? "mt-4 flex flex-wrap gap-3" : "flex flex-wrap gap-3"}>
             {socialLinks.map((social) => (
               <a
                 key={social.name}
                 href={social.href}
-                className="rounded-lg bg-muted p-2 text-muted-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
+                className="rounded-lg bg-muted p-2 transition-all hover:scale-110"
+                style={{ color: social.color }}
                 aria-label={social.name}
               >
                 <social.icon className="h-5 w-5" />
@@ -232,6 +361,87 @@ function FooterWidgetRenderer({
         </div>
       );
 
+    case "NEWSLETTER":
+      return (
+        <div>
+          <NewsletterForm
+            title={widget.showTitle ? (widget.title ?? undefined) : undefined}
+            subtitle={footerConfig?.newsletter?.subtitle}
+            formAction={footerConfig?.newsletter?.formAction}
+          />
+        </div>
+      );
+
+    case "SERVICES":
+      return (
+        <div>
+          {widget.showTitle && widget.title && (
+            <h3 className="text-sm font-semibold text-foreground">{widget.title}</h3>
+          )}
+          <ul className={widget.showTitle && widget.title ? "mt-4 space-y-3" : "space-y-3"}>
+            {fallbackLinks.services.map((link) => (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
+                  {link.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      );
+
+    case "STATES":
+      return (
+        <div>
+          {widget.showTitle && widget.title && (
+            <h3 className="text-sm font-semibold text-foreground">{widget.title}</h3>
+          )}
+          <ul className={widget.showTitle && widget.title ? "mt-4 space-y-3" : "space-y-3"}>
+            {fallbackLinks.states.map((link) => (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
+                  {link.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      );
+
+    case "RECENT_POSTS":
+      return (
+        <div>
+          {widget.showTitle && widget.title && (
+            <h3 className="text-sm font-semibold text-foreground">{widget.title}</h3>
+          )}
+          <div className={widget.showTitle && widget.title ? "mt-4 space-y-3" : "space-y-3"}>
+            <p className="text-sm text-muted-foreground">
+              Visit our <Link href="/blog" className="text-primary hover:underline">blog</Link> for the latest articles.
+            </p>
+          </div>
+        </div>
+      );
+
+    case "CUSTOM_HTML":
+      const htmlContent = (widget.content as { html?: string })?.html || "";
+      return (
+        <div>
+          {widget.showTitle && widget.title && (
+            <h3 className="text-sm font-semibold text-foreground">{widget.title}</h3>
+          )}
+          <div
+            className={widget.showTitle && widget.title ? "mt-4 prose prose-sm" : "prose prose-sm"}
+            dangerouslySetInnerHTML={{ __html: htmlContent }}
+          />
+        </div>
+      );
+
     default:
       return null;
   }
@@ -241,16 +451,16 @@ export function Footer() {
   const { config: businessConfig } = useBusinessConfig();
   const { config: footerConfig } = useFooterConfig();
 
-  // Build social links from config
+  // Build social links from config with brand colors
   const socialLinks = useMemo(
     () =>
       [
-        { name: "Facebook", href: businessConfig.social.facebook, icon: Facebook },
-        { name: "Twitter", href: businessConfig.social.twitter, icon: Twitter },
-        { name: "LinkedIn", href: businessConfig.social.linkedin, icon: Linkedin },
-        { name: "Instagram", href: businessConfig.social.instagram, icon: Instagram },
-        { name: "YouTube", href: businessConfig.social.youtube, icon: Youtube },
-        { name: "TikTok", href: businessConfig.social.tiktok, icon: TikTokIcon },
+        { name: "Facebook", href: businessConfig.social.facebook, icon: Facebook, color: "#1877F2" },
+        { name: "Twitter", href: businessConfig.social.twitter, icon: Twitter, color: "#1DA1F2" },
+        { name: "LinkedIn", href: businessConfig.social.linkedin, icon: Linkedin, color: "#0A66C2" },
+        { name: "Instagram", href: businessConfig.social.instagram, icon: Instagram, color: "#E4405F" },
+        { name: "YouTube", href: businessConfig.social.youtube, icon: Youtube, color: "#FF0000" },
+        { name: "TikTok", href: businessConfig.social.tiktok, icon: TikTokIcon, color: "#000000" },
       ].filter((link) => link.href),
     [businessConfig.social]
   );
@@ -321,6 +531,13 @@ export function Footer() {
             ))}
           </div>
         )}
+
+        {/* Trust Badges */}
+        {footerConfig?.trustBadges?.show && footerConfig.trustBadges.badges.length > 0 && (
+          <div className="mt-6">
+            <TrustBadges badges={footerConfig.trustBadges.badges} />
+          </div>
+        )}
       </div>
     ) : null
   );
@@ -372,12 +589,13 @@ export function Footer() {
 
             {/* Social Links */}
             {socialLinks.length > 0 && (
-              <div className="flex gap-3">
+              <div className="flex flex-wrap gap-3">
                 {socialLinks.map((social) => (
                   <a
                     key={social.name}
                     href={social.href}
-                    className="text-muted-foreground transition-colors hover:text-foreground"
+                    className="transition-all hover:scale-110"
+                    style={{ color: social.color }}
                     aria-label={social.name}
                   >
                     <social.icon className="h-5 w-5" />
@@ -440,12 +658,13 @@ export function Footer() {
 
             {/* Social Links */}
             {socialLinks.length > 0 && (
-              <div className="mt-6 flex gap-4">
+              <div className="mt-6 flex flex-wrap gap-3">
                 {socialLinks.map((social) => (
                   <a
                     key={social.name}
                     href={social.href}
-                    className="rounded-lg bg-muted p-2 text-muted-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
+                    className="rounded-lg bg-muted p-2 transition-all hover:scale-110"
+                    style={{ color: social.color }}
                     aria-label={social.name}
                   >
                     <social.icon className="h-5 w-5" />
@@ -524,12 +743,13 @@ export function Footer() {
 
             {/* Social Links */}
             {socialLinks.length > 0 && (
-              <div className="flex gap-3">
+              <div className="flex flex-wrap gap-3">
                 {socialLinks.map((social) => (
                   <a
                     key={social.name}
                     href={social.href}
-                    className="rounded-full bg-muted p-3 text-muted-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
+                    className="rounded-full bg-muted p-3 transition-all hover:scale-110"
+                    style={{ color: social.color }}
                     aria-label={social.name}
                   >
                     <social.icon className="h-5 w-5" />
@@ -542,18 +762,21 @@ export function Footer() {
           {/* Mega grid - more columns */}
           <div className="mt-10 grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-6">
             {hasDynamicWidgets ? (
-              Object.entries(widgetsByColumn!).map(([column, widgets]) => (
-                <div key={column}>
-                  {widgets.map((widget) => (
-                    <FooterWidgetRenderer
-                      key={widget.id}
-                      widget={widget}
-                      businessConfig={businessConfig}
-                      socialLinks={socialLinks}
-                    />
-                  ))}
-                </div>
-              ))
+              Object.entries(widgetsByColumn!)
+                .filter(([, widgets]) => widgets.length > 0)
+                .map(([column, widgets]) => (
+                  <div key={column}>
+                    {widgets.map((widget) => (
+                      <FooterWidgetRenderer
+                        key={widget.id}
+                        widget={widget}
+                        businessConfig={businessConfig}
+                        socialLinks={socialLinks}
+                        footerConfig={footerConfig}
+                      />
+                    ))}
+                  </div>
+                ))
             ) : (
               <>
                 {/* Services */}
@@ -650,26 +873,68 @@ export function Footer() {
         style={{ paddingTop: `${footerConfig?.styling?.paddingTop || 48}px` }}
       >
         {hasDynamicWidgets ? (
-          // Dynamic widgets layout
-          <div
-            className="grid gap-8"
-            style={{
-              gridTemplateColumns: `repeat(${footerConfig?.columns || 6}, minmax(0, 1fr))`,
-            }}
-          >
-            {Object.entries(widgetsByColumn!).map(([column, widgets]) => (
-              <div key={column} className={widgets.some((w) => w.type === "BRAND") ? "col-span-2" : ""}>
-                {widgets.map((widget) => (
-                  <FooterWidgetRenderer
-                    key={widget.id}
-                    widget={widget}
-                    businessConfig={businessConfig}
-                    socialLinks={socialLinks}
-                  />
-                ))}
-              </div>
-            ))}
-          </div>
+          // Dynamic widgets layout - responsive grid
+          (() => {
+            const entries = Object.entries(widgetsByColumn!).filter(([, widgets]) => widgets.length > 0);
+            const hasBrandWidget = entries.some(([, widgets]) => widgets.some((w) => w.type === "BRAND"));
+            // Calculate grid columns: BRAND takes 2 cols on desktop, others take 1 each
+            const desktopCols = hasBrandWidget ? entries.length + 1 : entries.length;
+
+            return (
+              <>
+                {/* Inject responsive CSS for this specific grid */}
+                <style>{`
+                  .footer-grid {
+                    display: grid;
+                    gap: 2rem;
+                    grid-template-columns: 1fr;
+                  }
+                  @media (min-width: 640px) {
+                    .footer-grid {
+                      grid-template-columns: repeat(2, 1fr);
+                    }
+                    .footer-grid .brand-col {
+                      grid-column: span 2;
+                    }
+                  }
+                  @media (min-width: 768px) {
+                    .footer-grid {
+                      grid-template-columns: repeat(3, 1fr);
+                    }
+                  }
+                  @media (min-width: 1024px) {
+                    .footer-grid {
+                      grid-template-columns: repeat(${desktopCols}, 1fr);
+                    }
+                    .footer-grid .brand-col {
+                      grid-column: span 2;
+                    }
+                  }
+                `}</style>
+                <div className="footer-grid">
+                  {entries.map(([column, widgets]) => {
+                    const isBrand = widgets.some((w) => w.type === "BRAND");
+                    return (
+                      <div
+                        key={column}
+                        className={`min-w-0 overflow-hidden break-words ${isBrand ? "brand-col" : ""}`}
+                      >
+                        {widgets.map((widget) => (
+                          <FooterWidgetRenderer
+                            key={widget.id}
+                            widget={widget}
+                            businessConfig={businessConfig}
+                            socialLinks={socialLinks}
+                            footerConfig={footerConfig}
+                          />
+                        ))}
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            );
+          })()
         ) : (
           // Fallback hardcoded layout
           <div className="grid grid-cols-2 gap-8 md:grid-cols-3 lg:grid-cols-6">
@@ -726,12 +991,13 @@ export function Footer() {
               </div>
 
               {/* Social Links */}
-              <div className="mt-6 flex gap-4">
+              <div className="mt-6 flex flex-wrap gap-3">
                 {socialLinks.map((social) => (
                   <a
                     key={social.name}
                     href={social.href}
-                    className="rounded-lg bg-muted p-2 text-muted-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
+                    className="rounded-lg bg-muted p-2 transition-all hover:scale-110"
+                    style={{ color: social.color }}
                     aria-label={social.name}
                   >
                     <social.icon className="h-5 w-5" />

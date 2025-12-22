@@ -12,24 +12,24 @@ const footerConfigSchema = z.object({
   columns: z.number().min(1).max(6).default(4),
   newsletterEnabled: z.boolean().default(true),
   newsletterTitle: z.string().default("Subscribe to our newsletter"),
-  newsletterSubtitle: z.string().optional(),
-  newsletterProvider: z.string().optional(),
-  newsletterFormAction: z.string().optional(),
+  newsletterSubtitle: z.string().nullable().optional(),
+  newsletterProvider: z.string().nullable().optional(),
+  newsletterFormAction: z.string().nullable().optional(),
   showSocialLinks: z.boolean().default(true),
   socialPosition: z.string().default("brand"),
   showContactInfo: z.boolean().default(true),
   contactPosition: z.string().default("brand"),
   bottomBarEnabled: z.boolean().default(true),
-  copyrightText: z.string().optional(),
+  copyrightText: z.string().nullable().optional(),
   showDisclaimer: z.boolean().default(false),
-  disclaimerText: z.string().optional(),
+  disclaimerText: z.string().nullable().optional(),
   bottomLinks: z.any().optional(),
   showTrustBadges: z.boolean().default(false),
   trustBadges: z.any().optional(),
-  bgColor: z.string().optional(),
-  textColor: z.string().optional(),
-  accentColor: z.string().optional(),
-  borderColor: z.string().optional(),
+  bgColor: z.string().nullable().optional(),
+  textColor: z.string().nullable().optional(),
+  accentColor: z.string().nullable().optional(),
+  borderColor: z.string().nullable().optional(),
   paddingTop: z.number().default(48),
   paddingBottom: z.number().default(32),
 });
@@ -163,6 +163,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(footer);
   } catch (error) {
     if (error instanceof z.ZodError) {
+      console.error("Footer validation error:", JSON.stringify(error.issues, null, 2));
       return NextResponse.json(
         { error: "Validation error", details: error.issues },
         { status: 400 }

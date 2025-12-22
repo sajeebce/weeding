@@ -24,6 +24,7 @@ import {
 import { Logo } from "../components/Logo";
 import { CTAButtons } from "../components/CTAButtons";
 import { MobileMenu } from "../components/MobileMenu";
+import { SearchButton } from "../components/SearchButton";
 import { cn } from "@/lib/utils";
 import type { HeaderLayoutProps, ServiceCategory } from "../types";
 
@@ -176,6 +177,7 @@ export function HeaderMega({
           />
 
           <div className="hidden lg:flex lg:items-center lg:gap-x-4">
+            <SearchButton enabled={config.search?.enabled ?? false} />
             <CTAButtons
               buttons={config.cta || []}
               showAuth={config.auth?.showButtons ?? true}

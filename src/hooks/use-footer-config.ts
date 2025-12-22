@@ -92,11 +92,20 @@ export function getWidgetsByColumn(widgets: FooterWidget[], column: number): Foo
 }
 
 // Helper to get all links from a LINKS widget
+// Note: Public API returns 'links', admin API returns 'menuItems'
 export function getWidgetLinks(widget: FooterWidget): { id: string; label: string; url: string }[] {
-  if (widget.type !== "LINKS" || !widget.menuItems) {
+  if (widget.type !== "LINKS") {
     return [];
   }
-  return widget.menuItems.map((item) => ({
+
+  // Check for 'links' first (public API format), then 'menuItems' (admin API format)
+  const items = (widget as unknown as { links?: { id: string; label: string; url: string }[] }).links || widget.menuItems;
+
+  if (!items || items.length === 0) {
+    return [];
+  }
+
+  return items.map((item) => ({
     id: item.id,
     label: item.label,
     url: item.url || "#",

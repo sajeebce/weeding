@@ -5,6 +5,7 @@ import { Logo } from "../components/Logo";
 import { Navigation } from "../components/Navigation";
 import { CTAButtons } from "../components/CTAButtons";
 import { MobileMenu } from "../components/MobileMenu";
+import { SearchButton } from "../components/SearchButton";
 import type { HeaderLayoutProps } from "../types";
 
 /**
@@ -52,6 +53,7 @@ export function HeaderDefault({
 
       {/* Desktop CTA - Right */}
       <div className="hidden lg:flex lg:items-center lg:gap-x-4">
+        <SearchButton enabled={config.search?.enabled ?? false} />
         <CTAButtons
           buttons={config.cta || []}
           showAuth={config.auth?.showButtons ?? true}

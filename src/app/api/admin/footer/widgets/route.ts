@@ -80,7 +80,8 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const validatedData = widgetSchema.parse(body);
+    const { menuItems, ...restBody } = body;
+    const validatedData = widgetSchema.parse(restBody);
     const { content, ...widgetData } = validatedData;
 
     // Get the max sortOrder for this column
@@ -97,6 +98,23 @@ export async function POST(request: NextRequest) {
         ...widgetData,
         content: content ? JSON.stringify(content) : Prisma.DbNull,
         sortOrder: (maxSortOrder._max.sortOrder ?? -1) + 1,
+        // Create menu items if provided (for LINKS widget)
+        ...(menuItems && menuItems.length > 0 && {
+          menuItems: {
+            create: menuItems.map((item: { label: string; url: string; target: string; sortOrder: number; isVisible: boolean }) => ({
+              label: item.label,
+              url: item.url,
+              target: item.target || "_self",
+              sortOrder: item.sortOrder,
+              isVisible: item.isVisible ?? true,
+            })),
+          },
+        }),
+      },
+      include: {
+        menuItems: {
+          orderBy: { sortOrder: "asc" },
+        },
       },
     });
 
@@ -131,7 +149,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { id, ...data } = body;
+    const { id, menuItems, ...data } = body;
 
     if (!id) {
       return NextResponse.json(
@@ -143,11 +161,57 @@ export async function PUT(request: NextRequest) {
     const validatedData = widgetSchema.partial().parse(data);
     const { content, ...widgetData } = validatedData;
 
+    // If menuItems are provided, handle them in a transaction
+    if (menuItems !== undefined) {
+      const widget = await prisma.$transaction(async (tx) => {
+        // Delete existing menu items
+        await tx.footerWidgetLink.deleteMany({
+          where: { widgetId: id },
+        });
+
+        // Update widget and create new menu items
+        return tx.footerWidget.update({
+          where: { id },
+          data: {
+            ...widgetData,
+            ...(content !== undefined && { content: JSON.stringify(content) }),
+            ...(menuItems && menuItems.length > 0 && {
+              menuItems: {
+                create: menuItems.map((item: { label: string; url: string; target: string; sortOrder: number; isVisible: boolean }) => ({
+                  label: item.label,
+                  url: item.url,
+                  target: item.target || "_self",
+                  sortOrder: item.sortOrder,
+                  isVisible: item.isVisible ?? true,
+                })),
+              },
+            }),
+          },
+          include: {
+            menuItems: {
+              orderBy: { sortOrder: "asc" },
+            },
+          },
+        });
+      });
+
+      return NextResponse.json({
+        ...widget,
+        content: widget.content ? JSON.parse(widget.content as string) : null,
+      });
+    }
+
+    // Simple update without menuItems
     const widget = await prisma.footerWidget.update({
       where: { id },
       data: {
         ...widgetData,
         ...(content !== undefined && { content: JSON.stringify(content) }),
+      },
+      include: {
+        menuItems: {
+          orderBy: { sortOrder: "asc" },
+        },
       },
     });
 

@@ -3,6 +3,7 @@ import prisma from "@/lib/db";
 import { z } from "zod";
 import { encrypt, decrypt, maskSecret, isEncrypted } from "@/lib/encryption";
 import { clearSettingsCache } from "@/lib/payment-settings";
+import { clearBusinessConfigCache } from "@/lib/business-settings";
 
 // Keys that require encryption
 const SECRET_KEYS = [
@@ -114,8 +115,9 @@ export async function POST(request: NextRequest) {
       })
     );
 
-    // Clear settings cache after update
+    // Clear settings caches after update
     clearSettingsCache();
+    clearBusinessConfigCache();
 
     return NextResponse.json({
       message: "Settings updated successfully",
@@ -162,8 +164,9 @@ export async function PATCH(request: NextRequest) {
       create: { key, value: finalValue, type },
     });
 
-    // Clear settings cache after update
+    // Clear settings caches after update
     clearSettingsCache();
+    clearBusinessConfigCache();
 
     return NextResponse.json({ setting });
   } catch (error) {

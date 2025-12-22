@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Logo } from "../components/Logo";
 import { MobileMenu } from "../components/MobileMenu";
+import { SearchButton } from "../components/SearchButton";
 import type { HeaderLayoutProps } from "../types";
 
 /**
@@ -38,9 +39,10 @@ export function HeaderMinimal({
         maxHeight={config.logo?.maxHeight || 36}
       />
 
-      {/* Always show mobile menu (hamburger) */}
+      {/* Search and Mobile menu */}
       {mounted && (
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
+          <SearchButton enabled={config.search?.enabled ?? false} />
           <MobileMenu
             navigation={navigation}
             serviceCategories={serviceCategories}

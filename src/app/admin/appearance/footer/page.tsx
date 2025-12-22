@@ -1,7 +1,28 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import {
+  DndContext,
+  DragOverlay,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragStartEvent,
+  DragEndEvent,
+  DragOverEvent,
+  useDroppable,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import {
   Save,
   Eye,
@@ -23,6 +44,8 @@ import {
   Building2,
   Monitor,
   Smartphone,
+  Shield,
+  Image as ImageIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -60,7 +83,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import type { FooterConfig, FooterWidget, FooterWidgetType, FooterLayout, BottomLink } from "@/lib/header-footer/types";
+import type { FooterConfig, FooterWidget, FooterWidgetType, FooterLayout, BottomLink, TrustBadge, FooterWidgetLink } from "@/lib/header-footer/types";
 
 const layoutOptions: { value: FooterLayout; label: string; description: string }[] = [
   { value: "MULTI_COLUMN", label: "Multi-Column", description: "Traditional multi-column layout" },
@@ -82,13 +105,160 @@ const widgetTypes: { value: FooterWidgetType; label: string; icon: React.ReactNo
   { value: "CUSTOM_HTML", label: "Custom HTML", icon: <Code className="h-4 w-4" /> },
 ];
 
+interface WidgetLink {
+  id: string;
+  label: string;
+  url: string;
+  target: "_self" | "_blank";
+}
+
 const defaultWidgetFormData = {
   type: "LINKS" as FooterWidgetType,
   title: "",
   showTitle: true,
   column: 1,
   content: {} as Record<string, unknown>,
+  links: [] as WidgetLink[],
 };
+
+// Sortable Widget Component
+function SortableWidget({
+  widget,
+  onEdit,
+  onDelete,
+}: {
+  widget: FooterWidget;
+  onEdit: (widget: FooterWidget) => void;
+  onDelete: (widget: FooterWidget) => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: widget.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        "flex items-center gap-2 rounded-lg border bg-card p-3 transition-shadow",
+        isDragging && "shadow-lg ring-2 ring-primary"
+      )}
+    >
+      <button
+        {...attributes}
+        {...listeners}
+        className="cursor-grab touch-none active:cursor-grabbing"
+      >
+        <GripVertical className="h-4 w-4 text-muted-foreground" />
+      </button>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          {widgetTypes.find((t) => t.value === widget.type)?.icon}
+          <span className="text-sm font-medium truncate">
+            {widget.title || widgetTypes.find((t) => t.value === widget.type)?.label}
+          </span>
+        </div>
+        <span className="text-xs text-muted-foreground">
+          {widget.type}
+        </span>
+      </div>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-7 w-7 shrink-0"
+        onClick={() => onEdit(widget)}
+      >
+        <Pencil className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-7 w-7 shrink-0 text-destructive"
+        onClick={() => onDelete(widget)}
+      >
+        <Trash2 className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+}
+
+// Droppable Column Component
+function DroppableColumn({
+  column,
+  widgets,
+  isOver,
+  onAddWidget,
+  onEditWidget,
+  onDeleteWidget,
+}: {
+  column: number;
+  widgets: FooterWidget[];
+  isOver: boolean;
+  onAddWidget: (column: number) => void;
+  onEditWidget: (widget: FooterWidget) => void;
+  onDeleteWidget: (widget: FooterWidget) => void;
+}) {
+  const { setNodeRef } = useDroppable({
+    id: `column-${column}`,
+  });
+
+  return (
+    <div className="space-y-2">
+      <Label>Column {column}</Label>
+      <div
+        ref={setNodeRef}
+        className={cn(
+          "min-h-50 space-y-2 rounded-lg border-2 border-dashed p-2 transition-colors",
+          isOver && "border-primary bg-primary/5"
+        )}
+      >
+        <SortableContext
+          items={widgets.map((w) => w.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          {widgets.length === 0 ? (
+            <button
+              onClick={() => onAddWidget(column)}
+              className="flex h-full min-h-45 w-full flex-col items-center justify-center rounded-lg border border-dashed text-muted-foreground hover:bg-muted/50"
+            >
+              <Plus className="mb-2 h-6 w-6" />
+              <span className="text-sm">Add Widget</span>
+            </button>
+          ) : (
+            <>
+              {widgets.map((widget) => (
+                <SortableWidget
+                  key={widget.id}
+                  widget={widget}
+                  onEdit={onEditWidget}
+                  onDelete={onDeleteWidget}
+                />
+              ))}
+              <button
+                onClick={() => onAddWidget(column)}
+                className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed py-2 text-sm text-muted-foreground hover:bg-muted/50"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Add Widget</span>
+              </button>
+            </>
+          )}
+        </SortableContext>
+      </div>
+    </div>
+  );
+}
 
 export default function FooterBuilderPage() {
   const [loading, setLoading] = useState(true);
@@ -102,6 +272,22 @@ export default function FooterBuilderPage() {
   const [selectedWidget, setSelectedWidget] = useState<FooterWidget | null>(null);
   const [widgetFormData, setWidgetFormData] = useState(defaultWidgetFormData);
 
+  // Widget drag and drop with @dnd-kit
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [overColumn, setOverColumn] = useState<number | null>(null);
+
+  // DnD sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
   // Form state
   const [formData, setFormData] = useState({
     name: "Default Footer",
@@ -110,6 +296,8 @@ export default function FooterBuilderPage() {
     newsletterEnabled: true,
     newsletterTitle: "Subscribe to our newsletter",
     newsletterSubtitle: "",
+    newsletterProvider: "",
+    newsletterFormAction: "",
     showSocialLinks: true,
     socialPosition: "brand",
     showContactInfo: true,
@@ -120,6 +308,7 @@ export default function FooterBuilderPage() {
     disclaimerText: "",
     bottomLinks: [] as BottomLink[],
     showTrustBadges: false,
+    trustBadges: [] as TrustBadge[],
     bgColor: "",
     textColor: "",
     accentColor: "",
@@ -148,6 +337,8 @@ export default function FooterBuilderPage() {
           newsletterEnabled: activeFooter.newsletterEnabled,
           newsletterTitle: activeFooter.newsletterTitle,
           newsletterSubtitle: activeFooter.newsletterSubtitle || "",
+          newsletterProvider: activeFooter.newsletterProvider || "",
+          newsletterFormAction: activeFooter.newsletterFormAction || "",
           showSocialLinks: activeFooter.showSocialLinks,
           socialPosition: activeFooter.socialPosition,
           showContactInfo: activeFooter.showContactInfo,
@@ -158,6 +349,7 @@ export default function FooterBuilderPage() {
           disclaimerText: activeFooter.disclaimerText || "",
           bottomLinks: activeFooter.bottomLinks || [],
           showTrustBadges: activeFooter.showTrustBadges,
+          trustBadges: activeFooter.trustBadges || [],
           bgColor: activeFooter.bgColor || "",
           textColor: activeFooter.textColor || "",
           accentColor: activeFooter.accentColor || "",
@@ -190,15 +382,23 @@ export default function FooterBuilderPage() {
           borderColor: formData.borderColor || null,
           copyrightText: formData.copyrightText || null,
           newsletterSubtitle: formData.newsletterSubtitle || null,
+          newsletterProvider: formData.newsletterProvider || null,
+          newsletterFormAction: formData.newsletterFormAction || null,
           disclaimerText: formData.disclaimerText || null,
+          trustBadges: formData.trustBadges.length > 0 ? formData.trustBadges : null,
         }),
       });
 
-      if (!res.ok) throw new Error("Failed to save");
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => null);
+        console.error("Footer save error:", errorData);
+        throw new Error(errorData?.error || "Failed to save");
+      }
 
       toast.success("Footer configuration saved");
       fetchFooter();
     } catch (error) {
+      console.error("Footer save failed:", error);
       toast.error("Failed to save footer configuration");
     } finally {
       setSaving(false);
@@ -214,12 +414,21 @@ export default function FooterBuilderPage() {
 
   function openEditWidgetDialog(widget: FooterWidget) {
     setSelectedWidget(widget);
+    // Convert menuItems to links format
+    const links: WidgetLink[] = widget.menuItems?.map((item) => ({
+      id: item.id,
+      label: item.label,
+      url: item.url || "",
+      target: item.target,
+    })) || [];
+
     setWidgetFormData({
       type: widget.type,
       title: widget.title || "",
       showTitle: widget.showTitle,
       column: widget.column,
       content: widget.content || {},
+      links,
     });
     setWidgetDialogOpen(true);
   }
@@ -237,11 +446,27 @@ export default function FooterBuilderPage() {
       const url = "/api/admin/footer/widgets";
       const method = selectedWidget ? "PUT" : "POST";
 
+      // Convert links to menuItems format for LINKS widget type
+      const menuItems = widgetFormData.type === "LINKS" && widgetFormData.links.length > 0
+        ? widgetFormData.links.map((link, index) => ({
+            id: link.id.startsWith("temp-") ? undefined : link.id,
+            label: link.label,
+            url: link.url,
+            target: link.target,
+            sortOrder: index,
+            isVisible: true,
+          }))
+        : undefined;
+
       const payload = {
         ...(selectedWidget && { id: selectedWidget.id }),
         footerId: footer.id,
-        ...widgetFormData,
+        type: widgetFormData.type,
         title: widgetFormData.title || null,
+        showTitle: widgetFormData.showTitle,
+        column: widgetFormData.column,
+        content: widgetFormData.content,
+        menuItems,
       };
 
       const res = await fetch(url, {
@@ -298,6 +523,166 @@ export default function FooterBuilderPage() {
     const newLinks = formData.bottomLinks.filter((_, i) => i !== index);
     setFormData({ ...formData, bottomLinks: newLinks });
   }
+
+  // Trust badges functions
+  function addTrustBadge() {
+    setFormData({
+      ...formData,
+      trustBadges: [...formData.trustBadges, { image: "", alt: "Trust Badge", url: "" }],
+    });
+  }
+
+  function updateTrustBadge(index: number, updates: Partial<TrustBadge>) {
+    const newBadges = [...formData.trustBadges];
+    newBadges[index] = { ...newBadges[index], ...updates };
+    setFormData({ ...formData, trustBadges: newBadges });
+  }
+
+  function removeTrustBadge(index: number) {
+    const newBadges = formData.trustBadges.filter((_, i) => i !== index);
+    setFormData({ ...formData, trustBadges: newBadges });
+  }
+
+  // Widget link functions
+  function addWidgetLink() {
+    const newLink: WidgetLink = {
+      id: `temp-${Date.now()}`,
+      label: "New Link",
+      url: "/",
+      target: "_self",
+    };
+    setWidgetFormData({
+      ...widgetFormData,
+      links: [...widgetFormData.links, newLink],
+    });
+  }
+
+  function updateWidgetLink(index: number, updates: Partial<WidgetLink>) {
+    const newLinks = [...widgetFormData.links];
+    newLinks[index] = { ...newLinks[index], ...updates };
+    setWidgetFormData({ ...widgetFormData, links: newLinks });
+  }
+
+  function removeWidgetLink(index: number) {
+    const newLinks = widgetFormData.links.filter((_, i) => i !== index);
+    setWidgetFormData({ ...widgetFormData, links: newLinks });
+  }
+
+  // @dnd-kit drag and drop handlers
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+  }, []);
+
+  const handleDragOver = useCallback((event: DragOverEvent) => {
+    const { over } = event;
+    if (over && typeof over.id === "string" && over.id.startsWith("column-")) {
+      const columnNum = parseInt(over.id.replace("column-", ""));
+      setOverColumn(columnNum);
+    } else {
+      setOverColumn(null);
+    }
+  }, []);
+
+  const handleDragEnd = useCallback(async (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveId(null);
+    setOverColumn(null);
+
+    if (!over || !footer) return;
+
+    const activeWidget = footer.widgets?.find((w) => w.id === active.id);
+    if (!activeWidget) return;
+
+    // Check if dropping on a column
+    if (typeof over.id === "string" && over.id.startsWith("column-")) {
+      const targetColumn = parseInt(over.id.replace("column-", ""));
+
+      if (activeWidget.column !== targetColumn) {
+        // Move to different column
+        try {
+          const res = await fetch("/api/admin/footer/widgets", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              id: activeWidget.id,
+              footerId: footer.id,
+              column: targetColumn,
+              sortOrder: 0,
+            }),
+          });
+
+          if (!res.ok) throw new Error("Failed to move widget");
+          toast.success(`Widget moved to column ${targetColumn}`);
+          fetchFooter();
+        } catch {
+          toast.error("Failed to move widget");
+        }
+      }
+      return;
+    }
+
+    // Check if reordering within same column
+    const overWidget = footer.widgets?.find((w) => w.id === over.id);
+    if (!overWidget) return;
+
+    if (activeWidget.column === overWidget.column && active.id !== over.id) {
+      // Reorder within same column
+      const columnWidgets = footer.widgets
+        ?.filter((w) => w.column === activeWidget.column)
+        .sort((a, b) => a.sortOrder - b.sortOrder) || [];
+
+      const oldIndex = columnWidgets.findIndex((w) => w.id === active.id);
+      const newIndex = columnWidgets.findIndex((w) => w.id === over.id);
+
+      if (oldIndex !== -1 && newIndex !== -1) {
+        const reordered = arrayMove(columnWidgets, oldIndex, newIndex);
+
+        // Update sort orders via API
+        try {
+          await Promise.all(
+            reordered.map((widget, index) =>
+              fetch("/api/admin/footer/widgets", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  id: widget.id,
+                  footerId: footer.id,
+                  sortOrder: index,
+                }),
+              })
+            )
+          );
+          toast.success("Widget order updated");
+          fetchFooter();
+        } catch {
+          toast.error("Failed to reorder widgets");
+        }
+      }
+    } else if (activeWidget.column !== overWidget.column) {
+      // Move to different column (dropped on a widget)
+      try {
+        const res = await fetch("/api/admin/footer/widgets", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: activeWidget.id,
+            footerId: footer.id,
+            column: overWidget.column,
+            sortOrder: overWidget.sortOrder,
+          }),
+        });
+
+        if (!res.ok) throw new Error("Failed to move widget");
+        toast.success(`Widget moved to column ${overWidget.column}`);
+        fetchFooter();
+      } catch {
+        toast.error("Failed to move widget");
+      }
+    }
+  }, [footer]);
+
+  // Get the active widget for drag overlay
+  const activeWidget = activeId ? footer?.widgets?.find((w) => w.id === activeId) : null;
 
   // Group widgets by column
   function getWidgetsByColumn(column: number): FooterWidget[] {
@@ -774,69 +1159,45 @@ export default function FooterBuilderPage() {
                   </p>
                 </div>
               )}
-              <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${formData.columns}, 1fr)` }}>
-                {Array.from({ length: formData.columns }, (_, i) => i + 1).map((column) => (
-                  <div key={column} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label>Column {column}</Label>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => openWidgetDialog(column)}
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragStart={handleDragStart}
+                onDragOver={handleDragOver}
+                onDragEnd={handleDragEnd}
+              >
+                <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${formData.columns}, 1fr)` }}>
+                  {Array.from({ length: formData.columns }, (_, i) => i + 1).map((column) => (
+                    <DroppableColumn
+                      key={column}
+                      column={column}
+                      widgets={getWidgetsByColumn(column)}
+                      isOver={overColumn === column}
+                      onAddWidget={openWidgetDialog}
+                      onEditWidget={openEditWidgetDialog}
+                      onDeleteWidget={openDeleteWidgetDialog}
+                    />
+                  ))}
+                </div>
+                <DragOverlay>
+                  {activeWidget ? (
+                    <div className="flex items-center gap-2 rounded-lg border bg-card p-3 shadow-lg ring-2 ring-primary">
+                      <GripVertical className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          {widgetTypes.find((t) => t.value === activeWidget.type)?.icon}
+                          <span className="text-sm font-medium truncate">
+                            {activeWidget.title || widgetTypes.find((t) => t.value === activeWidget.type)?.label}
+                          </span>
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          {activeWidget.type}
+                        </span>
+                      </div>
                     </div>
-                    <div className="min-h-[200px] space-y-2 rounded-lg border-2 border-dashed p-2">
-                      {getWidgetsByColumn(column).length === 0 ? (
-                        <button
-                          onClick={() => openWidgetDialog(column)}
-                          className="flex h-full min-h-[180px] w-full flex-col items-center justify-center rounded-lg border border-dashed text-muted-foreground hover:bg-muted/50"
-                        >
-                          <Plus className="mb-2 h-6 w-6" />
-                          <span className="text-sm">Add Widget</span>
-                        </button>
-                      ) : (
-                        getWidgetsByColumn(column).map((widget) => (
-                          <div
-                            key={widget.id}
-                            className="flex items-center gap-2 rounded-lg border bg-card p-3"
-                          >
-                            <GripVertical className="h-4 w-4 cursor-grab text-muted-foreground" />
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2">
-                                {widgetTypes.find((t) => t.value === widget.type)?.icon}
-                                <span className="text-sm font-medium">
-                                  {widget.title || widgetTypes.find((t) => t.value === widget.type)?.label}
-                                </span>
-                              </div>
-                              <span className="text-xs text-muted-foreground">
-                                {widget.type}
-                              </span>
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7"
-                              onClick={() => openEditWidgetDialog(widget)}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7 text-destructive"
-                              onClick={() => openDeleteWidgetDialog(widget)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ) : null}
+                </DragOverlay>
+              </DndContext>
             </CardContent>
           </Card>
         </TabsContent>
@@ -977,6 +1338,110 @@ export default function FooterBuilderPage() {
                     )}
                   </div>
                 </>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Trust Badges Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                Trust Badges
+              </CardTitle>
+              <CardDescription>Add security and trust badges to your footer</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex items-center justify-between rounded-lg border p-4">
+                <div>
+                  <Label className="text-base">Show Trust Badges</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Display trust/security badges in footer
+                  </p>
+                </div>
+                <Switch
+                  checked={formData.showTrustBadges}
+                  onCheckedChange={(checked) => setFormData({ ...formData, showTrustBadges: checked })}
+                />
+              </div>
+
+              {formData.showTrustBadges && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Label>Trust Badges</Label>
+                    <Button variant="outline" size="sm" onClick={addTrustBadge}>
+                      <Plus className="mr-1 h-4 w-4" />
+                      Add Badge
+                    </Button>
+                  </div>
+                  {formData.trustBadges.length === 0 ? (
+                    <div className="rounded-lg border-2 border-dashed p-8 text-center">
+                      <ImageIcon className="mx-auto h-8 w-8 text-muted-foreground" />
+                      <p className="mt-2 text-sm text-muted-foreground">No trust badges configured</p>
+                      <Button variant="outline" size="sm" className="mt-4" onClick={addTrustBadge}>
+                        <Plus className="mr-1 h-4 w-4" />
+                        Add Your First Badge
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {formData.trustBadges.map((badge, index) => (
+                        <div key={index} className="flex items-start gap-3 rounded-lg border p-4">
+                          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded bg-muted">
+                            {badge.image ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={badge.image}
+                                alt={badge.alt}
+                                className="h-10 w-10 object-contain"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = "none";
+                                }}
+                              />
+                            ) : (
+                              <Shield className="h-6 w-6 text-muted-foreground" />
+                            )}
+                          </div>
+                          <div className="flex-1 space-y-2">
+                            <Input
+                              value={badge.image}
+                              onChange={(e) => updateTrustBadge(index, { image: e.target.value })}
+                              placeholder="Image URL (e.g., /images/badges/ssl.png)"
+                            />
+                            <div className="flex gap-2">
+                              <Input
+                                value={badge.alt}
+                                onChange={(e) => updateTrustBadge(index, { alt: e.target.value })}
+                                placeholder="Alt text"
+                                className="flex-1"
+                              />
+                              <Input
+                                value={badge.url || ""}
+                                onChange={(e) => updateTrustBadge(index, { url: e.target.value })}
+                                placeholder="Link URL (optional)"
+                                className="flex-1"
+                              />
+                            </div>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="shrink-0 text-destructive"
+                            onClick={() => removeTrustBadge(index)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <div className="rounded-lg bg-muted/50 p-4">
+                    <p className="text-sm text-muted-foreground">
+                      <strong>Tip:</strong> Common trust badges include SSL certificates, payment provider logos (Stripe, PayPal),
+                      BBB accreditation, or security seals. Use image URLs from your public assets.
+                    </p>
+                  </div>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -1186,18 +1651,118 @@ export default function FooterBuilderPage() {
               </Select>
             </div>
 
+            {/* Links Editor for LINKS widget type */}
+            {widgetFormData.type === "LINKS" && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label>Links</Label>
+                  <Button variant="outline" size="sm" onClick={addWidgetLink}>
+                    <Plus className="mr-1 h-4 w-4" />
+                    Add Link
+                  </Button>
+                </div>
+                {widgetFormData.links.length === 0 ? (
+                  <div className="rounded-lg border-2 border-dashed p-4 text-center">
+                    <p className="text-sm text-muted-foreground">No links added yet</p>
+                    <Button variant="outline" size="sm" className="mt-2" onClick={addWidgetLink}>
+                      <Plus className="mr-1 h-4 w-4" />
+                      Add Your First Link
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="max-h-50 space-y-2 overflow-y-auto">
+                    {widgetFormData.links.map((link, index) => (
+                      <div key={link.id} className="flex items-center gap-2 rounded-lg border p-2">
+                        <GripVertical className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        <Input
+                          value={link.label}
+                          onChange={(e) => updateWidgetLink(index, { label: e.target.value })}
+                          placeholder="Label"
+                          className="flex-1"
+                        />
+                        <Input
+                          value={link.url}
+                          onChange={(e) => updateWidgetLink(index, { url: e.target.value })}
+                          placeholder="URL"
+                          className="flex-1"
+                        />
+                        <Select
+                          value={link.target}
+                          onValueChange={(value: "_self" | "_blank") => updateWidgetLink(index, { target: value })}
+                        >
+                          <SelectTrigger className="w-24">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="_self">Same tab</SelectItem>
+                            <SelectItem value="_blank">New tab</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 shrink-0 text-destructive"
+                          onClick={() => removeWidgetLink(index)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* TEXT widget content */}
+            {widgetFormData.type === "TEXT" && (
+              <div className="space-y-2">
+                <Label htmlFor="textContent">Text Content</Label>
+                <Textarea
+                  id="textContent"
+                  value={(widgetFormData.content as { text?: string })?.text || ""}
+                  onChange={(e) => setWidgetFormData({
+                    ...widgetFormData,
+                    content: { ...widgetFormData.content, text: e.target.value },
+                  })}
+                  placeholder="Enter your text content..."
+                  rows={4}
+                />
+              </div>
+            )}
+
+            {/* CUSTOM_HTML widget content */}
+            {widgetFormData.type === "CUSTOM_HTML" && (
+              <div className="space-y-2">
+                <Label htmlFor="htmlContent">HTML Content</Label>
+                <Textarea
+                  id="htmlContent"
+                  value={(widgetFormData.content as { html?: string })?.html || ""}
+                  onChange={(e) => setWidgetFormData({
+                    ...widgetFormData,
+                    content: { ...widgetFormData.content, html: e.target.value },
+                  })}
+                  placeholder="<div>Your HTML here...</div>"
+                  rows={6}
+                  className="font-mono text-sm"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Be careful with custom HTML. Ensure it&apos;s valid and doesn&apos;t break the page layout.
+                </p>
+              </div>
+            )}
+
             <div className="rounded-lg bg-muted/50 p-4">
               <p className="text-sm text-muted-foreground">
-                {widgetFormData.type === "LINKS" && "After creating, edit the widget to add links."}
+                {widgetFormData.type === "LINKS" && "Add links above. They will be displayed as a list in the footer."}
                 {widgetFormData.type === "BRAND" && "Shows logo, description, and contact info from settings."}
                 {widgetFormData.type === "SERVICES" && "Auto-populated from your active services."}
                 {widgetFormData.type === "STATES" && "Auto-populated list of popular LLC states."}
                 {widgetFormData.type === "NEWSLETTER" && "Email subscription form."}
                 {widgetFormData.type === "SOCIAL" && "Social media links from settings."}
                 {widgetFormData.type === "CONTACT" && "Contact information from settings."}
-                {widgetFormData.type === "TEXT" && "Custom text content."}
+                {widgetFormData.type === "TEXT" && "Enter your custom text above."}
                 {widgetFormData.type === "RECENT_POSTS" && "Latest blog posts."}
-                {widgetFormData.type === "CUSTOM_HTML" && "Custom HTML content."}
+                {widgetFormData.type === "CUSTOM_HTML" && "Enter raw HTML above. Use with caution."}
               </p>
             </div>
           </div>
