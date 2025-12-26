@@ -859,39 +859,77 @@ export default function FooterBuilderPage() {
               {/* CENTERED Layout */}
               {formData.layout === "CENTERED" && (
                 <div className="text-center">
-                  <div className="flex flex-col items-center">
-                    <div className="h-10 w-10 rounded-lg bg-primary/20 flex items-center justify-center font-bold text-primary">LP</div>
-                    <span className="mt-2 font-semibold">LLCPad</span>
-                    <p className="mt-1 max-w-xs text-xs text-muted-foreground">Your trusted partner for LLC formation and business services.</p>
-                    {formData.showSocialLinks && (
-                      <div className="mt-3 flex gap-2">
-                        <div className="h-6 w-6 rounded bg-muted flex items-center justify-center"><Share2 className="h-3 w-3" /></div>
-                        <div className="h-6 w-6 rounded bg-muted flex items-center justify-center"><Share2 className="h-3 w-3" /></div>
-                        <div className="h-6 w-6 rounded bg-muted flex items-center justify-center"><Share2 className="h-3 w-3" /></div>
-                      </div>
-                    )}
-                  </div>
-                  {/* Link sections */}
-                  <div className="mt-6 flex flex-wrap justify-center gap-6">
-                    {getWidgetsByColumn(1).concat(getWidgetsByColumn(2)).concat(getWidgetsByColumn(3)).filter(w => w.type === "LINKS").slice(0, 3).map((widget) => (
-                      <div key={widget.id}>
-                        {widget.showTitle && widget.title && (
-                          <h4 className="text-xs font-semibold">{widget.title}</h4>
-                        )}
-                        <ul className="mt-1 space-y-0.5 text-xs text-muted-foreground">
-                          {widget.menuItems && widget.menuItems.length > 0 ? (
-                            widget.menuItems.slice(0, 3).map((item, idx) => (
-                              <li key={idx}>{item.label}</li>
-                            ))
-                          ) : (
-                            <>
-                              <li>Link 1</li>
-                              <li>Link 2</li>
-                            </>
+                  {/* All widgets merged from all columns */}
+                  <div className="flex flex-col items-center space-y-6">
+                    {(() => {
+                      // Merge all widgets from all columns, sorted by column then sortOrder
+                      const allWidgets = Array.from({ length: formData.columns }, (_, i) => i + 1)
+                        .flatMap(col => getWidgetsByColumn(col));
+
+                      if (allWidgets.length === 0) {
+                        return (
+                          <div className="rounded border border-dashed border-gray-300 p-6">
+                            <span className="text-xs text-muted-foreground">No widgets configured</span>
+                          </div>
+                        );
+                      }
+
+                      return allWidgets.map((widget) => (
+                        <div key={widget.id} className="w-full max-w-md space-y-1">
+                          {widget.showTitle && widget.title && (
+                            <h4 className="text-xs font-semibold">{widget.title}</h4>
                           )}
-                        </ul>
-                      </div>
-                    ))}
+                          <div className="text-xs text-muted-foreground">
+                            {widget.type === "BRAND" && (
+                              <div className="flex flex-col items-center gap-2">
+                                <div className="h-10 w-10 rounded-lg bg-primary/20 flex items-center justify-center font-bold text-primary">LP</div>
+                                <span className="font-semibold text-foreground">LLCPad</span>
+                                <p className="max-w-xs text-muted-foreground">Your trusted partner for LLC formation and business services.</p>
+                              </div>
+                            )}
+                            {widget.type === "LINKS" && (
+                              <div className="flex flex-wrap justify-center gap-x-4 gap-y-1">
+                                {widget.menuItems && widget.menuItems.length > 0 ? (
+                                  widget.menuItems.map((item, idx) => (
+                                    <span key={idx} className="hover:text-foreground cursor-pointer">{item.label}</span>
+                                  ))
+                                ) : (
+                                  <>
+                                    <span className="hover:text-foreground cursor-pointer">Link 1</span>
+                                    <span className="hover:text-foreground cursor-pointer">Link 2</span>
+                                    <span className="hover:text-foreground cursor-pointer">Link 3</span>
+                                  </>
+                                )}
+                              </div>
+                            )}
+                            {widget.type === "CONTACT" && (
+                              <div className="flex flex-col items-center gap-1">
+                                <div className="flex items-center gap-1"><Mail className="h-3 w-3" /> email@example.com</div>
+                                <div className="flex items-center gap-1"><Phone className="h-3 w-3" /> +1 234 567 890</div>
+                              </div>
+                            )}
+                            {widget.type === "SOCIAL" && (
+                              <div className="flex justify-center gap-2">
+                                <div className="h-6 w-6 rounded bg-muted flex items-center justify-center"><Share2 className="h-3 w-3" /></div>
+                                <div className="h-6 w-6 rounded bg-muted flex items-center justify-center"><Share2 className="h-3 w-3" /></div>
+                                <div className="h-6 w-6 rounded bg-muted flex items-center justify-center"><Share2 className="h-3 w-3" /></div>
+                              </div>
+                            )}
+                            {widget.type === "TEXT" && <p>Custom text content...</p>}
+                            {widget.type === "NEWSLETTER" && (
+                              <div className="flex justify-center gap-1 max-w-xs mx-auto">
+                                <div className="flex-1 h-6 rounded border bg-background"></div>
+                                <div className="h-6 px-2 rounded bg-primary text-[10px] text-primary-foreground flex items-center">Subscribe</div>
+                              </div>
+                            )}
+                            {widget.type === "SERVICES" && <span className="italic">Auto: Services</span>}
+                            {widget.type === "STATES" && <span className="italic">Auto: States</span>}
+                            {widget.type === "RECENT_POSTS" && <span className="italic">Recent Posts</span>}
+                            {widget.type === "CUSTOM_HTML" && <span className="italic">Custom HTML</span>}
+                          </div>
+                        </div>
+                      ));
+                    })()}
                   </div>
                 </div>
               )}
@@ -952,11 +990,14 @@ export default function FooterBuilderPage() {
                     )}
                   </div>
                   {/* Mega grid */}
-                  <div className={cn(
-                    "mt-4 grid gap-4",
-                    previewMode === "mobile" ? "grid-cols-2" : "grid-cols-6"
-                  )}>
-                    {Array.from({ length: Math.min(formData.columns, 6) }, (_, i) => i + 1).map((column) => {
+                  <div
+                    className={cn(
+                      "mt-4 grid gap-4",
+                      previewMode === "mobile" && "grid-cols-2"
+                    )}
+                    style={previewMode === "desktop" ? { gridTemplateColumns: `repeat(${formData.columns}, 1fr)` } : undefined}
+                  >
+                    {Array.from({ length: formData.columns }, (_, i) => i + 1).map((column) => {
                       const widgets = getWidgetsByColumn(column);
                       return (
                         <div key={column}>
@@ -1068,7 +1109,9 @@ export default function FooterBuilderPage() {
               {/* Columns */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label>Number of Columns</Label>
+                  <Label className={formData.layout === 'CENTERED' || formData.layout === 'MINIMAL' ? 'text-muted-foreground' : ''}>
+                    Number of Columns
+                  </Label>
                   <span className="text-sm text-muted-foreground">{formData.columns} columns</span>
                 </div>
                 <Slider
@@ -1077,65 +1120,15 @@ export default function FooterBuilderPage() {
                   min={2}
                   max={6}
                   step={1}
+                  disabled={formData.layout === 'CENTERED' || formData.layout === 'MINIMAL'}
                 />
+                {(formData.layout === 'CENTERED' || formData.layout === 'MINIMAL') && (
+                  <p className="text-xs text-muted-foreground italic">
+                    Not applicable for {formData.layout.toLowerCase()} layout
+                  </p>
+                )}
               </div>
 
-              <Separator />
-
-              {/* Feature Toggles */}
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="flex items-center justify-between rounded-lg border p-4">
-                  <div>
-                    <Label className="text-base">Show Social Links</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Display social media icons
-                    </p>
-                  </div>
-                  <Switch
-                    checked={formData.showSocialLinks}
-                    onCheckedChange={(checked) => setFormData({ ...formData, showSocialLinks: checked })}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between rounded-lg border p-4">
-                  <div>
-                    <Label className="text-base">Show Contact Info</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Display contact information
-                    </p>
-                  </div>
-                  <Switch
-                    checked={formData.showContactInfo}
-                    onCheckedChange={(checked) => setFormData({ ...formData, showContactInfo: checked })}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between rounded-lg border p-4">
-                  <div>
-                    <Label className="text-base">Show Trust Badges</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Display trust/security badges
-                    </p>
-                  </div>
-                  <Switch
-                    checked={formData.showTrustBadges}
-                    onCheckedChange={(checked) => setFormData({ ...formData, showTrustBadges: checked })}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between rounded-lg border p-4">
-                  <div>
-                    <Label className="text-base">Show Disclaimer</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Display legal disclaimer
-                    </p>
-                  </div>
-                  <Switch
-                    checked={formData.showDisclaimer}
-                    onCheckedChange={(checked) => setFormData({ ...formData, showDisclaimer: checked })}
-                  />
-                </div>
-              </div>
             </CardContent>
           </Card>
 
@@ -1148,8 +1141,8 @@ export default function FooterBuilderPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Warning for orphan widgets */}
-              {getOrphanWidgets().length > 0 && (
+              {/* Warning for orphan widgets - only relevant for MULTI_COLUMN and MEGA layouts */}
+              {getOrphanWidgets().length > 0 && (formData.layout === 'MULTI_COLUMN' || formData.layout === 'MEGA') && (
                 <div className="rounded-lg border border-yellow-500/50 bg-yellow-50 p-4 dark:bg-yellow-900/20">
                   <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
                     ⚠️ {getOrphanWidgets().length} widget(s) are in columns beyond the current {formData.columns}-column layout.
