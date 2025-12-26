@@ -1292,3 +1292,28 @@ enum FooterWidgetType {
   STATES          // Popular states (auto-populated)
   CUSTOM_HTML     // Raw HTML
 }
+
+// Newsletter Subscriber
+model NewsletterSubscriber {
+  id           String                   @id @default(cuid())
+  email        String                   @unique
+  name         String?
+  status       NewsletterSubscriberStatus @default(ACTIVE)
+  source       String?                  // website, import, api
+  subscribedAt DateTime                 @default(now())
+  unsubscribedAt DateTime?
+  confirmedAt  DateTime?                // For double opt-in
+  metadata     Json?                    // Additional data (IP, user agent, etc.)
+  createdAt    DateTime                 @default(now())
+  updatedAt    DateTime                 @updatedAt
+
+  @@index([status])
+  @@index([subscribedAt])
+}
+
+enum NewsletterSubscriberStatus {
+  PENDING     // Awaiting confirmation (double opt-in)
+  ACTIVE      // Confirmed and active
+  UNSUBSCRIBED
+  BOUNCED
+}

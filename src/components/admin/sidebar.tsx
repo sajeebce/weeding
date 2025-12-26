@@ -126,6 +126,7 @@ const navItems: NavItem[] = [
       { title: "General", href: "/admin/settings" },
       { title: "Payments", href: "/admin/settings/payments" },
       { title: "Email", href: "/admin/settings/email" },
+      { title: "Newsletter", href: "/admin/settings/newsletter" },
       { title: "Profile", href: "/admin/profile" },
     ],
   },
