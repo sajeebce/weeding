@@ -11,7 +11,7 @@ import {
 export const metadata: Metadata = {
   title: "Pricing",
   description:
-    "Transparent pricing for US LLC formation services. No hidden fees. Choose from Basic, Standard, or Premium packages starting at $149.",
+    "Transparent pricing for US LLC formation services. No hidden fees. Choose from Basic, Standard, or Premium packages starting at $199.",
   keywords: [
     "LLC formation pricing",
     "LLC formation cost",
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Pricing | LLCPad - US LLC Formation Services",
     description:
-      "Transparent pricing for US LLC formation services. No hidden fees. Choose from Basic, Standard, or Premium packages starting at $149.",
+      "Transparent pricing for US LLC formation services. No hidden fees. Choose from Basic, Standard, or Premium packages starting at $199.",
   },
 };
 
@@ -30,23 +30,23 @@ const pricingSchemas = [
   generateProductSchema({
     name: "Basic LLC Formation Package",
     description:
-      "Essential LLC formation including state filing, name check, and digital documents.",
-    price: 149,
+      "Essential LLC formation with EIN, Registered Agent, Mail Forwarding, and Operating Agreement.",
+    price: 199,
     url: "/pricing",
   }),
   generateProductSchema({
     name: "Standard LLC Formation Package",
     description:
-      "Most popular package with LLC formation, EIN, operating agreement, and registered agent.",
-    price: 249,
+      "Most popular package with LLC formation, EIN, Fintech Bank Account, Stripe Account, and Debit Card.",
+    price: 449,
     url: "/pricing",
     reviews: { rating: 4.9, count: 847 },
   }),
   generateProductSchema({
     name: "Premium LLC Formation Package",
     description:
-      "Complete business setup with LLC, EIN, banking assistance, virtual address, and priority support.",
-    price: 399,
+      "Complete business setup with LLC, EIN, Fintech Bank, PayPal, Stripe, and Business Guide.",
+    price: 672,
     url: "/pricing",
   }),
   generateBreadcrumbSchema([
