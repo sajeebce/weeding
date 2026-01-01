@@ -16,6 +16,7 @@ export const BUSINESS_SETTINGS = {
   DISPLAY_NAME: "business.display.name",
   // Logo
   LOGO_URL: "business.logo.url",
+  LOGO_DARK_URL: "business.logo.darkUrl",
   LOGO_TEXT: "business.logo.text",
   FAVICON_URL: "business.favicon.url",
   // Contact
@@ -53,6 +54,7 @@ export interface BusinessConfig {
   };
   logo: {
     url: string;
+    darkUrl: string;
     text: string;
   };
   favicon: string;
@@ -116,6 +118,7 @@ export async function getBusinessConfig(): Promise<BusinessConfig> {
     },
     logo: {
       url: settingsMap[BUSINESS_SETTINGS.LOGO_URL] || "",
+      darkUrl: settingsMap[BUSINESS_SETTINGS.LOGO_DARK_URL] || "",
       text: settingsMap[BUSINESS_SETTINGS.LOGO_TEXT] || "L",
     },
     favicon: settingsMap[BUSINESS_SETTINGS.FAVICON_URL] || "",
@@ -169,6 +172,7 @@ export function getDefaultBusinessConfig(): BusinessConfig {
     },
     logo: {
       url: "",
+      darkUrl: "",
       text: "L",
     },
     favicon: "",

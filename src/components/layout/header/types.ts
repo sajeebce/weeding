@@ -31,6 +31,7 @@ export interface BusinessConfig {
   };
   logo: {
     url: string;
+    darkUrl?: string;
     text: string;
   };
 }
@@ -55,6 +56,8 @@ export interface LogoProps {
   businessConfig: BusinessConfig;
   maxHeight?: number;
   className?: string;
+  /** Use 'dark' for dark backgrounds (footer) - will use darkUrl if available */
+  variant?: "light" | "dark";
 }
 
 export interface NavigationProps {

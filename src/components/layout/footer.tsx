@@ -260,8 +260,11 @@ function EnhancedSocialLinks({
     circle: "rounded-full",
     square: "rounded-none",
     rounded: "rounded-lg",
-    pill: "rounded-full px-4",
+    pill: "rounded-full",
   };
+
+  // Pill shape uses wider containers with explicit min-width
+  const isPill = shape === "pill";
 
   const hoverClasses = {
     scale: "hover:scale-110",
@@ -289,6 +292,15 @@ function EnhancedSocialLinks({
     return brandColor;
   };
 
+  // Calculate pill dimensions based on size
+  const pillSizes = {
+    sm: { height: 28, width: 45 },   // 28 x 45px
+    md: { height: 40, width: 64 },   // 40 x 64px
+    lg: { height: 48, width: 77 },   // 48 x 77px
+    xl: { height: 56, width: 90 },   // 56 x 90px
+  };
+  const currentPillSize = pillSizes[size as keyof typeof pillSizes] || pillSizes.md;
+
   return (
     <div className={cn("flex flex-wrap -m-1 p-1", currentSize.gap)} role="list" aria-label="Social media links">
       {links.map((social) => (
@@ -302,7 +314,14 @@ function EnhancedSocialLinks({
             currentHover,
             currentBg
           )}
-          style={{ color: getColor(social.color) }}
+          style={{
+            color: getColor(social.color),
+            ...(isPill && {
+              width: `${currentPillSize.width}px`,
+              height: `${currentPillSize.height}px`,
+              padding: 0,  // Override padding, use explicit dimensions
+            }),
+          }}
           aria-label={`Follow us on ${social.name}`}
           target="_blank"
           rel="noopener noreferrer"
@@ -368,14 +387,16 @@ function BackgroundPattern({
     dots: `radial-gradient(circle, ${color} 1px, transparent 1px)`,
     grid: `linear-gradient(${color} 1px, transparent 1px), linear-gradient(90deg, ${color} 1px, transparent 1px)`,
     diagonal: `repeating-linear-gradient(45deg, transparent, transparent 10px, ${color} 10px, ${color} 11px)`,
-    waves: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='${encodeURIComponent(color)}' fill-opacity='1' d='M0,160L48,144C96,128,192,96,288,106.7C384,117,480,171,576,181.3C672,192,768,160,864,133.3C960,107,1056,85,1152,90.7C1248,96,1344,128,1392,144L1440,160L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z'%3E%3C/path%3E%3C/svg%3E")`,
+    waves: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 20'%3E%3Cpath d='M0 10 Q 12.5 0, 25 10 T 50 10 T 75 10 T 100 10' fill='none' stroke='${encodeURIComponent(color)}' stroke-width='1'/%3E%3C/svg%3E")`,
+    noise: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.5'/%3E%3C/svg%3E")`,
   };
 
   const patternSizes: Record<string, string> = {
     dots: "20px 20px",
     grid: "20px 20px, 20px 20px",
     diagonal: "auto",
-    waves: "cover",
+    waves: "100px 20px",
+    noise: "200px 200px",
   };
 
   return (
@@ -399,6 +420,7 @@ function FooterWidgetRenderer({
   footerConfig,
   headingClasses,
   linkClasses,
+  logoUrl,
 }: {
   widget: FooterWidget;
   businessConfig: ReturnType<typeof useBusinessConfig>["config"];
@@ -406,6 +428,7 @@ function FooterWidgetRenderer({
   footerConfig?: PublicFooterResponse | null;
   headingClasses?: string;
   linkClasses?: string;
+  logoUrl?: string;
 }) {
   const links = getWidgetLinks(widget);
 
@@ -423,7 +446,22 @@ function FooterWidgetRenderer({
     secondaryCtaUrl?: string;
     showContact?: boolean;
     showSocial?: boolean;
+    logoMode?: "auto" | "light" | "dark";
   } | null;
+
+  // Determine effective logo URL based on logoMode setting
+  const getEffectiveLogoUrl = () => {
+    const logoMode = brandContent?.logoMode || "auto";
+    if (logoMode === "light") {
+      return businessConfig.logo.url;
+    }
+    if (logoMode === "dark") {
+      return businessConfig.logo.darkUrl || businessConfig.logo.url;
+    }
+    // Auto: use passed logoUrl (dark mode) or fallback to regular url
+    return logoUrl || businessConfig.logo.url;
+  };
+  const effectiveLogoUrl = getEffectiveLogoUrl();
 
   switch (widget.type) {
     case "BRAND":
@@ -436,15 +474,15 @@ function FooterWidgetRenderer({
 
       return (
         <div className="space-y-4">
-          {/* Logo + Business Name - Stacked vertically */}
-          <Link href="/" className="inline-flex flex-col items-start gap-2 focus:outline-none focus:ring-2 focus:ring-primary rounded">
-            {businessConfig.logo.url ? (
+          {/* Logo only - no business name text (aligned with column headings) */}
+          <Link href="/" className="inline-block focus:outline-none focus:ring-2 focus:ring-primary rounded">
+            {effectiveLogoUrl ? (
               <Image
-                src={businessConfig.logo.url}
+                src={effectiveLogoUrl}
                 alt={businessConfig.name}
-                width={48}
+                width={160}
                 height={48}
-                className="h-12 w-12 rounded-lg object-contain"
+                className="h-12 w-auto rounded-lg object-contain"
               />
             ) : (
               <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
@@ -453,7 +491,6 @@ function FooterWidgetRenderer({
                 </span>
               </div>
             )}
-            <span className="text-2xl font-bold">{businessConfig.name}</span>
           </Link>
 
           {/* Tagline / Description */}
@@ -755,6 +792,9 @@ export function Footer() {
     return () => observer.disconnect();
   }, [footerConfig?.styling?.enableAnimations, isConfigLoading, hasAnimated]);
 
+  // Use dark logo for footer (dark backgrounds) if available, otherwise use regular logo
+  const footerLogoUrl = businessConfig.logo.darkUrl || businessConfig.logo.url;
+
   // Build social links from config with brand colors
   const socialLinks = useMemo(
     () =>
@@ -790,19 +830,39 @@ export function Footer() {
   const styling = footerConfig?.styling;
 
   // Build background style
-  const getBackgroundStyle = () => {
+  const getBackgroundStyle = (): React.CSSProperties => {
     const bgType = styling?.bgType || "solid";
 
+    // Solid color background
+    if (bgType === "solid" && styling?.bgColor) {
+      return { backgroundColor: styling.bgColor };
+    }
+
+    // Gradient background
     if (bgType === "gradient" && styling?.bgGradient) {
       const gradient = styling.bgGradient;
       const colors = gradient.colors?.map((c: { color: string; position: number }) => `${c.color} ${c.position}%`).join(", ");
-      return {
-        background: `linear-gradient(${gradient.angle || 135}deg, ${colors})`,
-      };
+      if (colors) {
+        return {
+          background: `linear-gradient(${gradient.angle || 135}deg, ${colors})`,
+        };
+      }
     }
 
-    if (bgType === "solid" && styling?.bgColor) {
-      return { backgroundColor: styling.bgColor };
+    // Pattern background - use bgColor as base, pattern overlay is rendered separately
+    if (bgType === "pattern") {
+      return { backgroundColor: styling?.bgColor || "#0f172a" };
+    }
+
+    // Image background
+    if (bgType === "image" && styling?.bgImage) {
+      const overlay = styling?.bgImageOverlay || "rgba(0,0,0,0.5)";
+      return {
+        backgroundImage: `linear-gradient(${overlay}, ${overlay}), url(${styling.bgImage})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      };
     }
 
     return {};
@@ -1118,6 +1178,7 @@ export function Footer() {
                           footerConfig={footerConfig}
                           headingClasses={headingClasses}
                           linkClasses={linkClasses}
+                          logoUrl={footerLogoUrl}
                         />
                       ))}
                   </div>
@@ -1152,18 +1213,18 @@ export function Footer() {
         <div className="container mx-auto px-4 relative z-10">
           {/* Brand Section */}
           <div className="flex flex-col items-center text-center py-8">
-            <Link href="/" className="flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-primary rounded">
-              {businessConfig.logo.url ? (
+            <Link href="/" className="flex items-center space-x-3 focus:outline-none focus:ring-2 focus:ring-primary rounded">
+              {footerLogoUrl ? (
                 <Image
-                  src={businessConfig.logo.url}
+                  src={footerLogoUrl}
                   alt={businessConfig.name}
-                  width={48}
-                  height={48}
-                  className="h-12 w-12 rounded-lg object-contain"
+                  width={96}
+                  height={96}
+                  className="h-24 w-24 rounded-lg object-contain"
                 />
               ) : (
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
-                  <span className="text-xl font-bold text-primary-foreground">
+                <div className="flex h-24 w-24 items-center justify-center rounded-lg bg-primary">
+                  <span className="text-2xl font-bold text-primary-foreground">
                     {businessConfig.logo.text || businessConfig.name.charAt(0)}
                   </span>
                 </div>
@@ -1208,6 +1269,7 @@ export function Footer() {
                         footerConfig={footerConfig}
                         headingClasses={headingClasses}
                         linkClasses={linkClasses}
+                        logoUrl={footerLogoUrl}
                       />
                     ))}
                   </div>
@@ -1251,9 +1313,9 @@ export function Footer() {
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-primary rounded">
-              {businessConfig.logo.url ? (
+              {footerLogoUrl ? (
                 <Image
-                  src={businessConfig.logo.url}
+                  src={footerLogoUrl}
                   alt={businessConfig.name}
                   width={32}
                   height={32}
@@ -1333,18 +1395,18 @@ export function Footer() {
         <div className="container mx-auto px-4 relative z-10">
           {/* Centered Logo & Description */}
           <div className="flex flex-col items-center text-center">
-            <Link href="/" className="flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-primary rounded">
-              {businessConfig.logo.url ? (
+            <Link href="/" className="flex items-center space-x-3 focus:outline-none focus:ring-2 focus:ring-primary rounded">
+              {footerLogoUrl ? (
                 <Image
-                  src={businessConfig.logo.url}
+                  src={footerLogoUrl}
                   alt={businessConfig.name}
-                  width={48}
-                  height={48}
-                  className="h-12 w-12 rounded-lg object-contain"
+                  width={96}
+                  height={96}
+                  className="h-24 w-24 rounded-lg object-contain"
                 />
               ) : (
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
-                  <span className="text-xl font-bold text-primary-foreground">
+                <div className="flex h-24 w-24 items-center justify-center rounded-lg bg-primary">
+                  <span className="text-2xl font-bold text-primary-foreground">
                     {businessConfig.logo.text || businessConfig.name.charAt(0)}
                   </span>
                 </div>
@@ -1428,18 +1490,18 @@ export function Footer() {
         <div className="container mx-auto px-4 relative z-10">
           {/* Top section with logo and social */}
           <div className="flex flex-col items-start justify-between gap-8 border-b pb-10 md:flex-row md:items-center" style={{ borderColor: styling?.borderColor }}>
-            <div className="flex items-center space-x-3">
-              {businessConfig.logo.url ? (
+            <div className="flex items-center space-x-4">
+              {footerLogoUrl ? (
                 <Image
-                  src={businessConfig.logo.url}
+                  src={footerLogoUrl}
                   alt={businessConfig.name}
-                  width={48}
-                  height={48}
-                  className="h-12 w-12 rounded-lg object-contain"
+                  width={96}
+                  height={96}
+                  className="h-24 w-24 rounded-lg object-contain"
                 />
               ) : (
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
-                  <span className="text-xl font-bold text-primary-foreground">
+                <div className="flex h-24 w-24 items-center justify-center rounded-lg bg-primary">
+                  <span className="text-2xl font-bold text-primary-foreground">
                     {businessConfig.logo.text || businessConfig.name.charAt(0)}
                   </span>
                 </div>
@@ -1482,6 +1544,7 @@ export function Footer() {
                         footerConfig={footerConfig}
                         headingClasses={headingClasses}
                         linkClasses={linkClasses}
+                        logoUrl={footerLogoUrl}
                       />
                     ))}
                   </div>
@@ -1645,6 +1708,7 @@ export function Footer() {
                             footerConfig={footerConfig}
                             headingClasses={headingClasses}
                             linkClasses={linkClasses}
+                            logoUrl={footerLogoUrl}
                           />
                         ))}
                       </div>
@@ -1656,29 +1720,26 @@ export function Footer() {
           })()
         ) : (
           <div className="grid grid-cols-2 gap-8 md:grid-cols-3 lg:grid-cols-6">
-            {/* Brand */}
+            {/* Brand - Logo only, aligned with column headings */}
             <div className="col-span-2 md:col-span-3 lg:col-span-2">
-              <Link href="/" className="flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-primary rounded">
-                {businessConfig.logo.url ? (
+              <Link href="/" className="inline-block focus:outline-none focus:ring-2 focus:ring-primary rounded mb-4">
+                {footerLogoUrl ? (
                   <Image
-                    src={businessConfig.logo.url}
+                    src={footerLogoUrl}
                     alt={businessConfig.name}
-                    width={36}
-                    height={36}
-                    className="h-9 w-9 rounded-lg object-contain"
+                    width={160}
+                    height={48}
+                    className="h-12 w-auto rounded-lg object-contain"
                   />
                 ) : (
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-                    <span className="text-lg font-bold text-primary-foreground">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
+                    <span className="text-xl font-bold text-primary-foreground">
                       {businessConfig.logo.text || businessConfig.name.charAt(0)}
                     </span>
                   </div>
                 )}
-                <span className="text-xl font-bold" style={{ color: styling?.headingColor }}>
-                  {businessConfig.name}
-                </span>
               </Link>
-              <p className="mt-4 max-w-xs text-sm opacity-80">
+              <p className="max-w-xs text-sm opacity-80">
                 {businessConfig.description}
               </p>
 

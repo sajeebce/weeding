@@ -313,7 +313,7 @@ export default function FooterBuilderPage() {
   );
 
   // Logo preview component for live preview
-  const LogoPreview = ({ size = "md" }: { size?: "xs" | "sm" | "md" | "lg" | "xl" }) => {
+  const LogoPreview = ({ size = "md", logoMode = "auto" }: { size?: "xs" | "sm" | "md" | "lg" | "xl"; logoMode?: "auto" | "light" | "dark" }) => {
     const sizeClasses = {
       xs: "h-6 w-6 text-[10px]",
       sm: "h-7 w-7 text-[10px]",
@@ -329,10 +329,24 @@ export default function FooterBuilderPage() {
       xl: 48,
     };
 
-    if (businessConfig.logo.url) {
+    // Determine which logo to use based on logoMode
+    const getLogoUrl = () => {
+      if (logoMode === "light") {
+        return businessConfig.logo.url;
+      }
+      if (logoMode === "dark") {
+        return businessConfig.logo.darkUrl || businessConfig.logo.url;
+      }
+      // Auto: use dark logo if available (since footer is typically dark)
+      return businessConfig.logo.darkUrl || businessConfig.logo.url;
+    };
+
+    const logoUrl = getLogoUrl();
+
+    if (logoUrl) {
       return (
         <Image
-          src={businessConfig.logo.url}
+          src={logoUrl}
           alt={businessConfig.name}
           width={imgSizes[size]}
           height={imgSizes[size]}
@@ -381,6 +395,8 @@ export default function FooterBuilderPage() {
     bgPattern: "",
     bgPatternColor: "",
     bgPatternOpacity: 10,
+    bgImage: "",
+    bgImageOverlay: "rgba(0,0,0,0.5)",
     // Text colors
     textColor: "",
     headingColor: "",
@@ -466,6 +482,8 @@ export default function FooterBuilderPage() {
           bgPattern: activeFooter.bgPattern || "",
           bgPatternColor: activeFooter.bgPatternColor || "",
           bgPatternOpacity: activeFooter.bgPatternOpacity || 10,
+          bgImage: activeFooter.bgImage || "",
+          bgImageOverlay: activeFooter.bgImageOverlay || "rgba(0,0,0,0.5)",
           // Text colors
           textColor: activeFooter.textColor || "",
           headingColor: activeFooter.headingColor || "",
@@ -557,6 +575,8 @@ export default function FooterBuilderPage() {
           bgPattern: formData.bgPattern || null,
           bgPatternColor: formData.bgPatternColor || null,
           bgPatternOpacity: formData.bgPatternOpacity,
+          bgImage: formData.bgImage || null,
+          bgImageOverlay: formData.bgImageOverlay || null,
           // Text colors
           textColor: formData.textColor || null,
           headingColor: formData.headingColor || null,
@@ -1002,11 +1022,21 @@ export default function FooterBuilderPage() {
         <CardContent>
           <div
             className={cn(
-              "mx-auto overflow-hidden rounded-lg border transition-all footer-preview",
+              "mx-auto overflow-hidden rounded-lg border transition-all footer-preview relative",
               previewMode === "mobile" ? "max-w-[375px]" : "w-full"
             )}
             style={{
-              backgroundColor: formData.bgColor || "#f9fafb",
+              // Dynamic background based on bgType
+              ...(formData.bgType === "solid" && { backgroundColor: formData.bgColor || "#f9fafb" }),
+              ...(formData.bgType === "gradient" && formData.bgGradient?.colors && {
+                background: `linear-gradient(${formData.bgGradient.angle || 135}deg, ${formData.bgGradient.colors[0]?.color || "#4338ca"} ${formData.bgGradient.colors[0]?.position || 0}%, ${formData.bgGradient.colors[1]?.color || "#6366f1"} ${formData.bgGradient.colors[1]?.position || 100}%)`,
+              }),
+              ...(formData.bgType === "pattern" && { backgroundColor: formData.bgColor || "#0f172a" }),
+              ...(formData.bgType === "image" && formData.bgImage && {
+                backgroundImage: `linear-gradient(${formData.bgImageOverlay || "rgba(0,0,0,0.5)"}, ${formData.bgImageOverlay || "rgba(0,0,0,0.5)"}), url(${formData.bgImage})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }),
               color: formData.textColor || undefined,
               // CSS custom properties for dynamic hover effects
               "--link-color": formData.linkColor || "#64748b",
@@ -1029,9 +1059,37 @@ export default function FooterBuilderPage() {
                 color: var(--heading-color);
               }
             `}</style>
+            {/* Pattern Overlay for Preview */}
+            {formData.bgType === "pattern" && formData.bgPattern && (() => {
+              const color = formData.bgPatternColor || "#000";
+              const patterns: Record<string, string> = {
+                dots: `radial-gradient(circle, ${color} 1px, transparent 1px)`,
+                grid: `linear-gradient(${color} 1px, transparent 1px), linear-gradient(90deg, ${color} 1px, transparent 1px)`,
+                diagonal: `repeating-linear-gradient(45deg, transparent, transparent 10px, ${color} 10px, ${color} 11px)`,
+                waves: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 20'%3E%3Cpath d='M0 10 Q 12.5 0, 25 10 T 50 10 T 75 10 T 100 10' fill='none' stroke='${encodeURIComponent(color)}' stroke-width='1'/%3E%3C/svg%3E")`,
+                noise: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.5'/%3E%3C/svg%3E")`,
+              };
+              const patternSizes: Record<string, string> = {
+                dots: "20px 20px",
+                grid: "20px 20px, 20px 20px",
+                diagonal: "auto",
+                waves: "100px 20px",
+                noise: "200px 200px",
+              };
+              return (
+                <div
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    backgroundImage: patterns[formData.bgPattern] || patterns.dots,
+                    backgroundSize: patternSizes[formData.bgPattern] || "20px 20px",
+                    opacity: (formData.bgPatternOpacity || 10) / 100,
+                  }}
+                />
+              );
+            })()}
             {/* Footer Preview Content */}
             <div
-              className="px-4"
+              className="px-4 relative z-10"
               style={{
                 paddingTop: `${formData.paddingTop}px`,
                 paddingBottom: `${formData.paddingBottom}px`,
@@ -1063,11 +1121,12 @@ export default function FooterBuilderPage() {
                                 )}
                                 <div className="text-xs">
                                   {widget.type === "BRAND" && (() => {
-                                    const brandContent = widget.content as { tagline?: string; showContact?: boolean } | null;
+                                    const brandContent = widget.content as { tagline?: string; showContact?: boolean; logoMode?: "auto" | "light" | "dark" } | null;
                                     const showContact = brandContent?.showContact !== false;
+                                    const logoMode = brandContent?.logoMode || "auto";
                                     return (
                                       <div className="space-y-1.5">
-                                        <LogoPreview size="md" />
+                                        <LogoPreview size="md" logoMode={logoMode} />
                                         <span className="font-semibold preview-heading block">{businessConfig.name}</span>
                                         {brandContent?.tagline && (
                                           <p className="text-[10px] opacity-70 max-w-[140px] leading-tight">
@@ -1165,11 +1224,12 @@ export default function FooterBuilderPage() {
                           )}
                           <div className="text-xs">
                             {widget.type === "BRAND" && (() => {
-                              const brandContent = widget.content as { tagline?: string; subtitle?: string; showContact?: boolean } | null;
+                              const brandContent = widget.content as { tagline?: string; subtitle?: string; showContact?: boolean; logoMode?: "auto" | "light" | "dark" } | null;
                               const showContact = brandContent?.showContact !== false;
+                              const logoMode = brandContent?.logoMode || "auto";
                               return (
                                 <div className="flex flex-col items-center gap-2">
-                                  <LogoPreview size="lg" />
+                                  <LogoPreview size="lg" logoMode={logoMode} />
                                   <span className="font-semibold preview-heading">{businessConfig.name}</span>
                                   <p className="max-w-xs text-center" style={{ color: "var(--link-color)" }}>
                                     {brandContent?.tagline || "Your trusted partner for LLC formation and business services."}
@@ -1500,7 +1560,10 @@ export default function FooterBuilderPage() {
                                       )) || <li>Link</li>}
                                     </ul>
                                   )}
-                                  {widget.type === "BRAND" && <div className="space-y-1"><LogoPreview size="sm" /><span className="font-semibold text-sm block">{businessConfig.name}</span></div>}
+                                  {widget.type === "BRAND" && (() => {
+                                    const brandContent = widget.content as { logoMode?: "auto" | "light" | "dark" } | null;
+                                    return <div className="space-y-1"><LogoPreview size="sm" logoMode={brandContent?.logoMode || "auto"} /><span className="font-semibold text-sm block">{businessConfig.name}</span></div>;
+                                  })()}
                                   {widget.type === "SOCIAL" && <SocialIconsPreview size="sm" />}
                                 </div>
                               ))}
@@ -1570,7 +1633,10 @@ export default function FooterBuilderPage() {
                             widgets.map((widget) => (
                               <div key={widget.id}>
                                 {widget.showTitle && widget.title && <h4 className="text-xs font-semibold preview-heading">{widget.title}</h4>}
-                                {widget.type === "BRAND" && <div className="space-y-1"><LogoPreview size="sm" /><span className="font-semibold text-sm preview-heading block">{businessConfig.name}</span></div>}
+                                {widget.type === "BRAND" && (() => {
+                                  const brandContent = widget.content as { logoMode?: "auto" | "light" | "dark" } | null;
+                                  return <div className="space-y-1"><LogoPreview size="sm" logoMode={brandContent?.logoMode || "auto"} /><span className="font-semibold text-sm preview-heading block">{businessConfig.name}</span></div>;
+                                })()}
                                 {widget.type === "LINKS" && <ul className="space-y-0.5 text-xs">{widget.menuItems?.slice(0,4).map((item,i) => <li key={i} className="preview-link cursor-pointer">{item.label}</li>) || <li className="preview-link">Link</li>}</ul>}
                                 {widget.type === "SOCIAL" && <SocialIconsPreview size="sm" />}
                                 {widget.type === "NEWSLETTER" && (
@@ -2393,6 +2459,45 @@ export default function FooterBuilderPage() {
                   </div>
                 </div>
               )}
+
+              {/* Image Background */}
+              {formData.bgType === "image" && (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="bgImage">Background Image URL</Label>
+                    <Input
+                      id="bgImage"
+                      value={formData.bgImage}
+                      onChange={(e) => setFormData({ ...formData, bgImage: e.target.value })}
+                      placeholder="https://example.com/image.jpg"
+                    />
+                    <p className="text-xs text-muted-foreground">Enter the URL of the background image</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="bgImageOverlay">Overlay Color</Label>
+                    <Input
+                      id="bgImageOverlay"
+                      value={formData.bgImageOverlay}
+                      onChange={(e) => setFormData({ ...formData, bgImageOverlay: e.target.value })}
+                      placeholder="rgba(0,0,0,0.5)"
+                    />
+                    <p className="text-xs text-muted-foreground">Dark overlay to improve text readability (e.g., rgba(0,0,0,0.5))</p>
+                  </div>
+                  {formData.bgImage && (
+                    <div className="space-y-2">
+                      <Label>Preview</Label>
+                      <div
+                        className="h-32 rounded-lg bg-cover bg-center flex items-center justify-center text-white"
+                        style={{
+                          backgroundImage: `linear-gradient(${formData.bgImageOverlay}, ${formData.bgImageOverlay}), url(${formData.bgImage})`,
+                        }}
+                      >
+                        <span className="text-sm font-medium">Sample Text</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -2763,12 +2868,12 @@ export default function FooterBuilderPage() {
                           formData.socialShape === "circle" && "rounded-full",
                           formData.socialShape === "square" && "rounded-none",
                           formData.socialShape === "rounded" && "rounded-lg",
-                          formData.socialShape === "pill" && "rounded-full px-3",
-                          // Size
-                          formData.socialSize === "sm" && "h-7 w-7 p-1.5",
-                          formData.socialSize === "md" && "h-9 w-9 p-2",
-                          formData.socialSize === "lg" && "h-11 w-11 p-2.5",
-                          formData.socialSize === "xl" && "h-13 w-13 p-3",
+                          formData.socialShape === "pill" && "rounded-full",
+                          // Size - pill uses different width (explicit style below)
+                          formData.socialShape !== "pill" && formData.socialSize === "sm" && "h-7 w-7 p-1.5",
+                          formData.socialShape !== "pill" && formData.socialSize === "md" && "h-9 w-9 p-2",
+                          formData.socialShape !== "pill" && formData.socialSize === "lg" && "h-11 w-11 p-2.5",
+                          formData.socialShape !== "pill" && formData.socialSize === "xl" && "h-13 w-13 p-3",
                           // Hover effect
                           formData.socialHoverEffect === "scale" && "hover:scale-110",
                           formData.socialHoverEffect === "lift" && "hover:-translate-y-1 hover:shadow-lg",
@@ -2780,7 +2885,14 @@ export default function FooterBuilderPage() {
                           formData.socialBgStyle === "solid" && "bg-white/20 hover:bg-white/30",
                           formData.socialBgStyle === "outline" && "border border-white/30 hover:border-white/50"
                         )}
-                        style={{ color: iconColor }}
+                        style={{
+                          color: iconColor,
+                          // Pill shape uses explicit wider dimensions
+                          ...(formData.socialShape === "pill" && {
+                            width: formData.socialSize === "sm" ? "45px" : formData.socialSize === "lg" ? "77px" : formData.socialSize === "xl" ? "90px" : "64px",
+                            height: formData.socialSize === "sm" ? "28px" : formData.socialSize === "lg" ? "48px" : formData.socialSize === "xl" ? "56px" : "40px",
+                          }),
+                        }}
                       >
                         <IconComponent className={cn(
                           formData.socialSize === "sm" && "h-4 w-4",
@@ -3260,6 +3372,34 @@ export default function FooterBuilderPage() {
                 <p className="text-xs text-muted-foreground">
                   Be careful with custom HTML. Ensure it&apos;s valid and doesn&apos;t break the page layout.
                 </p>
+              </div>
+            )}
+
+            {/* BRAND widget options */}
+            {widgetFormData.type === "BRAND" && (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Logo Version</Label>
+                  <Select
+                    value={(widgetFormData.content as { logoMode?: string })?.logoMode || "auto"}
+                    onValueChange={(value) => setWidgetFormData({
+                      ...widgetFormData,
+                      content: { ...widgetFormData.content, logoMode: value },
+                    })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="auto">Auto (Dark logo if available)</SelectItem>
+                      <SelectItem value="light">Light Mode Logo</SelectItem>
+                      <SelectItem value="dark">Dark Mode Logo</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Choose which logo to display. &quot;Auto&quot; uses dark mode logo for dark backgrounds.
+                  </p>
+                </div>
               </div>
             )}
 

@@ -13,6 +13,7 @@ interface BusinessConfig {
   };
   logo: {
     url: string;
+    darkUrl?: string;
     text: string;
   };
   favicon: string;
@@ -51,6 +52,7 @@ const defaultConfig: BusinessConfig = {
   },
   logo: {
     url: "",
+    darkUrl: "",
     text: "L",
   },
   favicon: "",

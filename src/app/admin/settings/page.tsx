@@ -43,6 +43,7 @@ interface BusinessSettings {
   "business.display.name": string;
   // Logo
   "business.logo.url": string;
+  "business.logo.darkUrl": string;
   "business.logo.text": string;
   "business.favicon.url": string;
   // Contact
@@ -72,6 +73,7 @@ const defaultSettings: BusinessSettings = {
   "business.display.logo": "true",
   "business.display.name": "true",
   "business.logo.url": "",
+  "business.logo.darkUrl": "",
   "business.logo.text": "L",
   "business.favicon.url": "",
   "business.contact.email": "",
@@ -105,8 +107,10 @@ export default function BusinessSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [logoPreview, setLogoPreview] = useState<string>("");
+  const [darkLogoPreview, setDarkLogoPreview] = useState<string>("");
   const [faviconPreview, setFaviconPreview] = useState<string>("");
   const logoInputRef = useRef<HTMLInputElement>(null);
+  const darkLogoInputRef = useRef<HTMLInputElement>(null);
   const faviconInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -117,10 +121,13 @@ export default function BusinessSettingsPage() {
     if (settings["business.logo.url"]) {
       setLogoPreview(settings["business.logo.url"]);
     }
+    if (settings["business.logo.darkUrl"]) {
+      setDarkLogoPreview(settings["business.logo.darkUrl"]);
+    }
     if (settings["business.favicon.url"]) {
       setFaviconPreview(settings["business.favicon.url"]);
     }
-  }, [settings["business.logo.url"], settings["business.favicon.url"]]);
+  }, [settings["business.logo.url"], settings["business.logo.darkUrl"], settings["business.favicon.url"]]);
 
   async function fetchSettings() {
     try {
@@ -190,6 +197,20 @@ export default function BusinessSettingsPage() {
     }
   }
 
+  function handleDarkLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const dataUrl = event.target?.result as string;
+        setDarkLogoPreview(dataUrl);
+        updateSetting("business.logo.darkUrl", dataUrl);
+      };
+      reader.readAsDataURL(file);
+      toast.info("Dark logo preview updated. Save to apply changes.");
+    }
+  }
+
   function handleFaviconUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (file) {
@@ -207,6 +228,11 @@ export default function BusinessSettingsPage() {
   function removeLogo() {
     setLogoPreview("");
     updateSetting("business.logo.url", "");
+  }
+
+  function removeDarkLogo() {
+    setDarkLogoPreview("");
+    updateSetting("business.logo.darkUrl", "");
   }
 
   function removeFavicon() {
@@ -339,13 +365,16 @@ export default function BusinessSettingsPage() {
 
           <Separator />
 
-          {/* Logo & Favicon */}
-          <div className="grid gap-6 sm:grid-cols-2">
-            {/* Logo Upload */}
+          {/* Logo, Dark Logo & Favicon */}
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {/* Light Logo Upload */}
             <div className="space-y-4">
-              <Label>Logo</Label>
+              <Label>Logo (Light Background)</Label>
+              <p className="text-xs text-muted-foreground -mt-2">
+                Used on light backgrounds and headers
+              </p>
               <div className="flex items-start gap-4">
-                <div className="relative h-20 w-20 rounded-lg border-2 border-dashed border-muted-foreground/25 flex items-center justify-center bg-muted/50 overflow-hidden">
+                <div className="relative h-20 w-20 rounded-lg border-2 border-dashed border-muted-foreground/25 flex items-center justify-center bg-white overflow-hidden">
                   {logoPreview ? (
                     <>
                       <Image
@@ -385,14 +414,11 @@ export default function BusinessSettingsPage() {
                     onClick={() => logoInputRef.current?.click()}
                   >
                     <Upload className="h-4 w-4 mr-2" />
-                    Upload Logo
+                    Upload
                   </Button>
-                  <p className="text-xs text-muted-foreground">
-                    Recommended: 400px+ height, SVG or PNG (2x-3x for retina)
-                  </p>
                 </div>
               </div>
-              {!logoPreview && (
+              {!logoPreview && !darkLogoPreview && (
                 <div className="space-y-2">
                   <Label className="text-sm">Logo Text (Fallback)</Label>
                   <Input
@@ -402,16 +428,82 @@ export default function BusinessSettingsPage() {
                     maxLength={2}
                     className="w-20"
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Shown if no logo image is uploaded (1-2 characters)
-                  </p>
                 </div>
               )}
+            </div>
+
+            {/* Dark Logo Upload */}
+            <div className="space-y-4">
+              <Label>Logo (Dark Background)</Label>
+              <p className="text-xs text-muted-foreground -mt-2">
+                Used on dark backgrounds like footer
+              </p>
+              <div className="flex items-start gap-4">
+                <div className="relative h-20 w-20 rounded-lg border-2 border-dashed border-muted-foreground/25 flex items-center justify-center bg-slate-800 overflow-hidden">
+                  {darkLogoPreview ? (
+                    <>
+                      <Image
+                        src={darkLogoPreview}
+                        alt="Dark Logo"
+                        fill
+                        className="object-contain p-2"
+                      />
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        className="absolute -top-2 -right-2 h-6 w-6"
+                        onClick={removeDarkLogo}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </>
+                  ) : logoPreview ? (
+                    <>
+                      <Image
+                        src={logoPreview}
+                        alt="Logo fallback"
+                        fill
+                        className="object-contain p-2 opacity-50"
+                      />
+                      <span className="absolute text-[8px] text-white/60 bottom-1">fallback</span>
+                    </>
+                  ) : (
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-white/10">
+                      <span className="text-xl font-bold text-white">
+                        {settings["business.logo.text"] || "L"}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 space-y-2">
+                  <input
+                    type="file"
+                    ref={darkLogoInputRef}
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleDarkLogoUpload}
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => darkLogoInputRef.current?.click()}
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Upload
+                  </Button>
+                  <p className="text-xs text-muted-foreground">
+                    Light colored or white logo
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* Favicon Upload */}
             <div className="space-y-4">
               <Label>Favicon</Label>
+              <p className="text-xs text-muted-foreground -mt-2">
+                Browser tab icon (32x32px)
+              </p>
               <div className="flex items-start gap-4">
                 <div className="relative h-16 w-16 rounded-lg border-2 border-dashed border-muted-foreground/25 flex items-center justify-center bg-muted/50 overflow-hidden">
                   {faviconPreview ? (

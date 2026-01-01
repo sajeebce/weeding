@@ -5,7 +5,7 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import type { LogoProps } from "../types";
 
-export function Logo({ businessConfig, maxHeight = 36, className }: LogoProps) {
+export function Logo({ businessConfig, maxHeight = 36, className, variant = "light" }: LogoProps) {
   // Display settings default to true if not specified
   const showLogo = businessConfig.display?.showLogo !== false;
   const showName = businessConfig.display?.showName !== false;
@@ -13,12 +13,17 @@ export function Logo({ businessConfig, maxHeight = 36, className }: LogoProps) {
   // If both are hidden, show at least the name as fallback
   const effectiveShowName = !showLogo && !showName ? true : showName;
 
+  // Choose logo based on variant - use darkUrl for dark backgrounds if available
+  const logoUrl = variant === "dark" && businessConfig.logo.darkUrl
+    ? businessConfig.logo.darkUrl
+    : businessConfig.logo.url;
+
   return (
     <Link href="/" className={cn("flex items-center space-x-2", className)}>
       {showLogo && (
-        businessConfig.logo.url ? (
+        logoUrl ? (
           <Image
-            src={businessConfig.logo.url}
+            src={logoUrl}
             alt={businessConfig.name}
             width={maxHeight}
             height={maxHeight}
