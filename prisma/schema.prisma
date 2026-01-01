@@ -1277,6 +1277,14 @@ model FooterConfig {
   shadow               String       @default("none") // none, sm, md, lg, xl
   borderRadius         Int          @default(0)
 
+  // Container Width & Style
+  containerWidth       String       @default("full") // full, boxed
+  containerStyle       String       @default("sharp") // sharp, round
+  cornerRadiusTL       Int          @default(0) // top-left
+  cornerRadiusTR       Int          @default(0) // top-right
+  cornerRadiusBL       Int          @default(0) // bottom-left
+  cornerRadiusBR       Int          @default(0) // bottom-right
+
   // Spacing
   paddingTop           Int          @default(48)
   paddingBottom        Int          @default(32)

@@ -573,6 +573,14 @@ export interface PublicFooterResponse {
     shadow?: string;
     borderRadius?: number;
 
+    // Container
+    containerWidth?: string;
+    containerStyle?: string;
+    cornerRadiusTL?: number;
+    cornerRadiusTR?: number;
+    cornerRadiusBL?: number;
+    cornerRadiusBR?: number;
+
     // Spacing
     paddingTop: number;
     paddingBottom: number;

@@ -76,6 +76,7 @@ function EnhancedNewsletterForm({
   buttonStyle = "primary",
   accentColor,
   incentive,
+  buttonText = "Subscribe",
 }: {
   title?: string;
   subtitle?: string;
@@ -84,6 +85,7 @@ function EnhancedNewsletterForm({
   buttonStyle?: "primary" | "secondary" | "outline" | "gradient";
   accentColor?: string;
   incentive?: string;
+  buttonText?: string;
 }) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -151,7 +153,7 @@ function EnhancedNewsletterForm({
             type="submit"
             disabled={status === "loading" || status === "success"}
             className={cn("w-full", buttonClasses)}
-            style={buttonStyle === "gradient" && accentColor ? { background: `linear-gradient(135deg, ${accentColor}, ${accentColor}99)` } : undefined}
+            style={accentColor ? { backgroundColor: accentColor } : undefined}
           >
             {status === "loading" ? (
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -160,7 +162,7 @@ function EnhancedNewsletterForm({
             ) : (
               <Send className="h-4 w-4 mr-2" />
             )}
-            {status === "success" ? "Subscribed!" : "Subscribe"}
+            {status === "success" ? "Subscribed!" : buttonText}
           </Button>
         </form>
         {status === "error" && (
@@ -170,50 +172,60 @@ function EnhancedNewsletterForm({
     );
   }
 
-  // Default inline style
+  // Default inline style - Modern compact design
+  // Button uses accent color for visibility on dark backgrounds
+  const buttonBgColor = accentColor || "#22d3ee";
+
   return (
-    <div>
+    <div className="space-y-3">
       {title && <h3 className="text-sm font-semibold">{title}</h3>}
-      {subtitle && <p className="mt-2 text-sm opacity-80">{subtitle}</p>}
-      {incentive && (
-        <div className="mt-2 flex items-center gap-2 text-sm" style={{ color: accentColor }}>
-          <Sparkles className="h-4 w-4" />
-          <span>{incentive}</span>
-        </div>
-      )}
-      <form onSubmit={handleSubmit} className="mt-4 flex gap-2">
+      <form
+        onSubmit={handleSubmit}
+        className="flex max-w-sm rounded-lg overflow-hidden ring-1 ring-white/20 focus-within:ring-2 focus-within:ring-white/40 transition-all"
+      >
         <Input
           type="email"
           placeholder="Enter your email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="flex-1"
+          className="flex-1 min-w-0 border-0 rounded-none bg-white/5 placeholder:text-current placeholder:opacity-40 focus-visible:ring-0 focus-visible:ring-offset-0 h-11 text-sm"
           disabled={status === "loading" || status === "success"}
           required
           aria-label="Email address"
         />
         <Button
           type="submit"
-          size="icon"
           disabled={status === "loading" || status === "success"}
-          className={buttonClasses}
-          style={buttonStyle === "gradient" && accentColor ? { background: `linear-gradient(135deg, ${accentColor}, ${accentColor}99)` } : undefined}
-          aria-label="Subscribe"
+          className="rounded-none h-11 px-5 font-semibold shrink-0 border-0 text-sm hover:opacity-90 transition-opacity disabled:opacity-50"
+          style={{
+            backgroundColor: buttonBgColor,
+            color: "#0f172a"
+          }}
         >
           {status === "loading" ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : status === "success" ? (
-            <CheckCircle className="h-4 w-4" />
+            <>
+              <CheckCircle className="h-4 w-4 mr-1.5" />
+              Done
+            </>
           ) : (
-            <Send className="h-4 w-4" />
+            buttonText
           )}
         </Button>
       </form>
+      {subtitle && <p className="text-xs opacity-50 mt-2">{subtitle}</p>}
+      {incentive && (
+        <div className="flex items-center gap-2 text-xs" style={{ color: accentColor }}>
+          <Sparkles className="h-3 w-3" />
+          <span>{incentive}</span>
+        </div>
+      )}
       {status === "success" && (
-        <p className="mt-2 text-sm text-green-600" role="status">Successfully subscribed!</p>
+        <p className="text-xs text-green-400 mt-2" role="status">Successfully subscribed!</p>
       )}
       {status === "error" && (
-        <p className="mt-2 text-sm text-destructive" role="alert">Failed to subscribe. Please try again.</p>
+        <p className="text-xs text-red-400 mt-2" role="alert">Failed to subscribe. Please try again.</p>
       )}
     </div>
   );
@@ -267,7 +279,7 @@ function EnhancedSocialLinks({
   };
 
   return (
-    <div className="flex flex-wrap gap-3" role="list" aria-label="Social media links">
+    <div className="flex flex-wrap gap-3 -m-1 p-1" role="list" aria-label="Social media links">
       {links.map((social) => (
         <a
           key={social.name}
@@ -412,8 +424,8 @@ function FooterWidgetRenderer({
 
       return (
         <div className="space-y-4">
-          {/* Logo + Business Name */}
-          <Link href="/" className="flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-primary rounded">
+          {/* Logo + Business Name - Stacked vertically */}
+          <Link href="/" className="inline-flex flex-col items-start gap-1 focus:outline-none focus:ring-2 focus:ring-primary rounded">
             {businessConfig.logo.url ? (
               <Image
                 src={businessConfig.logo.url}
@@ -600,6 +612,7 @@ function FooterWidgetRenderer({
             formAction={footerConfig?.newsletter?.formAction}
             accentColor={footerConfig?.styling?.accentColor || undefined}
             style={nlContent?.style as "inline" | "stacked" | "floating" | undefined}
+            buttonText={nlContent?.buttonText || "Subscribe"}
           />
         </div>
       );
@@ -681,9 +694,10 @@ function FooterWidgetRenderer({
 
 export function Footer() {
   const { config: businessConfig } = useBusinessConfig();
-  const { config: footerConfig } = useFooterConfig();
+  const { config: footerConfig, isLoading: isConfigLoading } = useFooterConfig();
   const footerRef = useRef<HTMLElement>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const [hasAnimated, setHasAnimated] = useState(false);
   const prefersReducedMotion = useRef(false);
 
   // Check for reduced motion preference
@@ -693,19 +707,32 @@ export function Footer() {
 
   // Handle entrance animation
   useEffect(() => {
-    if (!footerConfig?.styling?.enableAnimations || prefersReducedMotion.current) {
+    // Wait for config to load before deciding on animation
+    if (isConfigLoading) return;
+
+    const shouldAnimate = footerConfig?.styling?.enableAnimations && !prefersReducedMotion.current;
+
+    // If animations disabled or already animated, show immediately
+    if (!shouldAnimate || hasAnimated) {
       setIsVisible(true);
       return;
     }
 
+    // Reset visibility when animation is enabled (for config changes)
+    setIsVisible(false);
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setIsVisible(true);
+          // Small delay to ensure initial state is rendered first
+          requestAnimationFrame(() => {
+            setIsVisible(true);
+            setHasAnimated(true);
+          });
           observer.disconnect();
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.05 } // Trigger earlier (5% visible)
     );
 
     if (footerRef.current) {
@@ -713,7 +740,7 @@ export function Footer() {
     }
 
     return () => observer.disconnect();
-  }, [footerConfig?.styling?.enableAnimations]);
+  }, [footerConfig?.styling?.enableAnimations, isConfigLoading, hasAnimated]);
 
   // Build social links from config with brand colors
   const socialLinks = useMemo(
@@ -770,7 +797,7 @@ export function Footer() {
 
   // Build heading classes based on typography settings
   const headingClasses = cn(
-    "font-medium",
+    "font-medium footer-heading",
     styling?.headingSize === "sm" && "text-sm",
     styling?.headingSize === "base" && "text-base",
     styling?.headingSize === "lg" && "text-lg",
@@ -784,29 +811,60 @@ export function Footer() {
 
   // Build link classes based on hover effect
   const linkClasses = cn(
-    "opacity-80 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 rounded",
-    styling?.linkHoverEffect === "color" && "hover:opacity-100",
-    styling?.linkHoverEffect === "underline" && "hover:underline hover:opacity-100",
-    styling?.linkHoverEffect === "slide" && "relative hover:opacity-100 after:absolute after:left-0 after:bottom-0 after:h-px after:w-0 after:bg-current hover:after:w-full after:transition-all",
-    styling?.linkHoverEffect === "highlight" && "hover:bg-current/10 hover:px-2 hover:-mx-2 hover:opacity-100 rounded"
+    "footer-link transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 rounded",
+    styling?.linkHoverEffect === "underline" && "hover:underline",
+    styling?.linkHoverEffect === "slide" && "relative after:absolute after:left-0 after:bottom-0 after:h-px after:w-0 after:bg-current hover:after:w-full after:transition-all",
+    styling?.linkHoverEffect === "highlight" && "hover:bg-current/10 hover:px-2 hover:-mx-2 rounded"
   );
 
   // Animation classes (respects prefers-reduced-motion)
   const shouldAnimate = styling?.enableAnimations && !prefersReducedMotion.current;
+  const entranceAnimation = styling?.entranceAnimation || "fade-up";
+
+  // Get initial animation state based on animation type
+  const getInitialAnimationClasses = () => {
+    if (!shouldAnimate || isVisible) return "";
+    switch (entranceAnimation) {
+      case "none":
+        return "";
+      case "fade-in":
+        return "opacity-0";
+      case "slide-up":
+        return "opacity-0 translate-y-20"; // 80px slide for noticeable effect
+      case "fade-up":
+      default:
+        return "opacity-0 translate-y-8";
+    }
+  };
+
   const animationClasses = cn(
     "transition-all",
-    shouldAnimate && !isVisible && "opacity-0 translate-y-4",
+    shouldAnimate && !isVisible && getInitialAnimationClasses(),
     shouldAnimate && isVisible && "opacity-100 translate-y-0"
   );
 
   const animationDuration = styling?.animationDuration || 300;
 
-  const footerStyle = {
+  // Determine if we're using boxed container
+  const isBoxed = styling?.containerWidth === "boxed";
+  const isRound = styling?.containerStyle === "round";
+
+  // Build corner radius style
+  const cornerRadiusStyle = isRound ? {
+    borderTopLeftRadius: `${styling?.cornerRadiusTL || 0}px`,
+    borderTopRightRadius: `${styling?.cornerRadiusTR || 0}px`,
+    borderBottomLeftRadius: `${styling?.cornerRadiusBL || 0}px`,
+    borderBottomRightRadius: `${styling?.cornerRadiusBR || 0}px`,
+  } : {};
+
+  const footerStyle: React.CSSProperties & { [key: string]: string | number | undefined } = {
     ...getBackgroundStyle(),
     ...(styling?.textColor && { color: styling.textColor }),
     paddingTop: `${styling?.paddingTop || 48}px`,
     paddingBottom: `${styling?.paddingBottom || 32}px`,
-    ...(styling?.borderRadius && { borderRadius: `${styling.borderRadius}px` }),
+    // Only apply border radius if containerStyle is "round" (uses individual corners)
+    // When "sharp", no border radius at all
+    ...(isRound && cornerRadiusStyle),
     ...(styling?.shadow && styling.shadow !== "none" && {
       boxShadow: {
         sm: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
@@ -816,7 +874,16 @@ export function Footer() {
       }[styling.shadow],
     }),
     transition: shouldAnimate ? `all ${animationDuration}ms ease-out` : undefined,
+    // CSS custom properties for dynamic colors
+    "--footer-link-color": styling?.linkColor || "inherit",
+    "--footer-link-hover-color": styling?.linkHoverColor || styling?.accentColor || "#22d3ee",
+    "--footer-heading-color": styling?.headingColor || "inherit",
+    "--footer-accent-color": styling?.accentColor || "#2563eb",
+    "--footer-divider-color": styling?.dividerColor || styling?.borderColor || "#e5e7eb",
   };
+
+  // Container class for boxed mode
+  const containerClass = isBoxed ? "max-w-7xl mx-auto" : "";
 
   // If we have dynamic widgets, use them
   const hasDynamicWidgets = widgetsByColumn && Object.values(widgetsByColumn).some((w) => w.length > 0);
@@ -952,6 +1019,22 @@ export function Footer() {
     ) : null
   );
 
+  // Dynamic CSS for footer colors (uses CSS custom properties from footerStyle)
+  const FooterStyles = () => (
+    <style>{`
+      .footer-dynamic-styles .footer-link {
+        color: var(--footer-link-color);
+        transition: color 0.2s ease;
+      }
+      .footer-dynamic-styles .footer-link:hover {
+        color: var(--footer-link-hover-color);
+      }
+      .footer-dynamic-styles .footer-heading {
+        color: var(--footer-heading-color);
+      }
+    `}</style>
+  );
+
   // ============== NEWSLETTER_HERO LAYOUT ==============
   if (layout === "NEWSLETTER_HERO") {
     // Find NEWSLETTER widget if exists - use its content for the hero section
@@ -970,10 +1053,11 @@ export function Footer() {
     return (
       <footer
         ref={footerRef}
-        className={cn("relative border-t overflow-hidden", animationClasses)}
+        className={cn("relative border-t overflow-hidden footer-dynamic-styles", animationClasses)}
         style={footerStyle}
         role="contentinfo"
       >
+        <FooterStyles />
         <TopBorder />
         {styling?.bgType === "pattern" && styling.bgPattern && (
           <BackgroundPattern
@@ -1039,10 +1123,11 @@ export function Footer() {
     return (
       <footer
         ref={footerRef}
-        className={cn("relative border-t overflow-hidden", animationClasses)}
+        className={cn("relative border-t overflow-hidden footer-dynamic-styles", animationClasses)}
         style={footerStyle}
         role="contentinfo"
       >
+        <FooterStyles />
         <TopBorder />
         {styling?.bgType === "pattern" && styling.bgPattern && (
           <BackgroundPattern
@@ -1142,10 +1227,11 @@ export function Footer() {
     return (
       <footer
         ref={footerRef}
-        className={cn("relative border-t overflow-hidden", animationClasses)}
+        className={cn("relative border-t overflow-hidden footer-dynamic-styles", animationClasses)}
         style={footerStyle}
         role="contentinfo"
       >
+        <FooterStyles />
         <TopBorder />
         <div className="container mx-auto px-4 relative z-10">
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
@@ -1216,10 +1302,11 @@ export function Footer() {
     return (
       <footer
         ref={footerRef}
-        className={cn("relative border-t overflow-hidden", animationClasses)}
+        className={cn("relative border-t overflow-hidden footer-dynamic-styles", animationClasses)}
         style={footerStyle}
         role="contentinfo"
       >
+        <FooterStyles />
         <TopBorder />
         {styling?.bgType === "pattern" && styling.bgPattern && (
           <BackgroundPattern
@@ -1309,10 +1396,11 @@ export function Footer() {
     return (
       <footer
         ref={footerRef}
-        className={cn("relative border-t overflow-hidden", animationClasses)}
+        className={cn("relative border-t overflow-hidden footer-dynamic-styles", animationClasses)}
         style={footerStyle}
         role="contentinfo"
       >
+        <FooterStyles />
         <TopBorder />
         {styling?.bgType === "pattern" && styling.bgPattern && (
           <BackgroundPattern
@@ -1466,13 +1554,18 @@ export function Footer() {
   }
 
   // ============== MULTI_COLUMN LAYOUT (Default) ==============
-  return (
+  const footerElement = (
     <footer
       ref={footerRef}
-      className={cn("relative border-t overflow-hidden", animationClasses)}
+      className={cn(
+        "relative overflow-hidden footer-dynamic-styles",
+        !isBoxed && "border-t",
+        animationClasses
+      )}
       style={footerStyle}
       role="contentinfo"
     >
+      <FooterStyles />
       <TopBorder />
       {styling?.bgType === "pattern" && styling.bgPattern && (
         <BackgroundPattern
@@ -1524,7 +1617,7 @@ export function Footer() {
                     return (
                       <div
                         key={column}
-                        className={`min-w-0 overflow-hidden break-words ${isBrand ? "brand-col" : ""}`}
+                        className={`min-w-0 break-words space-y-6 ${isBrand ? "brand-col" : ""}`}
                       >
                         {widgets.map((widget) => (
                           <FooterWidgetRenderer
@@ -1670,4 +1763,15 @@ export function Footer() {
       </div>
     </footer>
   );
+
+  // Wrap in container if boxed mode
+  if (isBoxed) {
+    return (
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        {footerElement}
+      </div>
+    );
+  }
+
+  return footerElement;
 }

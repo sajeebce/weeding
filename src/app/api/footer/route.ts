@@ -2,11 +2,21 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 
 // Helper to safely parse JSON - handles both string and object
+// Also handles double-encoded strings (from previous bug in apply-preset)
 const safeJsonParse = (value: unknown, fallback: unknown = null) => {
   if (!value) return fallback;
   if (typeof value === 'string') {
     try {
-      return JSON.parse(value);
+      let parsed = JSON.parse(value);
+      // Check if it was double-encoded (result is still a string)
+      if (typeof parsed === 'string') {
+        try {
+          parsed = JSON.parse(parsed);
+        } catch {
+          // Not double-encoded, use the first parse result
+        }
+      }
+      return parsed;
     } catch {
       return fallback;
     }
@@ -49,7 +59,7 @@ export async function GET() {
       showTitle: widget.showTitle,
       column: widget.column,
       sortOrder: widget.sortOrder,
-      content: widget.content,
+      content: safeJsonParse(widget.content, null), // Parse in case of double-encoding
       customClass: widget.customClass,
       links: widget.menuItems.map((item) => ({
         id: item.id,
@@ -117,6 +127,13 @@ export async function GET() {
         entranceAnimation: footer.entranceAnimation,
         animationDuration: footer.animationDuration,
         linkHoverEffect: footer.linkHoverEffect,
+        // Container
+        containerWidth: footer.containerWidth || "full",
+        containerStyle: footer.containerStyle || "sharp",
+        cornerRadiusTL: footer.cornerRadiusTL || 0,
+        cornerRadiusTR: footer.cornerRadiusTR || 0,
+        cornerRadiusBL: footer.cornerRadiusBL || 0,
+        cornerRadiusBR: footer.cornerRadiusBR || 0,
       },
       social: {
         show: footer.showSocialLinks,

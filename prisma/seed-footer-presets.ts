@@ -1,7 +1,19 @@
 import { config } from "dotenv";
 config(); // Load environment variables
 
-import prisma from "../src/lib/db";
+import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
+
+const pool = new Pool({
+  host: process.env.DATABASE_HOST || "localhost",
+  port: parseInt(process.env.DATABASE_PORT || "5432"),
+  user: process.env.DATABASE_USER || "postgres",
+  password: process.env.DATABASE_PASSWORD,
+  database: process.env.DATABASE_NAME || "llcpad",
+});
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 // 12 Built-in Footer Presets
 const footerPresets = [
@@ -140,14 +152,15 @@ const footerPresets = [
       bg: "#0f172a",
     },
     config: {
-      layout: "MEGA",
-      columns: 6,
+      layout: "MULTI_COLUMN",
+      columns: 5,
       bgType: "solid",
       bgColor: "#0f172a",
       textColor: "#94a3b8",
       headingColor: "#e2e8f0",
       linkColor: "#cbd5e1",
       linkHoverColor: "#22d3ee",
+      accentColor: "#22d3ee",
       headingSize: "sm",
       headingWeight: "semibold",
       headingStyle: "uppercase",
@@ -156,12 +169,111 @@ const footerPresets = [
       socialColorMode: "brand",
       socialHoverEffect: "scale",
       dividerStyle: "solid",
-      dividerColor: "#1e293b",
+      dividerColor: "#22d3ee",
+      linkHoverEffect: "color",
       topBorderStyle: "none",
       shadow: "none",
-      paddingTop: 80,
-      paddingBottom: 48,
+      paddingTop: 64,
+      paddingBottom: 40,
       bottomBarLayout: "split",
+      newsletterEnabled: true,
+      // Animation - Professional fade-up for enterprise feel
+      enableAnimations: true,
+      entranceAnimation: "fade-up",
+      animationDuration: 400,
+      // Widgets configuration
+      widgets: [
+        {
+          type: "BRAND",
+          title: "",
+          showTitle: false,
+          column: 1,
+          sortOrder: 0,
+          content: {
+            tagline: "Your Business Formation Partner",
+            showContact: false,
+            showSocial: false,
+          },
+        },
+        {
+          type: "NEWSLETTER",
+          title: "Stay Updated",
+          showTitle: true,
+          column: 1,
+          sortOrder: 1,
+          content: {
+            subtitle: "Get the latest updates and tips",
+            buttonText: "Subscribe",
+            style: "inline",
+          },
+        },
+        {
+          type: "SOCIAL",
+          title: "Follow Us",
+          showTitle: true,
+          column: 1,
+          sortOrder: 2,
+          content: {},
+        },
+        {
+          type: "LINKS",
+          title: "Company",
+          showTitle: true,
+          column: 2,
+          sortOrder: 0,
+          menuItems: [
+            { label: "About Us", url: "/about" },
+            { label: "Our Team", url: "/team" },
+            { label: "Careers", url: "/careers" },
+            { label: "Press", url: "/press" },
+          ],
+        },
+        {
+          type: "LINKS",
+          title: "Services",
+          showTitle: true,
+          column: 3,
+          sortOrder: 0,
+          menuItems: [
+            { label: "LLC Formation", url: "/services/llc-formation" },
+            { label: "EIN Application", url: "/services/ein-application" },
+            { label: "Registered Agent", url: "/services/registered-agent" },
+            { label: "Business Banking", url: "/services/business-banking" },
+          ],
+        },
+        {
+          type: "LINKS",
+          title: "Resources",
+          showTitle: true,
+          column: 4,
+          sortOrder: 0,
+          menuItems: [
+            { label: "Blog", url: "/blog" },
+            { label: "Guides", url: "/guides" },
+            { label: "State Fees", url: "/state-fees" },
+            { label: "FAQs", url: "/faq" },
+          ],
+        },
+        {
+          type: "LINKS",
+          title: "Support",
+          showTitle: true,
+          column: 5,
+          sortOrder: 0,
+          menuItems: [
+            { label: "Contact Us", url: "/contact" },
+            { label: "Help Center", url: "/help" },
+            { label: "Live Chat", url: "/chat" },
+            { label: "Support Tickets", url: "/dashboard/tickets" },
+          ],
+        },
+      ],
+      bottomLinks: [
+        { label: "Privacy Policy", url: "/privacy" },
+        { label: "Terms of Service", url: "/terms" },
+        { label: "Refund Policy", url: "/refund-policy" },
+        { label: "Disclaimer", url: "/disclaimer" },
+      ],
     },
   },
 
@@ -552,15 +664,16 @@ export async function seedFooterPresets() {
 }
 
 // Run if executed directly
-const isMainModule = typeof require !== "undefined" && require.main === module;
-if (isMainModule) {
-  seedFooterPresets()
-    .then(() => {
-      console.log("🎉 Footer presets seeding complete!");
-      process.exit(0);
-    })
-    .catch((e) => {
-      console.error(e);
-      process.exit(1);
-    });
-}
+seedFooterPresets()
+  .then(async () => {
+    console.log("🎉 Footer presets seeding complete!");
+    await prisma.$disconnect();
+    await pool.end();
+    process.exit(0);
+  })
+  .catch(async (e) => {
+    console.error(e);
+    await prisma.$disconnect();
+    await pool.end();
+    process.exit(1);
+  });

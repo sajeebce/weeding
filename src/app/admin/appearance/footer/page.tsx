@@ -51,10 +51,12 @@ import {
   Palette,
   CircleDot,
   SquareStack,
+  Maximize2,
   Wand2,
   Download,
   Upload,
   RefreshCw,
+  Send,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -405,6 +407,13 @@ export default function FooterBuilderPage() {
     // Shadow & Border radius
     shadow: "none",
     borderRadius: 0,
+    // Container
+    containerWidth: "full",
+    containerStyle: "sharp",
+    cornerRadiusTL: 0,
+    cornerRadiusTR: 0,
+    cornerRadiusBL: 0,
+    cornerRadiusBR: 0,
     // Spacing
     paddingTop: 48,
     paddingBottom: 32,
@@ -482,6 +491,13 @@ export default function FooterBuilderPage() {
           // Shadow & Border radius
           shadow: activeFooter.shadow || "none",
           borderRadius: activeFooter.borderRadius || 0,
+          // Container
+          containerWidth: activeFooter.containerWidth || "full",
+          containerStyle: activeFooter.containerStyle || "sharp",
+          cornerRadiusTL: activeFooter.cornerRadiusTL || 0,
+          cornerRadiusTR: activeFooter.cornerRadiusTR || 0,
+          cornerRadiusBL: activeFooter.cornerRadiusBL || 0,
+          cornerRadiusBR: activeFooter.cornerRadiusBR || 0,
           // Spacing
           paddingTop: activeFooter.paddingTop,
           paddingBottom: activeFooter.paddingBottom,
@@ -565,6 +581,13 @@ export default function FooterBuilderPage() {
           // Shadow & Border radius
           shadow: formData.shadow,
           borderRadius: formData.borderRadius,
+          // Container
+          containerWidth: formData.containerWidth,
+          containerStyle: formData.containerStyle,
+          cornerRadiusTL: formData.cornerRadiusTL,
+          cornerRadiusTR: formData.cornerRadiusTR,
+          cornerRadiusBL: formData.cornerRadiusBL,
+          cornerRadiusBR: formData.cornerRadiusBR,
           // Spacing
           paddingTop: formData.paddingTop,
           paddingBottom: formData.paddingBottom,
@@ -972,14 +995,33 @@ export default function FooterBuilderPage() {
         <CardContent>
           <div
             className={cn(
-              "mx-auto overflow-hidden rounded-lg border transition-all",
+              "mx-auto overflow-hidden rounded-lg border transition-all footer-preview",
               previewMode === "mobile" ? "max-w-[375px]" : "w-full"
             )}
             style={{
               backgroundColor: formData.bgColor || "#f9fafb",
               color: formData.textColor || undefined,
-            }}
+              // CSS custom properties for dynamic hover effects
+              "--link-color": formData.linkColor || "#64748b",
+              "--link-hover-color": formData.linkHoverColor || "#2563eb",
+              "--heading-color": formData.headingColor || "#1e293b",
+              "--accent-color": formData.accentColor || "#2563eb",
+              "--divider-color": formData.dividerColor || "#1e293b",
+            } as React.CSSProperties}
           >
+            {/* Dynamic styles for preview hover effects */}
+            <style>{`
+              .footer-preview .preview-link {
+                color: var(--link-color);
+                transition: color 0.2s;
+              }
+              .footer-preview .preview-link:hover {
+                color: var(--link-hover-color);
+              }
+              .footer-preview .preview-heading {
+                color: var(--heading-color);
+              }
+            `}</style>
             {/* Footer Preview Content */}
             <div
               className="px-4"
@@ -1010,47 +1052,70 @@ export default function FooterBuilderPage() {
                             widgets.map((widget) => (
                               <div key={widget.id} className="space-y-1">
                                 {widget.showTitle && widget.title && (
-                                  <h4 className="text-xs font-semibold">{widget.title}</h4>
+                                  <h4 className="text-xs font-semibold preview-heading">{widget.title}</h4>
                                 )}
-                                <div className="text-xs text-muted-foreground">
-                                  {widget.type === "BRAND" && (
-                                    <div className="space-y-1.5">
-                                      <LogoPreview size="md" />
-                                      <span className="font-semibold text-foreground block">{businessConfig.name}</span>
-                                      {(widget.content as { tagline?: string })?.tagline && (
-                                        <p className="text-[10px] opacity-70 max-w-[140px] leading-tight">
-                                          {(widget.content as { tagline?: string }).tagline}
-                                        </p>
-                                      )}
-                                    </div>
-                                  )}
+                                <div className="text-xs">
+                                  {widget.type === "BRAND" && (() => {
+                                    const brandContent = widget.content as { tagline?: string; showContact?: boolean } | null;
+                                    const showContact = brandContent?.showContact !== false;
+                                    return (
+                                      <div className="space-y-1.5">
+                                        <LogoPreview size="md" />
+                                        <span className="font-semibold preview-heading block">{businessConfig.name}</span>
+                                        {brandContent?.tagline && (
+                                          <p className="text-[10px] opacity-70 max-w-[140px] leading-tight">
+                                            {brandContent.tagline}
+                                          </p>
+                                        )}
+                                        {showContact && businessConfig.contact.supportEmail && (
+                                          <div className="flex items-center gap-1 text-[10px] preview-link mt-1">
+                                            <Mail className="h-2.5 w-2.5" />
+                                            {businessConfig.contact.supportEmail}
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  })()}
                                   {widget.type === "LINKS" && (
                                     <ul className="space-y-0.5">
                                       {widget.menuItems && widget.menuItems.length > 0 ? (
                                         widget.menuItems.slice(0, 4).map((item, idx) => (
-                                          <li key={idx} className="hover:text-foreground cursor-pointer">{item.label}</li>
+                                          <li key={idx} className="preview-link cursor-pointer">{item.label}</li>
                                         ))
                                       ) : (
                                         <>
-                                          <li className="hover:text-foreground cursor-pointer">Link 1</li>
-                                          <li className="hover:text-foreground cursor-pointer">Link 2</li>
-                                          <li className="hover:text-foreground cursor-pointer">Link 3</li>
+                                          <li className="preview-link cursor-pointer">Link 1</li>
+                                          <li className="preview-link cursor-pointer">Link 2</li>
+                                          <li className="preview-link cursor-pointer">Link 3</li>
                                         </>
                                       )}
                                     </ul>
                                   )}
                                   {widget.type === "CONTACT" && (
                                     <div className="space-y-0.5">
-                                      <div className="flex items-center gap-1"><Mail className="h-3 w-3" /> email@example.com</div>
-                                      <div className="flex items-center gap-1"><Phone className="h-3 w-3" /> +1 234 567 890</div>
+                                      <div className="flex items-center gap-1 preview-link"><Mail className="h-3 w-3" /> email@example.com</div>
+                                      <div className="flex items-center gap-1 preview-link"><Phone className="h-3 w-3" /> +1 234 567 890</div>
                                     </div>
                                   )}
                                   {widget.type === "SOCIAL" && <SocialIconsPreview size="sm" />}
                                   {widget.type === "TEXT" && <p>Custom text content...</p>}
                                   {widget.type === "NEWSLETTER" && (
-                                    <div className="flex gap-1">
-                                      <div className="flex-1 h-6 rounded border bg-background"></div>
-                                      <div className="h-6 px-2 rounded bg-primary text-[10px] text-primary-foreground flex items-center">Subscribe</div>
+                                    <div className="mt-2 max-w-sm">
+                                      <div className="flex rounded-lg overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.2)" }}>
+                                        <input
+                                          type="email"
+                                          placeholder="Enter your email"
+                                          className="flex-1 min-w-0 h-9 px-3 border-0 text-xs"
+                                          style={{ backgroundColor: "rgba(255,255,255,0.05)" }}
+                                          readOnly
+                                        />
+                                        <button
+                                          className="h-9 px-4 text-xs font-semibold shrink-0 flex items-center"
+                                          style={{ backgroundColor: "var(--accent-color)", color: "#0f172a" }}
+                                        >
+                                          {(widget.content as { buttonText?: string })?.buttonText || "Subscribe"}
+                                        </button>
+                                      </div>
                                     </div>
                                   )}
                                   {widget.type === "SERVICES" && <span className="italic">Auto: Services</span>}
@@ -1089,42 +1154,52 @@ export default function FooterBuilderPage() {
                       return allWidgets.map((widget) => (
                         <div key={widget.id} className="w-full max-w-md space-y-1">
                           {widget.showTitle && widget.title && (
-                            <h4 className="text-xs font-semibold">{widget.title}</h4>
+                            <h4 className="text-xs font-semibold preview-heading">{widget.title}</h4>
                           )}
-                          <div className="text-xs text-muted-foreground">
-                            {widget.type === "BRAND" && (
-                              <div className="flex flex-col items-center gap-2">
-                                <LogoPreview size="lg" />
-                                <span className="font-semibold text-foreground">{businessConfig.name}</span>
-                                <p className="max-w-xs text-muted-foreground text-center">
-                                  {(widget.content as { tagline?: string })?.tagline || "Your trusted partner for LLC formation and business services."}
-                                </p>
-                                {(widget.content as { subtitle?: string })?.subtitle && (
-                                  <p className="max-w-md text-[10px] opacity-60 text-center">
-                                    {(widget.content as { subtitle?: string }).subtitle}
+                          <div className="text-xs">
+                            {widget.type === "BRAND" && (() => {
+                              const brandContent = widget.content as { tagline?: string; subtitle?: string; showContact?: boolean } | null;
+                              const showContact = brandContent?.showContact !== false;
+                              return (
+                                <div className="flex flex-col items-center gap-2">
+                                  <LogoPreview size="lg" />
+                                  <span className="font-semibold preview-heading">{businessConfig.name}</span>
+                                  <p className="max-w-xs text-center" style={{ color: "var(--link-color)" }}>
+                                    {brandContent?.tagline || "Your trusted partner for LLC formation and business services."}
                                   </p>
-                                )}
-                              </div>
-                            )}
+                                  {brandContent?.subtitle && (
+                                    <p className="max-w-md text-[10px] opacity-60 text-center">
+                                      {brandContent.subtitle}
+                                    </p>
+                                  )}
+                                  {showContact && businessConfig.contact.supportEmail && (
+                                    <div className="flex items-center gap-1 text-[10px] preview-link">
+                                      <Mail className="h-2.5 w-2.5" />
+                                      {businessConfig.contact.supportEmail}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })()}
                             {widget.type === "LINKS" && (
                               <div className="flex flex-wrap justify-center gap-x-4 gap-y-1">
                                 {widget.menuItems && widget.menuItems.length > 0 ? (
                                   widget.menuItems.map((item, idx) => (
-                                    <span key={idx} className="hover:text-foreground cursor-pointer">{item.label}</span>
+                                    <span key={idx} className="preview-link cursor-pointer">{item.label}</span>
                                   ))
                                 ) : (
                                   <>
-                                    <span className="hover:text-foreground cursor-pointer">Link 1</span>
-                                    <span className="hover:text-foreground cursor-pointer">Link 2</span>
-                                    <span className="hover:text-foreground cursor-pointer">Link 3</span>
+                                    <span className="preview-link cursor-pointer">Link 1</span>
+                                    <span className="preview-link cursor-pointer">Link 2</span>
+                                    <span className="preview-link cursor-pointer">Link 3</span>
                                   </>
                                 )}
                               </div>
                             )}
                             {widget.type === "CONTACT" && (
                               <div className="flex flex-col items-center gap-1">
-                                <div className="flex items-center gap-1"><Mail className="h-3 w-3" /> email@example.com</div>
-                                <div className="flex items-center gap-1"><Phone className="h-3 w-3" /> +1 234 567 890</div>
+                                <div className="flex items-center gap-1 preview-link"><Mail className="h-3 w-3" /> email@example.com</div>
+                                <div className="flex items-center gap-1 preview-link"><Phone className="h-3 w-3" /> +1 234 567 890</div>
                               </div>
                             )}
                             {widget.type === "SOCIAL" && (
@@ -1134,9 +1209,22 @@ export default function FooterBuilderPage() {
                             )}
                             {widget.type === "TEXT" && <p>Custom text content...</p>}
                             {widget.type === "NEWSLETTER" && (
-                              <div className="flex justify-center gap-1 max-w-xs mx-auto">
-                                <div className="flex-1 h-6 rounded border bg-background"></div>
-                                <div className="h-6 px-2 rounded bg-primary text-[10px] text-primary-foreground flex items-center">Subscribe</div>
+                              <div className="mt-2 max-w-sm mx-auto">
+                                <div className="flex rounded-lg overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.2)" }}>
+                                  <input
+                                    type="email"
+                                    placeholder="Enter your email"
+                                    className="flex-1 min-w-0 h-9 px-3 border-0 text-xs"
+                                    style={{ backgroundColor: "rgba(255,255,255,0.05)" }}
+                                    readOnly
+                                  />
+                                  <button
+                                    className="h-9 px-4 text-xs font-semibold shrink-0 flex items-center"
+                                    style={{ backgroundColor: "var(--accent-color)", color: "#0f172a" }}
+                                  >
+                                    {(widget.content as { buttonText?: string })?.buttonText || "Subscribe"}
+                                  </button>
+                                </div>
                               </div>
                             )}
                             {widget.type === "SERVICES" && <span className="italic">Auto: Services</span>}
@@ -1159,18 +1247,18 @@ export default function FooterBuilderPage() {
                 )}>
                   <div className="flex items-center gap-2">
                     <LogoPreview size="xs" />
-                    <span className="text-sm font-semibold">{businessConfig.name}</span>
+                    <span className="text-sm font-semibold preview-heading">{businessConfig.name}</span>
                   </div>
-                  <div className="flex flex-wrap justify-center gap-3 text-xs text-muted-foreground">
+                  <div className="flex flex-wrap justify-center gap-3 text-xs">
                     {formData.bottomLinks.length > 0 ? (
                       formData.bottomLinks.slice(0, 4).map((link, idx) => (
-                        <span key={idx} className="hover:text-foreground cursor-pointer">{link.label}</span>
+                        <span key={idx} className="preview-link cursor-pointer">{link.label}</span>
                       ))
                     ) : (
                       <>
-                        <span className="hover:text-foreground cursor-pointer">Privacy</span>
-                        <span className="hover:text-foreground cursor-pointer">Terms</span>
-                        <span className="hover:text-foreground cursor-pointer">Contact</span>
+                        <span className="preview-link cursor-pointer">Privacy</span>
+                        <span className="preview-link cursor-pointer">Terms</span>
+                        <span className="preview-link cursor-pointer">Contact</span>
                       </>
                     )}
                   </div>
@@ -1269,13 +1357,31 @@ export default function FooterBuilderPage() {
                                   {widget.type === "LINKS" && (
                                     <ul className="space-y-0.5">
                                       {widget.menuItems?.slice(0, 4).map((item, idx) => (
-                                        <li key={idx} className="hover:text-foreground cursor-pointer">{item.label}</li>
-                                      )) || <li>Link 1</li>}
+                                        <li key={idx} className="preview-link cursor-pointer">{item.label}</li>
+                                      )) || <li className="preview-link">Link 1</li>}
                                     </ul>
                                   )}
                                   {widget.type === "SOCIAL" && <SocialIconsPreview size="sm" />}
-                                  {widget.type === "NEWSLETTER" && <div className="flex gap-1"><div className="flex-1 h-6 rounded border bg-background"></div><div className="h-6 px-2 rounded bg-primary text-[10px] text-primary-foreground flex items-center">Subscribe</div></div>}
-                                  {widget.type !== "LINKS" && widget.type !== "SOCIAL" && widget.type !== "NEWSLETTER" && <span className="italic">{widget.type}</span>}
+                                  {widget.type === "NEWSLETTER" && (
+                                    <div className="mt-1 max-w-[200px]">
+                                      <div className="flex rounded overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.2)" }}>
+                                        <input
+                                          type="email"
+                                          placeholder="Email"
+                                          className="flex-1 min-w-0 h-6 px-2 border-0 text-[10px]"
+                                          style={{ backgroundColor: "rgba(255,255,255,0.05)" }}
+                                          readOnly
+                                        />
+                                        <button
+                                          className="h-6 px-2 text-[10px] font-semibold shrink-0"
+                                          style={{ backgroundColor: "var(--accent-color)", color: "#0f172a" }}
+                                        >
+                                          {(widget.content as { buttonText?: string })?.buttonText || "Subscribe"}
+                                        </button>
+                                      </div>
+                                    </div>
+                                  )}
+                                  {widget.type !== "LINKS" && widget.type !== "SOCIAL" && widget.type !== "NEWSLETTER" && widget.type !== "BRAND" && <span className="italic">{widget.type}</span>}
                                 </div>
                               </div>
                             ))
@@ -1456,11 +1562,18 @@ export default function FooterBuilderPage() {
                           ) : (
                             widgets.map((widget) => (
                               <div key={widget.id}>
-                                {widget.showTitle && widget.title && <h4 className="text-xs font-semibold" style={{ color: formData.headingColor || undefined }}>{widget.title}</h4>}
-                                {widget.type === "BRAND" && <div className="space-y-1"><LogoPreview size="sm" /><span className="font-semibold text-sm block">{businessConfig.name}</span></div>}
-                                {widget.type === "LINKS" && <ul className="space-y-0.5 text-xs text-muted-foreground">{widget.menuItems?.slice(0,4).map((item,i) => <li key={i} className="hover:text-foreground cursor-pointer">{item.label}</li>) || <li>Link</li>}</ul>}
+                                {widget.showTitle && widget.title && <h4 className="text-xs font-semibold preview-heading">{widget.title}</h4>}
+                                {widget.type === "BRAND" && <div className="space-y-1"><LogoPreview size="sm" /><span className="font-semibold text-sm preview-heading block">{businessConfig.name}</span></div>}
+                                {widget.type === "LINKS" && <ul className="space-y-0.5 text-xs">{widget.menuItems?.slice(0,4).map((item,i) => <li key={i} className="preview-link cursor-pointer">{item.label}</li>) || <li className="preview-link">Link</li>}</ul>}
                                 {widget.type === "SOCIAL" && <SocialIconsPreview size="sm" />}
-                                {widget.type === "NEWSLETTER" && <div className="flex gap-1"><div className="flex-1 h-6 rounded border bg-background"></div><div className="h-6 px-2 rounded bg-primary text-[10px] text-primary-foreground flex items-center">Subscribe</div></div>}
+                                {widget.type === "NEWSLETTER" && (
+                                  <div className="mt-1 max-w-[200px]">
+                                    <div className="flex rounded overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.2)" }}>
+                                      <input type="email" placeholder="Email" className="flex-1 min-w-0 h-6 px-2 border-0 text-[10px]" style={{ backgroundColor: "rgba(255,255,255,0.05)" }} readOnly />
+                                      <button className="h-6 px-2 text-[10px] font-semibold shrink-0" style={{ backgroundColor: "var(--accent-color)", color: "#0f172a" }}>{(widget.content as { buttonText?: string })?.buttonText || "Subscribe"}</button>
+                                    </div>
+                                  </div>
+                                )}
                               </div>
                             ))
                           )}
@@ -1477,26 +1590,28 @@ export default function FooterBuilderPage() {
                   "mt-4 border-t pt-4",
                   formData.layout === "CENTERED" ? "text-center" : ""
                 )}
-                  style={{ borderColor: formData.borderColor || undefined }}
+                  style={{ borderColor: "var(--divider-color)" }}
                 >
                   <div className={cn(
-                    "flex items-center justify-between gap-2 text-xs text-muted-foreground",
+                    "flex items-center justify-between gap-2 text-xs",
                     formData.layout === "CENTERED" || previewMode === "mobile" ? "flex-col" : ""
-                  )}>
-                    <p>{formData.copyrightText || `© ${new Date().getFullYear()} LLCPad. All rights reserved.`}</p>
+                  )}
+                    style={{ color: formData.textColor || undefined }}
+                  >
+                    <p>{formData.copyrightText || `© ${new Date().getFullYear()} ${businessConfig.name}. All rights reserved.`}</p>
                     {formData.showDisclaimer && (
                       <p className="max-w-md text-[10px]">
-                        <strong>Disclaimer:</strong> {formData.disclaimerText || "LLCPad is not a law firm..."}
+                        <strong>Disclaimer:</strong> {formData.disclaimerText || `${businessConfig.name} is not a law firm and does not provide legal advice.`}
                       </p>
                     )}
                   </div>
                   {formData.bottomLinks.length > 0 && (
                     <div className={cn(
-                      "mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground",
+                      "mt-2 flex flex-wrap gap-2 text-xs",
                       formData.layout === "CENTERED" ? "justify-center" : ""
                     )}>
                       {formData.bottomLinks.map((link, idx) => (
-                        <span key={idx} className="hover:text-foreground cursor-pointer">{link.label}</span>
+                        <span key={idx} className="preview-link cursor-pointer">{link.label}</span>
                       ))}
                     </div>
                   )}
@@ -2381,7 +2496,7 @@ export default function FooterBuilderPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="borderColor">Border/Divider Color</Label>
+                  <Label htmlFor="borderColor">Border Color</Label>
                   <div className="flex gap-2">
                     <Input
                       id="borderColor"
@@ -2394,6 +2509,26 @@ export default function FooterBuilderPage() {
                       value={formData.borderColor}
                       onChange={(e) => setFormData({ ...formData, borderColor: e.target.value })}
                       placeholder="#e5e7eb"
+                      className="flex-1"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="dividerColor">Divider Color</Label>
+                  <p className="text-xs text-muted-foreground">Color for the line between main content and bottom bar</p>
+                  <div className="flex gap-2">
+                    <Input
+                      id="dividerColor"
+                      type="color"
+                      value={formData.dividerColor || "#1e293b"}
+                      onChange={(e) => setFormData({ ...formData, dividerColor: e.target.value })}
+                      className="h-10 w-14 cursor-pointer p-1"
+                    />
+                    <Input
+                      value={formData.dividerColor}
+                      onChange={(e) => setFormData({ ...formData, dividerColor: e.target.value })}
+                      placeholder="#1e293b"
                       className="flex-1"
                     />
                   </div>
@@ -2666,104 +2801,24 @@ export default function FooterBuilderPage() {
 
               <Separator />
 
-              {/* Top Border */}
-              <div className="space-y-4">
-                <Label className="text-base">Top Border</Label>
-                <div className="grid gap-4 md:grid-cols-3">
-                  <div className="space-y-2">
-                    <Label className="text-sm text-muted-foreground">Style</Label>
-                    <Select
-                      value={formData.topBorderStyle}
-                      onValueChange={(value) => setFormData({ ...formData, topBorderStyle: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">None</SelectItem>
-                        <SelectItem value="solid">Solid</SelectItem>
-                        <SelectItem value="gradient">Gradient</SelectItem>
-                        <SelectItem value="wave">Wave</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {formData.topBorderStyle !== "none" && (
-                    <>
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-sm text-muted-foreground">Height</Label>
-                          <span className="text-xs text-muted-foreground">{formData.topBorderHeight}px</span>
-                        </div>
-                        <Slider
-                          value={[formData.topBorderHeight]}
-                          onValueChange={(value) => setFormData({ ...formData, topBorderHeight: value[0] })}
-                          min={1}
-                          max={8}
-                          step={1}
-                        />
-                      </div>
-
-                      {formData.topBorderStyle === "solid" && (
-                        <div className="space-y-2">
-                          <Label className="text-sm text-muted-foreground">Color</Label>
-                          <div className="flex gap-2">
-                            <Input
-                              type="color"
-                              value={formData.topBorderColor || formData.accentColor || "#2563eb"}
-                              onChange={(e) => setFormData({ ...formData, topBorderColor: e.target.value })}
-                              className="h-10 w-14 cursor-pointer p-1"
-                            />
-                            <Input
-                              value={formData.topBorderColor || ""}
-                              onChange={(e) => setFormData({ ...formData, topBorderColor: e.target.value })}
-                              placeholder="Use accent"
-                              className="flex-1"
-                            />
-                          </div>
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Shadow & Border Radius */}
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label>Shadow</Label>
-                  <Select
-                    value={formData.shadow}
-                    onValueChange={(value) => setFormData({ ...formData, shadow: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">None</SelectItem>
-                      <SelectItem value="sm">Small</SelectItem>
-                      <SelectItem value="md">Medium</SelectItem>
-                      <SelectItem value="lg">Large</SelectItem>
-                      <SelectItem value="xl">Extra Large</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label>Border Radius</Label>
-                    <span className="text-sm text-muted-foreground">{formData.borderRadius}px</span>
-                  </div>
-                  <Slider
-                    value={[formData.borderRadius]}
-                    onValueChange={(value) => setFormData({ ...formData, borderRadius: value[0] })}
-                    min={0}
-                    max={32}
-                    step={4}
-                  />
-                </div>
+              {/* Shadow */}
+              <div className="space-y-2">
+                <Label>Shadow</Label>
+                <Select
+                  value={formData.shadow}
+                  onValueChange={(value) => setFormData({ ...formData, shadow: value })}
+                >
+                  <SelectTrigger className="w-50">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value="sm">Small</SelectItem>
+                    <SelectItem value="md">Medium</SelectItem>
+                    <SelectItem value="lg">Large</SelectItem>
+                    <SelectItem value="xl">Extra Large</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <Separator />
@@ -2807,6 +2862,124 @@ export default function FooterBuilderPage() {
                   </Select>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Container Width & Style */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Maximize2 className="h-5 w-5" />
+                Container
+              </CardTitle>
+              <CardDescription>Footer container width and corner style</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Container Width</Label>
+                  <Select
+                    value={formData.containerWidth}
+                    onValueChange={(value) => setFormData({ ...formData, containerWidth: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="full">Full Width</SelectItem>
+                      <SelectItem value="boxed">Boxed (Content Width)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Boxed: Aligns footer with main content sections
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Corner Style</Label>
+                  <Select
+                    value={formData.containerStyle}
+                    onValueChange={(value) => {
+                      if (value === "sharp") {
+                        setFormData({ ...formData, containerStyle: value, cornerRadiusTL: 0, cornerRadiusTR: 0, cornerRadiusBL: 0, cornerRadiusBR: 0 });
+                      } else {
+                        setFormData({ ...formData, containerStyle: value, cornerRadiusTL: 16, cornerRadiusTR: 16, cornerRadiusBL: 16, cornerRadiusBR: 16 });
+                      }
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="sharp">Sharp</SelectItem>
+                      <SelectItem value="round">Round</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {formData.containerStyle === "round" && (
+                <>
+                  <Separator />
+                  <div className="space-y-4">
+                    <Label className="text-sm font-medium">Corner Radius (px)</Label>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-xs">Top Left</Label>
+                          <span className="text-xs text-muted-foreground">{formData.cornerRadiusTL}px</span>
+                        </div>
+                        <Slider
+                          value={[formData.cornerRadiusTL]}
+                          onValueChange={(value) => setFormData({ ...formData, cornerRadiusTL: value[0] })}
+                          min={0}
+                          max={48}
+                          step={4}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-xs">Top Right</Label>
+                          <span className="text-xs text-muted-foreground">{formData.cornerRadiusTR}px</span>
+                        </div>
+                        <Slider
+                          value={[formData.cornerRadiusTR]}
+                          onValueChange={(value) => setFormData({ ...formData, cornerRadiusTR: value[0] })}
+                          min={0}
+                          max={48}
+                          step={4}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-xs">Bottom Left</Label>
+                          <span className="text-xs text-muted-foreground">{formData.cornerRadiusBL}px</span>
+                        </div>
+                        <Slider
+                          value={[formData.cornerRadiusBL]}
+                          onValueChange={(value) => setFormData({ ...formData, cornerRadiusBL: value[0] })}
+                          min={0}
+                          max={48}
+                          step={4}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-xs">Bottom Right</Label>
+                          <span className="text-xs text-muted-foreground">{formData.cornerRadiusBR}px</span>
+                        </div>
+                        <Slider
+                          value={[formData.cornerRadiusBR]}
+                          onValueChange={(value) => setFormData({ ...formData, cornerRadiusBR: value[0] })}
+                          min={0}
+                          max={48}
+                          step={4}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
 

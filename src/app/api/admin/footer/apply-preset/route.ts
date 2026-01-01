@@ -139,6 +139,7 @@ export async function POST(request: Request) {
         const { menuItems, content, ...widgetFields } = widgetData;
 
         // Create the widget
+        // Note: content is a Json type in Prisma, so pass the object directly (no stringify needed)
         const newWidget = await prisma.footerWidget.create({
           data: {
             footerId,
@@ -147,7 +148,7 @@ export async function POST(request: Request) {
             showTitle: widgetFields.showTitle ?? true,
             column: widgetFields.column || 1,
             sortOrder: widgetFields.sortOrder || 0,
-            content: content ? JSON.stringify(content) : undefined,
+            content: content || undefined,
           },
         });
 

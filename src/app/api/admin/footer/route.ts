@@ -73,6 +73,13 @@ const footerConfigSchema = z.object({
   // Shadow & Border Radius
   shadow: z.string().default("none"),
   borderRadius: z.number().default(0),
+  // Container Width & Style
+  containerWidth: z.string().default("full"),
+  containerStyle: z.string().default("sharp"),
+  cornerRadiusTL: z.number().default(0),
+  cornerRadiusTR: z.number().default(0),
+  cornerRadiusBL: z.number().default(0),
+  cornerRadiusBR: z.number().default(0),
   // Spacing
   paddingTop: z.number().default(48),
   paddingBottom: z.number().default(32),
