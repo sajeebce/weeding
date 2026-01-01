@@ -59,6 +59,7 @@ const footerConfigSchema = z.object({
   socialSize: z.string().default("md"),
   socialColorMode: z.string().default("brand"),
   socialHoverEffect: z.string().default("scale"),
+  socialBgStyle: z.string().default("subtle"),
   // Divider
   dividerStyle: z.string().default("solid"),
   dividerColor: z.string().nullable().optional(),
