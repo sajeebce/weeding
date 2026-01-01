@@ -1,6 +1,19 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 
+// Helper to safely parse JSON - handles both string and object
+const safeJsonParse = (value: unknown, fallback: unknown = null) => {
+  if (!value) return fallback;
+  if (typeof value === 'string') {
+    try {
+      return JSON.parse(value);
+    } catch {
+      return fallback;
+    }
+  }
+  return value; // Already an object
+};
+
 // Public API - Get active footer configuration
 // Cached for 60 seconds
 export async function GET() {
@@ -59,32 +72,67 @@ export async function GET() {
         provider: footer.newsletterProvider,
         formAction: footer.newsletterFormAction,
       },
-      social: {
-        show: footer.showSocialLinks,
-        position: footer.socialPosition,
-      },
       contact: {
         show: footer.showContactInfo,
         position: footer.contactPosition,
       },
+      trustBadges: {
+        show: footer.showTrustBadges,
+        badges: safeJsonParse(footer.trustBadges, []),
+      },
+      styling: {
+        // Background
+        bgType: footer.bgType || "solid",
+        bgColor: footer.bgColor,
+        bgGradient: safeJsonParse(footer.bgGradient, null),
+        bgPattern: footer.bgPattern,
+        bgPatternColor: footer.bgPatternColor,
+        bgPatternOpacity: footer.bgPatternOpacity,
+        bgImage: footer.bgImage,
+        bgImageOverlay: footer.bgImageOverlay,
+        // Colors
+        textColor: footer.textColor,
+        headingColor: footer.headingColor,
+        linkColor: footer.linkColor,
+        linkHoverColor: footer.linkHoverColor,
+        accentColor: footer.accentColor,
+        borderColor: footer.borderColor,
+        // Typography
+        headingSize: footer.headingSize || "sm",
+        headingWeight: footer.headingWeight || "semibold",
+        headingStyle: footer.headingStyle || "normal",
+        // Spacing
+        paddingTop: footer.paddingTop,
+        paddingBottom: footer.paddingBottom,
+        // Effects
+        shadow: footer.shadow,
+        borderRadius: footer.borderRadius,
+        topBorderStyle: footer.topBorderStyle,
+        topBorderHeight: footer.topBorderHeight,
+        topBorderColor: footer.topBorderColor,
+        dividerStyle: footer.dividerStyle,
+        dividerColor: footer.dividerColor,
+        // Animation
+        enableAnimations: footer.enableAnimations,
+        entranceAnimation: footer.entranceAnimation,
+        animationDuration: footer.animationDuration,
+        linkHoverEffect: footer.linkHoverEffect,
+      },
+      social: {
+        show: footer.showSocialLinks,
+        position: footer.socialPosition,
+        shape: footer.socialShape || "circle",
+        size: footer.socialSize || "md",
+        colorMode: footer.socialColorMode || "brand",
+        hoverEffect: footer.socialHoverEffect || "scale",
+      },
       bottomBar: {
         enabled: footer.bottomBarEnabled,
+        layout: footer.bottomBarLayout || "split",
         copyrightText: footer.copyrightText,
         showDisclaimer: footer.showDisclaimer,
         disclaimerText: footer.disclaimerText,
-        links: footer.bottomLinks ? JSON.parse(footer.bottomLinks as string) : [],
-      },
-      trustBadges: {
-        show: footer.showTrustBadges,
-        badges: footer.trustBadges ? JSON.parse(footer.trustBadges as string) : [],
-      },
-      styling: {
-        bgColor: footer.bgColor,
-        textColor: footer.textColor,
-        accentColor: footer.accentColor,
-        borderColor: footer.borderColor,
-        paddingTop: footer.paddingTop,
-        paddingBottom: footer.paddingBottom,
+        links: safeJsonParse(footer.bottomLinks, []),
       },
     };
 

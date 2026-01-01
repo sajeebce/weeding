@@ -8,30 +8,82 @@ import { checkAdminAccess, authError } from "@/lib/admin-auth";
 const footerConfigSchema = z.object({
   name: z.string().min(1, "Name is required"),
   isActive: z.boolean().default(true),
-  layout: z.enum(["MULTI_COLUMN", "CENTERED", "MINIMAL", "MEGA"]).default("MULTI_COLUMN"),
+  layout: z.enum([
+    "MULTI_COLUMN", "CENTERED", "MINIMAL", "MEGA",
+    "STACKED", "ASYMMETRIC", "MEGA_PLUS", "APP_FOCUSED", "NEWSLETTER_HERO"
+  ]).default("MULTI_COLUMN"),
   columns: z.number().min(1).max(6).default(4),
+  // Newsletter
   newsletterEnabled: z.boolean().default(true),
   newsletterTitle: z.string().default("Subscribe to our newsletter"),
   newsletterSubtitle: z.string().nullable().optional(),
   newsletterProvider: z.string().nullable().optional(),
   newsletterFormAction: z.string().nullable().optional(),
+  // Social & Contact
   showSocialLinks: z.boolean().default(true),
   socialPosition: z.string().default("brand"),
   showContactInfo: z.boolean().default(true),
   contactPosition: z.string().default("brand"),
+  // Bottom Bar
   bottomBarEnabled: z.boolean().default(true),
+  bottomBarLayout: z.string().default("split"),
   copyrightText: z.string().nullable().optional(),
   showDisclaimer: z.boolean().default(false),
   disclaimerText: z.string().nullable().optional(),
   bottomLinks: z.any().optional(),
+  // Trust Badges
   showTrustBadges: z.boolean().default(false),
   trustBadges: z.any().optional(),
+  // Background Styling
+  bgType: z.string().default("solid"),
   bgColor: z.string().nullable().optional(),
+  bgGradient: z.any().nullable().optional(),
+  bgPattern: z.string().nullable().optional(),
+  bgPatternColor: z.string().nullable().optional(),
+  bgPatternOpacity: z.number().nullable().optional(),
+  bgImage: z.string().nullable().optional(),
+  bgImageOverlay: z.string().nullable().optional(),
+  // Text Colors
   textColor: z.string().nullable().optional(),
+  headingColor: z.string().nullable().optional(),
+  linkColor: z.string().nullable().optional(),
+  linkHoverColor: z.string().nullable().optional(),
   accentColor: z.string().nullable().optional(),
   borderColor: z.string().nullable().optional(),
+  // Typography
+  headingSize: z.string().default("sm"),
+  headingWeight: z.string().default("semibold"),
+  headingStyle: z.string().default("normal"),
+  // Social Icon Styling
+  socialShape: z.string().default("circle"),
+  socialSize: z.string().default("md"),
+  socialColorMode: z.string().default("brand"),
+  socialHoverEffect: z.string().default("scale"),
+  // Divider
+  dividerStyle: z.string().default("solid"),
+  dividerColor: z.string().nullable().optional(),
+  // Effects & Animation
+  enableAnimations: z.boolean().default(false),
+  entranceAnimation: z.string().nullable().optional(),
+  animationDuration: z.number().default(300),
+  linkHoverEffect: z.string().default("color"),
+  topBorderStyle: z.string().default("none"),
+  topBorderHeight: z.number().default(1),
+  topBorderColor: z.string().nullable().optional(),
+  // Shadow & Border Radius
+  shadow: z.string().default("none"),
+  borderRadius: z.number().default(0),
+  // Spacing
   paddingTop: z.number().default(48),
   paddingBottom: z.number().default(32),
+  // Responsive columns
+  responsiveColumns: z.any().nullable().optional(),
+  sectionOrder: z.array(z.string()).optional(),
+  // Advanced
+  customCSS: z.string().nullable().optional(),
+  customJS: z.string().nullable().optional(),
+  // Preset reference
+  presetId: z.string().nullable().optional(),
 });
 
 // GET /api/admin/footer - Get all footer configs
@@ -63,14 +115,29 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
     });
 
+    // Helper to safely parse JSON - handles both string and object
+    const safeJsonParse = (value: unknown, fallback: unknown = null) => {
+      if (!value) return fallback;
+      if (typeof value === 'string') {
+        try {
+          return JSON.parse(value);
+        } catch {
+          return fallback;
+        }
+      }
+      return value; // Already an object
+    };
+
     return NextResponse.json({
       footers: footers.map((f) => ({
         ...f,
-        bottomLinks: f.bottomLinks ? JSON.parse(f.bottomLinks as string) : [],
-        trustBadges: f.trustBadges ? JSON.parse(f.trustBadges as string) : [],
+        bottomLinks: safeJsonParse(f.bottomLinks, []),
+        trustBadges: safeJsonParse(f.trustBadges, []),
+        bgGradient: safeJsonParse(f.bgGradient, null),
+        responsiveColumns: safeJsonParse(f.responsiveColumns, null),
         widgets: f.widgets.map((w) => ({
           ...w,
-          content: w.content ? JSON.parse(w.content as string) : null,
+          content: safeJsonParse(w.content, null),
           linksCount: w._count.menuItems,
         })),
         widgetsCount: f._count.widgets,
@@ -96,13 +163,16 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const validatedData = footerConfigSchema.parse(body);
-    const { bottomLinks, trustBadges, ...footerData } = validatedData;
+    const { bottomLinks, trustBadges, bgGradient, responsiveColumns, sectionOrder, ...footerData } = validatedData;
 
     const footer = await prisma.footerConfig.create({
       data: {
         ...footerData,
         bottomLinks: bottomLinks ? JSON.stringify(bottomLinks) : Prisma.DbNull,
         trustBadges: trustBadges ? JSON.stringify(trustBadges) : Prisma.DbNull,
+        bgGradient: bgGradient ? JSON.stringify(bgGradient) : Prisma.DbNull,
+        responsiveColumns: responsiveColumns ? JSON.stringify(responsiveColumns) : Prisma.DbNull,
+        sectionOrder: sectionOrder || [],
       },
     });
 
@@ -141,7 +211,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const validatedData = footerConfigSchema.partial().parse(data);
-    const { bottomLinks, trustBadges, ...footerData } = validatedData;
+    const { bottomLinks, trustBadges, bgGradient, responsiveColumns, sectionOrder, ...footerData } = validatedData;
 
     // If setting this footer as active, deactivate others
     if (footerData.isActive === true) {
@@ -157,6 +227,9 @@ export async function PUT(request: NextRequest) {
         ...footerData,
         ...(bottomLinks !== undefined && { bottomLinks: JSON.stringify(bottomLinks) }),
         ...(trustBadges !== undefined && { trustBadges: JSON.stringify(trustBadges) }),
+        ...(bgGradient !== undefined && { bgGradient: bgGradient ? JSON.stringify(bgGradient) : Prisma.DbNull }),
+        ...(responsiveColumns !== undefined && { responsiveColumns: responsiveColumns ? JSON.stringify(responsiveColumns) : Prisma.DbNull }),
+        ...(sectionOrder !== undefined && { sectionOrder: sectionOrder || [] }),
       },
     });
 

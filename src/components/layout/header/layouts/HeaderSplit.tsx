@@ -34,7 +34,7 @@ export function HeaderSplit({
   return (
     <nav
       className="container mx-auto px-4"
-      style={{ height: `${config.height || 80}px` }}
+      style={{ height: `${config.height || 76}px` }}
     >
       <div className="hidden lg:grid lg:h-full lg:grid-cols-3 lg:items-center">
         {/* Left Navigation */}
@@ -53,7 +53,7 @@ export function HeaderSplit({
         <div className="flex items-center justify-center">
           <Logo
             businessConfig={businessConfig}
-            maxHeight={config.logo?.maxHeight || 56}
+            maxHeight={config.logo?.maxHeight || 72}
           />
         </div>
 
@@ -94,7 +94,7 @@ export function HeaderSplit({
       <div className="flex h-full items-center justify-between lg:hidden">
         <Logo
           businessConfig={businessConfig}
-          maxHeight={config.logo?.maxHeight || 56}
+          maxHeight={config.logo?.maxHeight || 72}
         />
         {mounted && (
           <MobileMenu

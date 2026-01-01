@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   DndContext,
   DragOverlay,
@@ -46,6 +47,14 @@ import {
   Smartphone,
   Shield,
   Image as ImageIcon,
+  Sparkles,
+  Palette,
+  CircleDot,
+  SquareStack,
+  Wand2,
+  Download,
+  Upload,
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -83,13 +92,21 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useBusinessConfig } from "@/hooks/use-business-config";
 import type { FooterConfig, FooterWidget, FooterWidgetType, FooterLayout, BottomLink, TrustBadge, FooterWidgetLink } from "@/lib/header-footer/types";
+import { PresetGallery } from "./components/PresetGallery";
 
 const layoutOptions: { value: FooterLayout; label: string; description: string }[] = [
   { value: "MULTI_COLUMN", label: "Multi-Column", description: "Traditional multi-column layout" },
   { value: "CENTERED", label: "Centered", description: "Centered stacked layout" },
   { value: "MINIMAL", label: "Minimal", description: "Just copyright and links" },
   { value: "MEGA", label: "Mega", description: "Full sitemap style" },
+  // New layouts (Phase 2)
+  { value: "STACKED", label: "Stacked", description: "Full-width vertical sections" },
+  { value: "ASYMMETRIC", label: "Asymmetric", description: "2:1 ratio split layout" },
+  { value: "MEGA_PLUS", label: "Mega Plus", description: "Mega with featured CTA" },
+  { value: "APP_FOCUSED", label: "App Focused", description: "Prominent app download" },
+  { value: "NEWSLETTER_HERO", label: "Newsletter Hero", description: "Large newsletter signup" },
 ];
 
 const widgetTypes: { value: FooterWidgetType; label: string; icon: React.ReactNode }[] = [
@@ -261,6 +278,7 @@ function DroppableColumn({
 }
 
 export default function FooterBuilderPage() {
+  const { config: businessConfig } = useBusinessConfig();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [footer, setFooter] = useState<FooterConfig | null>(null);
@@ -288,8 +306,48 @@ export default function FooterBuilderPage() {
     })
   );
 
+  // Logo preview component for live preview
+  const LogoPreview = ({ size = "md" }: { size?: "xs" | "sm" | "md" | "lg" | "xl" }) => {
+    const sizeClasses = {
+      xs: "h-6 w-6 text-[10px]",
+      sm: "h-7 w-7 text-[10px]",
+      md: "h-8 w-8 text-xs",
+      lg: "h-10 w-10 text-sm",
+      xl: "h-12 w-12 text-base",
+    };
+    const imgSizes = {
+      xs: 24,
+      sm: 28,
+      md: 32,
+      lg: 40,
+      xl: 48,
+    };
+
+    if (businessConfig.logo.url) {
+      return (
+        <Image
+          src={businessConfig.logo.url}
+          alt={businessConfig.name}
+          width={imgSizes[size]}
+          height={imgSizes[size]}
+          className={cn(sizeClasses[size], "rounded-lg object-contain")}
+        />
+      );
+    }
+
+    return (
+      <div className={cn(
+        sizeClasses[size],
+        "rounded-lg bg-primary/20 flex items-center justify-center font-bold text-primary"
+      )}>
+        {businessConfig.logo.text || businessConfig.name.charAt(0)}
+      </div>
+    );
+  };
+
   // Form state
   const [formData, setFormData] = useState({
+    id: "",
     name: "Default Footer",
     layout: "MULTI_COLUMN" as FooterLayout,
     columns: 4,
@@ -303,16 +361,51 @@ export default function FooterBuilderPage() {
     showContactInfo: true,
     contactPosition: "brand",
     bottomBarEnabled: true,
+    bottomBarLayout: "split",
     copyrightText: "",
     showDisclaimer: true,
     disclaimerText: "",
     bottomLinks: [] as BottomLink[],
     showTrustBadges: false,
     trustBadges: [] as TrustBadge[],
+    // Background styling
+    bgType: "solid",
     bgColor: "",
+    bgGradient: null as { type: string; colors: { color: string; position: number }[]; angle?: number } | null,
+    bgPattern: "",
+    bgPatternColor: "",
+    bgPatternOpacity: 10,
+    // Text colors
     textColor: "",
+    headingColor: "",
+    linkColor: "",
+    linkHoverColor: "",
     accentColor: "",
     borderColor: "",
+    // Typography
+    headingSize: "sm",
+    headingWeight: "semibold",
+    headingStyle: "normal",
+    // Social icon styling
+    socialShape: "circle",
+    socialSize: "md",
+    socialColorMode: "brand",
+    socialHoverEffect: "scale",
+    // Divider
+    dividerStyle: "solid",
+    dividerColor: "",
+    // Effects & Animation
+    enableAnimations: false,
+    entranceAnimation: "",
+    animationDuration: 300,
+    linkHoverEffect: "color",
+    topBorderStyle: "none",
+    topBorderHeight: 1,
+    topBorderColor: "",
+    // Shadow & Border radius
+    shadow: "none",
+    borderRadius: 0,
+    // Spacing
     paddingTop: 48,
     paddingBottom: 32,
   });
@@ -331,6 +424,7 @@ export default function FooterBuilderPage() {
         const activeFooter = data.footers.find((f: FooterConfig) => f.isActive) || data.footers[0];
         setFooter(activeFooter);
         setFormData({
+          id: activeFooter.id,
           name: activeFooter.name,
           layout: activeFooter.layout,
           columns: activeFooter.columns,
@@ -344,16 +438,51 @@ export default function FooterBuilderPage() {
           showContactInfo: activeFooter.showContactInfo,
           contactPosition: activeFooter.contactPosition,
           bottomBarEnabled: activeFooter.bottomBarEnabled,
+          bottomBarLayout: activeFooter.bottomBarLayout || "split",
           copyrightText: activeFooter.copyrightText || "",
           showDisclaimer: activeFooter.showDisclaimer,
           disclaimerText: activeFooter.disclaimerText || "",
           bottomLinks: activeFooter.bottomLinks || [],
           showTrustBadges: activeFooter.showTrustBadges,
           trustBadges: activeFooter.trustBadges || [],
+          // Background styling
+          bgType: activeFooter.bgType || "solid",
           bgColor: activeFooter.bgColor || "",
+          bgGradient: activeFooter.bgGradient || null,
+          bgPattern: activeFooter.bgPattern || "",
+          bgPatternColor: activeFooter.bgPatternColor || "",
+          bgPatternOpacity: activeFooter.bgPatternOpacity || 10,
+          // Text colors
           textColor: activeFooter.textColor || "",
+          headingColor: activeFooter.headingColor || "",
+          linkColor: activeFooter.linkColor || "",
+          linkHoverColor: activeFooter.linkHoverColor || "",
           accentColor: activeFooter.accentColor || "",
           borderColor: activeFooter.borderColor || "",
+          // Typography
+          headingSize: activeFooter.headingSize || "sm",
+          headingWeight: activeFooter.headingWeight || "semibold",
+          headingStyle: activeFooter.headingStyle || "normal",
+          // Social icon styling
+          socialShape: activeFooter.socialShape || "circle",
+          socialSize: activeFooter.socialSize || "md",
+          socialColorMode: activeFooter.socialColorMode || "brand",
+          socialHoverEffect: activeFooter.socialHoverEffect || "scale",
+          // Divider
+          dividerStyle: activeFooter.dividerStyle || "solid",
+          dividerColor: activeFooter.dividerColor || "",
+          // Effects & Animation
+          enableAnimations: activeFooter.enableAnimations || false,
+          entranceAnimation: activeFooter.entranceAnimation || "",
+          animationDuration: activeFooter.animationDuration || 300,
+          linkHoverEffect: activeFooter.linkHoverEffect || "color",
+          topBorderStyle: activeFooter.topBorderStyle || "none",
+          topBorderHeight: activeFooter.topBorderHeight || 1,
+          topBorderColor: activeFooter.topBorderColor || "",
+          // Shadow & Border radius
+          shadow: activeFooter.shadow || "none",
+          borderRadius: activeFooter.borderRadius || 0,
+          // Spacing
           paddingTop: activeFooter.paddingTop,
           paddingBottom: activeFooter.paddingBottom,
         });
@@ -375,17 +504,70 @@ export default function FooterBuilderPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id: footer.id,
-          ...formData,
-          bgColor: formData.bgColor || null,
-          textColor: formData.textColor || null,
-          accentColor: formData.accentColor || null,
-          borderColor: formData.borderColor || null,
-          copyrightText: formData.copyrightText || null,
+          name: formData.name,
+          layout: formData.layout,
+          columns: formData.columns,
+          // Newsletter
+          newsletterEnabled: formData.newsletterEnabled,
+          newsletterTitle: formData.newsletterTitle,
           newsletterSubtitle: formData.newsletterSubtitle || null,
           newsletterProvider: formData.newsletterProvider || null,
           newsletterFormAction: formData.newsletterFormAction || null,
+          // Social & Contact
+          showSocialLinks: formData.showSocialLinks,
+          socialPosition: formData.socialPosition,
+          showContactInfo: formData.showContactInfo,
+          contactPosition: formData.contactPosition,
+          // Bottom Bar
+          bottomBarEnabled: formData.bottomBarEnabled,
+          bottomBarLayout: formData.bottomBarLayout,
+          copyrightText: formData.copyrightText || null,
+          showDisclaimer: formData.showDisclaimer,
           disclaimerText: formData.disclaimerText || null,
+          bottomLinks: formData.bottomLinks,
+          // Trust Badges
+          showTrustBadges: formData.showTrustBadges,
           trustBadges: formData.trustBadges.length > 0 ? formData.trustBadges : null,
+          // Background styling
+          bgType: formData.bgType,
+          bgColor: formData.bgColor || null,
+          bgGradient: formData.bgGradient,
+          bgPattern: formData.bgPattern || null,
+          bgPatternColor: formData.bgPatternColor || null,
+          bgPatternOpacity: formData.bgPatternOpacity,
+          // Text colors
+          textColor: formData.textColor || null,
+          headingColor: formData.headingColor || null,
+          linkColor: formData.linkColor || null,
+          linkHoverColor: formData.linkHoverColor || null,
+          accentColor: formData.accentColor || null,
+          borderColor: formData.borderColor || null,
+          // Typography
+          headingSize: formData.headingSize,
+          headingWeight: formData.headingWeight,
+          headingStyle: formData.headingStyle,
+          // Social icon styling
+          socialShape: formData.socialShape,
+          socialSize: formData.socialSize,
+          socialColorMode: formData.socialColorMode,
+          socialHoverEffect: formData.socialHoverEffect,
+          // Divider
+          dividerStyle: formData.dividerStyle,
+          dividerColor: formData.dividerColor || null,
+          // Effects & Animation
+          enableAnimations: formData.enableAnimations,
+          entranceAnimation: formData.entranceAnimation || null,
+          animationDuration: formData.animationDuration,
+          linkHoverEffect: formData.linkHoverEffect,
+          topBorderStyle: formData.topBorderStyle,
+          topBorderHeight: formData.topBorderHeight,
+          topBorderColor: formData.topBorderColor || null,
+          // Shadow & Border radius
+          shadow: formData.shadow,
+          borderRadius: formData.borderRadius,
+          // Spacing
+          paddingTop: formData.paddingTop,
+          paddingBottom: formData.paddingBottom,
         }),
       });
 
@@ -696,6 +878,37 @@ export default function FooterBuilderPage() {
     return footer.widgets.filter((w) => w.column > formData.columns);
   }
 
+  // Social media icons preview component
+  const SocialIconsPreview = ({ size = "sm" }: { size?: "sm" | "md" | "lg" }) => {
+    const sizeClasses = {
+      sm: "h-5 w-5 text-[8px]",
+      md: "h-6 w-6 text-[10px]",
+      lg: "h-8 w-8 text-xs",
+    };
+    const socialPlatforms = [
+      { name: "f", color: "#1877F2" }, // Facebook
+      { name: "𝕏", color: "#000000" }, // X/Twitter
+      { name: "in", color: "#0A66C2" }, // LinkedIn
+      { name: "ig", color: "#E4405F" }, // Instagram
+    ];
+    return (
+      <div className="flex gap-1.5">
+        {socialPlatforms.map((platform, i) => (
+          <div
+            key={i}
+            className={cn(
+              "rounded-full flex items-center justify-center font-bold text-white",
+              sizeClasses[size]
+            )}
+            style={{ backgroundColor: platform.color }}
+          >
+            {platform.name}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="flex h-96 items-center justify-center">
@@ -733,8 +946,8 @@ export default function FooterBuilderPage() {
         </div>
       </div>
 
-      {/* Live Preview */}
-      <Card>
+      {/* Live Preview - Sticky */}
+      <Card className="sticky top-4 z-10 shadow-lg">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-base">Live Preview</CardTitle>
@@ -801,9 +1014,14 @@ export default function FooterBuilderPage() {
                                 )}
                                 <div className="text-xs text-muted-foreground">
                                   {widget.type === "BRAND" && (
-                                    <div className="flex items-center gap-2">
-                                      <div className="h-6 w-6 rounded bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary">LP</div>
-                                      <span className="font-semibold text-foreground">LLCPad</span>
+                                    <div className="space-y-1.5">
+                                      <LogoPreview size="md" />
+                                      <span className="font-semibold text-foreground block">{businessConfig.name}</span>
+                                      {(widget.content as { tagline?: string })?.tagline && (
+                                        <p className="text-[10px] opacity-70 max-w-[140px] leading-tight">
+                                          {(widget.content as { tagline?: string }).tagline}
+                                        </p>
+                                      )}
                                     </div>
                                   )}
                                   {widget.type === "LINKS" && (
@@ -827,13 +1045,7 @@ export default function FooterBuilderPage() {
                                       <div className="flex items-center gap-1"><Phone className="h-3 w-3" /> +1 234 567 890</div>
                                     </div>
                                   )}
-                                  {widget.type === "SOCIAL" && (
-                                    <div className="flex gap-2">
-                                      <div className="h-5 w-5 rounded bg-muted flex items-center justify-center"><Share2 className="h-3 w-3" /></div>
-                                      <div className="h-5 w-5 rounded bg-muted flex items-center justify-center"><Share2 className="h-3 w-3" /></div>
-                                      <div className="h-5 w-5 rounded bg-muted flex items-center justify-center"><Share2 className="h-3 w-3" /></div>
-                                    </div>
-                                  )}
+                                  {widget.type === "SOCIAL" && <SocialIconsPreview size="sm" />}
                                   {widget.type === "TEXT" && <p>Custom text content...</p>}
                                   {widget.type === "NEWSLETTER" && (
                                     <div className="flex gap-1">
@@ -882,9 +1094,16 @@ export default function FooterBuilderPage() {
                           <div className="text-xs text-muted-foreground">
                             {widget.type === "BRAND" && (
                               <div className="flex flex-col items-center gap-2">
-                                <div className="h-10 w-10 rounded-lg bg-primary/20 flex items-center justify-center font-bold text-primary">LP</div>
-                                <span className="font-semibold text-foreground">LLCPad</span>
-                                <p className="max-w-xs text-muted-foreground">Your trusted partner for LLC formation and business services.</p>
+                                <LogoPreview size="lg" />
+                                <span className="font-semibold text-foreground">{businessConfig.name}</span>
+                                <p className="max-w-xs text-muted-foreground text-center">
+                                  {(widget.content as { tagline?: string })?.tagline || "Your trusted partner for LLC formation and business services."}
+                                </p>
+                                {(widget.content as { subtitle?: string })?.subtitle && (
+                                  <p className="max-w-md text-[10px] opacity-60 text-center">
+                                    {(widget.content as { subtitle?: string }).subtitle}
+                                  </p>
+                                )}
                               </div>
                             )}
                             {widget.type === "LINKS" && (
@@ -909,10 +1128,8 @@ export default function FooterBuilderPage() {
                               </div>
                             )}
                             {widget.type === "SOCIAL" && (
-                              <div className="flex justify-center gap-2">
-                                <div className="h-6 w-6 rounded bg-muted flex items-center justify-center"><Share2 className="h-3 w-3" /></div>
-                                <div className="h-6 w-6 rounded bg-muted flex items-center justify-center"><Share2 className="h-3 w-3" /></div>
-                                <div className="h-6 w-6 rounded bg-muted flex items-center justify-center"><Share2 className="h-3 w-3" /></div>
+                              <div className="flex justify-center">
+                                <SocialIconsPreview size="md" />
                               </div>
                             )}
                             {widget.type === "TEXT" && <p>Custom text content...</p>}
@@ -941,8 +1158,8 @@ export default function FooterBuilderPage() {
                   previewMode === "mobile" ? "flex-col text-center" : ""
                 )}>
                   <div className="flex items-center gap-2">
-                    <div className="h-6 w-6 rounded bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">LP</div>
-                    <span className="text-sm font-semibold">LLCPad</span>
+                    <LogoPreview size="xs" />
+                    <span className="text-sm font-semibold">{businessConfig.name}</span>
                   </div>
                   <div className="flex flex-wrap justify-center gap-3 text-xs text-muted-foreground">
                     {formData.bottomLinks.length > 0 ? (
@@ -957,12 +1174,7 @@ export default function FooterBuilderPage() {
                       </>
                     )}
                   </div>
-                  {formData.showSocialLinks && (
-                    <div className="flex gap-2">
-                      <Share2 className="h-4 w-4 text-muted-foreground" />
-                      <Share2 className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                  )}
+                  {formData.showSocialLinks && <SocialIconsPreview size="sm" />}
                 </div>
               )}
 
@@ -975,19 +1187,13 @@ export default function FooterBuilderPage() {
                     previewMode === "mobile" ? "flex-col" : ""
                   )}>
                     <div className="flex items-center gap-2">
-                      <div className="h-8 w-8 rounded-lg bg-primary/20 flex items-center justify-center font-bold text-primary">LP</div>
+                      <LogoPreview size="md" />
                       <div>
-                        <span className="font-semibold">LLCPad</span>
-                        <p className="text-xs text-muted-foreground">Your trusted partner</p>
+                        <span className="font-semibold">{businessConfig.name}</span>
+                        <p className="text-xs text-muted-foreground">{businessConfig.tagline}</p>
                       </div>
                     </div>
-                    {formData.showSocialLinks && (
-                      <div className="flex gap-2">
-                        <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center"><Share2 className="h-3 w-3" /></div>
-                        <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center"><Share2 className="h-3 w-3" /></div>
-                        <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center"><Share2 className="h-3 w-3" /></div>
-                      </div>
-                    )}
+                    {formData.showSocialLinks && <SocialIconsPreview size="md" />}
                   </div>
                   {/* Mega grid */}
                   <div
@@ -1019,6 +1225,242 @@ export default function FooterBuilderPage() {
                                     </>
                                   )}
                                 </ul>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* STACKED Layout */}
+              {formData.layout === "STACKED" && (
+                <div className="space-y-6">
+                  {/* Brand Section */}
+                  <div className="text-center py-4 border-b" style={{ borderColor: formData.borderColor || undefined }}>
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <LogoPreview size="md" />
+                      <span className="font-semibold">{businessConfig.name}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground max-w-md mx-auto">Your trusted partner for LLC formation</p>
+                  </div>
+                  {/* Widget Grid */}
+                  <div
+                    className={cn("grid gap-4", previewMode === "mobile" ? "grid-cols-2" : "")}
+                    style={previewMode === "desktop" ? { gridTemplateColumns: `repeat(${formData.columns}, 1fr)` } : undefined}
+                  >
+                    {Array.from({ length: formData.columns }, (_, i) => i + 1).map((column) => {
+                      const widgets = getWidgetsByColumn(column);
+                      return (
+                        <div key={column} className="space-y-2">
+                          {widgets.length === 0 ? (
+                            <div className="rounded border border-dashed border-gray-300 p-3 text-center">
+                              <span className="text-xs text-muted-foreground">Column {column}</span>
+                            </div>
+                          ) : (
+                            widgets.map((widget) => (
+                              <div key={widget.id} className="space-y-1">
+                                {widget.showTitle && widget.title && (
+                                  <h4 className="text-xs font-semibold" style={{ color: formData.headingColor || undefined }}>{widget.title}</h4>
+                                )}
+                                <div className="text-xs text-muted-foreground">
+                                  {widget.type === "LINKS" && (
+                                    <ul className="space-y-0.5">
+                                      {widget.menuItems?.slice(0, 4).map((item, idx) => (
+                                        <li key={idx} className="hover:text-foreground cursor-pointer">{item.label}</li>
+                                      )) || <li>Link 1</li>}
+                                    </ul>
+                                  )}
+                                  {widget.type === "SOCIAL" && <SocialIconsPreview size="sm" />}
+                                  {widget.type === "NEWSLETTER" && <div className="flex gap-1"><div className="flex-1 h-6 rounded border bg-background"></div><div className="h-6 px-2 rounded bg-primary text-[10px] text-primary-foreground flex items-center">Subscribe</div></div>}
+                                  {widget.type !== "LINKS" && widget.type !== "SOCIAL" && widget.type !== "NEWSLETTER" && <span className="italic">{widget.type}</span>}
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* APP_FOCUSED Layout */}
+              {formData.layout === "APP_FOCUSED" && (
+                <div className="space-y-6">
+                  <div className={cn("flex gap-8", previewMode === "mobile" ? "flex-col" : "")}>
+                    {/* Left: App promo */}
+                    <div className="flex-1 space-y-4">
+                      <div className="flex items-center gap-2">
+                        <LogoPreview size="lg" />
+                        <span className="text-lg font-bold">{businessConfig.name}</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">Start your business journey today</p>
+                      <div className="flex gap-2">
+                        <div className="h-8 px-3 rounded bg-black text-white text-xs flex items-center gap-1">App Store</div>
+                        <div className="h-8 px-3 rounded bg-black text-white text-xs flex items-center gap-1">Play Store</div>
+                      </div>
+                    </div>
+                    {/* Right: Links */}
+                    <div className={cn("grid gap-6", previewMode === "mobile" ? "grid-cols-2" : `grid-cols-${Math.min(formData.columns - 1, 3)}`)}>
+                      {Array.from({ length: Math.min(formData.columns - 1, 3) }, (_, i) => i + 2).map((column) => {
+                        const widgets = getWidgetsByColumn(column);
+                        return (
+                          <div key={column} className="space-y-2">
+                            {widgets.map((widget) => (
+                              <div key={widget.id}>
+                                {widget.showTitle && widget.title && <h4 className="text-xs font-semibold mb-1" style={{ color: formData.headingColor || undefined }}>{widget.title}</h4>}
+                                {widget.type === "LINKS" && (
+                                  <ul className="space-y-0.5 text-xs text-muted-foreground">
+                                    {widget.menuItems?.slice(0, 4).map((item, idx) => (
+                                      <li key={idx} className="hover:text-foreground cursor-pointer">{item.label}</li>
+                                    )) || <li>Link</li>}
+                                  </ul>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* NEWSLETTER_HERO Layout */}
+              {formData.layout === "NEWSLETTER_HERO" && (
+                <div className="space-y-6">
+                  {/* Large Newsletter Section - uses NEWSLETTER widget content if available */}
+                  {(() => {
+                    // Find NEWSLETTER widget to get title/subtitle for hero section
+                    const allWidgets = footer?.widgets || [];
+                    const newsletterWidget = allWidgets.find(w => w.type === "NEWSLETTER");
+                    const nlContent = newsletterWidget?.content as { subtitle?: string; buttonText?: string } | null;
+                    const heroTitle = newsletterWidget?.title || formData.newsletterTitle || "Stay in the loop";
+                    const heroSubtitle = nlContent?.subtitle || formData.newsletterSubtitle || "Get the latest updates delivered to your inbox.";
+                    const buttonText = nlContent?.buttonText || "Subscribe";
+
+                    return (
+                      <div className="text-center py-6 border-b" style={{ borderColor: formData.borderColor || undefined }}>
+                        <h3 className="text-lg font-bold mb-2" style={{ color: formData.headingColor || undefined }}>
+                          {heroTitle}
+                        </h3>
+                        <p className="text-sm text-muted-foreground mb-4 max-w-md mx-auto">
+                          {heroSubtitle}
+                        </p>
+                        <div className="flex gap-2 justify-center max-w-sm mx-auto">
+                          <div className="flex-1 h-10 rounded border bg-background"></div>
+                          <div className="h-10 px-4 rounded bg-primary text-primary-foreground flex items-center text-sm">{buttonText}</div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                  {/* Widget Grid - Only show columns that have non-NEWSLETTER widgets */}
+                  {(() => {
+                    // Get columns that have visible widgets (excluding NEWSLETTER which is shown in hero)
+                    const visibleColumns = Array.from({ length: formData.columns }, (_, i) => i + 1)
+                      .filter(column => {
+                        const widgets = getWidgetsByColumn(column);
+                        return widgets.some(w => w.type !== "NEWSLETTER");
+                      });
+
+                    if (visibleColumns.length === 0) return null;
+
+                    return (
+                      <div
+                        className={cn("grid gap-4", previewMode === "mobile" ? "grid-cols-2" : "")}
+                        style={previewMode === "desktop" ? { gridTemplateColumns: `repeat(${visibleColumns.length}, 1fr)` } : undefined}
+                      >
+                        {visibleColumns.map((column) => {
+                          const widgets = getWidgetsByColumn(column).filter(w => w.type !== "NEWSLETTER");
+                          return (
+                            <div key={column} className="space-y-2">
+                              {widgets.map((widget) => (
+                                <div key={widget.id} className="space-y-1">
+                                  {widget.showTitle && widget.title && <h4 className="text-xs font-semibold" style={{ color: formData.headingColor || undefined }}>{widget.title}</h4>}
+                                  {widget.type === "LINKS" && (
+                                    <ul className="space-y-0.5 text-xs text-muted-foreground">
+                                      {widget.menuItems?.slice(0, 4).map((item, idx) => (
+                                        <li key={idx} className="hover:text-foreground cursor-pointer">{item.label}</li>
+                                      )) || <li>Link</li>}
+                                    </ul>
+                                  )}
+                                  {widget.type === "BRAND" && <div className="space-y-1"><LogoPreview size="sm" /><span className="font-semibold text-sm block">{businessConfig.name}</span></div>}
+                                  {widget.type === "SOCIAL" && <SocialIconsPreview size="sm" />}
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+
+              {/* ASYMMETRIC Layout */}
+              {formData.layout === "ASYMMETRIC" && (
+                <div className={cn("flex gap-8", previewMode === "mobile" ? "flex-col" : "")}>
+                  {/* Large left section (2/3) */}
+                  <div className={cn(previewMode === "desktop" ? "w-2/3" : "w-full", "space-y-4")}>
+                    <div className="flex items-center gap-3">
+                      <LogoPreview size="xl" />
+                      <div>
+                        <span className="font-bold text-lg">{businessConfig.name}</span>
+                        <p className="text-xs text-muted-foreground">{businessConfig.tagline}</p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground">Professional LLC formation services for entrepreneurs worldwide.</p>
+                    {formData.showSocialLinks && <SocialIconsPreview size="lg" />}
+                  </div>
+                  {/* Right section (1/3) - Links */}
+                  <div className={cn(previewMode === "desktop" ? "w-1/3" : "w-full", "grid gap-4", previewMode === "mobile" ? "grid-cols-2" : "grid-cols-1")}>
+                    {Array.from({ length: formData.columns }, (_, i) => i + 1).map((column) => {
+                      const widgets = getWidgetsByColumn(column).filter(w => w.type === "LINKS");
+                      return widgets.map((widget) => (
+                        <div key={widget.id}>
+                          {widget.showTitle && widget.title && <h4 className="text-xs font-semibold mb-2" style={{ color: formData.headingColor || undefined }}>{widget.title}</h4>}
+                          <ul className="space-y-1 text-xs text-muted-foreground">
+                            {widget.menuItems?.slice(0, 5).map((item, idx) => (
+                              <li key={idx} className="hover:text-foreground cursor-pointer">{item.label}</li>
+                            )) || <li>Link</li>}
+                          </ul>
+                        </div>
+                      ));
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* MEGA_PLUS Layout */}
+              {formData.layout === "MEGA_PLUS" && (
+                <div className="space-y-6">
+                  {/* Featured CTA Banner */}
+                  <div className="rounded-lg p-4 text-center" style={{ backgroundColor: formData.accentColor || "#3b82f6", color: "#fff" }}>
+                    <p className="font-semibold">Start Your LLC Today - Special Offer!</p>
+                    <p className="text-xs opacity-90">Use code SAVE20 for 20% off</p>
+                  </div>
+                  {/* Widget Grid */}
+                  <div
+                    className={cn("grid gap-4", previewMode === "mobile" ? "grid-cols-2" : "")}
+                    style={previewMode === "desktop" ? { gridTemplateColumns: `repeat(${formData.columns}, 1fr)` } : undefined}
+                  >
+                    {Array.from({ length: formData.columns }, (_, i) => i + 1).map((column) => {
+                      const widgets = getWidgetsByColumn(column);
+                      return (
+                        <div key={column} className="space-y-2">
+                          {widgets.length === 0 ? (
+                            <div className="text-xs text-muted-foreground">Col {column}</div>
+                          ) : (
+                            widgets.map((widget) => (
+                              <div key={widget.id}>
+                                {widget.showTitle && widget.title && <h4 className="text-xs font-semibold" style={{ color: formData.headingColor || undefined }}>{widget.title}</h4>}
+                                {widget.type === "BRAND" && <div className="space-y-1"><LogoPreview size="sm" /><span className="font-semibold text-sm block">{businessConfig.name}</span></div>}
+                                {widget.type === "LINKS" && <ul className="space-y-0.5 text-xs text-muted-foreground">{widget.menuItems?.slice(0,4).map((item,i) => <li key={i} className="hover:text-foreground cursor-pointer">{item.label}</li>) || <li>Link</li>}</ul>}
+                                {widget.type === "SOCIAL" && <SocialIconsPreview size="sm" />}
+                                {widget.type === "NEWSLETTER" && <div className="flex gap-1"><div className="flex-1 h-6 rounded border bg-background"></div><div className="h-6 px-2 rounded bg-primary text-[10px] text-primary-foreground flex items-center">Subscribe</div></div>}
                               </div>
                             ))
                           )}
@@ -1074,7 +1516,7 @@ export default function FooterBuilderPage() {
           <TabsTrigger value="style">Styling</TabsTrigger>
         </TabsList>
 
-        {/* Layout Tab */}
+        {/* Layout & Widgets Tab */}
         <TabsContent value="layout" className="space-y-4">
           <Card>
             <CardHeader>
@@ -1191,6 +1633,156 @@ export default function FooterBuilderPage() {
                   ) : null}
                 </DragOverlay>
               </DndContext>
+            </CardContent>
+          </Card>
+
+          {/* Presets Section - Quick Start Templates */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-primary" />
+                Quick Start with Presets
+              </CardTitle>
+              <CardDescription>
+                Select a preset to instantly apply a professional design, or customize your own above
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {formData.id ? (
+                <PresetGallery
+                  footerId={formData.id}
+                  onPresetApplied={fetchFooter}
+                />
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  Save the footer first to use presets
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Import/Export & Tools */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <RefreshCw className="h-5 w-5" />
+                Import / Export
+              </CardTitle>
+              <CardDescription>Backup or restore your footer configuration</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                {/* Export */}
+                <div className="space-y-3">
+                  <h4 className="font-medium">Export Configuration</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Download your current footer settings as a JSON file.
+                  </p>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    disabled={!footer}
+                    onClick={() => {
+                      if (!footer) return;
+                      const exportData = {
+                        ...formData,
+                        widgets: footer.widgets?.map(w => ({
+                          type: w.type,
+                          title: w.title,
+                          showTitle: w.showTitle,
+                          column: w.column,
+                          sortOrder: w.sortOrder,
+                          content: w.content,
+                        })),
+                        exportedAt: new Date().toISOString(),
+                        version: "1.0",
+                      };
+                      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement("a");
+                      a.href = url;
+                      a.download = `footer-config-${new Date().toISOString().split("T")[0]}.json`;
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      URL.revokeObjectURL(url);
+                      toast.success("Footer configuration exported");
+                    }}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Export Configuration
+                  </Button>
+                </div>
+
+                {/* Import */}
+                <div className="space-y-3">
+                  <h4 className="font-medium">Import Configuration</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Load a previously exported footer configuration.
+                  </p>
+                  <div className="relative">
+                    <input
+                      type="file"
+                      accept=".json"
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        try {
+                          const text = await file.text();
+                          const importData = JSON.parse(text);
+                          if (!importData.layout || !importData.version) {
+                            throw new Error("Invalid configuration file");
+                          }
+                          setFormData(prev => ({
+                            ...prev,
+                            ...importData,
+                            id: prev.id,
+                          }));
+                          toast.success("Configuration imported. Click Save to apply changes.");
+                        } catch (error) {
+                          console.error("Import error:", error);
+                          toast.error("Failed to import configuration.");
+                        }
+                        e.target.value = "";
+                      }}
+                    />
+                    <Button variant="outline" className="w-full">
+                      <Upload className="h-4 w-4 mr-2" />
+                      Import Configuration
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Seed Presets Button */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-medium">Seed Built-in Presets</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Initialize the 12 built-in footer presets (only needed once)
+                  </p>
+                </div>
+                <Button
+                  variant="secondary"
+                  onClick={async () => {
+                    try {
+                      const res = await fetch("/api/admin/footer/presets/seed", { method: "POST" });
+                      if (!res.ok) throw new Error("Failed to seed presets");
+                      const data = await res.json();
+                      toast.success(data.message);
+                    } catch (error) {
+                      console.error("Seed error:", error);
+                      toast.error("Failed to seed presets");
+                    }
+                  }}
+                >
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Seed Presets
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -1442,13 +2034,45 @@ export default function FooterBuilderPage() {
 
         {/* Styling Tab */}
         <TabsContent value="style" className="space-y-4">
+          {/* Background Settings */}
           <Card>
             <CardHeader>
-              <CardTitle>Footer Styling</CardTitle>
-              <CardDescription>Customize colors and spacing</CardDescription>
+              <CardTitle className="flex items-center gap-2">
+                <Palette className="h-5 w-5" />
+                Background
+              </CardTitle>
+              <CardDescription>Configure footer background style</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid gap-4 md:grid-cols-2">
+              {/* Background Type */}
+              <div className="space-y-2">
+                <Label>Background Type</Label>
+                <div className="grid grid-cols-4 gap-2">
+                  {[
+                    { value: "solid", label: "Solid" },
+                    { value: "gradient", label: "Gradient" },
+                    { value: "pattern", label: "Pattern" },
+                    { value: "image", label: "Image" },
+                  ].map((type) => (
+                    <button
+                      key={type.value}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, bgType: type.value })}
+                      className={cn(
+                        "rounded-lg border-2 p-3 text-sm font-medium transition-colors",
+                        formData.bgType === type.value
+                          ? "border-primary bg-primary/5"
+                          : "border-muted hover:border-primary/50"
+                      )}
+                    >
+                      {type.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Solid Color */}
+              {formData.bgType === "solid" && (
                 <div className="space-y-2">
                   <Label htmlFor="bgColor">Background Color</Label>
                   <div className="flex gap-2">
@@ -1467,7 +2091,200 @@ export default function FooterBuilderPage() {
                     />
                   </div>
                 </div>
+              )}
 
+              {/* Gradient */}
+              {formData.bgType === "gradient" && (
+                <div className="space-y-4">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>Gradient Start</Label>
+                      <div className="flex gap-2">
+                        <Input
+                          type="color"
+                          value={formData.bgGradient?.colors?.[0]?.color || "#4338ca"}
+                          onChange={(e) => setFormData({
+                            ...formData,
+                            bgGradient: {
+                              type: "linear",
+                              angle: formData.bgGradient?.angle || 135,
+                              colors: [
+                                { color: e.target.value, position: 0 },
+                                { color: formData.bgGradient?.colors?.[1]?.color || "#6366f1", position: 100 },
+                              ],
+                            },
+                          })}
+                          className="h-10 w-14 cursor-pointer p-1"
+                        />
+                        <Input
+                          value={formData.bgGradient?.colors?.[0]?.color || "#4338ca"}
+                          onChange={(e) => setFormData({
+                            ...formData,
+                            bgGradient: {
+                              type: "linear",
+                              angle: formData.bgGradient?.angle || 135,
+                              colors: [
+                                { color: e.target.value, position: 0 },
+                                { color: formData.bgGradient?.colors?.[1]?.color || "#6366f1", position: 100 },
+                              ],
+                            },
+                          })}
+                          placeholder="#4338ca"
+                          className="flex-1"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Gradient End</Label>
+                      <div className="flex gap-2">
+                        <Input
+                          type="color"
+                          value={formData.bgGradient?.colors?.[1]?.color || "#6366f1"}
+                          onChange={(e) => setFormData({
+                            ...formData,
+                            bgGradient: {
+                              type: "linear",
+                              angle: formData.bgGradient?.angle || 135,
+                              colors: [
+                                { color: formData.bgGradient?.colors?.[0]?.color || "#4338ca", position: 0 },
+                                { color: e.target.value, position: 100 },
+                              ],
+                            },
+                          })}
+                          className="h-10 w-14 cursor-pointer p-1"
+                        />
+                        <Input
+                          value={formData.bgGradient?.colors?.[1]?.color || "#6366f1"}
+                          onChange={(e) => setFormData({
+                            ...formData,
+                            bgGradient: {
+                              type: "linear",
+                              angle: formData.bgGradient?.angle || 135,
+                              colors: [
+                                { color: formData.bgGradient?.colors?.[0]?.color || "#4338ca", position: 0 },
+                                { color: e.target.value, position: 100 },
+                              ],
+                            },
+                          })}
+                          placeholder="#6366f1"
+                          className="flex-1"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label>Gradient Angle</Label>
+                      <span className="text-sm text-muted-foreground">{formData.bgGradient?.angle || 135}°</span>
+                    </div>
+                    <Slider
+                      value={[formData.bgGradient?.angle || 135]}
+                      onValueChange={(value) => setFormData({
+                        ...formData,
+                        bgGradient: {
+                          ...formData.bgGradient,
+                          type: "linear",
+                          angle: value[0],
+                          colors: formData.bgGradient?.colors || [
+                            { color: "#4338ca", position: 0 },
+                            { color: "#6366f1", position: 100 },
+                          ],
+                        },
+                      })}
+                      min={0}
+                      max={360}
+                      step={15}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Pattern */}
+              {formData.bgType === "pattern" && (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Pattern Style</Label>
+                    <Select
+                      value={formData.bgPattern || "dots"}
+                      onValueChange={(value) => setFormData({ ...formData, bgPattern: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="dots">Dots</SelectItem>
+                        <SelectItem value="grid">Grid</SelectItem>
+                        <SelectItem value="diagonal">Diagonal Lines</SelectItem>
+                        <SelectItem value="waves">Waves</SelectItem>
+                        <SelectItem value="noise">Noise</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>Base Color</Label>
+                      <div className="flex gap-2">
+                        <Input
+                          type="color"
+                          value={formData.bgColor || "#fef3c7"}
+                          onChange={(e) => setFormData({ ...formData, bgColor: e.target.value })}
+                          className="h-10 w-14 cursor-pointer p-1"
+                        />
+                        <Input
+                          value={formData.bgColor || ""}
+                          onChange={(e) => setFormData({ ...formData, bgColor: e.target.value })}
+                          placeholder="#fef3c7"
+                          className="flex-1"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Pattern Color</Label>
+                      <div className="flex gap-2">
+                        <Input
+                          type="color"
+                          value={formData.bgPatternColor || "#f59e0b"}
+                          onChange={(e) => setFormData({ ...formData, bgPatternColor: e.target.value })}
+                          className="h-10 w-14 cursor-pointer p-1"
+                        />
+                        <Input
+                          value={formData.bgPatternColor || ""}
+                          onChange={(e) => setFormData({ ...formData, bgPatternColor: e.target.value })}
+                          placeholder="#f59e0b"
+                          className="flex-1"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label>Pattern Opacity</Label>
+                      <span className="text-sm text-muted-foreground">{formData.bgPatternOpacity}%</span>
+                    </div>
+                    <Slider
+                      value={[formData.bgPatternOpacity]}
+                      onValueChange={(value) => setFormData({ ...formData, bgPatternOpacity: value[0] })}
+                      min={5}
+                      max={50}
+                      step={5}
+                    />
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Colors */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CircleDot className="h-5 w-5" />
+                Colors
+              </CardTitle>
+              <CardDescription>Text, link, and accent colors</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="textColor">Text Color</Label>
                   <div className="flex gap-2">
@@ -1482,6 +2299,63 @@ export default function FooterBuilderPage() {
                       value={formData.textColor}
                       onChange={(e) => setFormData({ ...formData, textColor: e.target.value })}
                       placeholder="#6b7280"
+                      className="flex-1"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="headingColor">Heading Color</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="headingColor"
+                      type="color"
+                      value={formData.headingColor || "#111827"}
+                      onChange={(e) => setFormData({ ...formData, headingColor: e.target.value })}
+                      className="h-10 w-14 cursor-pointer p-1"
+                    />
+                    <Input
+                      value={formData.headingColor}
+                      onChange={(e) => setFormData({ ...formData, headingColor: e.target.value })}
+                      placeholder="#111827"
+                      className="flex-1"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="linkColor">Link Color</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="linkColor"
+                      type="color"
+                      value={formData.linkColor || "#374151"}
+                      onChange={(e) => setFormData({ ...formData, linkColor: e.target.value })}
+                      className="h-10 w-14 cursor-pointer p-1"
+                    />
+                    <Input
+                      value={formData.linkColor}
+                      onChange={(e) => setFormData({ ...formData, linkColor: e.target.value })}
+                      placeholder="#374151"
+                      className="flex-1"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="linkHoverColor">Link Hover Color</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="linkHoverColor"
+                      type="color"
+                      value={formData.linkHoverColor || "#2563eb"}
+                      onChange={(e) => setFormData({ ...formData, linkHoverColor: e.target.value })}
+                      className="h-10 w-14 cursor-pointer p-1"
+                    />
+                    <Input
+                      value={formData.linkHoverColor}
+                      onChange={(e) => setFormData({ ...formData, linkHoverColor: e.target.value })}
+                      placeholder="#2563eb"
                       className="flex-1"
                     />
                   </div>
@@ -1507,7 +2381,7 @@ export default function FooterBuilderPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="borderColor">Border Color</Label>
+                  <Label htmlFor="borderColor">Border/Divider Color</Label>
                   <div className="flex gap-2">
                     <Input
                       id="borderColor"
@@ -1525,38 +2399,453 @@ export default function FooterBuilderPage() {
                   </div>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Typography */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Type className="h-5 w-5" />
+                Typography
+              </CardTitle>
+              <CardDescription>Heading and text styles</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid gap-4 md:grid-cols-3">
+                <div className="space-y-2">
+                  <Label>Heading Size</Label>
+                  <Select
+                    value={formData.headingSize}
+                    onValueChange={(value) => setFormData({ ...formData, headingSize: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="sm">Small</SelectItem>
+                      <SelectItem value="base">Base</SelectItem>
+                      <SelectItem value="lg">Large</SelectItem>
+                      <SelectItem value="xl">Extra Large</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Heading Weight</Label>
+                  <Select
+                    value={formData.headingWeight}
+                    onValueChange={(value) => setFormData({ ...formData, headingWeight: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="semibold">Semibold</SelectItem>
+                      <SelectItem value="bold">Bold</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Heading Style</Label>
+                  <Select
+                    value={formData.headingStyle}
+                    onValueChange={(value) => setFormData({ ...formData, headingStyle: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="normal">Normal</SelectItem>
+                      <SelectItem value="uppercase">UPPERCASE</SelectItem>
+                      <SelectItem value="capitalize">Capitalize</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Preview */}
+              <div className="rounded-lg border p-4">
+                <p className="text-xs text-muted-foreground mb-2">Preview:</p>
+                <h4
+                  className={cn(
+                    formData.headingSize === "sm" && "text-sm",
+                    formData.headingSize === "base" && "text-base",
+                    formData.headingSize === "lg" && "text-lg",
+                    formData.headingSize === "xl" && "text-xl",
+                    formData.headingWeight === "medium" && "font-medium",
+                    formData.headingWeight === "semibold" && "font-semibold",
+                    formData.headingWeight === "bold" && "font-bold",
+                    formData.headingStyle === "uppercase" && "uppercase",
+                    formData.headingStyle === "capitalize" && "capitalize"
+                  )}
+                  style={{ color: formData.headingColor || undefined }}
+                >
+                  Sample Heading
+                </h4>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Social Icon Styling */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Share2 className="h-5 w-5" />
+                Social Icons
+              </CardTitle>
+              <CardDescription>Style for social media icons</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Icon Shape</Label>
+                  <Select
+                    value={formData.socialShape}
+                    onValueChange={(value) => setFormData({ ...formData, socialShape: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="circle">Circle</SelectItem>
+                      <SelectItem value="square">Square</SelectItem>
+                      <SelectItem value="rounded">Rounded</SelectItem>
+                      <SelectItem value="pill">Pill</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Icon Size</Label>
+                  <Select
+                    value={formData.socialSize}
+                    onValueChange={(value) => setFormData({ ...formData, socialSize: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="sm">Small</SelectItem>
+                      <SelectItem value="md">Medium</SelectItem>
+                      <SelectItem value="lg">Large</SelectItem>
+                      <SelectItem value="xl">Extra Large</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Color Mode</Label>
+                  <Select
+                    value={formData.socialColorMode}
+                    onValueChange={(value) => setFormData({ ...formData, socialColorMode: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="brand">Brand Colors</SelectItem>
+                      <SelectItem value="monochrome">Monochrome</SelectItem>
+                      <SelectItem value="accent">Accent Color</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Hover Effect</Label>
+                  <Select
+                    value={formData.socialHoverEffect}
+                    onValueChange={(value) => setFormData({ ...formData, socialHoverEffect: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="scale">Scale Up</SelectItem>
+                      <SelectItem value="lift">Lift</SelectItem>
+                      <SelectItem value="glow">Glow</SelectItem>
+                      <SelectItem value="rotate">Rotate</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Preview */}
+              <div className="rounded-lg border p-4">
+                <p className="text-xs text-muted-foreground mb-2">Preview:</p>
+                <div className="flex gap-2">
+                  {[1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className={cn(
+                        "flex items-center justify-center bg-muted transition-all hover:scale-110",
+                        formData.socialShape === "circle" && "rounded-full",
+                        formData.socialShape === "square" && "rounded-none",
+                        formData.socialShape === "rounded" && "rounded-lg",
+                        formData.socialShape === "pill" && "rounded-full px-3",
+                        formData.socialSize === "sm" && "h-7 w-7",
+                        formData.socialSize === "md" && "h-9 w-9",
+                        formData.socialSize === "lg" && "h-11 w-11",
+                        formData.socialSize === "xl" && "h-13 w-13"
+                      )}
+                    >
+                      <Share2 className={cn(
+                        formData.socialSize === "sm" && "h-3.5 w-3.5",
+                        formData.socialSize === "md" && "h-4 w-4",
+                        formData.socialSize === "lg" && "h-5 w-5",
+                        formData.socialSize === "xl" && "h-6 w-6"
+                      )} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Effects & Animation */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Wand2 className="h-5 w-5" />
+                Effects & Animation
+              </CardTitle>
+              <CardDescription>Visual effects and animations</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Animation Toggle */}
+              <div className="flex items-center justify-between rounded-lg border p-4">
+                <div>
+                  <Label className="text-base">Enable Animations</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Add entrance animations and hover effects
+                  </p>
+                </div>
+                <Switch
+                  checked={formData.enableAnimations}
+                  onCheckedChange={(checked) => setFormData({ ...formData, enableAnimations: checked })}
+                />
+              </div>
+
+              {formData.enableAnimations && (
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label>Entrance Animation</Label>
+                    <Select
+                      value={formData.entranceAnimation || "none"}
+                      onValueChange={(value) => setFormData({ ...formData, entranceAnimation: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">None</SelectItem>
+                        <SelectItem value="fade-in">Fade In</SelectItem>
+                        <SelectItem value="fade-up">Fade Up</SelectItem>
+                        <SelectItem value="slide-up">Slide Up</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label>Animation Duration</Label>
+                      <span className="text-sm text-muted-foreground">{formData.animationDuration}ms</span>
+                    </div>
+                    <Slider
+                      value={[formData.animationDuration]}
+                      onValueChange={(value) => setFormData({ ...formData, animationDuration: value[0] })}
+                      min={100}
+                      max={800}
+                      step={50}
+                    />
+                  </div>
+                </div>
+              )}
 
               <Separator />
 
-              {/* Spacing */}
+              {/* Top Border */}
               <div className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label>Padding Top</Label>
-                    <span className="text-sm text-muted-foreground">{formData.paddingTop}px</span>
+                <Label className="text-base">Top Border</Label>
+                <div className="grid gap-4 md:grid-cols-3">
+                  <div className="space-y-2">
+                    <Label className="text-sm text-muted-foreground">Style</Label>
+                    <Select
+                      value={formData.topBorderStyle}
+                      onValueChange={(value) => setFormData({ ...formData, topBorderStyle: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">None</SelectItem>
+                        <SelectItem value="solid">Solid</SelectItem>
+                        <SelectItem value="gradient">Gradient</SelectItem>
+                        <SelectItem value="wave">Wave</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <Slider
-                    value={[formData.paddingTop]}
-                    onValueChange={(value) => setFormData({ ...formData, paddingTop: value[0] })}
-                    min={16}
-                    max={96}
-                    step={8}
-                  />
+
+                  {formData.topBorderStyle !== "none" && (
+                    <>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-sm text-muted-foreground">Height</Label>
+                          <span className="text-xs text-muted-foreground">{formData.topBorderHeight}px</span>
+                        </div>
+                        <Slider
+                          value={[formData.topBorderHeight]}
+                          onValueChange={(value) => setFormData({ ...formData, topBorderHeight: value[0] })}
+                          min={1}
+                          max={8}
+                          step={1}
+                        />
+                      </div>
+
+                      {formData.topBorderStyle === "solid" && (
+                        <div className="space-y-2">
+                          <Label className="text-sm text-muted-foreground">Color</Label>
+                          <div className="flex gap-2">
+                            <Input
+                              type="color"
+                              value={formData.topBorderColor || formData.accentColor || "#2563eb"}
+                              onChange={(e) => setFormData({ ...formData, topBorderColor: e.target.value })}
+                              className="h-10 w-14 cursor-pointer p-1"
+                            />
+                            <Input
+                              value={formData.topBorderColor || ""}
+                              onChange={(e) => setFormData({ ...formData, topBorderColor: e.target.value })}
+                              placeholder="Use accent"
+                              className="flex-1"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Shadow & Border Radius */}
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Shadow</Label>
+                  <Select
+                    value={formData.shadow}
+                    onValueChange={(value) => setFormData({ ...formData, shadow: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      <SelectItem value="sm">Small</SelectItem>
+                      <SelectItem value="md">Medium</SelectItem>
+                      <SelectItem value="lg">Large</SelectItem>
+                      <SelectItem value="xl">Extra Large</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label>Padding Bottom</Label>
-                    <span className="text-sm text-muted-foreground">{formData.paddingBottom}px</span>
+                    <Label>Border Radius</Label>
+                    <span className="text-sm text-muted-foreground">{formData.borderRadius}px</span>
                   </div>
                   <Slider
-                    value={[formData.paddingBottom]}
-                    onValueChange={(value) => setFormData({ ...formData, paddingBottom: value[0] })}
-                    min={16}
-                    max={96}
-                    step={8}
+                    value={[formData.borderRadius]}
+                    onValueChange={(value) => setFormData({ ...formData, borderRadius: value[0] })}
+                    min={0}
+                    max={32}
+                    step={4}
                   />
                 </div>
+              </div>
+
+              <Separator />
+
+              {/* Divider Style */}
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Divider Style</Label>
+                  <Select
+                    value={formData.dividerStyle}
+                    onValueChange={(value) => setFormData({ ...formData, dividerStyle: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      <SelectItem value="solid">Solid</SelectItem>
+                      <SelectItem value="dashed">Dashed</SelectItem>
+                      <SelectItem value="dotted">Dotted</SelectItem>
+                      <SelectItem value="gradient">Gradient</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Link Hover Effect</Label>
+                  <Select
+                    value={formData.linkHoverEffect}
+                    onValueChange={(value) => setFormData({ ...formData, linkHoverEffect: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="color">Color Change</SelectItem>
+                      <SelectItem value="underline">Underline</SelectItem>
+                      <SelectItem value="slide">Slide Underline</SelectItem>
+                      <SelectItem value="highlight">Highlight</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Spacing */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <SquareStack className="h-5 w-5" />
+                Spacing
+              </CardTitle>
+              <CardDescription>Padding and margins</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label>Padding Top</Label>
+                  <span className="text-sm text-muted-foreground">{formData.paddingTop}px</span>
+                </div>
+                <Slider
+                  value={[formData.paddingTop]}
+                  onValueChange={(value) => setFormData({ ...formData, paddingTop: value[0] })}
+                  min={16}
+                  max={120}
+                  step={8}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label>Padding Bottom</Label>
+                  <span className="text-sm text-muted-foreground">{formData.paddingBottom}px</span>
+                </div>
+                <Slider
+                  value={[formData.paddingBottom]}
+                  onValueChange={(value) => setFormData({ ...formData, paddingBottom: value[0] })}
+                  min={16}
+                  max={120}
+                  step={8}
+                />
               </div>
 
               <div className="rounded-lg bg-muted/50 p-4">

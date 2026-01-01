@@ -2,6 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { checkAdminAccess, authError } from "@/lib/admin-auth";
 
+// Helper to safely parse JSON - handles both string and object
+const safeJsonParse = (value: unknown, fallback: unknown = null) => {
+  if (!value) return fallback;
+  if (typeof value === 'string') {
+    try {
+      return JSON.parse(value);
+    } catch {
+      return fallback;
+    }
+  }
+  return value; // Already an object
+};
+
 // GET /api/admin/footer/[id] - Get specific footer config
 export async function GET(
   request: NextRequest,
@@ -38,11 +51,11 @@ export async function GET(
 
     return NextResponse.json({
       ...footer,
-      bottomLinks: footer.bottomLinks ? JSON.parse(footer.bottomLinks as string) : [],
-      trustBadges: footer.trustBadges ? JSON.parse(footer.trustBadges as string) : [],
+      bottomLinks: safeJsonParse(footer.bottomLinks, []),
+      trustBadges: safeJsonParse(footer.trustBadges, []),
       widgets: footer.widgets.map((w) => ({
         ...w,
-        content: w.content ? JSON.parse(w.content as string) : null,
+        content: safeJsonParse(w.content, null),
       })),
     });
   } catch (error) {

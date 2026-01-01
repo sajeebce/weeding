@@ -212,7 +212,18 @@ export interface HeaderConfig {
 // FOOTER TYPES
 // ==========================================
 
-export type FooterLayout = "MULTI_COLUMN" | "CENTERED" | "MINIMAL" | "MEGA";
+export type FooterLayout =
+  | "MULTI_COLUMN"
+  | "CENTERED"
+  | "MINIMAL"
+  | "MEGA"
+  // New layouts (Phase 2)
+  | "STACKED"
+  | "ASYMMETRIC"
+  | "MEGA_PLUS"
+  | "APP_FOCUSED"
+  | "NEWSLETTER_HERO";
+
 export type FooterWidgetType =
   | "BRAND"
   | "LINKS"
@@ -223,7 +234,19 @@ export type FooterWidgetType =
   | "RECENT_POSTS"
   | "SERVICES"
   | "STATES"
-  | "CUSTOM_HTML";
+  | "CUSTOM_HTML"
+  // New widget types (Phase 4)
+  | "APP_DOWNLOAD"
+  | "PAYMENT_METHODS"
+  | "AWARDS"
+  | "MAP"
+  | "WORKING_HOURS"
+  | "LANGUAGE_SELECT"
+  | "THEME_TOGGLE"
+  | "FEATURED_PRODUCT"
+  | "TESTIMONIAL"
+  | "COUNTDOWN"
+  | "CTA_BANNER";
 
 export interface BottomLink {
   label: string;
@@ -260,36 +283,162 @@ export interface FooterWidget {
   linksCount?: number;
 }
 
+// Responsive columns configuration
+export interface ResponsiveColumns {
+  mobile: number;
+  tablet: number;
+  desktop: number;
+}
+
+// Background gradient configuration
+export interface BackgroundGradient {
+  type: "linear" | "radial" | "conic";
+  colors: { color: string; position: number }[];
+  angle?: number;
+}
+
+// Color palette for presets
+export interface ColorPalette {
+  primary: string;
+  secondary: string;
+  accent: string;
+  text: string;
+  bg: string;
+}
+
+// Social icon styling
+export interface SocialIconStyling {
+  shape: "circle" | "square" | "rounded" | "pill";
+  size: "sm" | "md" | "lg" | "xl";
+  colorMode: "brand" | "monochrome" | "accent";
+  hoverEffect: "scale" | "lift" | "glow" | "rotate";
+}
+
+// Typography settings
+export interface FooterTypography {
+  headingFont?: string;
+  bodyFont?: string;
+  headingSize: "sm" | "base" | "lg" | "xl";
+  headingWeight: "medium" | "semibold" | "bold";
+  headingStyle: "normal" | "uppercase" | "capitalize";
+}
+
 export interface FooterConfig {
   id: string;
   name: string;
   isActive: boolean;
   layout: FooterLayout;
   columns: number;
+
+  // Responsive columns (Phase 3)
+  responsiveColumns?: ResponsiveColumns | null;
+  sectionOrder?: string[];
+
+  // Newsletter
   newsletterEnabled: boolean;
   newsletterTitle: string;
   newsletterSubtitle?: string | null;
   newsletterProvider?: string | null;
   newsletterFormAction?: string | null;
+
+  // Social & Contact
   showSocialLinks: boolean;
   socialPosition: string;
   showContactInfo: boolean;
   contactPosition: string;
+
+  // Bottom Bar
   bottomBarEnabled: boolean;
+  bottomBarLayout?: string;
   copyrightText?: string | null;
   showDisclaimer: boolean;
   disclaimerText?: string | null;
   bottomLinks?: BottomLink[];
+
+  // Trust Badges
   showTrustBadges: boolean;
   trustBadges?: TrustBadge[];
+
+  // Background Styling (Phase 3)
+  bgType?: string;
   bgColor?: string | null;
+  bgGradient?: BackgroundGradient | null;
+  bgPattern?: string | null;
+  bgPatternColor?: string | null;
+  bgPatternOpacity?: number | null;
+  bgImage?: string | null;
+  bgImageOverlay?: string | null;
+
+  // Text Styling
   textColor?: string | null;
+  headingColor?: string | null;
+  linkColor?: string | null;
+  linkHoverColor?: string | null;
   accentColor?: string | null;
   borderColor?: string | null;
+
+  // Typography (Phase 3)
+  headingFont?: string | null;
+  bodyFont?: string | null;
+  headingSize?: string;
+  headingWeight?: string;
+  headingStyle?: string;
+
+  // Divider
+  dividerStyle?: string;
+  dividerColor?: string | null;
+
+  // Social Icon Styling (Phase 3)
+  socialShape?: string;
+  socialSize?: string;
+  socialColorMode?: string;
+  socialHoverEffect?: string;
+
+  // Effects & Animation (Phase 3)
+  enableAnimations?: boolean;
+  entranceAnimation?: string | null;
+  animationDuration?: number;
+  linkHoverEffect?: string;
+  topBorderStyle?: string;
+  topBorderHeight?: number;
+  topBorderColor?: string | null;
+
+  // Shadow & Border Radius
+  shadow?: string;
+  borderRadius?: number;
+
+  // Spacing
   paddingTop: number;
   paddingBottom: number;
+
+  // Advanced
+  customCSS?: string | null;
+  customJS?: string | null;
+
+  // Preset reference
+  presetId?: string | null;
+
+  // Relations
   widgets?: FooterWidget[];
   widgetsCount?: number;
+
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Footer Preset (Phase 1)
+export interface FooterPreset {
+  id: string;
+  name: string;
+  description?: string | null;
+  category: "minimal" | "professional" | "modern" | "creative" | "industry";
+  thumbnail?: string | null;
+  config: Partial<FooterConfig>;
+  isBuiltIn: boolean;
+  isPublic: boolean;
+  usageCount: number;
+  tags: string[];
+  colorPalette?: ColorPalette | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -347,6 +496,8 @@ export interface PublicFooterResponse {
   id: string;
   layout: FooterLayout;
   columns: number;
+  responsiveColumns?: ResponsiveColumns;
+  sectionOrder?: string[];
   widgets: FooterWidget[];
   newsletter: {
     enabled: boolean;
@@ -358,6 +509,10 @@ export interface PublicFooterResponse {
   social: {
     show: boolean;
     position: string;
+    shape?: string;
+    size?: string;
+    colorMode?: string;
+    hoverEffect?: string;
   };
   contact: {
     show: boolean;
@@ -365,6 +520,7 @@ export interface PublicFooterResponse {
   };
   bottomBar: {
     enabled: boolean;
+    layout?: string;
     copyrightText?: string;
     showDisclaimer: boolean;
     disclaimerText?: string;
@@ -375,10 +531,49 @@ export interface PublicFooterResponse {
     badges: TrustBadge[];
   };
   styling: {
+    // Background
+    bgType?: string;
     bgColor?: string;
+    bgGradient?: BackgroundGradient;
+    bgPattern?: string;
+    bgPatternColor?: string;
+    bgPatternOpacity?: number;
+    bgImage?: string;
+    bgImageOverlay?: string;
+
+    // Text colors
     textColor?: string;
+    headingColor?: string;
+    linkColor?: string;
+    linkHoverColor?: string;
     accentColor?: string;
     borderColor?: string;
+
+    // Typography
+    headingFont?: string;
+    bodyFont?: string;
+    headingSize?: string;
+    headingWeight?: string;
+    headingStyle?: string;
+
+    // Divider
+    dividerStyle?: string;
+    dividerColor?: string;
+
+    // Effects
+    enableAnimations?: boolean;
+    entranceAnimation?: string;
+    animationDuration?: number;
+    linkHoverEffect?: string;
+    topBorderStyle?: string;
+    topBorderHeight?: number;
+    topBorderColor?: string;
+
+    // Shadow & Border
+    shadow?: string;
+    borderRadius?: number;
+
+    // Spacing
     paddingTop: number;
     paddingBottom: number;
   };

@@ -174,11 +174,11 @@ export function HeaderMega({
       <div className="container mx-auto px-4">
         <div
           className="flex items-center justify-between border-b border-border/50"
-          style={{ height: `${Math.floor((config.height || 80) * 0.65)}px` }}
+          style={{ height: `${Math.floor((config.height || 76) * 0.65)}px` }}
         >
           <Logo
             businessConfig={businessConfig}
-            maxHeight={config.logo?.maxHeight || 56}
+            maxHeight={config.logo?.maxHeight || 72}
           />
 
           <div className="hidden lg:flex lg:items-center lg:gap-x-4">
@@ -230,7 +230,7 @@ export function HeaderMega({
       {/* Row 2: Full-width navigation bar */}
       <div
         className="relative hidden border-b bg-muted/30 lg:block"
-        style={{ height: `${Math.floor((config.height || 80) * 0.55)}px` }}
+        style={{ height: `${Math.floor((config.height || 76) * 0.55)}px` }}
       >
         <div className="container mx-auto flex h-full items-center px-4">
           <nav className="flex items-center gap-x-1">
