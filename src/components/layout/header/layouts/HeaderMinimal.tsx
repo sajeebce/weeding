@@ -32,12 +32,12 @@ export function HeaderMinimal({
   return (
     <nav
       className="container mx-auto flex items-center justify-between px-4"
-      style={{ height: `${config.height || 80}px` }}
+      style={{ height: `${config.height || 76}px` }}
     >
       {/* Logo - Left */}
       <Logo
         businessConfig={businessConfig}
-        maxHeight={config.logo?.maxHeight || 56}
+        maxHeight={config.logo?.maxHeight || 72}
       />
 
       {/* Search and Mobile menu */}

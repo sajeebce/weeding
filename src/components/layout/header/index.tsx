@@ -180,7 +180,7 @@ export function Header() {
   // Render layout based on config
   const renderLayout = () => {
     if (!headerConfig) {
-      return <HeaderDefault {...layoutProps} config={{ ...layoutProps.config, layout: "DEFAULT", height: 80, cta: [], auth: { showButtons: true, loginText: "Sign In", registerText: "Get Started", registerUrl: "/services/llc-formation" } }} />;
+      return <HeaderDefault {...layoutProps} config={{ ...layoutProps.config, layout: "DEFAULT", height: 76, cta: [], auth: { showButtons: true, loginText: "Sign In", registerText: "Get Started", registerUrl: "/services/llc-formation" } }} />;
     }
 
     switch (headerConfig.layout) {

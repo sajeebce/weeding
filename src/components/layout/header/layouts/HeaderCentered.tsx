@@ -37,11 +37,11 @@ export function HeaderCentered({
       {/* Row 1: Centered Logo */}
       <div
         className="flex items-center justify-center border-b border-border/50"
-        style={{ height: `${Math.floor((config.height || 80) * 0.6)}px` }}
+        style={{ height: `${Math.floor((config.height || 76) * 0.6)}px` }}
       >
         <Logo
           businessConfig={businessConfig}
-          maxHeight={config.logo?.maxHeight || 56}
+          maxHeight={config.logo?.maxHeight || 72}
         />
 
         {/* Mobile Menu - Absolute right */}
@@ -69,7 +69,7 @@ export function HeaderCentered({
       {/* Row 2: Navigation centered, CTA right */}
       <div
         className="relative hidden lg:flex lg:items-center lg:justify-center"
-        style={{ height: `${Math.floor((config.height || 80) * 0.55)}px` }}
+        style={{ height: `${Math.floor((config.height || 76) * 0.55)}px` }}
       >
         <Navigation
           items={navigation}

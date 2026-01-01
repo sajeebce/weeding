@@ -4,6 +4,19 @@ import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { checkAdminAccess, authError } from "@/lib/admin-auth";
 
+// Helper to safely parse JSON - handles both string and object
+const safeJsonParse = (value: unknown, fallback: unknown = null) => {
+  if (!value) return fallback;
+  if (typeof value === 'string') {
+    try {
+      return JSON.parse(value);
+    } catch {
+      return fallback;
+    }
+  }
+  return value; // Already an object
+};
+
 // Validation schema for footer widgets
 const widgetSchema = z.object({
   footerId: z.string(),
@@ -58,7 +71,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       widgets: widgets.map((w) => ({
         ...w,
-        content: w.content ? JSON.parse(w.content as string) : null,
+        content: safeJsonParse(w.content, null),
       })),
       total: widgets.length,
     });
@@ -121,7 +134,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         ...widget,
-        content: widget.content ? JSON.parse(widget.content as string) : null,
+        content: safeJsonParse(widget.content, null),
       },
       { status: 201 }
     );
@@ -197,7 +210,7 @@ export async function PUT(request: NextRequest) {
 
       return NextResponse.json({
         ...widget,
-        content: widget.content ? JSON.parse(widget.content as string) : null,
+        content: safeJsonParse(widget.content, null),
       });
     }
 
@@ -217,7 +230,7 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json({
       ...widget,
-      content: widget.content ? JSON.parse(widget.content as string) : null,
+      content: safeJsonParse(widget.content, null),
     });
   } catch (error) {
     if (error instanceof z.ZodError) {

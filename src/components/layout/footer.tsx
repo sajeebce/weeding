@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import {
   Facebook,
   Twitter,
@@ -15,12 +15,15 @@ import {
   Send,
   CheckCircle,
   Loader2,
+  Sparkles,
+  ArrowRight,
 } from "lucide-react";
 import { useBusinessConfig } from "@/hooks/use-business-config";
 import { useFooterConfig, getWidgetsByColumn, getWidgetLinks } from "@/hooks/use-footer-config";
 import type { FooterWidget, PublicFooterResponse } from "@/lib/header-footer/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 // TikTok icon component
 function TikTokIcon({ className }: { className?: string }) {
@@ -64,15 +67,23 @@ const fallbackLinks = {
   ],
 };
 
-// Newsletter form component
-function NewsletterForm({
+// Enhanced Newsletter form component with multiple styles
+function EnhancedNewsletterForm({
   title,
   subtitle,
   formAction,
+  style = "inline",
+  buttonStyle = "primary",
+  accentColor,
+  incentive,
 }: {
   title?: string;
   subtitle?: string;
   formAction?: string;
+  style?: "inline" | "stacked" | "floating";
+  buttonStyle?: "primary" | "secondary" | "outline" | "gradient";
+  accentColor?: string;
+  incentive?: string;
 }) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -85,7 +96,6 @@ function NewsletterForm({
 
     try {
       if (formAction) {
-        // Custom form action
         const response = await fetch(formAction, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -93,7 +103,6 @@ function NewsletterForm({
         });
         if (!response.ok) throw new Error("Subscription failed");
       } else {
-        // Default API endpoint
         const response = await fetch("/api/newsletter/subscribe", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -110,10 +119,68 @@ function NewsletterForm({
     }
   };
 
+  const buttonClasses = cn(
+    "transition-all duration-200",
+    buttonStyle === "gradient" && "bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70",
+    buttonStyle === "outline" && "border-2 border-current bg-transparent hover:bg-current/10"
+  );
+
+  if (style === "stacked") {
+    return (
+      <div className="space-y-4">
+        {title && <h3 className="text-lg font-semibold">{title}</h3>}
+        {subtitle && <p className="text-sm opacity-80">{subtitle}</p>}
+        {incentive && (
+          <div className="flex items-center gap-2 text-sm" style={{ color: accentColor }}>
+            <Sparkles className="h-4 w-4" />
+            <span>{incentive}</span>
+          </div>
+        )}
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <Input
+            type="email"
+            placeholder="Enter your email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={status === "loading" || status === "success"}
+            required
+            className="w-full"
+            aria-label="Email address"
+          />
+          <Button
+            type="submit"
+            disabled={status === "loading" || status === "success"}
+            className={cn("w-full", buttonClasses)}
+            style={buttonStyle === "gradient" && accentColor ? { background: `linear-gradient(135deg, ${accentColor}, ${accentColor}99)` } : undefined}
+          >
+            {status === "loading" ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : status === "success" ? (
+              <CheckCircle className="h-4 w-4 mr-2" />
+            ) : (
+              <Send className="h-4 w-4 mr-2" />
+            )}
+            {status === "success" ? "Subscribed!" : "Subscribe"}
+          </Button>
+        </form>
+        {status === "error" && (
+          <p className="text-sm text-destructive" role="alert">Failed to subscribe. Please try again.</p>
+        )}
+      </div>
+    );
+  }
+
+  // Default inline style
   return (
     <div>
-      {title && <h3 className="text-sm font-semibold text-foreground">{title}</h3>}
-      {subtitle && <p className="mt-2 text-sm text-muted-foreground">{subtitle}</p>}
+      {title && <h3 className="text-sm font-semibold">{title}</h3>}
+      {subtitle && <p className="mt-2 text-sm opacity-80">{subtitle}</p>}
+      {incentive && (
+        <div className="mt-2 flex items-center gap-2 text-sm" style={{ color: accentColor }}>
+          <Sparkles className="h-4 w-4" />
+          <span>{incentive}</span>
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="mt-4 flex gap-2">
         <Input
           type="email"
@@ -123,8 +190,16 @@ function NewsletterForm({
           className="flex-1"
           disabled={status === "loading" || status === "success"}
           required
+          aria-label="Email address"
         />
-        <Button type="submit" size="icon" disabled={status === "loading" || status === "success"}>
+        <Button
+          type="submit"
+          size="icon"
+          disabled={status === "loading" || status === "success"}
+          className={buttonClasses}
+          style={buttonStyle === "gradient" && accentColor ? { background: `linear-gradient(135deg, ${accentColor}, ${accentColor}99)` } : undefined}
+          aria-label="Subscribe"
+        >
           {status === "loading" ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : status === "success" ? (
@@ -135,11 +210,82 @@ function NewsletterForm({
         </Button>
       </form>
       {status === "success" && (
-        <p className="mt-2 text-sm text-green-600">Successfully subscribed!</p>
+        <p className="mt-2 text-sm text-green-600" role="status">Successfully subscribed!</p>
       )}
       {status === "error" && (
-        <p className="mt-2 text-sm text-destructive">Failed to subscribe. Please try again.</p>
+        <p className="mt-2 text-sm text-destructive" role="alert">Failed to subscribe. Please try again.</p>
       )}
+    </div>
+  );
+}
+
+// Enhanced Social Links component with configurable styling
+function EnhancedSocialLinks({
+  links,
+  shape = "circle",
+  size = "md",
+  colorMode = "brand",
+  hoverEffect = "scale",
+  accentColor,
+}: {
+  links: { name: string; href: string; icon: React.ComponentType<{ className?: string }>; color: string }[];
+  shape?: string;
+  size?: string;
+  colorMode?: string;
+  hoverEffect?: string;
+  accentColor?: string;
+}) {
+  const sizeClasses = {
+    sm: { container: "p-1.5", icon: "h-4 w-4" },
+    md: { container: "p-2", icon: "h-5 w-5" },
+    lg: { container: "p-3", icon: "h-6 w-6" },
+    xl: { container: "p-4", icon: "h-7 w-7" },
+  };
+
+  const shapeClasses = {
+    circle: "rounded-full",
+    square: "rounded-none",
+    rounded: "rounded-lg",
+    pill: "rounded-full px-3",
+  };
+
+  const hoverClasses = {
+    scale: "hover:scale-110",
+    lift: "hover:-translate-y-1 hover:shadow-lg",
+    glow: "hover:shadow-lg hover:shadow-current/30",
+    rotate: "hover:rotate-12",
+  };
+
+  const currentSize = sizeClasses[size as keyof typeof sizeClasses] || sizeClasses.md;
+  const currentShape = shapeClasses[shape as keyof typeof shapeClasses] || shapeClasses.circle;
+  const currentHover = hoverClasses[hoverEffect as keyof typeof hoverClasses] || hoverClasses.scale;
+
+  const getColor = (brandColor: string) => {
+    if (colorMode === "monochrome") return "currentColor";
+    if (colorMode === "accent") return accentColor || brandColor;
+    return brandColor;
+  };
+
+  return (
+    <div className="flex flex-wrap gap-3" role="list" aria-label="Social media links">
+      {links.map((social) => (
+        <a
+          key={social.name}
+          href={social.href}
+          className={cn(
+            "flex items-center justify-center bg-muted/50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary",
+            currentSize.container,
+            currentShape,
+            currentHover
+          )}
+          style={{ color: getColor(social.color) }}
+          aria-label={`Follow us on ${social.name}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <social.icon className={currentSize.icon} aria-hidden="true" />
+        </a>
+      ))}
     </div>
   );
 }
@@ -153,7 +299,7 @@ function TrustBadges({
   if (!badges || badges.length === 0) return null;
 
   return (
-    <div className="flex flex-wrap items-center justify-center gap-4">
+    <div className="flex flex-wrap items-center justify-center gap-4" role="list" aria-label="Trust badges">
       {badges.map((badge, index) => {
         const badgeImage = (
           // eslint-disable-next-line @next/next/no-img-element
@@ -171,16 +317,53 @@ function TrustBadges({
               href={badge.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex"
+              className="inline-flex focus:outline-none focus:ring-2 focus:ring-primary"
             >
               {badgeImage}
             </a>
           );
         }
 
-        return <span key={index}>{badgeImage}</span>;
+        return <span key={index} role="listitem">{badgeImage}</span>;
       })}
     </div>
+  );
+}
+
+// Background pattern component
+function BackgroundPattern({
+  pattern,
+  color,
+  opacity,
+}: {
+  pattern: string;
+  color: string;
+  opacity: number;
+}) {
+  const patterns: Record<string, string> = {
+    dots: `radial-gradient(circle, ${color} 1px, transparent 1px)`,
+    grid: `linear-gradient(${color} 1px, transparent 1px), linear-gradient(90deg, ${color} 1px, transparent 1px)`,
+    diagonal: `repeating-linear-gradient(45deg, transparent, transparent 10px, ${color} 10px, ${color} 11px)`,
+    waves: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='${encodeURIComponent(color)}' fill-opacity='1' d='M0,160L48,144C96,128,192,96,288,106.7C384,117,480,171,576,181.3C672,192,768,160,864,133.3C960,107,1056,85,1152,90.7C1248,96,1344,128,1392,144L1440,160L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z'%3E%3C/path%3E%3C/svg%3E")`,
+  };
+
+  const patternSizes: Record<string, string> = {
+    dots: "20px 20px",
+    grid: "20px 20px, 20px 20px",
+    diagonal: "auto",
+    waves: "cover",
+  };
+
+  return (
+    <div
+      className="absolute inset-0 pointer-events-none"
+      style={{
+        backgroundImage: patterns[pattern] || patterns.dots,
+        backgroundSize: patternSizes[pattern] || "20px 20px",
+        opacity: opacity / 100,
+      }}
+      aria-hidden="true"
+    />
   );
 }
 
@@ -190,19 +373,47 @@ function FooterWidgetRenderer({
   businessConfig,
   socialLinks,
   footerConfig,
+  headingClasses,
+  linkClasses,
 }: {
   widget: FooterWidget;
   businessConfig: ReturnType<typeof useBusinessConfig>["config"];
   socialLinks: { name: string; href: string; icon: React.ComponentType<{ className?: string }>; color: string }[];
   footerConfig?: PublicFooterResponse | null;
+  headingClasses?: string;
+  linkClasses?: string;
 }) {
   const links = getWidgetLinks(widget);
 
+  // Extract content from widget for BRAND type
+  const brandContent = widget.content as {
+    showTagline?: boolean;
+    tagline?: string;
+    subtitle?: string;
+    showCTA?: boolean;
+    ctaText?: string;
+    ctaUrl?: string;
+    ctaIcon?: string;
+    secondaryCTA?: boolean;
+    secondaryCtaText?: string;
+    secondaryCtaUrl?: string;
+    showContact?: boolean;
+    showSocial?: boolean;
+  } | null;
+
   switch (widget.type) {
     case "BRAND":
+      // Use custom tagline from preset or fallback to business description
+      const tagline = brandContent?.tagline || businessConfig.description;
+      const subtitle = brandContent?.subtitle;
+      const showContact = brandContent?.showContact !== false; // Default true
+      const showSocial = brandContent?.showSocial !== false; // Default true (but controlled by separate SOCIAL widget usually)
+      const showCTA = brandContent?.showCTA;
+
       return (
-        <div className="col-span-2 md:col-span-3 lg:col-span-2">
-          <Link href="/" className="flex items-center space-x-2">
+        <div className="space-y-4">
+          {/* Logo + Business Name */}
+          <Link href="/" className="flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-primary rounded">
             {businessConfig.logo.url ? (
               <Image
                 src={businessConfig.logo.url}
@@ -220,108 +431,128 @@ function FooterWidgetRenderer({
             )}
             <span className="text-xl font-bold">{businessConfig.name}</span>
           </Link>
-          <p className="mt-4 max-w-xs text-sm text-muted-foreground">
-            {businessConfig.description}
-          </p>
 
-          {/* Contact Info */}
-          <div className="mt-6 space-y-3">
-            {businessConfig.contact.supportEmail && (
-              <a
-                href={`mailto:${businessConfig.contact.supportEmail}`}
-                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-              >
-                <Mail className="h-4 w-4" />
-                {businessConfig.contact.supportEmail}
-              </a>
-            )}
-            {businessConfig.contact.phone && (
-              <a
-                href={`tel:${businessConfig.contact.phone.replace(/[^+\d]/g, "")}`}
-                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-              >
-                <Phone className="h-4 w-4" />
-                {businessConfig.contact.phone}
-              </a>
-            )}
-            {businessConfig.address.full && (
-              <p className="flex items-start gap-2 text-sm text-muted-foreground">
-                <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
-                {businessConfig.address.full}
-              </p>
-            )}
-          </div>
+          {/* Tagline / Description */}
+          {tagline && (
+            <p className="max-w-xs text-sm opacity-80">
+              {tagline}
+            </p>
+          )}
 
-          {/* Social Links */}
-          <div className="mt-6 flex flex-wrap gap-3">
-            {socialLinks.map((social) => (
-              <a
-                key={social.name}
-                href={social.href}
-                className="rounded-lg bg-muted p-2 transition-all hover:scale-110"
-                style={{ color: social.color }}
-                aria-label={social.name}
+          {/* Subtitle (for hero-style footers) */}
+          {subtitle && (
+            <p className="max-w-md text-xs opacity-60">
+              {subtitle}
+            </p>
+          )}
+
+          {/* CTA Buttons (from preset) */}
+          {showCTA && brandContent?.ctaText && (
+            <div className="flex flex-wrap gap-2 pt-2">
+              <Link
+                href={brandContent.ctaUrl || "#"}
+                className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
               >
-                <social.icon className="h-5 w-5" />
-              </a>
-            ))}
-          </div>
+                {brandContent.ctaIcon === "sparkles" && <Sparkles className="h-4 w-4" />}
+                {brandContent.ctaText}
+              </Link>
+              {brandContent.secondaryCTA && brandContent.secondaryCtaText && (
+                <Link
+                  href={brandContent.secondaryCtaUrl || "#"}
+                  className="inline-flex items-center gap-2 rounded-lg border border-current px-4 py-2 text-sm font-medium hover:bg-muted transition-colors"
+                >
+                  {brandContent.secondaryCtaText}
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              )}
+            </div>
+          )}
+
+          {/* Contact Info - only show if enabled and not using separate CONTACT widget */}
+          {showContact && (businessConfig.contact.supportEmail || businessConfig.contact.phone || businessConfig.address.full) && (
+            <address className="space-y-2 not-italic pt-2">
+              {businessConfig.contact.supportEmail && (
+                <a
+                  href={`mailto:${businessConfig.contact.supportEmail}`}
+                  className={cn("flex items-center gap-2 text-sm", linkClasses)}
+                >
+                  <Mail className="h-4 w-4" aria-hidden="true" />
+                  {businessConfig.contact.supportEmail}
+                </a>
+              )}
+              {businessConfig.contact.phone && (
+                <a
+                  href={`tel:${businessConfig.contact.phone.replace(/[^+\d]/g, "")}`}
+                  className={cn("flex items-center gap-2 text-sm", linkClasses)}
+                >
+                  <Phone className="h-4 w-4" aria-hidden="true" />
+                  {businessConfig.contact.phone}
+                </a>
+              )}
+              {businessConfig.address.full && (
+                <p className="flex items-start gap-2 text-sm opacity-80">
+                  <MapPin className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                  {businessConfig.address.full}
+                </p>
+              )}
+            </address>
+          )}
         </div>
       );
 
     case "LINKS":
       return (
-        <div>
+        <nav aria-label={widget.title || "Footer links"}>
           {widget.showTitle && widget.title && (
-            <h3 className="text-sm font-semibold text-foreground">{widget.title}</h3>
+            <h3 className={headingClasses}>{widget.title}</h3>
           )}
           <ul className={widget.showTitle && widget.title ? "mt-4 space-y-3" : "space-y-3"}>
             {links.map((link) => (
               <li key={link.id}>
                 <Link
                   href={link.url}
-                  className="text-sm text-muted-foreground hover:text-foreground"
+                  className={cn("text-sm", linkClasses)}
                 >
                   {link.label}
                 </Link>
               </li>
             ))}
           </ul>
-        </div>
+        </nav>
       );
 
     case "CONTACT":
       return (
         <div>
           {widget.showTitle && widget.title && (
-            <h3 className="text-sm font-semibold text-foreground">{widget.title}</h3>
+            <h3 className={headingClasses}>{widget.title}</h3>
           )}
-          <div className={widget.showTitle && widget.title ? "mt-4 space-y-3" : "space-y-3"}>
+          <address className={cn("not-italic", widget.showTitle && widget.title ? "mt-4 space-y-3" : "space-y-3")}>
             {businessConfig.contact.supportEmail && (
               <a
                 href={`mailto:${businessConfig.contact.supportEmail}`}
-                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+                className={cn("flex items-center gap-2 text-sm", linkClasses)}
               >
-                <Mail className="h-4 w-4" />
+                <Mail className="h-4 w-4" aria-hidden="true" />
                 {businessConfig.contact.supportEmail}
               </a>
             )}
             {businessConfig.contact.phone && (
               <a
                 href={`tel:${businessConfig.contact.phone.replace(/[^+\d]/g, "")}`}
-                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+                className={cn("flex items-center gap-2 text-sm", linkClasses)}
               >
-                <Phone className="h-4 w-4" />
+                <Phone className="h-4 w-4" aria-hidden="true" />
                 {businessConfig.contact.phone}
               </a>
             )}
             {businessConfig.address.full && (
-              <p className="flex items-start gap-2 text-sm text-muted-foreground">
-                <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
+              <p className="flex items-start gap-2 text-sm opacity-80">
+                <MapPin className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
                 {businessConfig.address.full}
               </p>
             )}
-          </div>
+          </address>
         </div>
       );
 
@@ -329,20 +560,17 @@ function FooterWidgetRenderer({
       return (
         <div>
           {widget.showTitle && widget.title && (
-            <h3 className="text-sm font-semibold text-foreground">{widget.title}</h3>
+            <h3 className={headingClasses}>{widget.title}</h3>
           )}
-          <div className={widget.showTitle && widget.title ? "mt-4 flex flex-wrap gap-3" : "flex flex-wrap gap-3"}>
-            {socialLinks.map((social) => (
-              <a
-                key={social.name}
-                href={social.href}
-                className="rounded-lg bg-muted p-2 transition-all hover:scale-110"
-                style={{ color: social.color }}
-                aria-label={social.name}
-              >
-                <social.icon className="h-5 w-5" />
-              </a>
-            ))}
+          <div className={widget.showTitle && widget.title ? "mt-4" : ""}>
+            <EnhancedSocialLinks
+              links={socialLinks}
+              shape={footerConfig?.social?.shape}
+              size={footerConfig?.social?.size}
+              colorMode={footerConfig?.social?.colorMode}
+              hoverEffect={footerConfig?.social?.hoverEffect}
+              accentColor={footerConfig?.styling?.accentColor || undefined}
+            />
           </div>
         </div>
       );
@@ -351,10 +579,10 @@ function FooterWidgetRenderer({
       return (
         <div>
           {widget.showTitle && widget.title && (
-            <h3 className="text-sm font-semibold text-foreground">{widget.title}</h3>
+            <h3 className={headingClasses}>{widget.title}</h3>
           )}
           <div className={widget.showTitle && widget.title ? "mt-4" : ""}>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm opacity-80">
               {(widget.content as { text?: string })?.text || ""}
             </p>
           </div>
@@ -362,67 +590,71 @@ function FooterWidgetRenderer({
       );
 
     case "NEWSLETTER":
+      // Extract newsletter content from widget
+      const nlContent = widget.content as { subtitle?: string; incentive?: string; buttonText?: string; style?: string } | null;
       return (
         <div>
-          <NewsletterForm
+          <EnhancedNewsletterForm
             title={widget.showTitle ? (widget.title ?? undefined) : undefined}
-            subtitle={footerConfig?.newsletter?.subtitle}
+            subtitle={nlContent?.subtitle || nlContent?.incentive || footerConfig?.newsletter?.subtitle}
             formAction={footerConfig?.newsletter?.formAction}
+            accentColor={footerConfig?.styling?.accentColor || undefined}
+            style={nlContent?.style as "inline" | "stacked" | "floating" | undefined}
           />
         </div>
       );
 
     case "SERVICES":
       return (
-        <div>
+        <nav aria-label="Services">
           {widget.showTitle && widget.title && (
-            <h3 className="text-sm font-semibold text-foreground">{widget.title}</h3>
+            <h3 className={headingClasses}>{widget.title}</h3>
           )}
           <ul className={widget.showTitle && widget.title ? "mt-4 space-y-3" : "space-y-3"}>
             {fallbackLinks.services.map((link) => (
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  className="text-sm text-muted-foreground hover:text-foreground"
+                  className={cn("text-sm", linkClasses)}
                 >
                   {link.name}
                 </Link>
               </li>
             ))}
           </ul>
-        </div>
+        </nav>
       );
 
     case "STATES":
       return (
-        <div>
+        <nav aria-label="Popular states">
           {widget.showTitle && widget.title && (
-            <h3 className="text-sm font-semibold text-foreground">{widget.title}</h3>
+            <h3 className={headingClasses}>{widget.title}</h3>
           )}
           <ul className={widget.showTitle && widget.title ? "mt-4 space-y-3" : "space-y-3"}>
             {fallbackLinks.states.map((link) => (
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  className="text-sm text-muted-foreground hover:text-foreground"
+                  className={cn("text-sm", linkClasses)}
                 >
                   {link.name}
                 </Link>
               </li>
             ))}
           </ul>
-        </div>
+        </nav>
       );
 
     case "RECENT_POSTS":
       return (
         <div>
           {widget.showTitle && widget.title && (
-            <h3 className="text-sm font-semibold text-foreground">{widget.title}</h3>
+            <h3 className={headingClasses}>{widget.title}</h3>
           )}
           <div className={widget.showTitle && widget.title ? "mt-4 space-y-3" : "space-y-3"}>
-            <p className="text-sm text-muted-foreground">
-              Visit our <Link href="/blog" className="text-primary hover:underline">blog</Link> for the latest articles.
+            <p className="text-sm opacity-80">
+              Visit our <Link href="/blog" className={linkClasses}>blog</Link> for the latest articles.
             </p>
           </div>
         </div>
@@ -433,7 +665,7 @@ function FooterWidgetRenderer({
       return (
         <div>
           {widget.showTitle && widget.title && (
-            <h3 className="text-sm font-semibold text-foreground">{widget.title}</h3>
+            <h3 className={headingClasses}>{widget.title}</h3>
           )}
           <div
             className={widget.showTitle && widget.title ? "mt-4 prose prose-sm" : "prose prose-sm"}
@@ -450,6 +682,38 @@ function FooterWidgetRenderer({
 export function Footer() {
   const { config: businessConfig } = useBusinessConfig();
   const { config: footerConfig } = useFooterConfig();
+  const footerRef = useRef<HTMLElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const prefersReducedMotion = useRef(false);
+
+  // Check for reduced motion preference
+  useEffect(() => {
+    prefersReducedMotion.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }, []);
+
+  // Handle entrance animation
+  useEffect(() => {
+    if (!footerConfig?.styling?.enableAnimations || prefersReducedMotion.current) {
+      setIsVisible(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (footerRef.current) {
+      observer.observe(footerRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [footerConfig?.styling?.enableAnimations]);
 
   // Build social links from config with brand colors
   const socialLinks = useMemo(
@@ -477,17 +741,81 @@ export function Footer() {
     return columns;
   }, [footerConfig?.widgets, footerConfig?.columns]);
 
-  // Get all widgets as flat array for centered/mega layouts
+  // Get all widgets as flat array
   const allWidgets = useMemo(() => {
     return footerConfig?.widgets || [];
   }, [footerConfig?.widgets]);
 
   // Get styling from footer config
+  const styling = footerConfig?.styling;
+
+  // Build background style
+  const getBackgroundStyle = () => {
+    const bgType = styling?.bgType || "solid";
+
+    if (bgType === "gradient" && styling?.bgGradient) {
+      const gradient = styling.bgGradient;
+      const colors = gradient.colors?.map((c: { color: string; position: number }) => `${c.color} ${c.position}%`).join(", ");
+      return {
+        background: `linear-gradient(${gradient.angle || 135}deg, ${colors})`,
+      };
+    }
+
+    if (bgType === "solid" && styling?.bgColor) {
+      return { backgroundColor: styling.bgColor };
+    }
+
+    return {};
+  };
+
+  // Build heading classes based on typography settings
+  const headingClasses = cn(
+    "font-medium",
+    styling?.headingSize === "sm" && "text-sm",
+    styling?.headingSize === "base" && "text-base",
+    styling?.headingSize === "lg" && "text-lg",
+    styling?.headingSize === "xl" && "text-xl",
+    styling?.headingWeight === "medium" && "font-medium",
+    styling?.headingWeight === "semibold" && "font-semibold",
+    styling?.headingWeight === "bold" && "font-bold",
+    styling?.headingStyle === "uppercase" && "uppercase tracking-wider",
+    styling?.headingStyle === "capitalize" && "capitalize"
+  );
+
+  // Build link classes based on hover effect
+  const linkClasses = cn(
+    "opacity-80 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 rounded",
+    styling?.linkHoverEffect === "color" && "hover:opacity-100",
+    styling?.linkHoverEffect === "underline" && "hover:underline hover:opacity-100",
+    styling?.linkHoverEffect === "slide" && "relative hover:opacity-100 after:absolute after:left-0 after:bottom-0 after:h-px after:w-0 after:bg-current hover:after:w-full after:transition-all",
+    styling?.linkHoverEffect === "highlight" && "hover:bg-current/10 hover:px-2 hover:-mx-2 hover:opacity-100 rounded"
+  );
+
+  // Animation classes (respects prefers-reduced-motion)
+  const shouldAnimate = styling?.enableAnimations && !prefersReducedMotion.current;
+  const animationClasses = cn(
+    "transition-all",
+    shouldAnimate && !isVisible && "opacity-0 translate-y-4",
+    shouldAnimate && isVisible && "opacity-100 translate-y-0"
+  );
+
+  const animationDuration = styling?.animationDuration || 300;
+
   const footerStyle = {
-    ...(footerConfig?.styling?.bgColor && { backgroundColor: footerConfig.styling.bgColor }),
-    ...(footerConfig?.styling?.textColor && { color: footerConfig.styling.textColor }),
-    paddingTop: `${footerConfig?.styling?.paddingTop || 48}px`,
-    paddingBottom: `${footerConfig?.styling?.paddingBottom || 32}px`,
+    ...getBackgroundStyle(),
+    ...(styling?.textColor && { color: styling.textColor }),
+    paddingTop: `${styling?.paddingTop || 48}px`,
+    paddingBottom: `${styling?.paddingBottom || 32}px`,
+    ...(styling?.borderRadius && { borderRadius: `${styling.borderRadius}px` }),
+    ...(styling?.shadow && styling.shadow !== "none" && {
+      boxShadow: {
+        sm: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+        md: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+        lg: "0 10px 15px -3px rgb(0 0 0 / 0.1)",
+        xl: "0 20px 25px -5px rgb(0 0 0 / 0.1)",
+      }[styling.shadow],
+    }),
+    transition: shouldAnimate ? `all ${animationDuration}ms ease-out` : undefined,
   };
 
   // If we have dynamic widgets, use them
@@ -496,64 +824,333 @@ export function Footer() {
   // Get layout type
   const layout = footerConfig?.layout || "MULTI_COLUMN";
 
+  // Top border component
+  const TopBorder = () => {
+    const borderStyle = styling?.topBorderStyle;
+    if (!borderStyle || borderStyle === "none") return null;
+
+    const height = styling?.topBorderHeight || 1;
+    const color = styling?.topBorderColor || styling?.accentColor || "#2563eb";
+
+    if (borderStyle === "gradient") {
+      return (
+        <div
+          className="absolute top-0 left-0 right-0"
+          style={{
+            height: `${height}px`,
+            background: `linear-gradient(90deg, ${color}, ${color}66, ${color})`,
+          }}
+          aria-hidden="true"
+        />
+      );
+    }
+
+    if (borderStyle === "wave") {
+      return (
+        <div className="absolute top-0 left-0 right-0 overflow-hidden" style={{ height: `${height * 2}px` }} aria-hidden="true">
+          <svg viewBox="0 0 1200 20" preserveAspectRatio="none" className="w-full h-full">
+            <path
+              d="M0,10 Q150,0 300,10 T600,10 T900,10 T1200,10 L1200,0 L0,0 Z"
+              fill={color}
+            />
+          </svg>
+        </div>
+      );
+    }
+
+    return (
+      <div
+        className="absolute top-0 left-0 right-0"
+        style={{
+          height: `${height}px`,
+          backgroundColor: color,
+        }}
+        aria-hidden="true"
+      />
+    );
+  };
+
+  // Divider component
+  const Divider = () => {
+    const dividerStyle = styling?.dividerStyle;
+    if (!dividerStyle || dividerStyle === "none") return null;
+
+    const color = styling?.dividerColor || styling?.borderColor || "#e5e7eb";
+
+    if (dividerStyle === "gradient") {
+      return (
+        <hr
+          className="h-px my-8 border-0"
+          style={{
+            background: `linear-gradient(90deg, transparent, ${color}, transparent)`,
+          }}
+        />
+      );
+    }
+
+    return (
+      <hr
+        className="my-8 border-0"
+        style={{
+          borderTop: `1px ${dividerStyle} ${color}`,
+        }}
+      />
+    );
+  };
+
   // Bottom bar component (shared across layouts)
   const BottomBar = () => (
     footerConfig?.bottomBar?.enabled !== false ? (
-      <div
-        className="mt-12 border-t pt-8"
-        style={{ paddingBottom: `${footerConfig?.styling?.paddingBottom || 32}px` }}
-      >
-        <div className={`flex flex-col items-center justify-between gap-4 ${layout === "CENTERED" ? "" : "md:flex-row"}`}>
-          <p className="text-sm text-muted-foreground">
+      <>
+        <Divider />
+        <div
+          className={cn(
+            "flex gap-4",
+            footerConfig?.bottomBar?.layout === "centered" && "flex-col items-center text-center",
+            footerConfig?.bottomBar?.layout === "stacked" && "flex-col items-center text-center",
+            footerConfig?.bottomBar?.layout === "split" && "flex-col items-center justify-between md:flex-row"
+          )}
+        >
+          <p className="text-sm opacity-80">
             {footerConfig?.bottomBar?.copyrightText ||
               `© ${new Date().getFullYear()} ${businessConfig.name}. All rights reserved.`}
           </p>
           {footerConfig?.bottomBar?.showDisclaimer && (
-            <p className={`max-w-xl text-center text-xs text-muted-foreground ${layout === "CENTERED" ? "" : "md:text-right"}`}>
+            <p className={`max-w-xl text-xs opacity-60 ${layout === "CENTERED" ? "" : "md:text-right"}`}>
               <strong>Disclaimer:</strong>{" "}
               {footerConfig?.bottomBar?.disclaimerText ||
-                `${businessConfig.name} is not a law firm and does not provide legal advice. The information provided is for general informational purposes only.`}
+                `${businessConfig.name} is not a law firm and does not provide legal advice.`}
             </p>
           )}
         </div>
 
         {/* Bottom Links */}
         {footerConfig?.bottomBar?.links && footerConfig.bottomBar.links.length > 0 && (
-          <div className={`mt-4 flex flex-wrap gap-4 ${layout === "CENTERED" ? "justify-center" : "justify-center md:justify-start"}`}>
+          <nav className={cn(
+            "mt-4 flex flex-wrap gap-4",
+            footerConfig?.bottomBar?.layout === "centered" ? "justify-center" : "justify-center md:justify-start"
+          )} aria-label="Legal links">
             {footerConfig.bottomBar.links.map((link, index) => (
               <Link
                 key={index}
                 href={link.url}
-                className="text-xs text-muted-foreground hover:text-foreground"
+                className={cn("text-xs", linkClasses)}
               >
                 {link.label}
               </Link>
             ))}
-          </div>
+          </nav>
         )}
 
         {/* Trust Badges */}
-        {footerConfig?.trustBadges?.show && footerConfig.trustBadges.badges.length > 0 && (
+        {footerConfig?.trustBadges?.show && footerConfig.trustBadges.badges?.length > 0 && (
           <div className="mt-6">
             <TrustBadges badges={footerConfig.trustBadges.badges} />
           </div>
         )}
-      </div>
+      </>
     ) : null
   );
 
+  // ============== NEWSLETTER_HERO LAYOUT ==============
+  if (layout === "NEWSLETTER_HERO") {
+    // Find NEWSLETTER widget if exists - use its content for the hero section
+    const newsletterWidget = allWidgets?.find(w => w.type === "NEWSLETTER");
+    const newsletterContent = newsletterWidget?.content as {
+      subtitle?: string;
+      incentive?: string;
+      buttonText?: string;
+    } | null;
+
+    // Get title from widget or fallback to config
+    const heroTitle = newsletterWidget?.title || footerConfig?.newsletter?.title || "Stay in the loop";
+    const heroSubtitle = newsletterContent?.subtitle || newsletterContent?.incentive ||
+      footerConfig?.newsletter?.subtitle || "Get the latest updates, tips, and exclusive offers delivered to your inbox.";
+
+    return (
+      <footer
+        ref={footerRef}
+        className={cn("relative border-t overflow-hidden", animationClasses)}
+        style={footerStyle}
+        role="contentinfo"
+      >
+        <TopBorder />
+        {styling?.bgType === "pattern" && styling.bgPattern && (
+          <BackgroundPattern
+            pattern={styling.bgPattern}
+            color={styling.bgPatternColor || "#000"}
+            opacity={styling.bgPatternOpacity || 10}
+          />
+        )}
+        <div className="container mx-auto px-4 relative z-10">
+          {/* Large Newsletter Section - uses NEWSLETTER widget content if available */}
+          <div className="max-w-2xl mx-auto text-center py-8">
+            <h2 className="text-2xl md:text-3xl font-bold" style={{ color: styling?.headingColor }}>
+              {heroTitle}
+            </h2>
+            <p className="mt-4 text-lg opacity-80">
+              {heroSubtitle}
+            </p>
+            <div className="mt-8">
+              <EnhancedNewsletterForm
+                formAction={footerConfig?.newsletter?.formAction}
+                style="stacked"
+                buttonStyle="gradient"
+                accentColor={styling?.accentColor || undefined}
+              />
+            </div>
+          </div>
+
+          <Divider />
+
+          {/* Widget Grid - excludes NEWSLETTER widget since it's shown in hero */}
+          {hasDynamicWidgets && (
+            <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
+              {Object.entries(widgetsByColumn!)
+                .filter(([, widgets]) => widgets.length > 0)
+                .map(([column, colWidgets]) => (
+                  <div key={column}>
+                    {colWidgets
+                      .filter(w => w.type !== "NEWSLETTER") // Exclude NEWSLETTER - shown in hero
+                      .map((widget) => (
+                        <FooterWidgetRenderer
+                          key={widget.id}
+                          widget={widget}
+                          businessConfig={businessConfig}
+                          socialLinks={socialLinks}
+                          footerConfig={footerConfig}
+                          headingClasses={headingClasses}
+                          linkClasses={linkClasses}
+                        />
+                      ))}
+                  </div>
+                ))}
+            </div>
+          )}
+
+          <BottomBar />
+        </div>
+      </footer>
+    );
+  }
+
+  // ============== STACKED LAYOUT ==============
+  if (layout === "STACKED") {
+    return (
+      <footer
+        ref={footerRef}
+        className={cn("relative border-t overflow-hidden", animationClasses)}
+        style={footerStyle}
+        role="contentinfo"
+      >
+        <TopBorder />
+        {styling?.bgType === "pattern" && styling.bgPattern && (
+          <BackgroundPattern
+            pattern={styling.bgPattern}
+            color={styling.bgPatternColor || "#000"}
+            opacity={styling.bgPatternOpacity || 10}
+          />
+        )}
+        <div className="container mx-auto px-4 relative z-10">
+          {/* Brand Section */}
+          <div className="flex flex-col items-center text-center py-8">
+            <Link href="/" className="flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-primary rounded">
+              {businessConfig.logo.url ? (
+                <Image
+                  src={businessConfig.logo.url}
+                  alt={businessConfig.name}
+                  width={48}
+                  height={48}
+                  className="h-12 w-12 rounded-lg object-contain"
+                />
+              ) : (
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
+                  <span className="text-xl font-bold text-primary-foreground">
+                    {businessConfig.logo.text || businessConfig.name.charAt(0)}
+                  </span>
+                </div>
+              )}
+              <span className="text-2xl font-bold" style={{ color: styling?.headingColor }}>
+                {businessConfig.name}
+              </span>
+            </Link>
+            <p className="mt-4 max-w-md opacity-80">{businessConfig.description}</p>
+          </div>
+
+          <Divider />
+
+          {/* Newsletter Section */}
+          {footerConfig?.newsletter?.enabled && (
+            <>
+              <div className="max-w-md mx-auto py-6">
+                <EnhancedNewsletterForm
+                  title={footerConfig.newsletter.title}
+                  subtitle={footerConfig.newsletter.subtitle}
+                  formAction={footerConfig.newsletter.formAction}
+                  accentColor={styling?.accentColor || undefined}
+                />
+              </div>
+              <Divider />
+            </>
+          )}
+
+          {/* Widget Grid */}
+          {hasDynamicWidgets && (
+            <div className="grid grid-cols-2 gap-8 md:grid-cols-4 py-6">
+              {Object.entries(widgetsByColumn!)
+                .filter(([, widgets]) => widgets.length > 0)
+                .map(([column, widgets]) => (
+                  <div key={column}>
+                    {widgets.map((widget) => (
+                      <FooterWidgetRenderer
+                        key={widget.id}
+                        widget={widget}
+                        businessConfig={businessConfig}
+                        socialLinks={socialLinks}
+                        footerConfig={footerConfig}
+                        headingClasses={headingClasses}
+                        linkClasses={linkClasses}
+                      />
+                    ))}
+                  </div>
+                ))}
+            </div>
+          )}
+
+          {/* Social Links */}
+          {socialLinks.length > 0 && (
+            <div className="flex justify-center py-6">
+              <EnhancedSocialLinks
+                links={socialLinks}
+                shape={footerConfig?.social?.shape}
+                size={footerConfig?.social?.size}
+                colorMode={footerConfig?.social?.colorMode}
+                hoverEffect={footerConfig?.social?.hoverEffect}
+                accentColor={styling?.accentColor || undefined}
+              />
+            </div>
+          )}
+
+          <BottomBar />
+        </div>
+      </footer>
+    );
+  }
+
   // ============== MINIMAL LAYOUT ==============
-  // Just copyright and links - no widgets shown
   if (layout === "MINIMAL") {
     return (
-      <footer className="border-t bg-muted/30" style={footerConfig?.styling?.bgColor ? footerStyle : undefined}>
-        <div
-          className="container mx-auto px-4"
-          style={{ paddingTop: `${footerConfig?.styling?.paddingTop || 24}px` }}
-        >
+      <footer
+        ref={footerRef}
+        className={cn("relative border-t overflow-hidden", animationClasses)}
+        style={footerStyle}
+        role="contentinfo"
+      >
+        <TopBorder />
+        <div className="container mx-auto px-4 relative z-10">
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
             {/* Logo */}
-            <Link href="/" className="flex items-center space-x-2">
+            <Link href="/" className="flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-primary rounded">
               {businessConfig.logo.url ? (
                 <Image
                   src={businessConfig.logo.url}
@@ -574,43 +1171,35 @@ export function Footer() {
 
             {/* Bottom Links inline */}
             {footerConfig?.bottomBar?.links && footerConfig.bottomBar.links.length > 0 && (
-              <div className="flex flex-wrap justify-center gap-4">
+              <nav className="flex flex-wrap justify-center gap-4" aria-label="Footer links">
                 {footerConfig.bottomBar.links.map((link, index) => (
                   <Link
                     key={index}
                     href={link.url}
-                    className="text-sm text-muted-foreground hover:text-foreground"
+                    className={cn("text-sm", linkClasses)}
                   >
                     {link.label}
                   </Link>
                 ))}
-              </div>
+              </nav>
             )}
 
             {/* Social Links */}
             {socialLinks.length > 0 && (
-              <div className="flex flex-wrap gap-3">
-                {socialLinks.map((social) => (
-                  <a
-                    key={social.name}
-                    href={social.href}
-                    className="transition-all hover:scale-110"
-                    style={{ color: social.color }}
-                    aria-label={social.name}
-                  >
-                    <social.icon className="h-5 w-5" />
-                  </a>
-                ))}
-              </div>
+              <EnhancedSocialLinks
+                links={socialLinks}
+                shape={footerConfig?.social?.shape}
+                size={footerConfig?.social?.size}
+                colorMode={footerConfig?.social?.colorMode}
+                hoverEffect={footerConfig?.social?.hoverEffect}
+                accentColor={styling?.accentColor || undefined}
+              />
             )}
           </div>
 
           {/* Copyright */}
-          <div
-            className="mt-6 border-t pt-6 text-center"
-            style={{ paddingBottom: `${footerConfig?.styling?.paddingBottom || 24}px` }}
-          >
-            <p className="text-sm text-muted-foreground">
+          <div className="mt-6 border-t pt-6 text-center" style={{ borderColor: styling?.borderColor }}>
+            <p className="text-sm opacity-80">
               {footerConfig?.bottomBar?.copyrightText ||
                 `© ${new Date().getFullYear()} ${businessConfig.name}. All rights reserved.`}
             </p>
@@ -621,20 +1210,28 @@ export function Footer() {
   }
 
   // ============== CENTERED LAYOUT ==============
-  // Logo centered, then links in a row, all centered
   if (layout === "CENTERED") {
-    // Get link widgets for centered display
     const linkWidgets = allWidgets.filter(w => w.type === "LINKS");
 
     return (
-      <footer className="border-t bg-muted/30" style={footerConfig?.styling?.bgColor ? footerStyle : undefined}>
-        <div
-          className="container mx-auto px-4"
-          style={{ paddingTop: `${footerConfig?.styling?.paddingTop || 48}px` }}
-        >
+      <footer
+        ref={footerRef}
+        className={cn("relative border-t overflow-hidden", animationClasses)}
+        style={footerStyle}
+        role="contentinfo"
+      >
+        <TopBorder />
+        {styling?.bgType === "pattern" && styling.bgPattern && (
+          <BackgroundPattern
+            pattern={styling.bgPattern}
+            color={styling.bgPatternColor || "#000"}
+            opacity={styling.bgPatternOpacity || 10}
+          />
+        )}
+        <div className="container mx-auto px-4 relative z-10">
           {/* Centered Logo & Description */}
           <div className="flex flex-col items-center text-center">
-            <Link href="/" className="flex items-center space-x-2">
+            <Link href="/" className="flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-primary rounded">
               {businessConfig.logo.url ? (
                 <Image
                   src={businessConfig.logo.url}
@@ -650,26 +1247,25 @@ export function Footer() {
                   </span>
                 </div>
               )}
-              <span className="text-2xl font-bold">{businessConfig.name}</span>
+              <span className="text-2xl font-bold" style={{ color: styling?.headingColor }}>
+                {businessConfig.name}
+              </span>
             </Link>
-            <p className="mt-4 max-w-md text-sm text-muted-foreground">
+            <p className="mt-4 max-w-md text-sm opacity-80">
               {businessConfig.description}
             </p>
 
             {/* Social Links */}
             {socialLinks.length > 0 && (
-              <div className="mt-6 flex flex-wrap gap-3">
-                {socialLinks.map((social) => (
-                  <a
-                    key={social.name}
-                    href={social.href}
-                    className="rounded-lg bg-muted p-2 transition-all hover:scale-110"
-                    style={{ color: social.color }}
-                    aria-label={social.name}
-                  >
-                    <social.icon className="h-5 w-5" />
-                  </a>
-                ))}
+              <div className="mt-6">
+                <EnhancedSocialLinks
+                  links={socialLinks}
+                  shape={footerConfig?.social?.shape}
+                  size={footerConfig?.social?.size}
+                  colorMode={footerConfig?.social?.colorMode}
+                  hoverEffect={footerConfig?.social?.hoverEffect}
+                  accentColor={styling?.accentColor || undefined}
+                />
               </div>
             )}
           </div>
@@ -678,25 +1274,25 @@ export function Footer() {
           {linkWidgets.length > 0 && (
             <div className="mt-10 flex flex-wrap justify-center gap-12">
               {linkWidgets.map((widget) => {
-                const links = getWidgetLinks(widget);
+                const widgetLinks = getWidgetLinks(widget);
                 return (
-                  <div key={widget.id} className="text-center">
+                  <nav key={widget.id} className="text-center" aria-label={widget.title || "Links"}>
                     {widget.showTitle && widget.title && (
-                      <h3 className="text-sm font-semibold text-foreground">{widget.title}</h3>
+                      <h3 className={headingClasses}>{widget.title}</h3>
                     )}
                     <ul className="mt-3 space-y-2">
-                      {links.map((link) => (
+                      {widgetLinks.map((link) => (
                         <li key={link.id}>
                           <Link
                             href={link.url}
-                            className="text-sm text-muted-foreground hover:text-foreground"
+                            className={cn("text-sm", linkClasses)}
                           >
                             {link.label}
                           </Link>
                         </li>
                       ))}
                     </ul>
-                  </div>
+                  </nav>
                 );
               })}
             </div>
@@ -709,16 +1305,25 @@ export function Footer() {
   }
 
   // ============== MEGA LAYOUT ==============
-  // Full sitemap style - all widgets displayed with more space
-  if (layout === "MEGA") {
+  if (layout === "MEGA" || layout === "MEGA_PLUS") {
     return (
-      <footer className="border-t bg-muted/30" style={footerConfig?.styling?.bgColor ? footerStyle : undefined}>
-        <div
-          className="container mx-auto px-4"
-          style={{ paddingTop: `${footerConfig?.styling?.paddingTop || 48}px` }}
-        >
-          {/* Top section with logo and newsletter */}
-          <div className="flex flex-col items-start justify-between gap-8 border-b pb-10 md:flex-row md:items-center">
+      <footer
+        ref={footerRef}
+        className={cn("relative border-t overflow-hidden", animationClasses)}
+        style={footerStyle}
+        role="contentinfo"
+      >
+        <TopBorder />
+        {styling?.bgType === "pattern" && styling.bgPattern && (
+          <BackgroundPattern
+            pattern={styling.bgPattern}
+            color={styling.bgPatternColor || "#000"}
+            opacity={styling.bgPatternOpacity || 10}
+          />
+        )}
+        <div className="container mx-auto px-4 relative z-10">
+          {/* Top section with logo and social */}
+          <div className="flex flex-col items-start justify-between gap-8 border-b pb-10 md:flex-row md:items-center" style={{ borderColor: styling?.borderColor }}>
             <div className="flex items-center space-x-3">
               {businessConfig.logo.url ? (
                 <Image
@@ -736,26 +1341,23 @@ export function Footer() {
                 </div>
               )}
               <div>
-                <span className="text-xl font-bold">{businessConfig.name}</span>
-                <p className="text-sm text-muted-foreground">{businessConfig.description}</p>
+                <span className="text-xl font-bold" style={{ color: styling?.headingColor }}>
+                  {businessConfig.name}
+                </span>
+                <p className="text-sm opacity-80">{businessConfig.description}</p>
               </div>
             </div>
 
             {/* Social Links */}
             {socialLinks.length > 0 && (
-              <div className="flex flex-wrap gap-3">
-                {socialLinks.map((social) => (
-                  <a
-                    key={social.name}
-                    href={social.href}
-                    className="rounded-full bg-muted p-3 transition-all hover:scale-110"
-                    style={{ color: social.color }}
-                    aria-label={social.name}
-                  >
-                    <social.icon className="h-5 w-5" />
-                  </a>
-                ))}
-              </div>
+              <EnhancedSocialLinks
+                links={socialLinks}
+                shape={footerConfig?.social?.shape}
+                size={footerConfig?.social?.size}
+                colorMode={footerConfig?.social?.colorMode}
+                hoverEffect={footerConfig?.social?.hoverEffect}
+                accentColor={styling?.accentColor || undefined}
+              />
             )}
           </div>
 
@@ -773,88 +1375,86 @@ export function Footer() {
                         businessConfig={businessConfig}
                         socialLinks={socialLinks}
                         footerConfig={footerConfig}
+                        headingClasses={headingClasses}
+                        linkClasses={linkClasses}
                       />
                     ))}
                   </div>
                 ))
             ) : (
               <>
-                {/* Services */}
-                <div>
-                  <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Services</h3>
+                {/* Fallback columns */}
+                <nav aria-label="Services">
+                  <h3 className={cn(headingClasses, "uppercase tracking-wider")}>Services</h3>
                   <ul className="mt-4 space-y-3">
                     {fallbackLinks.services.map((link) => (
                       <li key={link.name}>
-                        <Link href={link.href} className="text-sm text-muted-foreground hover:text-foreground">
+                        <Link href={link.href} className={cn("text-sm", linkClasses)}>
                           {link.name}
                         </Link>
                       </li>
                     ))}
                   </ul>
-                </div>
-                {/* Company */}
-                <div>
-                  <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Company</h3>
+                </nav>
+                <nav aria-label="Company">
+                  <h3 className={cn(headingClasses, "uppercase tracking-wider")}>Company</h3>
                   <ul className="mt-4 space-y-3">
                     {fallbackLinks.company.map((link) => (
                       <li key={link.name}>
-                        <Link href={link.href} className="text-sm text-muted-foreground hover:text-foreground">
+                        <Link href={link.href} className={cn("text-sm", linkClasses)}>
                           {link.name}
                         </Link>
                       </li>
                     ))}
                   </ul>
-                </div>
-                {/* States */}
-                <div>
-                  <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Popular States</h3>
+                </nav>
+                <nav aria-label="Popular states">
+                  <h3 className={cn(headingClasses, "uppercase tracking-wider")}>Popular States</h3>
                   <ul className="mt-4 space-y-3">
                     {fallbackLinks.states.map((link) => (
                       <li key={link.name}>
-                        <Link href={link.href} className="text-sm text-muted-foreground hover:text-foreground">
+                        <Link href={link.href} className={cn("text-sm", linkClasses)}>
                           {link.name}
                         </Link>
                       </li>
                     ))}
                   </ul>
-                </div>
-                {/* Legal */}
-                <div>
-                  <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Legal</h3>
+                </nav>
+                <nav aria-label="Legal">
+                  <h3 className={cn(headingClasses, "uppercase tracking-wider")}>Legal</h3>
                   <ul className="mt-4 space-y-3">
                     {fallbackLinks.legal.map((link) => (
                       <li key={link.name}>
-                        <Link href={link.href} className="text-sm text-muted-foreground hover:text-foreground">
+                        <Link href={link.href} className={cn("text-sm", linkClasses)}>
                           {link.name}
                         </Link>
                       </li>
                     ))}
                   </ul>
-                </div>
-                {/* Contact */}
-                <div className="col-span-2">
-                  <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Contact Us</h3>
+                </nav>
+                <address className="col-span-2 not-italic">
+                  <h3 className={cn(headingClasses, "uppercase tracking-wider")}>Contact Us</h3>
                   <div className="mt-4 space-y-3">
                     {businessConfig.contact.supportEmail && (
-                      <a href={`mailto:${businessConfig.contact.supportEmail}`} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-                        <Mail className="h-4 w-4" />
+                      <a href={`mailto:${businessConfig.contact.supportEmail}`} className={cn("flex items-center gap-2 text-sm", linkClasses)}>
+                        <Mail className="h-4 w-4" aria-hidden="true" />
                         {businessConfig.contact.supportEmail}
                       </a>
                     )}
                     {businessConfig.contact.phone && (
-                      <a href={`tel:${businessConfig.contact.phone.replace(/[^+\d]/g, "")}`} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-                        <Phone className="h-4 w-4" />
+                      <a href={`tel:${businessConfig.contact.phone.replace(/[^+\d]/g, "")}`} className={cn("flex items-center gap-2 text-sm", linkClasses)}>
+                        <Phone className="h-4 w-4" aria-hidden="true" />
                         {businessConfig.contact.phone}
                       </a>
                     )}
                     {businessConfig.address.full && (
-                      <p className="flex items-start gap-2 text-sm text-muted-foreground">
-                        <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
+                      <p className="flex items-start gap-2 text-sm opacity-80">
+                        <MapPin className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
                         {businessConfig.address.full}
                       </p>
                     )}
                   </div>
-                </div>
+                </address>
               </>
             )}
           </div>
@@ -867,22 +1467,29 @@ export function Footer() {
 
   // ============== MULTI_COLUMN LAYOUT (Default) ==============
   return (
-    <footer className="border-t bg-muted/30" style={footerConfig?.styling?.bgColor ? footerStyle : undefined}>
-      <div
-        className="container mx-auto px-4"
-        style={{ paddingTop: `${footerConfig?.styling?.paddingTop || 48}px` }}
-      >
+    <footer
+      ref={footerRef}
+      className={cn("relative border-t overflow-hidden", animationClasses)}
+      style={footerStyle}
+      role="contentinfo"
+    >
+      <TopBorder />
+      {styling?.bgType === "pattern" && styling.bgPattern && (
+        <BackgroundPattern
+          pattern={styling.bgPattern}
+          color={styling.bgPatternColor || "#000"}
+          opacity={styling.bgPatternOpacity || 10}
+        />
+      )}
+      <div className="container mx-auto px-4 relative z-10">
         {hasDynamicWidgets ? (
-          // Dynamic widgets layout - responsive grid
           (() => {
             const entries = Object.entries(widgetsByColumn!).filter(([, widgets]) => widgets.length > 0);
             const hasBrandWidget = entries.some(([, widgets]) => widgets.some((w) => w.type === "BRAND"));
-            // Calculate grid columns: BRAND takes 2 cols on desktop, others take 1 each
             const desktopCols = hasBrandWidget ? entries.length + 1 : entries.length;
 
             return (
               <>
-                {/* Inject responsive CSS for this specific grid */}
                 <style>{`
                   .footer-grid {
                     display: grid;
@@ -926,6 +1533,8 @@ export function Footer() {
                             businessConfig={businessConfig}
                             socialLinks={socialLinks}
                             footerConfig={footerConfig}
+                            headingClasses={headingClasses}
+                            linkClasses={linkClasses}
                           />
                         ))}
                       </div>
@@ -936,11 +1545,10 @@ export function Footer() {
             );
           })()
         ) : (
-          // Fallback hardcoded layout
           <div className="grid grid-cols-2 gap-8 md:grid-cols-3 lg:grid-cols-6">
             {/* Brand */}
             <div className="col-span-2 md:col-span-3 lg:col-span-2">
-              <Link href="/" className="flex items-center space-x-2">
+              <Link href="/" className="flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-primary rounded">
                 {businessConfig.logo.url ? (
                   <Image
                     src={businessConfig.logo.url}
@@ -956,123 +1564,105 @@ export function Footer() {
                     </span>
                   </div>
                 )}
-                <span className="text-xl font-bold">{businessConfig.name}</span>
+                <span className="text-xl font-bold" style={{ color: styling?.headingColor }}>
+                  {businessConfig.name}
+                </span>
               </Link>
-              <p className="mt-4 max-w-xs text-sm text-muted-foreground">
+              <p className="mt-4 max-w-xs text-sm opacity-80">
                 {businessConfig.description}
               </p>
 
-              {/* Contact Info */}
-              <div className="mt-6 space-y-3">
+              <address className="mt-6 space-y-3 not-italic">
                 {businessConfig.contact.supportEmail && (
                   <a
                     href={`mailto:${businessConfig.contact.supportEmail}`}
-                    className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+                    className={cn("flex items-center gap-2 text-sm", linkClasses)}
                   >
-                    <Mail className="h-4 w-4" />
+                    <Mail className="h-4 w-4" aria-hidden="true" />
                     {businessConfig.contact.supportEmail}
                   </a>
                 )}
                 {businessConfig.contact.phone && (
                   <a
                     href={`tel:${businessConfig.contact.phone.replace(/[^+\d]/g, "")}`}
-                    className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+                    className={cn("flex items-center gap-2 text-sm", linkClasses)}
                   >
-                    <Phone className="h-4 w-4" />
+                    <Phone className="h-4 w-4" aria-hidden="true" />
                     {businessConfig.contact.phone}
                   </a>
                 )}
                 {businessConfig.address.full && (
-                  <p className="flex items-start gap-2 text-sm text-muted-foreground">
-                    <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
+                  <p className="flex items-start gap-2 text-sm opacity-80">
+                    <MapPin className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
                     {businessConfig.address.full}
                   </p>
                 )}
-              </div>
+              </address>
 
-              {/* Social Links */}
-              <div className="mt-6 flex flex-wrap gap-3">
-                {socialLinks.map((social) => (
-                  <a
-                    key={social.name}
-                    href={social.href}
-                    className="rounded-lg bg-muted p-2 transition-all hover:scale-110"
-                    style={{ color: social.color }}
-                    aria-label={social.name}
-                  >
-                    <social.icon className="h-5 w-5" />
-                  </a>
-                ))}
+              <div className="mt-6">
+                <EnhancedSocialLinks
+                  links={socialLinks}
+                  shape={footerConfig?.social?.shape}
+                  size={footerConfig?.social?.size}
+                  colorMode={footerConfig?.social?.colorMode}
+                  hoverEffect={footerConfig?.social?.hoverEffect}
+                  accentColor={styling?.accentColor || undefined}
+                />
               </div>
             </div>
 
-            {/* Services */}
-            <div>
-              <h3 className="text-sm font-semibold text-foreground">Services</h3>
+            {/* Fallback columns */}
+            <nav aria-label="Services">
+              <h3 className={headingClasses}>Services</h3>
               <ul className="mt-4 space-y-3">
                 {fallbackLinks.services.map((link) => (
                   <li key={link.name}>
-                    <Link
-                      href={link.href}
-                      className="text-sm text-muted-foreground hover:text-foreground"
-                    >
+                    <Link href={link.href} className={cn("text-sm", linkClasses)}>
                       {link.name}
                     </Link>
                   </li>
                 ))}
               </ul>
-            </div>
+            </nav>
 
-            {/* Company */}
-            <div>
-              <h3 className="text-sm font-semibold text-foreground">Company</h3>
+            <nav aria-label="Company">
+              <h3 className={headingClasses}>Company</h3>
               <ul className="mt-4 space-y-3">
                 {fallbackLinks.company.map((link) => (
                   <li key={link.name}>
-                    <Link
-                      href={link.href}
-                      className="text-sm text-muted-foreground hover:text-foreground"
-                    >
+                    <Link href={link.href} className={cn("text-sm", linkClasses)}>
                       {link.name}
                     </Link>
                   </li>
                 ))}
               </ul>
-            </div>
+            </nav>
 
-            {/* Popular States */}
-            <div>
-              <h3 className="text-sm font-semibold text-foreground">Popular States</h3>
+            <nav aria-label="Popular states">
+              <h3 className={headingClasses}>Popular States</h3>
               <ul className="mt-4 space-y-3">
                 {fallbackLinks.states.map((link) => (
                   <li key={link.name}>
-                    <Link
-                      href={link.href}
-                      className="text-sm text-muted-foreground hover:text-foreground"
-                    >
+                    <Link href={link.href} className={cn("text-sm", linkClasses)}>
                       {link.name}
                     </Link>
                   </li>
                 ))}
               </ul>
-            </div>
+            </nav>
 
-            {/* Legal */}
-            <div>
-              <h3 className="text-sm font-semibold text-foreground">Legal</h3>
+            <nav aria-label="Legal">
+              <h3 className={headingClasses}>Legal</h3>
               <ul className="mt-4 space-y-3">
                 {fallbackLinks.legal.map((link) => (
                   <li key={link.name}>
-                    <Link
-                      href={link.href}
-                      className="text-sm text-muted-foreground hover:text-foreground"
-                    >
+                    <Link href={link.href} className={cn("text-sm", linkClasses)}>
                       {link.name}
                     </Link>
                   </li>
                 ))}
               </ul>
-            </div>
+            </nav>
           </div>
         )}
 

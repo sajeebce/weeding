@@ -1198,11 +1198,15 @@ model FooterConfig {
   layout               FooterLayout @default(MULTI_COLUMN)
   columns              Int          @default(4)
 
+  // Responsive Columns (Phase 3)
+  responsiveColumns    Json?        // { mobile: 1, tablet: 2, desktop: 4 }
+  sectionOrder         String[]     @default(["widgets", "newsletter", "trust", "bottom"])
+
   // Newsletter
   newsletterEnabled    Boolean      @default(true)
   newsletterTitle      String       @default("Subscribe to our newsletter")
   newsletterSubtitle   String?
-  newsletterProvider   String?      // mailchimp, convertkit, custom
+  newsletterProvider   String?      // mailchimp, convertkit, brevo, custom
   newsletterFormAction String?
 
   // Social Links (override from business config)
@@ -1215,6 +1219,7 @@ model FooterConfig {
 
   // Bottom Bar
   bottomBarEnabled     Boolean      @default(true)
+  bottomBarLayout      String       @default("split") // split, centered, stacked
   copyrightText        String?
   showDisclaimer       Boolean      @default(true)
   disclaimerText       String?
@@ -1224,15 +1229,65 @@ model FooterConfig {
   showTrustBadges      Boolean      @default(false)
   trustBadges          Json?        // [{ image, alt, url }]
 
-  // Styling
+  // Background Styling (Phase 3)
+  bgType               String       @default("solid") // solid, gradient, pattern, image
   bgColor              String?
+  bgGradient           Json?        // { type, colors: [{color, position}], angle }
+  bgPattern            String?      // dots, grid, waves, geometric
+  bgPatternColor       String?
+  bgPatternOpacity     Float?       @default(0.1)
+  bgImage              String?
+  bgImageOverlay       String?
+
+  // Text Styling
   textColor            String?
+  headingColor         String?
+  linkColor            String?
+  linkHoverColor       String?
   accentColor          String?
   borderColor          String?
+
+  // Typography (Phase 3)
+  headingFont          String?
+  bodyFont             String?
+  headingSize          String       @default("sm") // sm, base, lg, xl
+  headingWeight        String       @default("semibold") // medium, semibold, bold
+  headingStyle         String       @default("normal") // normal, uppercase, capitalize
+
+  // Divider Styling
+  dividerStyle         String       @default("solid") // none, solid, dashed, gradient
+  dividerColor         String?
+
+  // Social Icon Styling (Phase 3)
+  socialShape          String       @default("circle") // circle, square, rounded, pill
+  socialSize           String       @default("md") // sm, md, lg, xl
+  socialColorMode      String       @default("brand") // brand, monochrome, accent
+  socialHoverEffect    String       @default("scale") // scale, lift, glow, rotate
+
+  // Effects & Animation (Phase 3)
+  enableAnimations     Boolean      @default(false)
+  entranceAnimation    String?      // fade-up, fade-in, slide-up, stagger
+  animationDuration    Int          @default(300)
+  linkHoverEffect      String       @default("color") // underline, color, arrow, highlight
+  topBorderStyle       String       @default("none") // none, solid, gradient, wave
+  topBorderHeight      Int          @default(4)
+  topBorderColor       String?
+
+  // Shadow
+  shadow               String       @default("none") // none, sm, md, lg, xl
+  borderRadius         Int          @default(0)
 
   // Spacing
   paddingTop           Int          @default(48)
   paddingBottom        Int          @default(32)
+
+  // Advanced (Phase 6)
+  customCSS            String?      @db.Text
+  customJS             String?      @db.Text
+
+  // Preset Reference
+  presetId             String?
+  preset               FooterPreset? @relation(fields: [presetId], references: [id])
 
   // Relations
   widgets              FooterWidget[]
@@ -1241,11 +1296,50 @@ model FooterConfig {
   updatedAt            DateTime     @updatedAt
 }
 
+// Footer Preset (Phase 1)
+model FooterPreset {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  category    String   @default("professional") // minimal, professional, modern, creative, industry
+  thumbnail   String?  // Preview image URL
+
+  // Preset Configuration
+  config      Json     // Full footer configuration snapshot
+
+  // Metadata
+  isBuiltIn   Boolean  @default(false) // System presets
+  isPublic    Boolean  @default(true)  // Available to all users
+  usageCount  Int      @default(0)
+
+  // Feature tags
+  tags        String[] // ["dark-mode", "animated", "minimal", "responsive"]
+
+  // Color palette preview
+  colorPalette Json?   // { primary, secondary, accent, text, bg }
+
+  // Relation
+  footers     FooterConfig[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+  @@index([isBuiltIn])
+  @@index([isPublic])
+}
+
 enum FooterLayout {
   MULTI_COLUMN   // Traditional multi-column
   CENTERED       // Centered stacked
   MINIMAL        // Just copyright and links
   MEGA           // Full sitemap style
+  // New layouts (Phase 2)
+  STACKED        // Full-width vertical sections
+  ASYMMETRIC     // 2:1 ratio split layout
+  MEGA_PLUS      // Mega with featured CTA
+  APP_FOCUSED    // Prominent app download section
+  NEWSLETTER_HERO // Large newsletter signup as hero
 }
 
 // Footer Widgets
@@ -1292,6 +1386,18 @@ enum FooterWidgetType {
   SERVICES        // Services list (auto-populated)
   STATES          // Popular states (auto-populated)
   CUSTOM_HTML     // Raw HTML
+  // New widget types (Phase 4)
+  APP_DOWNLOAD    // App store badges with QR code
+  PAYMENT_METHODS // Payment provider icons
+  AWARDS          // Certifications and badges
+  MAP             // Embedded location map
+  WORKING_HOURS   // Business hours display
+  LANGUAGE_SELECT // Multi-language dropdown
+  THEME_TOGGLE    // Dark/light mode switcher
+  FEATURED_PRODUCT // Highlighted product card
+  TESTIMONIAL     // Single rotating testimonial
+  COUNTDOWN       // Event countdown timer
+  CTA_BANNER      // Call-to-action banner
 }
 
 // Newsletter Subscriber
