@@ -239,6 +239,7 @@ function EnhancedSocialLinks({
   colorMode = "brand",
   hoverEffect = "scale",
   accentColor,
+  bgStyle = "subtle",
 }: {
   links: { name: string; href: string; icon: React.ComponentType<{ className?: string }>; color: string }[];
   shape?: string;
@@ -246,19 +247,20 @@ function EnhancedSocialLinks({
   colorMode?: string;
   hoverEffect?: string;
   accentColor?: string;
+  bgStyle?: "none" | "subtle" | "solid" | "outline";
 }) {
   const sizeClasses = {
-    sm: { container: "p-1.5", icon: "h-4 w-4" },
-    md: { container: "p-2", icon: "h-5 w-5" },
-    lg: { container: "p-3", icon: "h-6 w-6" },
-    xl: { container: "p-4", icon: "h-7 w-7" },
+    sm: { container: "p-1.5", icon: "h-4 w-4", gap: "gap-2" },
+    md: { container: "p-2.5", icon: "h-5 w-5", gap: "gap-3" },
+    lg: { container: "p-3", icon: "h-6 w-6", gap: "gap-3" },
+    xl: { container: "p-4", icon: "h-7 w-7", gap: "gap-4" },
   };
 
   const shapeClasses = {
     circle: "rounded-full",
     square: "rounded-none",
     rounded: "rounded-lg",
-    pill: "rounded-full px-3",
+    pill: "rounded-full px-4",
   };
 
   const hoverClasses = {
@@ -268,9 +270,18 @@ function EnhancedSocialLinks({
     rotate: "hover:rotate-12",
   };
 
+  // Background style classes - works well on both light and dark backgrounds
+  const bgClasses = {
+    none: "",
+    subtle: "bg-white/10 hover:bg-white/20", // Subtle glass effect for dark backgrounds
+    solid: "bg-current/10 hover:bg-current/20",
+    outline: "border border-current/30 hover:border-current/50",
+  };
+
   const currentSize = sizeClasses[size as keyof typeof sizeClasses] || sizeClasses.md;
   const currentShape = shapeClasses[shape as keyof typeof shapeClasses] || shapeClasses.circle;
   const currentHover = hoverClasses[hoverEffect as keyof typeof hoverClasses] || hoverClasses.scale;
+  const currentBg = bgClasses[bgStyle as keyof typeof bgClasses] || bgClasses.subtle;
 
   const getColor = (brandColor: string) => {
     if (colorMode === "monochrome") return "currentColor";
@@ -279,16 +290,17 @@ function EnhancedSocialLinks({
   };
 
   return (
-    <div className="flex flex-wrap gap-3 -m-1 p-1" role="list" aria-label="Social media links">
+    <div className={cn("flex flex-wrap -m-1 p-1", currentSize.gap)} role="list" aria-label="Social media links">
       {links.map((social) => (
         <a
           key={social.name}
           href={social.href}
           className={cn(
-            "flex items-center justify-center bg-muted/50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary",
+            "flex items-center justify-center transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary",
             currentSize.container,
             currentShape,
-            currentHover
+            currentHover,
+            currentBg
           )}
           style={{ color: getColor(social.color) }}
           aria-label={`Follow us on ${social.name}`}
@@ -425,23 +437,23 @@ function FooterWidgetRenderer({
       return (
         <div className="space-y-4">
           {/* Logo + Business Name - Stacked vertically */}
-          <Link href="/" className="inline-flex flex-col items-start gap-1 focus:outline-none focus:ring-2 focus:ring-primary rounded">
+          <Link href="/" className="inline-flex flex-col items-start gap-2 focus:outline-none focus:ring-2 focus:ring-primary rounded">
             {businessConfig.logo.url ? (
               <Image
                 src={businessConfig.logo.url}
                 alt={businessConfig.name}
-                width={36}
-                height={36}
-                className="h-9 w-9 rounded-lg object-contain"
+                width={48}
+                height={48}
+                className="h-12 w-12 rounded-lg object-contain"
               />
             ) : (
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-                <span className="text-lg font-bold text-primary-foreground">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
+                <span className="text-xl font-bold text-primary-foreground">
                   {businessConfig.logo.text || businessConfig.name.charAt(0)}
                 </span>
               </div>
             )}
-            <span className="text-xl font-bold">{businessConfig.name}</span>
+            <span className="text-2xl font-bold">{businessConfig.name}</span>
           </Link>
 
           {/* Tagline / Description */}
@@ -582,6 +594,7 @@ function FooterWidgetRenderer({
               colorMode={footerConfig?.social?.colorMode}
               hoverEffect={footerConfig?.social?.hoverEffect}
               accentColor={footerConfig?.styling?.accentColor || undefined}
+              bgStyle={footerConfig?.social?.bgStyle as "none" | "subtle" | "solid" | "outline" | undefined}
             />
           </div>
         </div>
@@ -751,7 +764,7 @@ export function Footer() {
         { name: "LinkedIn", href: businessConfig.social.linkedin, icon: Linkedin, color: "#0A66C2" },
         { name: "Instagram", href: businessConfig.social.instagram, icon: Instagram, color: "#E4405F" },
         { name: "YouTube", href: businessConfig.social.youtube, icon: Youtube, color: "#FF0000" },
-        { name: "TikTok", href: businessConfig.social.tiktok, icon: TikTokIcon, color: "#000000" },
+        { name: "TikTok", href: businessConfig.social.tiktok, icon: TikTokIcon, color: "#00f2ea" },
       ].filter((link) => link.href),
     [businessConfig.social]
   );
@@ -1212,6 +1225,7 @@ export function Footer() {
                 colorMode={footerConfig?.social?.colorMode}
                 hoverEffect={footerConfig?.social?.hoverEffect}
                 accentColor={styling?.accentColor || undefined}
+                bgStyle={footerConfig?.social?.bgStyle as "none" | "subtle" | "solid" | "outline" | undefined}
               />
             </div>
           )}
@@ -1279,6 +1293,7 @@ export function Footer() {
                 colorMode={footerConfig?.social?.colorMode}
                 hoverEffect={footerConfig?.social?.hoverEffect}
                 accentColor={styling?.accentColor || undefined}
+                bgStyle={footerConfig?.social?.bgStyle as "none" | "subtle" | "solid" | "outline" | undefined}
               />
             )}
           </div>
@@ -1352,6 +1367,7 @@ export function Footer() {
                   colorMode={footerConfig?.social?.colorMode}
                   hoverEffect={footerConfig?.social?.hoverEffect}
                   accentColor={styling?.accentColor || undefined}
+                  bgStyle={footerConfig?.social?.bgStyle as "none" | "subtle" | "solid" | "outline" | undefined}
                 />
               </div>
             )}
@@ -1445,6 +1461,7 @@ export function Footer() {
                 colorMode={footerConfig?.social?.colorMode}
                 hoverEffect={footerConfig?.social?.hoverEffect}
                 accentColor={styling?.accentColor || undefined}
+                bgStyle={footerConfig?.social?.bgStyle as "none" | "subtle" | "solid" | "outline" | undefined}
               />
             )}
           </div>
@@ -1700,6 +1717,7 @@ export function Footer() {
                   colorMode={footerConfig?.social?.colorMode}
                   hoverEffect={footerConfig?.social?.hoverEffect}
                   accentColor={styling?.accentColor || undefined}
+                  bgStyle={footerConfig?.social?.bgStyle as "none" | "subtle" | "solid" | "outline" | undefined}
                 />
               </div>
             </div>

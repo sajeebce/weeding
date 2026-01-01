@@ -1263,6 +1263,7 @@ model FooterConfig {
   socialSize           String       @default("md") // sm, md, lg, xl
   socialColorMode      String       @default("brand") // brand, monochrome, accent
   socialHoverEffect    String       @default("scale") // scale, lift, glow, rotate
+  socialBgStyle        String       @default("subtle") // none, subtle, solid, outline
 
   // Effects & Animation (Phase 3)
   enableAnimations     Boolean      @default(false)

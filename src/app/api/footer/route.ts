@@ -142,6 +142,7 @@ export async function GET() {
         size: footer.socialSize || "md",
         colorMode: footer.socialColorMode || "brand",
         hoverEffect: footer.socialHoverEffect || "scale",
+        bgStyle: footer.socialBgStyle || "subtle",
       },
       bottomBar: {
         enabled: footer.bottomBarEnabled,

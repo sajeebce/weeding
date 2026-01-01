@@ -57,6 +57,10 @@ import {
   Upload,
   RefreshCw,
   Send,
+  Facebook,
+  Twitter,
+  Instagram,
+  Linkedin,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -393,6 +397,7 @@ export default function FooterBuilderPage() {
     socialSize: "md",
     socialColorMode: "brand",
     socialHoverEffect: "scale",
+    socialBgStyle: "subtle",
     // Divider
     dividerStyle: "solid",
     dividerColor: "",
@@ -477,6 +482,7 @@ export default function FooterBuilderPage() {
           socialSize: activeFooter.socialSize || "md",
           socialColorMode: activeFooter.socialColorMode || "brand",
           socialHoverEffect: activeFooter.socialHoverEffect || "scale",
+          socialBgStyle: activeFooter.socialBgStyle || "subtle",
           // Divider
           dividerStyle: activeFooter.dividerStyle || "solid",
           dividerColor: activeFooter.dividerColor || "",
@@ -567,6 +573,7 @@ export default function FooterBuilderPage() {
           socialSize: formData.socialSize,
           socialColorMode: formData.socialColorMode,
           socialHoverEffect: formData.socialHoverEffect,
+          socialBgStyle: formData.socialBgStyle,
           // Divider
           dividerStyle: formData.dividerStyle,
           dividerColor: formData.dividerColor || null,
@@ -2705,35 +2712,85 @@ export default function FooterBuilderPage() {
                     </SelectContent>
                   </Select>
                 </div>
+
+                <div className="space-y-2">
+                  <Label>Background Style</Label>
+                  <Select
+                    value={formData.socialBgStyle}
+                    onValueChange={(value) => setFormData({ ...formData, socialBgStyle: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      <SelectItem value="subtle">Subtle Glass</SelectItem>
+                      <SelectItem value="solid">Solid</SelectItem>
+                      <SelectItem value="outline">Outline</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               {/* Preview */}
-              <div className="rounded-lg border p-4">
-                <p className="text-xs text-muted-foreground mb-2">Preview:</p>
-                <div className="flex gap-2">
-                  {[1, 2, 3].map((i) => (
-                    <div
-                      key={i}
-                      className={cn(
-                        "flex items-center justify-center bg-muted transition-all hover:scale-110",
-                        formData.socialShape === "circle" && "rounded-full",
-                        formData.socialShape === "square" && "rounded-none",
-                        formData.socialShape === "rounded" && "rounded-lg",
-                        formData.socialShape === "pill" && "rounded-full px-3",
-                        formData.socialSize === "sm" && "h-7 w-7",
-                        formData.socialSize === "md" && "h-9 w-9",
-                        formData.socialSize === "lg" && "h-11 w-11",
-                        formData.socialSize === "xl" && "h-13 w-13"
-                      )}
-                    >
-                      <Share2 className={cn(
-                        formData.socialSize === "sm" && "h-3.5 w-3.5",
-                        formData.socialSize === "md" && "h-4 w-4",
-                        formData.socialSize === "lg" && "h-5 w-5",
-                        formData.socialSize === "xl" && "h-6 w-6"
-                      )} />
-                    </div>
-                  ))}
+              <div className="rounded-lg border p-4" style={{ backgroundColor: formData.bgColor || '#1a1a2e' }}>
+                <p className="text-xs text-white/60 mb-3">Preview (on dark background):</p>
+                <div className={cn(
+                  "flex",
+                  formData.socialSize === "sm" && "gap-2",
+                  formData.socialSize === "md" && "gap-3",
+                  formData.socialSize === "lg" && "gap-3",
+                  formData.socialSize === "xl" && "gap-4"
+                )}>
+                  {[
+                    { icon: Facebook, color: "#1877F2", name: "Facebook" },
+                    { icon: Twitter, color: "#1DA1F2", name: "Twitter" },
+                    { icon: Instagram, color: "#E4405F", name: "Instagram" },
+                    { icon: Linkedin, color: "#0A66C2", name: "LinkedIn" },
+                  ].map((social) => {
+                    const IconComponent = social.icon;
+                    const iconColor = formData.socialColorMode === "monochrome"
+                      ? "#ffffff"
+                      : formData.socialColorMode === "accent"
+                        ? (formData.accentColor || social.color)
+                        : social.color;
+                    return (
+                      <div
+                        key={social.name}
+                        className={cn(
+                          "flex items-center justify-center transition-all",
+                          // Shape
+                          formData.socialShape === "circle" && "rounded-full",
+                          formData.socialShape === "square" && "rounded-none",
+                          formData.socialShape === "rounded" && "rounded-lg",
+                          formData.socialShape === "pill" && "rounded-full px-3",
+                          // Size
+                          formData.socialSize === "sm" && "h-7 w-7 p-1.5",
+                          formData.socialSize === "md" && "h-9 w-9 p-2",
+                          formData.socialSize === "lg" && "h-11 w-11 p-2.5",
+                          formData.socialSize === "xl" && "h-13 w-13 p-3",
+                          // Hover effect
+                          formData.socialHoverEffect === "scale" && "hover:scale-110",
+                          formData.socialHoverEffect === "lift" && "hover:-translate-y-1 hover:shadow-lg",
+                          formData.socialHoverEffect === "glow" && "hover:shadow-lg hover:shadow-current/30",
+                          formData.socialHoverEffect === "rotate" && "hover:rotate-12",
+                          // Background style
+                          formData.socialBgStyle === "none" && "",
+                          formData.socialBgStyle === "subtle" && "bg-white/10 hover:bg-white/20",
+                          formData.socialBgStyle === "solid" && "bg-white/20 hover:bg-white/30",
+                          formData.socialBgStyle === "outline" && "border border-white/30 hover:border-white/50"
+                        )}
+                        style={{ color: iconColor }}
+                      >
+                        <IconComponent className={cn(
+                          formData.socialSize === "sm" && "h-4 w-4",
+                          formData.socialSize === "md" && "h-5 w-5",
+                          formData.socialSize === "lg" && "h-6 w-6",
+                          formData.socialSize === "xl" && "h-7 w-7"
+                        )} />
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </CardContent>

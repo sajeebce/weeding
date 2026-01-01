@@ -312,6 +312,7 @@ export interface SocialIconStyling {
   size: "sm" | "md" | "lg" | "xl";
   colorMode: "brand" | "monochrome" | "accent";
   hoverEffect: "scale" | "lift" | "glow" | "rotate";
+  bgStyle: "none" | "subtle" | "solid" | "outline";
 }
 
 // Typography settings
@@ -513,6 +514,7 @@ export interface PublicFooterResponse {
     size?: string;
     colorMode?: string;
     hoverEffect?: string;
+    bgStyle?: string;
   };
   contact: {
     show: boolean;
