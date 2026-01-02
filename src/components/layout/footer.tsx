@@ -77,6 +77,8 @@ function EnhancedNewsletterForm({
   accentColor,
   incentive,
   buttonText = "Subscribe",
+  borderColor,
+  textColor,
 }: {
   title?: string;
   subtitle?: string;
@@ -86,6 +88,8 @@ function EnhancedNewsletterForm({
   accentColor?: string;
   incentive?: string;
   buttonText?: string;
+  borderColor?: string;
+  textColor?: string;
 }) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -148,6 +152,10 @@ function EnhancedNewsletterForm({
             required
             className="w-full"
             aria-label="Email address"
+            style={{
+              borderColor: borderColor || undefined,
+              color: textColor || undefined,
+            }}
           />
           <Button
             type="submit"
@@ -181,17 +189,19 @@ function EnhancedNewsletterForm({
       {title && <h3 className="text-sm font-semibold">{title}</h3>}
       <form
         onSubmit={handleSubmit}
-        className="flex max-w-sm rounded-lg overflow-hidden ring-1 ring-white/20 focus-within:ring-2 focus-within:ring-white/40 transition-all"
+        className="flex max-w-sm rounded-lg overflow-hidden border focus-within:ring-2 focus-within:ring-white/40 transition-all"
+        style={{ borderColor: borderColor || "rgba(255,255,255,0.2)" }}
       >
         <Input
           type="email"
           placeholder="Enter your email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="flex-1 min-w-0 border-0 rounded-none bg-white/5 placeholder:text-current placeholder:opacity-40 focus-visible:ring-0 focus-visible:ring-offset-0 h-11 text-sm"
+          className="flex-1 min-w-0 border-0 rounded-none bg-white/5 placeholder:opacity-50 focus-visible:ring-0 focus-visible:ring-offset-0 h-11 text-sm"
           disabled={status === "loading" || status === "success"}
           required
           aria-label="Email address"
+          style={{ color: textColor || undefined }}
         />
         <Button
           type="submit"
@@ -661,6 +671,8 @@ function FooterWidgetRenderer({
             subtitle={nlContent?.subtitle || nlContent?.incentive || footerConfig?.newsletter?.subtitle}
             formAction={footerConfig?.newsletter?.formAction}
             accentColor={footerConfig?.styling?.accentColor || undefined}
+            borderColor={footerConfig?.styling?.borderColor || undefined}
+            textColor={footerConfig?.styling?.textColor || undefined}
             style={nlContent?.style as "inline" | "stacked" | "floating" | undefined}
             buttonText={nlContent?.buttonText || "Subscribe"}
           />
@@ -1154,6 +1166,8 @@ export function Footer() {
                 style="stacked"
                 buttonStyle="gradient"
                 accentColor={styling?.accentColor || undefined}
+                borderColor={styling?.borderColor || undefined}
+                textColor={styling?.textColor || undefined}
               />
             </div>
           </div>
@@ -1247,6 +1261,8 @@ export function Footer() {
                   subtitle={footerConfig.newsletter.subtitle}
                   formAction={footerConfig.newsletter.formAction}
                   accentColor={styling?.accentColor || undefined}
+                  borderColor={styling?.borderColor || undefined}
+                  textColor={styling?.textColor || undefined}
                 />
               </div>
               <Divider />
