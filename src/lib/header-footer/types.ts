@@ -20,7 +20,8 @@ export type ButtonHoverEffect =
   | "border-fill"
   | "gradient-shift"
   | "glow-pulse"
-  | "ripple";
+  | "ripple"
+  | "craft-expand"; // CraftButton style - icon circle expands on hover
 
 // Gradient direction for button backgrounds
 export type GradientDirection =
@@ -65,6 +66,11 @@ export interface ButtonCustomStyle {
   hoverEffect?: ButtonHoverEffect;
   shadow?: string;
   hoverShadow?: string;
+
+  // Icon
+  icon?: string; // Lucide icon name (e.g., "arrow-right", "arrow-up-right")
+  iconPosition?: "left" | "right"; // Icon position relative to text
+  customIconSvg?: string; // Custom SVG string for external icons
 }
 
 export interface CTAButton {

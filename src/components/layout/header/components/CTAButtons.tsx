@@ -1,11 +1,43 @@
 "use client";
 
 import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
+import { DynamicIcon } from "lucide-react/dynamic";
 import { Button } from "@/components/ui/button";
+import { CraftButton, CraftButtonLabel, CraftButtonIcon } from "@/components/ui/craft-button";
 import { UserMenu } from "./UserMenu";
 import type { CTAButtonsProps } from "../types";
 import type { CTAButton, ButtonCustomStyle, ButtonHoverEffect, GradientDirection } from "@/lib/header-footer/types";
 import { cn } from "@/lib/utils";
+
+// Render icon based on style settings using DynamicIcon for Lucide icons
+function renderButtonIcon(style?: ButtonCustomStyle, className?: string) {
+  if (!style?.icon || style.icon === "none" || style.icon.trim() === "") return null;
+
+  // Custom SVG
+  if (style.icon === "custom") {
+    if (!style.customIconSvg?.trim()) return null;
+    return (
+      <span
+        className={cn("inline-flex shrink-0", className)}
+        dangerouslySetInnerHTML={{ __html: style.customIconSvg }}
+      />
+    );
+  }
+
+  // Lucide icon - use DynamicIcon for dynamic loading by name
+  // Only render if icon name looks valid (contains only letters, numbers, and hyphens)
+  const iconName = style.icon.trim().toLowerCase();
+  if (!/^[a-z][a-z0-9-]*$/.test(iconName)) return null;
+
+  return (
+    <DynamicIcon
+      // @ts-expect-error - DynamicIcon accepts any valid lucide icon name
+      name={iconName}
+      className={cn("size-4 shrink-0", className)}
+    />
+  );
+}
 
 // Convert gradient direction to CSS
 function getGradientCSS(direction?: GradientDirection): string {
@@ -91,6 +123,11 @@ function isComplexHoverEffect(effect?: ButtonHoverEffect): boolean {
   return effect === "slide-fill" || effect === "border-fill" || effect === "gradient-shift" || effect === "ripple";
 }
 
+// Check if effect is CraftButton style
+function isCraftButtonEffect(effect?: ButtonHoverEffect): boolean {
+  return effect === "craft-expand";
+}
+
 // Get gradient shift background (larger gradient that shifts position)
 function getGradientShiftBackground(style: ButtonCustomStyle): string {
   const fromColor = style.bgColor || "#2563eb";
@@ -165,7 +202,34 @@ function CTAButtonItem({ btn, index }: { btn: CTAButton; index: number }) {
   const hasCustom = hasCustomStyle(btn.style);
 
   if (hasCustom && btn.style) {
-    // Custom styled button
+    // Check if this is a CraftButton style
+    if (isCraftButtonEffect(btn.style.hoverEffect)) {
+      // Get the icon to use in CraftButton
+      const craftIcon = btn.style.icon && btn.style.icon !== "none"
+        ? renderButtonIcon(btn.style, "size-3 stroke-2 transition-transform duration-500 group-hover:rotate-45")
+        : <ArrowUpRight className="size-3 stroke-2 transition-transform duration-500 group-hover:rotate-45" />;
+
+      return (
+        <CraftButton
+          key={index}
+          asChild
+          bgColor={btn.style.bgColor || "#18181b"}
+          textColor={btn.style.textColor || "#ffffff"}
+          style={{
+            boxShadow: btn.style.shadow,
+          }}
+        >
+          <Link href={btn.url}>
+            <CraftButtonLabel>{btn.text}</CraftButtonLabel>
+            <CraftButtonIcon>
+              {craftIcon}
+            </CraftButtonIcon>
+          </Link>
+        </CraftButton>
+      );
+    }
+
+    // Custom styled button (non-CraftButton)
     const hoverClass = getHoverEffectClass(btn.style.hoverEffect);
     const normalBg = getNormalBackground(btn.style);
     const hoverBg = getHoverBackground(btn.style);
@@ -244,7 +308,9 @@ function CTAButtonItem({ btn, index }: { btn: CTAButton; index: number }) {
           e.currentTarget.style.color = btn.style?.textColor || "#ffffff";
         }}
       >
-        {btn.text}
+        {btn.style?.iconPosition === "left" && renderButtonIcon(btn.style)}
+        <span>{btn.text}</span>
+        {btn.style?.iconPosition !== "left" && renderButtonIcon(btn.style)}
       </Link>
     );
   }
@@ -317,6 +383,31 @@ export function CTAButtons({
 
     // If loginStyle has custom styles, render as custom button
     if (loginStyle && hasCustomStyle(loginStyle)) {
+      // Check if this is a CraftButton style
+      if (isCraftButtonEffect(loginStyle.hoverEffect)) {
+        const craftIcon = loginStyle.icon && loginStyle.icon !== "none"
+          ? renderButtonIcon(loginStyle, "size-3 stroke-2 transition-transform duration-500 group-hover:rotate-45")
+          : <ArrowUpRight className="size-3 stroke-2 transition-transform duration-500 group-hover:rotate-45" />;
+
+        return (
+          <CraftButton
+            asChild
+            bgColor={loginStyle.bgColor || "#18181b"}
+            textColor={loginStyle.textColor || "#ffffff"}
+            style={{
+              boxShadow: loginStyle.shadow,
+            }}
+          >
+            <Link href={loginUrl}>
+              <CraftButtonLabel>{authConfig.loginText || "Sign In"}</CraftButtonLabel>
+              <CraftButtonIcon>
+                {craftIcon}
+              </CraftButtonIcon>
+            </Link>
+          </CraftButton>
+        );
+      }
+
       const hoverClass = getHoverEffectClass(loginStyle.hoverEffect);
       const normalBg = getNormalBackground(loginStyle);
       const hoverBg = getHoverBackground(loginStyle);
@@ -387,7 +478,9 @@ export function CTAButtons({
             e.currentTarget.style.color = loginStyle?.textColor || "#374151";
           }}
         >
-          {authConfig.loginText || "Sign In"}
+          {loginStyle?.iconPosition === "left" && renderButtonIcon(loginStyle)}
+          <span>{authConfig.loginText || "Sign In"}</span>
+          {loginStyle?.iconPosition !== "left" && renderButtonIcon(loginStyle)}
         </Link>
       );
     }

@@ -19,8 +19,11 @@ import {
   Pin,
   Layers,
   Search,
+  ArrowUpRight,
 } from "lucide-react";
+import { DynamicIcon } from "lucide-react/dynamic";
 import { Button } from "@/components/ui/button";
+import { CraftButton, CraftButtonLabel, CraftButtonIcon } from "@/components/ui/craft-button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -91,6 +94,7 @@ const hoverEffectOptions: { value: ButtonHoverEffect; label: string }[] = [
   { value: "gradient-shift", label: "Gradient Shift" },
   { value: "glow-pulse", label: "Glow Pulse" },
   { value: "ripple", label: "Ripple" },
+  { value: "craft-expand", label: "Craft Expand (Icon Circle)" },
 ];
 
 // 2025 Modern Button Style Presets
@@ -268,6 +272,21 @@ const buttonStylePresets: ButtonStylePreset[] = [
       hoverEffect: "slide-fill",
     },
   },
+  // 11. Craft Button - Modern expanding icon effect (shadcnstudio)
+  {
+    id: "craft-expand",
+    name: "Craft Button",
+    description: "Modern pill button with expanding icon circle on hover",
+    style: {
+      bgColor: "#18181b",
+      textColor: "#ffffff",
+      borderWidth: 0,
+      borderRadius: 9999, // fully rounded (pill shape)
+      hoverEffect: "craft-expand",
+      shadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+      hoverShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+    },
+  },
 ];
 
 // Announcement Bar Style Presets (adapted from button presets)
@@ -442,6 +461,31 @@ function PreviewCTAButton({ btn }: { btn: CTAButton }) {
 
   // Use btn.style !== undefined to detect custom mode (same as admin UI logic)
   if (btn.style !== undefined) {
+    // Check if this is a CraftButton style (craft-expand effect)
+    if (btn.style.hoverEffect === "craft-expand") {
+      // Get the icon for CraftButton
+      const craftIcon = btn.style.icon && btn.style.icon !== "none" && btn.style.icon.trim() !== ""
+        ? renderPreviewIcon(btn.style)
+        : <ArrowUpRight className="size-3 stroke-2 transition-transform duration-500 group-hover:rotate-45" />;
+
+      return (
+        <CraftButton
+          bgColor={btn.style.bgColor || "#18181b"}
+          textColor={btn.style.textColor || "#ffffff"}
+          size="sm"
+          style={{
+            boxShadow: btn.style.shadow,
+            borderRadius: `${btn.style.borderRadius ?? 9999}px`,
+          }}
+        >
+          <CraftButtonLabel>{btn.text}</CraftButtonLabel>
+          <CraftButtonIcon>
+            {craftIcon}
+          </CraftButtonIcon>
+        </CraftButton>
+      );
+    }
+
     const hoverClass = getPreviewHoverClass(btn.style.hoverEffect);
     const hasComplexEffect = isComplexHoverEffect(btn.style.hoverEffect);
 
@@ -528,7 +572,7 @@ function PreviewCTAButton({ btn }: { btn: CTAButton }) {
     return (
       <span
         className={cn(
-          "relative inline-flex items-center justify-center px-4 py-2 text-sm font-medium cursor-pointer overflow-hidden",
+          "relative inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium cursor-pointer overflow-hidden",
           hoverClass,
           // Longer transition for complex effects to see the animation
           hasComplexEffect ? "transition-all duration-500 ease-out" : "transition-all duration-300"
@@ -548,7 +592,9 @@ function PreviewCTAButton({ btn }: { btn: CTAButton }) {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
+        {btn.style?.iconPosition === "left" && renderPreviewIcon(btn.style)}
         {btn.text}
+        {btn.style?.iconPosition !== "left" && renderPreviewIcon(btn.style)}
       </span>
     );
   }
@@ -563,9 +609,40 @@ function PreviewCTAButton({ btn }: { btn: CTAButton }) {
     : "default";
 
   return (
-    <Button size="sm" variant={variant}>
+    <Button size="sm" variant={variant} className="gap-2">
+      {btn.style?.iconPosition === "left" && renderPreviewIcon(btn.style)}
       {btn.text}
+      {btn.style?.iconPosition !== "left" && renderPreviewIcon(btn.style)}
     </Button>
+  );
+}
+
+// Helper function to render icon in preview
+function renderPreviewIcon(style?: ButtonCustomStyle) {
+  if (!style?.icon || style.icon === "none" || style.icon.trim() === "") return null;
+
+  // Custom SVG
+  if (style.icon === "custom") {
+    if (!style.customIconSvg?.trim()) return null;
+    return (
+      <span
+        className="inline-flex shrink-0 size-4"
+        dangerouslySetInnerHTML={{ __html: style.customIconSvg }}
+      />
+    );
+  }
+
+  // Lucide icon - use DynamicIcon for dynamic loading by name
+  // Only render if icon name looks valid (contains only letters, numbers, and hyphens)
+  const iconName = style.icon.trim().toLowerCase();
+  if (!/^[a-z][a-z0-9-]*$/.test(iconName)) return null;
+
+  return (
+    <DynamicIcon
+      // @ts-expect-error - DynamicIcon accepts any valid lucide icon name
+      name={iconName}
+      className="size-4 shrink-0"
+    />
   );
 }
 
@@ -2699,6 +2776,122 @@ export default function HeaderBuilderPage() {
                               </div>
                             </AccordionContent>
                           </AccordionItem>
+
+                          {/* Icon Section */}
+                          <AccordionItem value="icon">
+                            <AccordionTrigger className="text-sm">
+                              Icon
+                              {(btn.style?.icon || btn.style?.customIconSvg) && (
+                                <Badge variant="secondary" className="ml-2 text-xs">Customized</Badge>
+                              )}
+                            </AccordionTrigger>
+                            <AccordionContent className="space-y-4 pt-2">
+                              {/* Use Custom SVG Toggle */}
+                              <div className="flex items-center justify-between rounded-lg border p-3">
+                                <div>
+                                  <Label className="text-sm">Use Custom SVG</Label>
+                                  <p className="text-xs text-muted-foreground">
+                                    Paste your own SVG code instead of Lucide icon
+                                  </p>
+                                </div>
+                                <Switch
+                                  checked={btn.style?.icon === "custom"}
+                                  onCheckedChange={(checked) => updateCTAButton(index, {
+                                    style: {
+                                      ...btn.style,
+                                      icon: checked ? "custom" : undefined,
+                                      customIconSvg: checked ? btn.style?.customIconSvg : undefined
+                                    }
+                                  })}
+                                />
+                              </div>
+
+                              {/* Lucide Icon Name Input + Position (side by side) */}
+                              {btn.style?.icon !== "custom" && (
+                                <div className="space-y-2">
+                                  <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                      <Label className="text-xs">Lucide Icon Name</Label>
+                                      <Input
+                                        value={btn.style?.icon || ""}
+                                        onChange={(e) => updateCTAButton(index, {
+                                          style: { ...btn.style, icon: e.target.value || undefined }
+                                        })}
+                                        placeholder="arrow-right, rocket..."
+                                        className="text-xs"
+                                      />
+                                    </div>
+                                    <div className="space-y-2">
+                                      <Label className="text-xs">Icon Position</Label>
+                                      <Select
+                                        value={btn.style?.iconPosition || "right"}
+                                        onValueChange={(value: "left" | "right") => updateCTAButton(index, {
+                                          style: { ...btn.style, iconPosition: value }
+                                        })}
+                                      >
+                                        <SelectTrigger>
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="left">Left of Text</SelectItem>
+                                          <SelectItem value="right">Right of Text</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+                                  </div>
+                                  <p className="text-xs text-muted-foreground">
+                                    Browse icons at{" "}
+                                    <a
+                                      href="https://lucide.dev/icons"
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-primary underline"
+                                    >
+                                      lucide.dev/icons
+                                    </a>
+                                    {" "}and copy the icon name
+                                  </p>
+                                </div>
+                              )}
+
+                              {/* Custom SVG Input + Position (side by side for position) */}
+                              {btn.style?.icon === "custom" && (
+                                <div className="space-y-3">
+                                  <div className="space-y-2">
+                                    <Label className="text-xs">Custom SVG Code</Label>
+                                    <textarea
+                                      value={btn.style?.customIconSvg || ""}
+                                      onChange={(e) => updateCTAButton(index, {
+                                        style: { ...btn.style, customIconSvg: e.target.value }
+                                      })}
+                                      placeholder='<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="..."/></svg>'
+                                      className="w-full h-24 p-2 text-xs font-mono border rounded-md resize-none bg-background"
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                      Paste SVG code from any icon source
+                                    </p>
+                                  </div>
+                                  <div className="w-1/2 space-y-2">
+                                    <Label className="text-xs">Icon Position</Label>
+                                    <Select
+                                      value={btn.style?.iconPosition || "right"}
+                                      onValueChange={(value: "left" | "right") => updateCTAButton(index, {
+                                        style: { ...btn.style, iconPosition: value }
+                                      })}
+                                    >
+                                      <SelectTrigger>
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="left">Left of Text</SelectItem>
+                                        <SelectItem value="right">Right of Text</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                </div>
+                              )}
+                            </AccordionContent>
+                          </AccordionItem>
                         </Accordion>
 
                       {/* Live Button Preview with Hover */}
@@ -3180,6 +3373,127 @@ export default function HeaderBuilderPage() {
                                 className="text-xs"
                               />
                             </div>
+                          </AccordionContent>
+                        </AccordionItem>
+
+                        {/* Icon Section */}
+                        <AccordionItem value="icon">
+                          <AccordionTrigger className="text-sm">
+                            Icon
+                            {(formData.loginStyle?.icon || formData.loginStyle?.customIconSvg) && (
+                              <Badge variant="secondary" className="ml-2 text-xs">Customized</Badge>
+                            )}
+                          </AccordionTrigger>
+                          <AccordionContent className="space-y-4 pt-2">
+                            {/* Use Custom SVG Toggle */}
+                            <div className="flex items-center justify-between rounded-lg border p-3">
+                              <div>
+                                <Label className="text-sm">Use Custom SVG</Label>
+                                <p className="text-xs text-muted-foreground">
+                                  Paste your own SVG code instead of Lucide icon
+                                </p>
+                              </div>
+                              <Switch
+                                checked={formData.loginStyle?.icon === "custom"}
+                                onCheckedChange={(checked) => setFormData({
+                                  ...formData,
+                                  loginStyle: {
+                                    ...formData.loginStyle,
+                                    icon: checked ? "custom" : undefined,
+                                    customIconSvg: checked ? formData.loginStyle?.customIconSvg : undefined
+                                  }
+                                })}
+                              />
+                            </div>
+
+                            {/* Lucide Icon Name Input + Position (side by side) */}
+                            {formData.loginStyle?.icon !== "custom" && (
+                              <div className="space-y-2">
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div className="space-y-2">
+                                    <Label className="text-xs">Lucide Icon Name</Label>
+                                    <Input
+                                      value={formData.loginStyle?.icon || ""}
+                                      onChange={(e) => setFormData({
+                                        ...formData,
+                                        loginStyle: { ...formData.loginStyle, icon: e.target.value || undefined }
+                                      })}
+                                      placeholder="arrow-right, rocket..."
+                                      className="text-xs"
+                                    />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label className="text-xs">Icon Position</Label>
+                                    <Select
+                                      value={formData.loginStyle?.iconPosition || "right"}
+                                      onValueChange={(value: "left" | "right") => setFormData({
+                                        ...formData,
+                                        loginStyle: { ...formData.loginStyle, iconPosition: value }
+                                      })}
+                                    >
+                                      <SelectTrigger>
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="left">Left of Text</SelectItem>
+                                        <SelectItem value="right">Right of Text</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                  Browse icons at{" "}
+                                  <a
+                                    href="https://lucide.dev/icons"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-primary underline"
+                                  >
+                                    lucide.dev/icons
+                                  </a>
+                                  {" "}and copy the icon name
+                                </p>
+                              </div>
+                            )}
+
+                            {/* Custom SVG Input + Position */}
+                            {formData.loginStyle?.icon === "custom" && (
+                              <div className="space-y-3">
+                                <div className="space-y-2">
+                                  <Label className="text-xs">Custom SVG Code</Label>
+                                  <textarea
+                                    value={formData.loginStyle?.customIconSvg || ""}
+                                    onChange={(e) => setFormData({
+                                      ...formData,
+                                      loginStyle: { ...formData.loginStyle, customIconSvg: e.target.value }
+                                    })}
+                                    placeholder='<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="..."/></svg>'
+                                    className="w-full h-24 p-2 text-xs font-mono border rounded-md resize-none bg-background"
+                                  />
+                                  <p className="text-xs text-muted-foreground">
+                                    Paste SVG code from any icon source
+                                  </p>
+                                </div>
+                                <div className="w-1/2 space-y-2">
+                                  <Label className="text-xs">Icon Position</Label>
+                                  <Select
+                                    value={formData.loginStyle?.iconPosition || "right"}
+                                    onValueChange={(value: "left" | "right") => setFormData({
+                                      ...formData,
+                                      loginStyle: { ...formData.loginStyle, iconPosition: value }
+                                    })}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="left">Left of Text</SelectItem>
+                                    <SelectItem value="right">Right of Text</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              </div>
+                            )}
                           </AccordionContent>
                         </AccordionItem>
                       </Accordion>
