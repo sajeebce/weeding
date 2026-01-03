@@ -339,7 +339,7 @@ const buttonStylePresets: ButtonStylePreset[] = [
     name: "Neural Button",
     description: "Futuristic button with animated border beam and scale effects",
     style: {
-      bgColor: "#0284c7",
+      bgColor: "#0369a1",
       textColor: "#ffffff",
       borderWidth: 0,
       borderRadius: 12,

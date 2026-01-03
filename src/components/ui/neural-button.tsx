@@ -20,7 +20,7 @@ function NeuralButton(props: NeuralButtonProps) {
   const { children, asChild = false, size, className, ...rest } = props
 
   const neuralStyles = cn(
-    'relative z-[1] overflow-hidden rounded-xl !bg-sky-600 text-white !ring-2 !ring-sky-600/60 transition-transform duration-200 ease-in-out hover:scale-105 active:scale-95 dark:!bg-sky-400/60 dark:!ring-sky-400/60',
+    'relative z-[1] overflow-hidden rounded-xl !bg-sky-700 text-white font-medium !ring-2 !ring-sky-700/70 transition-transform duration-200 ease-in-out hover:scale-105 active:scale-95 dark:!bg-sky-500 dark:!ring-sky-500/60',
 
     // size-based adjustments
     size === 'lg' && 'text-base has-[>svg]:px-6',
@@ -30,8 +30,8 @@ function NeuralButton(props: NeuralButtonProps) {
 
   const backgroundDecorations = (
     <>
-      <span className='pointer-events-none absolute inset-0 -z-[1] bg-gradient-to-r from-neutral-900/20 to-white/20'>
-        <span className='absolute inset-px rounded-[calc(var(--radius-xl)-1px)] bg-sky-600 dark:bg-sky-400/60' />
+      <span className='pointer-events-none absolute inset-0 -z-[1] bg-gradient-to-r from-neutral-900/30 to-white/10'>
+        <span className='absolute inset-px rounded-[calc(var(--radius-xl)-1px)] bg-sky-700 dark:bg-sky-500' />
       </span>
 
       <svg
