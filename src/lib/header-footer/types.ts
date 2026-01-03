@@ -25,7 +25,8 @@ export type ButtonHoverEffect =
   | "heartbeat" // Pulsing heartbeat animation effect
   | "flow-border" // Rotating border gradient effect
   | "stitches" // 3D stitched border effect with inner shadows
-  | "ring-hover"; // Ring outline appears on hover
+  | "ring-hover" // Ring outline appears on hover
+  | "neural"; // Neural button with animated border beam
 
 // Gradient direction for button backgrounds
 export type GradientDirection =

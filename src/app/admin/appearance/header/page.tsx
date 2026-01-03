@@ -25,6 +25,7 @@ import { DynamicIcon } from "lucide-react/dynamic";
 import { Button } from "@/components/ui/button";
 import { CraftButton, CraftButtonLabel, CraftButtonIcon } from "@/components/ui/craft-button";
 import { PrimaryFlowButton } from "@/components/ui/flow-button";
+import { NeuralButton } from "@/components/ui/neural-button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -100,6 +101,7 @@ const hoverEffectOptions: { value: ButtonHoverEffect; label: string }[] = [
   { value: "flow-border", label: "Flow Border (Rotating Gradient)" },
   { value: "stitches", label: "Stitches (3D Dashed Border)" },
   { value: "ring-hover", label: "Ring Hover" },
+  { value: "neural", label: "Neural (Animated Border Beam)" },
 ];
 
 // 2025 Modern Button Style Presets
@@ -331,6 +333,19 @@ const buttonStylePresets: ButtonStylePreset[] = [
       hoverEffect: "ring-hover",
     },
   },
+  // 16. Neural Button - Animated border beam with scale effect
+  {
+    id: "neural",
+    name: "Neural Button",
+    description: "Futuristic button with animated border beam and scale effects",
+    style: {
+      bgColor: "#0284c7",
+      textColor: "#ffffff",
+      borderWidth: 0,
+      borderRadius: 12,
+      hoverEffect: "neural",
+    },
+  },
 ];
 
 // Announcement Bar Style Presets (adapted from button presets)
@@ -483,6 +498,7 @@ function getPreviewHoverClass(effect?: ButtonHoverEffect): string {
     case "gradient-shift":
     case "ripple":
     case "flow-border":
+    case "neural":
       return "";
     default:
       return "";
@@ -537,6 +553,15 @@ function PreviewCTAButton({ btn }: { btn: CTAButton }) {
         >
           {btn.text}
         </PrimaryFlowButton>
+      );
+    }
+
+    // Check if this is a NeuralButton style (neural effect)
+    if (btn.style.hoverEffect === "neural") {
+      return (
+        <NeuralButton size="sm">
+          {btn.text}
+        </NeuralButton>
       );
     }
 

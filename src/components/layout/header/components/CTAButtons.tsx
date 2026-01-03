@@ -7,6 +7,7 @@ import { DynamicIcon } from "lucide-react/dynamic";
 import { Button } from "@/components/ui/button";
 import { CraftButton, CraftButtonLabel, CraftButtonIcon } from "@/components/ui/craft-button";
 import { PrimaryFlowButton } from "@/components/ui/flow-button";
+import { NeuralButton } from "@/components/ui/neural-button";
 import { UserMenu } from "./UserMenu";
 import type { CTAButtonsProps } from "../types";
 import type { CTAButton, ButtonCustomStyle, ButtonHoverEffect, GradientDirection } from "@/lib/header-footer/types";
@@ -142,6 +143,11 @@ function isFlowButtonEffect(effect?: ButtonHoverEffect): boolean {
   return effect === "flow-border";
 }
 
+// Check if effect is NeuralButton style
+function isNeuralButtonEffect(effect?: ButtonHoverEffect): boolean {
+  return effect === "neural";
+}
+
 // Get gradient shift background (larger gradient that shifts position)
 function getGradientShiftBackground(style: ButtonCustomStyle): string {
   const fromColor = style.bgColor || "#2563eb";
@@ -258,7 +264,16 @@ function CTAButtonItem({ btn, index }: { btn: CTAButton; index: number }) {
       );
     }
 
-    // Custom styled button (non-CraftButton, non-FlowButton)
+    // Check if this is a NeuralButton style
+    if (isNeuralButtonEffect(btn.style.hoverEffect)) {
+      return (
+        <NeuralButton key={index} asChild>
+          <Link href={btn.url}>{btn.text}</Link>
+        </NeuralButton>
+      );
+    }
+
+    // Custom styled button (non-CraftButton, non-FlowButton, non-NeuralButton)
     const hoverClass = getHoverEffectClass(btn.style.hoverEffect);
     const normalBg = getNormalBackground(btn.style);
     const hoverBg = getHoverBackground(btn.style);
