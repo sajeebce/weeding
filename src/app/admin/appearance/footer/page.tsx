@@ -1647,6 +1647,11 @@ export default function FooterBuilderPage() {
                                   {widget.type === "STATES" && <span className="italic">Auto: States</span>}
                                   {widget.type === "RECENT_POSTS" && <span className="italic">Recent Posts</span>}
                                   {widget.type === "CUSTOM_HTML" && <span className="italic">Custom HTML</span>}
+                                  {widget.type === "BUTTON" && (
+                                    <div className="mt-1">
+                                      <FooterButtonPreview style={(widget.content as { style?: ButtonCustomStyle })?.style || {}} />
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             ))
@@ -1907,7 +1912,12 @@ export default function FooterBuilderPage() {
                                       </div>
                                     </div>
                                   )}
-                                  {widget.type !== "LINKS" && widget.type !== "SOCIAL" && widget.type !== "NEWSLETTER" && widget.type !== "BRAND" && <span className="italic">{widget.type}</span>}
+                                  {widget.type === "BUTTON" && (
+                                    <div className="mt-1">
+                                      <FooterButtonPreview style={(widget.content as { style?: ButtonCustomStyle })?.style || {}} />
+                                    </div>
+                                  )}
+                                  {widget.type !== "LINKS" && widget.type !== "SOCIAL" && widget.type !== "NEWSLETTER" && widget.type !== "BRAND" && widget.type !== "BUTTON" && <span className="italic">{widget.type}</span>}
                                 </div>
                               </div>
                             ))
@@ -2024,6 +2034,11 @@ export default function FooterBuilderPage() {
                                     return <div className="space-y-1"><LogoPreview size="sm" logoMode={brandContent?.logoMode || "auto"} /><span className="font-semibold text-sm block">{businessConfig.name}</span></div>;
                                   })()}
                                   {widget.type === "SOCIAL" && <SocialIconsPreview size="sm" />}
+                                  {widget.type === "BUTTON" && (
+                                    <div className="mt-1">
+                                      <FooterButtonPreview style={(widget.content as { style?: ButtonCustomStyle })?.style || {}} />
+                                    </div>
+                                  )}
                                 </div>
                               ))}
                             </div>
@@ -2104,6 +2119,11 @@ export default function FooterBuilderPage() {
                                       <input type="email" placeholder="Email" className="flex-1 min-w-0 h-6 px-2 border-0 text-[10px]" style={{ backgroundColor: "rgba(255,255,255,0.05)" }} readOnly />
                                       <button className="h-6 px-2 text-[10px] font-semibold shrink-0" style={{ backgroundColor: "var(--accent-color)", color: "#0f172a" }}>{(widget.content as { buttonText?: string })?.buttonText || "Subscribe"}</button>
                                     </div>
+                                  </div>
+                                )}
+                                {widget.type === "BUTTON" && (
+                                  <div className="mt-1">
+                                    <FooterButtonPreview style={(widget.content as { style?: ButtonCustomStyle })?.style || {}} />
                                   </div>
                                 )}
                               </div>
