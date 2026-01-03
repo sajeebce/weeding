@@ -156,14 +156,22 @@ model Service {
   @@index([isPopular])
 }
 
-// Service features shown on service cards
+// Service features - Master list for comparison table
 model ServiceFeature {
-  id        String  @id @default(cuid())
-  text      String  // "Comprehensive trademark search"
-  sortOrder Int     @default(0)
+  id          String  @id @default(cuid())
+  text        String  // "Employer Identification Number (EIN)"
+  description String? @db.Text // Detailed description (optional)
+  tooltip     String? // Short tooltip shown on hover in table
+  sortOrder   Int     @default(0)
 
-  serviceId String
-  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  serviceId   String
+  service     Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  // Which packages include this feature
+  packageMappings PackageFeatureMap[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@index([serviceId])
 }
@@ -195,6 +203,7 @@ model Package {
   service     Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
   features    PackageFeature[]
   notIncluded PackageNotIncluded[]
+  featureMap  PackageFeatureMap[]  // For comparison table
   orderItems  OrderItem[]
 
   createdAt   DateTime @default(now())
@@ -216,7 +225,7 @@ model PackageFeature {
   @@index([packageId])
 }
 
-// Package not-included features
+// Package not-included features (legacy - keep for backward compatibility)
 model PackageNotIncluded {
   id        String  @id @default(cuid())
   text      String  // "Virtual Address"
@@ -226,6 +235,24 @@ model PackageNotIncluded {
   package   Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
 
   @@index([packageId])
+}
+
+// Junction table: Package <-> ServiceFeature (for comparison table)
+model PackageFeatureMap {
+  id          String  @id @default(cuid())
+
+  packageId   String
+  package     Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+
+  featureId   String
+  feature     ServiceFeature @relation(fields: [featureId], references: [id], onDelete: Cascade)
+
+  included    Boolean @default(true)  // true = ✓, false = ✗
+  customValue String? // Optional: "10 per month" instead of just ✓
+
+  @@unique([packageId, featureId])
+  @@index([packageId])
+  @@index([featureId])
 }
 
 // ============ ORDERS & PAYMENTS ============

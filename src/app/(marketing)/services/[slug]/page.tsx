@@ -1,14 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Check, X, ArrowRight, ArrowLeft } from "lucide-react";
+import { Check, ArrowRight, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -19,7 +16,6 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { getServiceForm } from "@/lib/data/service-forms";
-import { cn } from "@/lib/utils";
 import { MultiJsonLd } from "@/components/seo/json-ld";
 import {
   generateServiceSchema,
@@ -27,10 +23,30 @@ import {
   generateFAQSchema,
 } from "@/lib/seo";
 import { ServiceIcon } from "@/components/ui/service-icon";
+import { PackageComparisonTable } from "@/components/services/package-comparison-table";
 import prisma from "@/lib/db";
 
 // Force dynamic rendering to avoid SSG issues with client components
 export const dynamic = "force-dynamic";
+
+interface MasterFeature {
+  id: string;
+  text: string;
+  tooltip: string | null;
+  packageMappings: {
+    packageId: string;
+    included: boolean;
+    customValue: string | null;
+  }[];
+}
+
+interface PackageData {
+  id: string;
+  name: string;
+  description: string | null;
+  priceUSD: number;
+  isPopular: boolean;
+}
 
 interface ServiceData {
   id: string;
@@ -46,15 +62,8 @@ interface ServiceData {
   metaTitle: string | null;
   metaDescription: string | null;
   features: string[];
-  packages: {
-    id: string;
-    name: string;
-    description: string | null;
-    price: number;
-    isPopular: boolean;
-    features: string[];
-    notIncluded: string[];
-  }[];
+  masterFeatures: MasterFeature[];
+  packages: PackageData[];
   faqs: {
     id: string;
     question: string;
@@ -78,20 +87,28 @@ async function getService(slug: string): Promise<ServiceData | null> {
       include: {
         features: {
           orderBy: { sortOrder: "asc" },
-          select: { text: true },
+          select: {
+            id: true,
+            text: true,
+            tooltip: true,
+            packageMappings: {
+              select: {
+                packageId: true,
+                included: true,
+                customValue: true,
+              },
+            },
+          },
         },
         packages: {
           where: { isActive: true },
           orderBy: { sortOrder: "asc" },
-          include: {
-            features: {
-              orderBy: { sortOrder: "asc" },
-              select: { text: true },
-            },
-            notIncluded: {
-              orderBy: { sortOrder: "asc" },
-              select: { text: true },
-            },
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            priceUSD: true,
+            isPopular: true,
           },
         },
         faqs: {
@@ -117,14 +134,22 @@ async function getService(slug: string): Promise<ServiceData | null> {
       metaTitle: service.metaTitle,
       metaDescription: service.metaDescription,
       features: service.features.map((f) => f.text),
+      masterFeatures: service.features.map((f) => ({
+        id: f.id,
+        text: f.text,
+        tooltip: f.tooltip,
+        packageMappings: f.packageMappings.map((m) => ({
+          packageId: m.packageId,
+          included: m.included,
+          customValue: m.customValue,
+        })),
+      })),
       packages: service.packages.map((p) => ({
         id: p.id,
         name: p.name,
         description: p.description,
-        price: Number(p.priceUSD),
+        priceUSD: Number(p.priceUSD),
         isPopular: p.isPopular,
-        features: p.features.map((f) => f.text),
-        notIncluded: p.notIncluded.map((n) => n.text),
       })),
       faqs: service.faqs,
     };
@@ -202,6 +227,13 @@ export default async function ServicePage({ params }: PageProps) {
     ? `/checkout/${service.slug}`
     : `/checkout?service=${service.slug}`;
 
+  const getPackageCheckoutUrl = (packageName: string) => {
+    const pkgSlug = packageName.toLowerCase().replace(/\s+/g, "-");
+    return hasFormConfig
+      ? `/checkout/${service.slug}?package=${pkgSlug}`
+      : `/checkout?service=${service.slug}&package=${pkgSlug}`;
+  };
+
   const schemaData: Record<string, unknown>[] = [
     generateServiceSchema({
       name: service.name,
@@ -224,6 +256,11 @@ export default async function ServicePage({ params }: PageProps) {
     );
   }
 
+  // Check if we have master features for comparison table
+  // Show comparison table if there are features defined for this service
+  const hasComparisonData =
+    service.masterFeatures.length > 0 && service.packages.length > 0;
+
   return (
     <div className="py-12 lg:py-20">
       <MultiJsonLd data={schemaData} />
@@ -239,143 +276,137 @@ export default async function ServicePage({ params }: PageProps) {
           </Link>
         </div>
 
-        {/* Hero Section */}
-        <div className="grid gap-12 lg:grid-cols-2 lg:items-start">
-          <div>
-            <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <ServiceIcon name={service.icon || "Package"} className="h-8 w-8" />
-            </div>
-            <h1 className="text-4xl font-bold tracking-tight text-foreground">
-              {service.name}
-            </h1>
-            <p className="mt-4 text-xl text-muted-foreground">
-              {service.shortDesc}
-            </p>
-
-            {/* Features */}
-            {service.features.length > 0 && (
-              <div className="mt-8">
-                <h3 className="font-semibold text-foreground">
-                  What&apos;s Included
-                </h3>
-                <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-                  {service.features.map((feature, index) => (
-                    <li key={index} className="flex items-center gap-2">
-                      <Check className="h-5 w-5 shrink-0 text-primary" />
-                      <span className="text-sm text-muted-foreground">
-                        {feature}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {/* CTA */}
-            <div className="mt-8 flex flex-wrap gap-4">
-              <Button size="lg" asChild>
-                <Link href={checkoutBaseUrl}>
-                  Get Started - From ${service.startingPrice}
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" asChild>
-                <Link href="/contact">Ask a Question</Link>
-              </Button>
-            </div>
+        {/* SECTION 1: Hero */}
+        <section className="mx-auto max-w-4xl text-center">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <ServiceIcon name={service.icon || "Package"} className="h-8 w-8" />
           </div>
+          <h1 className="text-4xl font-bold tracking-tight text-foreground md:text-5xl">
+            {service.name}
+          </h1>
+          <p className="mx-auto mt-4 max-w-2xl text-xl text-muted-foreground">
+            {service.shortDesc}
+          </p>
 
-          {/* Packages */}
-          {service.packages.length > 0 && (
-            <div className="space-y-4">
-              {service.packages.map((pkg) => (
-                <Card
-                  key={pkg.id}
-                  className={cn(
-                    "relative",
-                    pkg.isPopular && "border-primary ring-1 ring-primary"
-                  )}
+          {/* CTA Buttons */}
+          <div className="mt-8 flex flex-wrap justify-center gap-4">
+            <Button size="lg" asChild>
+              <Link href={checkoutBaseUrl}>
+                Get Started - From ${service.startingPrice}
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+            <Button size="lg" variant="outline" asChild>
+              <Link href="/contact">Ask a Question</Link>
+            </Button>
+          </div>
+        </section>
+
+        {/* SECTION 2: What's Included */}
+        {service.features.length > 0 && (
+          <section className="mx-auto mt-16 max-w-4xl">
+            <h2 className="mb-8 text-center text-2xl font-semibold">
+              What&apos;s Included
+            </h2>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {service.features.map((feature, index) => (
+                <div
+                  key={index}
+                  className="flex items-start gap-3 rounded-lg bg-muted/30 p-4"
                 >
-                  {pkg.isPopular && (
-                    <Badge className="absolute -top-3 right-4 bg-primary">
-                      Most Popular
-                    </Badge>
-                  )}
-                  <CardHeader>
-                    <div className="flex items-baseline justify-between">
-                      <CardTitle>{pkg.name}</CardTitle>
-                      <div>
-                        <span className="text-3xl font-bold">${pkg.price}</span>
-                        {pkg.description?.includes("year") && (
-                          <span className="text-sm text-muted-foreground">
-                            /year
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    {pkg.description && (
-                      <CardDescription>{pkg.description}</CardDescription>
-                    )}
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="space-y-2">
-                      {pkg.features.map((feature, index) => (
-                        <li key={index} className="flex items-center gap-2">
-                          <Check className="h-4 w-4 text-primary" />
-                          <span className="text-sm">{feature}</span>
-                        </li>
-                      ))}
-                      {pkg.notIncluded.map((feature, index) => (
-                        <li
-                          key={`not-${index}`}
-                          className="flex items-center gap-2 text-muted-foreground/60"
-                        >
-                          <X className="h-4 w-4" />
-                          <span className="text-sm">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                  <CardFooter>
-                    <Button
-                      className="w-full"
-                      variant={pkg.isPopular ? "default" : "outline"}
-                      asChild
-                    >
-                      <Link
-                        href={
-                          hasFormConfig
-                            ? `/checkout/${service.slug}?package=${pkg.name.toLowerCase()}`
-                            : `/checkout?service=${service.slug}&package=${pkg.name.toLowerCase()}`
-                        }
-                      >
-                        Select {pkg.name}
-                      </Link>
-                    </Button>
-                  </CardFooter>
-                </Card>
+                  <Check className="mt-0.5 h-5 w-5 shrink-0 text-green-600" />
+                  <span className="text-sm">{feature}</span>
+                </div>
               ))}
             </div>
-          )}
-        </div>
+          </section>
+        )}
 
-        {/* Description */}
-        <div className="mt-16 max-w-3xl">
-          <h2 className="text-2xl font-bold">About This Service</h2>
+        {/* SECTION 3: Package Comparison Table */}
+        {service.packages.length > 0 && (
+          <section className="mt-16">
+            <div className="mx-auto max-w-5xl">
+              <h2 className="mb-2 text-center text-2xl font-semibold">
+                Choose Your Package
+              </h2>
+              <p className="mb-8 text-center text-muted-foreground">
+                Compare features and select the best plan for your business
+              </p>
+
+              {hasComparisonData ? (
+                <PackageComparisonTable
+                  features={service.masterFeatures}
+                  packages={service.packages.map((pkg) => ({
+                    ...pkg,
+                    checkoutUrl: getPackageCheckoutUrl(pkg.name),
+                  }))}
+                />
+              ) : (
+                // Fallback: Simple package cards if no comparison data
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {service.packages.map((pkg) => (
+                    <Card
+                      key={pkg.id}
+                      className={
+                        pkg.isPopular
+                          ? "relative border-primary ring-1 ring-primary"
+                          : ""
+                      }
+                    >
+                      {pkg.isPopular && (
+                        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                          <span className="rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">
+                            Most Popular
+                          </span>
+                        </div>
+                      )}
+                      <CardHeader className="text-center">
+                        <CardTitle>{pkg.name}</CardTitle>
+                        <p className="text-3xl font-bold">${pkg.priceUSD}</p>
+                        {pkg.description && (
+                          <p className="text-sm text-muted-foreground">
+                            {pkg.description}
+                          </p>
+                        )}
+                      </CardHeader>
+                      <CardContent>
+                        <Button
+                          className="w-full"
+                          variant={pkg.isPopular ? "default" : "outline"}
+                          asChild
+                        >
+                          <Link href={getPackageCheckoutUrl(pkg.name)}>
+                            Select {pkg.name}
+                          </Link>
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* SECTION 4: Long Description */}
+        <section className="mx-auto mt-16 max-w-4xl">
+          <h2 className="text-2xl font-bold">About {service.name}</h2>
           <div
-            className="prose prose-slate mt-4 max-w-none dark:prose-invert"
+            className="prose prose-slate mt-6 max-w-none dark:prose-invert prose-headings:font-semibold prose-p:text-muted-foreground prose-li:text-muted-foreground"
             dangerouslySetInnerHTML={{ __html: service.description }}
           />
-        </div>
+        </section>
 
-        {/* FAQs */}
+        {/* SECTION 5: FAQs */}
         {service.faqs.length > 0 && (
-          <div className="mt-16 max-w-3xl">
-            <h2 className="text-2xl font-bold">Frequently Asked Questions</h2>
-            <Accordion type="single" collapsible className="mt-6">
+          <section className="mx-auto mt-16 max-w-3xl">
+            <h2 className="mb-8 text-center text-2xl font-bold">
+              Frequently Asked Questions
+            </h2>
+            <Accordion type="single" collapsible defaultValue="faq-0">
               {service.faqs.map((faq, index) => (
                 <AccordionItem key={faq.id} value={`faq-${index}`}>
-                  <AccordionTrigger className="text-left">
+                  <AccordionTrigger className="text-left font-medium">
                     {faq.question}
                   </AccordionTrigger>
                   <AccordionContent className="text-muted-foreground">
@@ -384,41 +415,44 @@ export default async function ServicePage({ params }: PageProps) {
                 </AccordionItem>
               ))}
             </Accordion>
-          </div>
+          </section>
         )}
 
         {/* Related Services */}
         {relatedServices.length > 0 && (
-          <div className="mt-16">
+          <section className="mt-16">
             <h2 className="text-2xl font-bold">Related Services</h2>
             <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {relatedServices.map((relatedService) => (
-                  <Link
-                    key={relatedService.slug}
-                    href={`/services/${relatedService.slug}`}
-                  >
-                    <Card className="group h-full transition-all hover:border-primary">
-                      <CardHeader className="pb-2">
-                        <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                          <ServiceIcon name={relatedService.icon || "Package"} className="h-5 w-5" />
-                        </div>
-                        <CardTitle className="text-base">
-                          {relatedService.name}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          {relatedService.shortDesc}
-                        </p>
-                        <p className="mt-2 text-sm font-semibold text-primary">
-                          From ${relatedService.startingPrice}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                ))}
+                <Link
+                  key={relatedService.slug}
+                  href={`/services/${relatedService.slug}`}
+                >
+                  <Card className="group h-full transition-all hover:border-primary">
+                    <CardHeader className="pb-2">
+                      <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                        <ServiceIcon
+                          name={relatedService.icon || "Package"}
+                          className="h-5 w-5"
+                        />
+                      </div>
+                      <CardTitle className="text-base">
+                        {relatedService.name}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {relatedService.shortDesc}
+                      </p>
+                      <p className="mt-2 text-sm font-semibold text-primary">
+                        From ${relatedService.startingPrice}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
             </div>
-          </div>
+          </section>
         )}
       </div>
     </div>
