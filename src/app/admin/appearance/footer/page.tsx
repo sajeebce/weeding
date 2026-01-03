@@ -99,7 +99,17 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useBusinessConfig } from "@/hooks/use-business-config";
-import type { FooterConfig, FooterWidget, FooterWidgetType, FooterLayout, BottomLink, TrustBadge, FooterWidgetLink } from "@/lib/header-footer/types";
+import type { FooterConfig, FooterWidget, FooterWidgetType, FooterLayout, BottomLink, TrustBadge, FooterWidgetLink, ButtonHoverEffect, ButtonCustomStyle, GradientDirection } from "@/lib/header-footer/types";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { CraftButton, CraftButtonLabel, CraftButtonIcon } from "@/components/ui/craft-button";
+import { PrimaryFlowButton } from "@/components/ui/flow-button";
+import { NeuralButton } from "@/components/ui/neural-button";
+import { ArrowUpRight, MousePointerClick } from "lucide-react";
 import { PresetGallery } from "./components/PresetGallery";
 
 const layoutOptions: { value: FooterLayout; label: string; description: string }[] = [
@@ -126,7 +136,456 @@ const widgetTypes: { value: FooterWidgetType; label: string; icon: React.ReactNo
   { value: "SERVICES", label: "Services (Auto)", icon: <Columns3 className="h-4 w-4" /> },
   { value: "STATES", label: "States (Auto)", icon: <MapPin className="h-4 w-4" /> },
   { value: "CUSTOM_HTML", label: "Custom HTML", icon: <Code className="h-4 w-4" /> },
+  { value: "BUTTON", label: "Button", icon: <MousePointerClick className="h-4 w-4" /> },
 ];
+
+// Gradient direction options for button styling
+const gradientDirectionOptions: { value: GradientDirection; label: string }[] = [
+  { value: "to-r", label: "Left → Right" },
+  { value: "to-l", label: "Right → Left" },
+  { value: "to-t", label: "Bottom → Top" },
+  { value: "to-b", label: "Top → Bottom" },
+  { value: "to-tr", label: "↗ Diagonal (Top Right)" },
+  { value: "to-tl", label: "↖ Diagonal (Top Left)" },
+  { value: "to-br", label: "↘ Diagonal (Bottom Right)" },
+  { value: "to-bl", label: "↙ Diagonal (Bottom Left)" },
+];
+
+// Button hover effects
+const hoverEffectOptions: { value: ButtonHoverEffect; label: string }[] = [
+  { value: "none", label: "None" },
+  { value: "darken", label: "Darken" },
+  { value: "lighten", label: "Lighten" },
+  { value: "shadow-lift", label: "Shadow Lift" },
+  { value: "shadow-press", label: "Shadow Press" },
+  { value: "scale-up", label: "Scale Up" },
+  { value: "scale-down", label: "Scale Down" },
+  { value: "slide-fill", label: "Slide Fill" },
+  { value: "border-fill", label: "Border Fill" },
+  { value: "gradient-shift", label: "Gradient Shift" },
+  { value: "glow-pulse", label: "Glow Pulse" },
+  { value: "ripple", label: "Ripple" },
+  { value: "craft-expand", label: "Craft Expand (Icon Circle)" },
+  { value: "heartbeat", label: "Heartbeat Pulse" },
+  { value: "flow-border", label: "Flow Border (Rotating Gradient)" },
+  { value: "stitches", label: "Stitches (3D Dashed Border)" },
+  { value: "ring-hover", label: "Ring Hover" },
+  { value: "neural", label: "Neural (Animated Border Beam)" },
+];
+
+// 2025 Modern Button Style Presets
+interface ButtonStylePreset {
+  id: string;
+  name: string;
+  description: string;
+  style: ButtonCustomStyle;
+}
+
+const buttonStylePresets: ButtonStylePreset[] = [
+  {
+    id: "ocean-gradient",
+    name: "Ocean Gradient",
+    description: "Smooth blue-to-cyan gradient with lift effect",
+    style: {
+      useGradient: true,
+      gradientFrom: "#0066FF",
+      gradientTo: "#00D4FF",
+      gradientDirection: "to-r",
+      textColor: "#ffffff",
+      borderWidth: 0,
+      borderRadius: 8,
+      hoverEffect: "shadow-lift",
+      shadow: "0 2px 8px rgba(0, 102, 255, 0.3)",
+      hoverShadow: "0 8px 25px rgba(0, 102, 255, 0.4)",
+    },
+  },
+  {
+    id: "sunset-glow",
+    name: "Sunset Glow",
+    description: "Orange-to-pink gradient with glow pulse",
+    style: {
+      useGradient: true,
+      gradientFrom: "#FF6B35",
+      gradientTo: "#F72585",
+      gradientDirection: "to-r",
+      textColor: "#ffffff",
+      borderWidth: 0,
+      borderRadius: 25,
+      hoverEffect: "glow-pulse",
+      shadow: "0 4px 15px rgba(247, 37, 133, 0.3)",
+    },
+  },
+  {
+    id: "neon-cyber",
+    name: "Neon Cyber",
+    description: "Electric purple with slide fill effect",
+    style: {
+      bgColor: "#7C3AED",
+      textColor: "#ffffff",
+      borderWidth: 2,
+      borderColor: "#A855F7",
+      borderRadius: 6,
+      hoverBgColor: "#A855F7",
+      hoverEffect: "slide-fill",
+      shadow: "0 0 20px rgba(168, 85, 247, 0.3)",
+    },
+  },
+  {
+    id: "emerald-success",
+    name: "Emerald Success",
+    description: "Rich green gradient with scale effect",
+    style: {
+      useGradient: true,
+      gradientFrom: "#059669",
+      gradientTo: "#10B981",
+      gradientDirection: "to-tr",
+      textColor: "#ffffff",
+      borderWidth: 0,
+      borderRadius: 10,
+      hoverEffect: "scale-up",
+      shadow: "0 4px 12px rgba(16, 185, 129, 0.3)",
+    },
+  },
+  {
+    id: "midnight-premium",
+    name: "Midnight Premium",
+    description: "Deep dark with gold accent border fill",
+    style: {
+      bgColor: "#1a1a2e",
+      textColor: "#FFD700",
+      borderWidth: 2,
+      borderColor: "#FFD700",
+      borderRadius: 4,
+      hoverBgColor: "#FFD700",
+      hoverTextColor: "#1a1a2e",
+      hoverEffect: "border-fill",
+    },
+  },
+  {
+    id: "coral-soft",
+    name: "Coral Soft",
+    description: "Soft coral with ripple effect",
+    style: {
+      bgColor: "#FF6F61",
+      textColor: "#ffffff",
+      borderWidth: 0,
+      borderRadius: 20,
+      hoverBgColor: "#FF8577",
+      hoverEffect: "ripple",
+      shadow: "0 3px 10px rgba(255, 111, 97, 0.3)",
+    },
+  },
+  {
+    id: "arctic-shift",
+    name: "Arctic Shift",
+    description: "Cool blue gradient with shift animation",
+    style: {
+      useGradient: true,
+      gradientFrom: "#667eea",
+      gradientTo: "#764ba2",
+      gradientDirection: "to-r",
+      textColor: "#ffffff",
+      borderWidth: 0,
+      borderRadius: 8,
+      hoverBgColor: "#764ba2",
+      hoverEffect: "gradient-shift",
+    },
+  },
+  {
+    id: "red-alert",
+    name: "Red Alert CTA",
+    description: "High-contrast red for urgent actions",
+    style: {
+      bgColor: "#DC2626",
+      textColor: "#ffffff",
+      borderWidth: 0,
+      borderRadius: 6,
+      hoverBgColor: "#B91C1C",
+      hoverEffect: "shadow-press",
+      shadow: "0 4px 14px rgba(220, 38, 38, 0.4)",
+    },
+  },
+  {
+    id: "outline-modern",
+    name: "Outline Modern",
+    description: "Clean outline with slide fill on hover",
+    style: {
+      bgColor: "transparent",
+      textColor: "#2563EB",
+      borderWidth: 2,
+      borderColor: "#2563EB",
+      borderRadius: 8,
+      hoverBgColor: "#2563EB",
+      hoverTextColor: "#ffffff",
+      hoverEffect: "slide-fill",
+    },
+  },
+  {
+    id: "craft-expand",
+    name: "Craft Button",
+    description: "Modern pill button with expanding icon circle on hover",
+    style: {
+      bgColor: "#18181b",
+      textColor: "#ffffff",
+      borderWidth: 0,
+      borderRadius: 9999,
+      hoverEffect: "craft-expand",
+      shadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+      hoverShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+    },
+  },
+  {
+    id: "heartbeat",
+    name: "Heartbeat Effect",
+    description: "Eye-catching pulsing animation for urgent CTAs",
+    style: {
+      bgColor: "#DC2626",
+      textColor: "#ffffff",
+      borderWidth: 0,
+      borderRadius: 8,
+      hoverEffect: "heartbeat",
+      shadow: "0 0 0 0 rgba(220, 38, 38, 0.7)",
+    },
+  },
+  {
+    id: "flow-border",
+    name: "Flow Button",
+    description: "Rotating border gradient with conic animation on hover",
+    style: {
+      bgColor: "#2563eb",
+      textColor: "#ffffff",
+      borderWidth: 2,
+      borderColor: "#2563eb",
+      borderRadius: 8,
+      hoverEffect: "flow-border",
+      shadow: "0 0 0 2px rgba(37, 99, 235, 0.3)",
+    },
+  },
+  {
+    id: "stitches",
+    name: "Stitches Button",
+    description: "3D stitched effect with dashed inner border and shadow depth",
+    style: {
+      bgColor: "#0ea5e9",
+      textColor: "#ffffff",
+      borderWidth: 2,
+      borderColor: "#0ea5e9",
+      borderRadius: 8,
+      hoverEffect: "stitches",
+    },
+  },
+  {
+    id: "ring-hover",
+    name: "Ring Hover",
+    description: "Elegant ring outline effect on hover with smooth transition",
+    style: {
+      bgColor: "#2563eb",
+      textColor: "#ffffff",
+      borderWidth: 0,
+      borderRadius: 6,
+      hoverEffect: "ring-hover",
+    },
+  },
+  {
+    id: "neural",
+    name: "Neural Button",
+    description: "Futuristic button with animated border beam and scale effects",
+    style: {
+      bgColor: "#0369a1",
+      textColor: "#ffffff",
+      borderWidth: 0,
+      borderRadius: 12,
+      hoverEffect: "neural",
+    },
+  },
+];
+
+// Convert gradient direction to CSS
+function getGradientCSS(direction?: GradientDirection): string {
+  switch (direction) {
+    case "to-r": return "to right";
+    case "to-l": return "to left";
+    case "to-t": return "to top";
+    case "to-b": return "to bottom";
+    case "to-tr": return "to top right";
+    case "to-tl": return "to top left";
+    case "to-br": return "to bottom right";
+    case "to-bl": return "to bottom left";
+    default: return "to right";
+  }
+}
+
+// Get hover effect CSS class for preview
+function getPreviewHoverClass(effect?: ButtonHoverEffect): string {
+  switch (effect) {
+    case "darken": return "hover:brightness-90";
+    case "lighten": return "hover:brightness-110";
+    case "shadow-lift": return "hover:-translate-y-0.5 hover:shadow-lg";
+    case "shadow-press": return "hover:translate-y-0.5 hover:shadow-sm";
+    case "scale-up": return "hover:scale-105";
+    case "scale-down": return "hover:scale-95";
+    case "glow-pulse": return "hover:shadow-[0_0_15px_rgba(59,130,246,0.5)]";
+    case "heartbeat": return "animate-heartbeat";
+    case "stitches": return "stitches-button";
+    case "ring-hover": return "ring-offset-background hover:ring-primary/90 transition-all duration-300 hover:ring-2 hover:ring-offset-2";
+    case "slide-fill":
+    case "border-fill":
+    case "gradient-shift":
+    case "ripple":
+    case "flow-border":
+    case "neural":
+      return "";
+    default: return "";
+  }
+}
+
+// Check if effect needs special rendering
+function isComplexHoverEffect(effect?: ButtonHoverEffect): boolean {
+  return effect === "slide-fill" || effect === "border-fill" || effect === "gradient-shift" || effect === "ripple";
+}
+
+// Footer Button Widget Preview Component
+function FooterButtonPreview({ style }: { style: ButtonCustomStyle }) {
+  const [isHovered, setIsHovered] = useState(false);
+  const text = "Button";
+
+  // Check if this is a CraftButton style
+  if (style.hoverEffect === "craft-expand") {
+    return (
+      <CraftButton
+        bgColor={style.bgColor || "#18181b"}
+        textColor={style.textColor || "#ffffff"}
+        size="sm"
+        style={{
+          boxShadow: style.shadow,
+          borderRadius: `${style.borderRadius ?? 9999}px`,
+        }}
+      >
+        <CraftButtonLabel>{text}</CraftButtonLabel>
+        <CraftButtonIcon>
+          <ArrowUpRight className="size-3 stroke-2 transition-transform duration-500 group-hover:rotate-45" />
+        </CraftButtonIcon>
+      </CraftButton>
+    );
+  }
+
+  // Check if this is a FlowButton style
+  if (style.hoverEffect === "flow-border") {
+    return (
+      <PrimaryFlowButton
+        className="text-sm"
+        style={{
+          '--tw-ring-color': `${style.bgColor || '#2563eb'}99`,
+        } as React.CSSProperties}
+      >
+        {text}
+      </PrimaryFlowButton>
+    );
+  }
+
+  // Check if this is a NeuralButton style
+  if (style.hoverEffect === "neural") {
+    return (
+      <NeuralButton size="sm">
+        {text}
+      </NeuralButton>
+    );
+  }
+
+  const hoverClass = getPreviewHoverClass(style.hoverEffect);
+  const hasComplexEffect = isComplexHoverEffect(style.hoverEffect);
+
+  const getNormalBackground = () => {
+    if (style.useGradient) {
+      return `linear-gradient(${getGradientCSS(style.gradientDirection)}, ${style.gradientFrom || "#2563eb"}, ${style.gradientTo || "#7c3aed"})`;
+    }
+    return style.bgColor || "#2563eb";
+  };
+
+  const getHoverBackground = () => {
+    if (style.hoverUseGradient) {
+      return `linear-gradient(${getGradientCSS(style.hoverGradientDirection)}, ${style.hoverGradientFrom || "#1d4ed8"}, ${style.hoverGradientTo || "#6d28d9"})`;
+    }
+    if (style.hoverBgColor) {
+      return style.hoverBgColor;
+    }
+    return getNormalBackground();
+  };
+
+  const getGradientShiftBackground = () => {
+    const fromColor = style.bgColor || "#2563eb";
+    const toColor = style.hoverBgColor || "#7c3aed";
+    return `linear-gradient(90deg, ${fromColor} 0%, ${toColor} 50%, ${fromColor} 100%)`;
+  };
+
+  const getBaseStylesForEffect = (): React.CSSProperties => {
+    if (!hasComplexEffect) return {};
+
+    switch (style.hoverEffect) {
+      case "slide-fill":
+        return {
+          boxShadow: isHovered
+            ? `inset 200px 0 0 0 ${style.hoverBgColor || "#1d4ed8"}`
+            : `inset 0 0 0 0 ${style.hoverBgColor || "#1d4ed8"}`,
+        };
+      case "border-fill":
+        return {
+          boxShadow: isHovered
+            ? `inset 0 0 0 50px ${style.hoverBgColor || "#1d4ed8"}`
+            : `inset 0 0 0 0 ${style.hoverBgColor || "#1d4ed8"}`,
+        };
+      case "gradient-shift":
+        return {
+          backgroundSize: "200% 100%",
+          backgroundPosition: isHovered ? "100% 0" : "0% 0",
+        };
+      case "ripple":
+        return {
+          boxShadow: isHovered
+            ? `0 0 0 8px ${(style.bgColor || "#2563eb")}30, 0 0 20px ${(style.bgColor || "#2563eb")}20`
+            : `0 0 0 0 ${(style.bgColor || "#2563eb")}30`,
+        };
+      default:
+        return {};
+    }
+  };
+
+  const effectStyles = getBaseStylesForEffect();
+
+  const getFinalBackground = () => {
+    if (style.hoverEffect === "gradient-shift") {
+      return getGradientShiftBackground();
+    }
+    if (style.hoverEffect === "slide-fill" || style.hoverEffect === "border-fill") {
+      return getNormalBackground();
+    }
+    return isHovered ? getHoverBackground() : getNormalBackground();
+  };
+
+  return (
+    <span
+      className={cn(
+        "relative inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium cursor-pointer overflow-hidden",
+        hoverClass,
+        hasComplexEffect ? "transition-all duration-500 ease-out" : "transition-all duration-300"
+      )}
+      style={{
+        background: getFinalBackground(),
+        color: isHovered && style.hoverTextColor ? style.hoverTextColor : (style.textColor || "#ffffff"),
+        borderWidth: `${style.borderWidth ?? 1}px`,
+        borderStyle: "solid",
+        borderColor: style.borderColor || style.bgColor || "#2563eb",
+        borderRadius: `${style.borderRadius ?? 6}px`,
+        ...effectStyles,
+        ...((!hasComplexEffect && style.shadow) ? { boxShadow: isHovered && style.hoverShadow ? style.hoverShadow : style.shadow } : {}),
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {text}
+    </span>
+  );
+}
 
 interface WidgetLink {
   id: string;
@@ -3202,13 +3661,16 @@ export default function FooterBuilderPage() {
 
       {/* Widget Dialog */}
       <Dialog open={widgetDialogOpen} onOpenChange={setWidgetDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
+        <DialogContent className={cn(
+          "max-w-[95vw] sm:max-w-lg max-h-[90vh] overflow-hidden flex flex-col",
+          widgetFormData.type === "BUTTON" && "sm:max-w-xl md:max-w-2xl"
+        )}>
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle>
               {selectedWidget ? "Edit Widget" : "Add Widget"}
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-4 overflow-y-auto flex-1 pr-1">
             <div className="space-y-2">
               <Label>Widget Type</Label>
               <Select
@@ -3403,26 +3865,486 @@ export default function FooterBuilderPage() {
               </div>
             )}
 
-            <div className="rounded-lg bg-muted/50 p-4">
-              <p className="text-sm text-muted-foreground">
-                {widgetFormData.type === "LINKS" && "Add links above. They will be displayed as a list in the footer."}
-                {widgetFormData.type === "BRAND" && "Shows logo, description, and contact info from settings."}
-                {widgetFormData.type === "SERVICES" && "Auto-populated from your active services."}
-                {widgetFormData.type === "STATES" && "Auto-populated list of popular LLC states."}
-                {widgetFormData.type === "NEWSLETTER" && "Email subscription form."}
-                {widgetFormData.type === "SOCIAL" && "Social media links from settings."}
-                {widgetFormData.type === "CONTACT" && "Contact information from settings."}
-                {widgetFormData.type === "TEXT" && "Enter your custom text above."}
-                {widgetFormData.type === "RECENT_POSTS" && "Latest blog posts."}
-                {widgetFormData.type === "CUSTOM_HTML" && "Enter raw HTML above. Use with caution."}
-              </p>
-            </div>
+            {/* BUTTON widget options */}
+            {widgetFormData.type === "BUTTON" && (
+              <div className="space-y-4">
+                {/* Button Text and URL */}
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label>Button Text</Label>
+                    <Input
+                      value={(widgetFormData.content as { text?: string })?.text || ""}
+                      onChange={(e) => setWidgetFormData({
+                        ...widgetFormData,
+                        content: { ...widgetFormData.content, text: e.target.value },
+                      })}
+                      placeholder="Click Here"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>URL</Label>
+                    <Input
+                      value={(widgetFormData.content as { url?: string })?.url || ""}
+                      onChange={(e) => setWidgetFormData({
+                        ...widgetFormData,
+                        content: { ...widgetFormData.content, url: e.target.value },
+                      })}
+                      placeholder="/contact"
+                    />
+                  </div>
+                </div>
+
+                {/* Live Button Preview */}
+                <div className="rounded-lg border p-3">
+                  <Label className="text-xs text-muted-foreground mb-1 block">Preview (hover/tap to test)</Label>
+                  <div className="flex items-center justify-center py-1">
+                    <FooterButtonPreview style={(widgetFormData.content as { style?: ButtonCustomStyle })?.style || {}} />
+                  </div>
+                </div>
+
+                {/* Style Presets */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Quick Style Presets</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Tap to apply a style preset
+                  </p>
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-1.5">
+                    {buttonStylePresets.map((preset) => {
+                      const previewBg = preset.style.useGradient
+                        ? `linear-gradient(${getGradientCSS(preset.style.gradientDirection)}, ${preset.style.gradientFrom}, ${preset.style.gradientTo})`
+                        : preset.style.bgColor || "#2563eb";
+
+                      return (
+                        <button
+                          key={preset.id}
+                          type="button"
+                          onClick={() => setWidgetFormData({
+                            ...widgetFormData,
+                            content: { ...widgetFormData.content, style: { ...preset.style } },
+                          })}
+                          className="group relative flex flex-col items-center p-1.5 rounded-md border hover:border-primary hover:bg-muted/50 transition-all"
+                          title={preset.description}
+                        >
+                          <span
+                            className="inline-flex items-center justify-center px-1.5 py-0.5 text-[8px] font-medium rounded transition-all mb-0.5"
+                            style={{
+                              background: previewBg,
+                              color: preset.style.textColor || "#ffffff",
+                              borderWidth: `${preset.style.borderWidth ?? 0}px`,
+                              borderStyle: "solid",
+                              borderColor: preset.style.borderColor || "transparent",
+                              borderRadius: `${Math.min(preset.style.borderRadius ?? 6, 4)}px`,
+                            }}
+                          >
+                            Btn
+                          </span>
+                          <span className="text-[8px] text-muted-foreground group-hover:text-foreground text-center leading-tight truncate w-full">
+                            {preset.name.split(' ')[0]}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Custom Styling Accordion */}
+                <Accordion type="multiple" className="w-full">
+                  {/* Colors Section */}
+                  <AccordionItem value="colors">
+                    <AccordionTrigger className="text-sm">Colors</AccordionTrigger>
+                    <AccordionContent className="space-y-4 pt-2">
+                      {/* Gradient Toggle */}
+                      <div className="flex items-center justify-between rounded-lg border p-2 sm:p-3 gap-2">
+                        <div className="min-w-0">
+                          <Label className="text-xs sm:text-sm">Use Gradient</Label>
+                          <p className="text-[10px] sm:text-xs text-muted-foreground hidden sm:block">Enable gradient instead of solid</p>
+                        </div>
+                        <Switch
+                          checked={(widgetFormData.content as { style?: ButtonCustomStyle })?.style?.useGradient || false}
+                          onCheckedChange={(checked) => setWidgetFormData({
+                            ...widgetFormData,
+                            content: {
+                              ...widgetFormData.content,
+                              style: {
+                                ...(widgetFormData.content as { style?: ButtonCustomStyle })?.style,
+                                useGradient: checked,
+                                gradientFrom: checked ? ((widgetFormData.content as { style?: ButtonCustomStyle })?.style?.gradientFrom || "#2563eb") : undefined,
+                                gradientTo: checked ? ((widgetFormData.content as { style?: ButtonCustomStyle })?.style?.gradientTo || "#7c3aed") : undefined,
+                              },
+                            },
+                          })}
+                        />
+                      </div>
+
+                      {(widgetFormData.content as { style?: ButtonCustomStyle })?.style?.useGradient ? (
+                        <div className="rounded-lg border p-2 sm:p-3 space-y-3 bg-muted/30">
+                          <div className="grid gap-2 sm:gap-3 grid-cols-1 sm:grid-cols-3">
+                            <div className="space-y-2">
+                              <Label className="text-xs">Gradient From</Label>
+                              <div className="flex gap-2">
+                                <Input
+                                  type="color"
+                                  value={(widgetFormData.content as { style?: ButtonCustomStyle })?.style?.gradientFrom || "#2563eb"}
+                                  onChange={(e) => setWidgetFormData({
+                                    ...widgetFormData,
+                                    content: {
+                                      ...widgetFormData.content,
+                                      style: { ...(widgetFormData.content as { style?: ButtonCustomStyle })?.style, gradientFrom: e.target.value },
+                                    },
+                                  })}
+                                  className="h-9 w-12 cursor-pointer p-1"
+                                />
+                                <Input
+                                  value={(widgetFormData.content as { style?: ButtonCustomStyle })?.style?.gradientFrom || ""}
+                                  onChange={(e) => setWidgetFormData({
+                                    ...widgetFormData,
+                                    content: {
+                                      ...widgetFormData.content,
+                                      style: { ...(widgetFormData.content as { style?: ButtonCustomStyle })?.style, gradientFrom: e.target.value },
+                                    },
+                                  })}
+                                  className="flex-1 text-xs"
+                                />
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="text-xs">Gradient To</Label>
+                              <div className="flex gap-2">
+                                <Input
+                                  type="color"
+                                  value={(widgetFormData.content as { style?: ButtonCustomStyle })?.style?.gradientTo || "#7c3aed"}
+                                  onChange={(e) => setWidgetFormData({
+                                    ...widgetFormData,
+                                    content: {
+                                      ...widgetFormData.content,
+                                      style: { ...(widgetFormData.content as { style?: ButtonCustomStyle })?.style, gradientTo: e.target.value },
+                                    },
+                                  })}
+                                  className="h-9 w-12 cursor-pointer p-1"
+                                />
+                                <Input
+                                  value={(widgetFormData.content as { style?: ButtonCustomStyle })?.style?.gradientTo || ""}
+                                  onChange={(e) => setWidgetFormData({
+                                    ...widgetFormData,
+                                    content: {
+                                      ...widgetFormData.content,
+                                      style: { ...(widgetFormData.content as { style?: ButtonCustomStyle })?.style, gradientTo: e.target.value },
+                                    },
+                                  })}
+                                  className="flex-1 text-xs"
+                                />
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="text-xs">Direction</Label>
+                              <Select
+                                value={(widgetFormData.content as { style?: ButtonCustomStyle })?.style?.gradientDirection || "to-r"}
+                                onValueChange={(value: GradientDirection) => setWidgetFormData({
+                                  ...widgetFormData,
+                                  content: {
+                                    ...widgetFormData.content,
+                                    style: { ...(widgetFormData.content as { style?: ButtonCustomStyle })?.style, gradientDirection: value },
+                                  },
+                                })}
+                              >
+                                <SelectTrigger className="text-xs">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {gradientDirectionOptions.map((dir) => (
+                                    <SelectItem key={dir.value} value={dir.value}>{dir.label}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-xs">Text Color</Label>
+                            <div className="flex gap-2">
+                              <Input
+                                type="color"
+                                value={(widgetFormData.content as { style?: ButtonCustomStyle })?.style?.textColor || "#ffffff"}
+                                onChange={(e) => setWidgetFormData({
+                                  ...widgetFormData,
+                                  content: {
+                                    ...widgetFormData.content,
+                                    style: { ...(widgetFormData.content as { style?: ButtonCustomStyle })?.style, textColor: e.target.value },
+                                  },
+                                })}
+                                className="h-9 w-12 cursor-pointer p-1"
+                              />
+                              <Input
+                                value={(widgetFormData.content as { style?: ButtonCustomStyle })?.style?.textColor || ""}
+                                onChange={(e) => setWidgetFormData({
+                                  ...widgetFormData,
+                                  content: {
+                                    ...widgetFormData.content,
+                                    style: { ...(widgetFormData.content as { style?: ButtonCustomStyle })?.style, textColor: e.target.value },
+                                  },
+                                })}
+                                className="flex-1 text-xs"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="grid gap-2 sm:gap-3 grid-cols-1 sm:grid-cols-3">
+                          <div className="space-y-2">
+                            <Label className="text-xs">Background Color</Label>
+                            <div className="flex gap-2">
+                              <Input
+                                type="color"
+                                value={(widgetFormData.content as { style?: ButtonCustomStyle })?.style?.bgColor || "#2563eb"}
+                                onChange={(e) => setWidgetFormData({
+                                  ...widgetFormData,
+                                  content: {
+                                    ...widgetFormData.content,
+                                    style: { ...(widgetFormData.content as { style?: ButtonCustomStyle })?.style, bgColor: e.target.value },
+                                  },
+                                })}
+                                className="h-9 w-12 cursor-pointer p-1"
+                              />
+                              <Input
+                                value={(widgetFormData.content as { style?: ButtonCustomStyle })?.style?.bgColor || ""}
+                                onChange={(e) => setWidgetFormData({
+                                  ...widgetFormData,
+                                  content: {
+                                    ...widgetFormData.content,
+                                    style: { ...(widgetFormData.content as { style?: ButtonCustomStyle })?.style, bgColor: e.target.value },
+                                  },
+                                })}
+                                className="flex-1 text-xs"
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-xs">Text Color</Label>
+                            <div className="flex gap-2">
+                              <Input
+                                type="color"
+                                value={(widgetFormData.content as { style?: ButtonCustomStyle })?.style?.textColor || "#ffffff"}
+                                onChange={(e) => setWidgetFormData({
+                                  ...widgetFormData,
+                                  content: {
+                                    ...widgetFormData.content,
+                                    style: { ...(widgetFormData.content as { style?: ButtonCustomStyle })?.style, textColor: e.target.value },
+                                  },
+                                })}
+                                className="h-9 w-12 cursor-pointer p-1"
+                              />
+                              <Input
+                                value={(widgetFormData.content as { style?: ButtonCustomStyle })?.style?.textColor || ""}
+                                onChange={(e) => setWidgetFormData({
+                                  ...widgetFormData,
+                                  content: {
+                                    ...widgetFormData.content,
+                                    style: { ...(widgetFormData.content as { style?: ButtonCustomStyle })?.style, textColor: e.target.value },
+                                  },
+                                })}
+                                className="flex-1 text-xs"
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-xs">Border Color</Label>
+                            <div className="flex gap-2">
+                              <Input
+                                type="color"
+                                value={(widgetFormData.content as { style?: ButtonCustomStyle })?.style?.borderColor || "#2563eb"}
+                                onChange={(e) => setWidgetFormData({
+                                  ...widgetFormData,
+                                  content: {
+                                    ...widgetFormData.content,
+                                    style: { ...(widgetFormData.content as { style?: ButtonCustomStyle })?.style, borderColor: e.target.value },
+                                  },
+                                })}
+                                className="h-9 w-12 cursor-pointer p-1"
+                              />
+                              <Input
+                                value={(widgetFormData.content as { style?: ButtonCustomStyle })?.style?.borderColor || ""}
+                                onChange={(e) => setWidgetFormData({
+                                  ...widgetFormData,
+                                  content: {
+                                    ...widgetFormData.content,
+                                    style: { ...(widgetFormData.content as { style?: ButtonCustomStyle })?.style, borderColor: e.target.value },
+                                  },
+                                })}
+                                className="flex-1 text-xs"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </AccordionContent>
+                  </AccordionItem>
+
+                  {/* Border Section */}
+                  <AccordionItem value="border">
+                    <AccordionTrigger className="text-sm">Border</AccordionTrigger>
+                    <AccordionContent className="space-y-4 pt-2">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-xs">Border Width</Label>
+                          <span className="text-xs text-muted-foreground">
+                            {(widgetFormData.content as { style?: ButtonCustomStyle })?.style?.borderWidth ?? 0}px
+                          </span>
+                        </div>
+                        <Slider
+                          value={[(widgetFormData.content as { style?: ButtonCustomStyle })?.style?.borderWidth ?? 0]}
+                          onValueChange={(value) => setWidgetFormData({
+                            ...widgetFormData,
+                            content: {
+                              ...widgetFormData.content,
+                              style: { ...(widgetFormData.content as { style?: ButtonCustomStyle })?.style, borderWidth: value[0] },
+                            },
+                          })}
+                          min={0}
+                          max={4}
+                          step={1}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-xs">Border Radius</Label>
+                          <span className="text-xs text-muted-foreground">
+                            {(widgetFormData.content as { style?: ButtonCustomStyle })?.style?.borderRadius ?? 6}px
+                          </span>
+                        </div>
+                        <Slider
+                          value={[(widgetFormData.content as { style?: ButtonCustomStyle })?.style?.borderRadius ?? 6]}
+                          onValueChange={(value) => setWidgetFormData({
+                            ...widgetFormData,
+                            content: {
+                              ...widgetFormData.content,
+                              style: { ...(widgetFormData.content as { style?: ButtonCustomStyle })?.style, borderRadius: value[0] },
+                            },
+                          })}
+                          min={0}
+                          max={50}
+                          step={2}
+                        />
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+
+                  {/* Hover Effects Section */}
+                  <AccordionItem value="hover">
+                    <AccordionTrigger className="text-sm">Hover Effects</AccordionTrigger>
+                    <AccordionContent className="space-y-4 pt-2">
+                      <div className="space-y-2">
+                        <Label className="text-xs">Hover Effect</Label>
+                        <Select
+                          value={(widgetFormData.content as { style?: ButtonCustomStyle })?.style?.hoverEffect || "none"}
+                          onValueChange={(value: ButtonHoverEffect) => setWidgetFormData({
+                            ...widgetFormData,
+                            content: {
+                              ...widgetFormData.content,
+                              style: { ...(widgetFormData.content as { style?: ButtonCustomStyle })?.style, hoverEffect: value },
+                            },
+                          })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {hoverEffectOptions.map((effect) => (
+                              <SelectItem key={effect.value} value={effect.value}>
+                                {effect.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Hover Background Color */}
+                      <div className="space-y-2">
+                        <Label className="text-xs">Hover Background Color</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            type="color"
+                            value={(widgetFormData.content as { style?: ButtonCustomStyle })?.style?.hoverBgColor || "#1d4ed8"}
+                            onChange={(e) => setWidgetFormData({
+                              ...widgetFormData,
+                              content: {
+                                ...widgetFormData.content,
+                                style: { ...(widgetFormData.content as { style?: ButtonCustomStyle })?.style, hoverBgColor: e.target.value },
+                              },
+                            })}
+                            className="h-9 w-12 cursor-pointer p-1"
+                          />
+                          <Input
+                            value={(widgetFormData.content as { style?: ButtonCustomStyle })?.style?.hoverBgColor || ""}
+                            onChange={(e) => setWidgetFormData({
+                              ...widgetFormData,
+                              content: {
+                                ...widgetFormData.content,
+                                style: { ...(widgetFormData.content as { style?: ButtonCustomStyle })?.style, hoverBgColor: e.target.value },
+                              },
+                            })}
+                            placeholder="#1d4ed8"
+                            className="flex-1 text-xs"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Hover Text Color */}
+                      <div className="space-y-2">
+                        <Label className="text-xs">Hover Text Color</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            type="color"
+                            value={(widgetFormData.content as { style?: ButtonCustomStyle })?.style?.hoverTextColor || "#ffffff"}
+                            onChange={(e) => setWidgetFormData({
+                              ...widgetFormData,
+                              content: {
+                                ...widgetFormData.content,
+                                style: { ...(widgetFormData.content as { style?: ButtonCustomStyle })?.style, hoverTextColor: e.target.value },
+                              },
+                            })}
+                            className="h-9 w-12 cursor-pointer p-1"
+                          />
+                          <Input
+                            value={(widgetFormData.content as { style?: ButtonCustomStyle })?.style?.hoverTextColor || ""}
+                            onChange={(e) => setWidgetFormData({
+                              ...widgetFormData,
+                              content: {
+                                ...widgetFormData.content,
+                                style: { ...(widgetFormData.content as { style?: ButtonCustomStyle })?.style, hoverTextColor: e.target.value },
+                              },
+                            })}
+                            placeholder="#ffffff"
+                            className="flex-1 text-xs"
+                          />
+                        </div>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              </div>
+            )}
+
+            {widgetFormData.type !== "BUTTON" && (
+              <div className="rounded-lg bg-muted/50 p-3 sm:p-4">
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  {widgetFormData.type === "LINKS" && "Add links above. They will be displayed as a list in the footer."}
+                  {widgetFormData.type === "BRAND" && "Shows logo, description, and contact info from settings."}
+                  {widgetFormData.type === "SERVICES" && "Auto-populated from your active services."}
+                  {widgetFormData.type === "STATES" && "Auto-populated list of popular LLC states."}
+                  {widgetFormData.type === "NEWSLETTER" && "Email subscription form."}
+                  {widgetFormData.type === "SOCIAL" && "Social media links from settings."}
+                  {widgetFormData.type === "CONTACT" && "Contact information from settings."}
+                  {widgetFormData.type === "TEXT" && "Enter your custom text above."}
+                  {widgetFormData.type === "RECENT_POSTS" && "Latest blog posts."}
+                  {widgetFormData.type === "CUSTOM_HTML" && "Enter raw HTML above. Use with caution."}
+                </p>
+              </div>
+            )}
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setWidgetDialogOpen(false)}>
+          <DialogFooter className="flex-shrink-0 gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setWidgetDialogOpen(false)} className="flex-1 sm:flex-none">
               Cancel
             </Button>
-            <Button onClick={handleWidgetSave} disabled={saving}>
+            <Button onClick={handleWidgetSave} disabled={saving} className="flex-1 sm:flex-none">
               {saving ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (

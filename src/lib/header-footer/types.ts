@@ -257,7 +257,8 @@ export type FooterWidgetType =
   | "FEATURED_PRODUCT"
   | "TESTIMONIAL"
   | "COUNTDOWN"
-  | "CTA_BANNER";
+  | "CTA_BANNER"
+  | "BUTTON"; // Custom styled button widget
 
 export interface BottomLink {
   label: string;
