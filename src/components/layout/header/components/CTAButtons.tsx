@@ -113,6 +113,8 @@ function getHoverEffectClass(effect?: ButtonHoverEffect): string {
       return "animate-heartbeat";
     case "stitches":
       return "stitches-button";
+    case "ring-hover":
+      return "ring-offset-background hover:ring-primary/90 transition-all duration-300 hover:ring-2 hover:ring-offset-2";
     // Complex effects handled via inline styles or special components
     case "slide-fill":
     case "border-fill":

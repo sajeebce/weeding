@@ -99,6 +99,7 @@ const hoverEffectOptions: { value: ButtonHoverEffect; label: string }[] = [
   { value: "heartbeat", label: "Heartbeat Pulse" },
   { value: "flow-border", label: "Flow Border (Rotating Gradient)" },
   { value: "stitches", label: "Stitches (3D Dashed Border)" },
+  { value: "ring-hover", label: "Ring Hover" },
 ];
 
 // 2025 Modern Button Style Presets
@@ -317,6 +318,19 @@ const buttonStylePresets: ButtonStylePreset[] = [
       hoverEffect: "stitches",
     },
   },
+  // 15. Ring Hover - Ring outline appears on hover
+  {
+    id: "ring-hover",
+    name: "Ring Hover",
+    description: "Elegant ring outline effect on hover with smooth transition",
+    style: {
+      bgColor: "#2563eb",
+      textColor: "#ffffff",
+      borderWidth: 0,
+      borderRadius: 6,
+      hoverEffect: "ring-hover",
+    },
+  },
 ];
 
 // Announcement Bar Style Presets (adapted from button presets)
@@ -461,6 +475,8 @@ function getPreviewHoverClass(effect?: ButtonHoverEffect): string {
       return "animate-heartbeat";
     case "stitches":
       return "stitches-button";
+    case "ring-hover":
+      return "ring-offset-background hover:ring-primary/90 transition-all duration-300 hover:ring-2 hover:ring-offset-2";
     // Complex effects handled via inline styles in component or special components
     case "slide-fill":
     case "border-fill":
