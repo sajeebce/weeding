@@ -12,6 +12,9 @@ import {
   GripVertical,
   X,
   FormInput,
+  Check,
+  Pencil,
+  Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,6 +46,14 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { RichTextEditor } from "@/components/admin/ui/rich-text-editor";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 interface Category {
   id: string;
@@ -53,6 +64,22 @@ interface Category {
 interface Feature {
   id?: string;
   text: string;
+}
+
+// Master feature list for comparison table
+interface ServiceFeature {
+  id: string;
+  text: string;
+  description?: string | null;
+  tooltip?: string | null;
+  sortOrder: number;
+  packageMappings?: PackageFeatureMapping[];
+}
+
+interface PackageFeatureMapping {
+  packageId: string;
+  included: boolean;
+  customValue?: string | null;
 }
 
 interface Package {
@@ -156,6 +183,11 @@ export default function ServiceEditorPage() {
   const [editingFaq, setEditingFaq] = useState<FAQ | null>(null);
   const [editingFaqIndex, setEditingFaqIndex] = useState<number | null>(null);
 
+  // Master feature list state (for comparison table)
+  const [masterFeatures, setMasterFeatures] = useState<ServiceFeature[]>([]);
+  const [featureDialogOpen, setFeatureDialogOpen] = useState(false);
+  const [editingFeature, setEditingFeature] = useState<ServiceFeature | null>(null);
+
   const fetchService = useCallback(async () => {
     if (!serviceId) return;
 
@@ -214,12 +246,26 @@ export default function ServiceEditorPage() {
     }
   }, []);
 
+  const fetchMasterFeatures = useCallback(async () => {
+    if (!serviceId) return;
+    try {
+      const response = await fetch(`/api/admin/services/${serviceId}/features`);
+      const data = await response.json();
+      if (response.ok) {
+        setMasterFeatures(data.features || []);
+      }
+    } catch (error) {
+      console.error("Error fetching master features:", error);
+    }
+  }, [serviceId]);
+
   useEffect(() => {
     fetchCategories();
     if (!isNew) {
       fetchService();
+      fetchMasterFeatures();
     }
-  }, [isNew, fetchService, fetchCategories]);
+  }, [isNew, fetchService, fetchCategories, fetchMasterFeatures]);
 
   const handleInputChange = (
     field: keyof ServiceData,
@@ -480,6 +526,129 @@ export default function ServiceEditorPage() {
     }));
   };
 
+  // Master Feature management (for comparison table)
+  const openFeatureDialog = (feature?: ServiceFeature) => {
+    if (feature) {
+      setEditingFeature({ ...feature });
+    } else {
+      setEditingFeature({
+        id: "",
+        text: "",
+        description: null,
+        tooltip: null,
+        sortOrder: masterFeatures.length,
+      });
+    }
+    setFeatureDialogOpen(true);
+  };
+
+  const saveMasterFeature = async () => {
+    if (!editingFeature || !serviceId) return;
+
+    if (!editingFeature.text.trim()) {
+      toast.error("Feature text is required");
+      return;
+    }
+
+    try {
+      if (editingFeature.id) {
+        // Update existing
+        const response = await fetch(`/api/admin/features/${editingFeature.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            text: editingFeature.text,
+            description: editingFeature.description,
+            tooltip: editingFeature.tooltip,
+          }),
+        });
+
+        if (response.ok) {
+          toast.success("Feature updated");
+          fetchMasterFeatures();
+        } else {
+          toast.error("Failed to update feature");
+        }
+      } else {
+        // Create new
+        const response = await fetch(`/api/admin/services/${serviceId}/features`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            text: editingFeature.text,
+            description: editingFeature.description,
+            tooltip: editingFeature.tooltip,
+          }),
+        });
+
+        if (response.ok) {
+          toast.success("Feature added");
+          fetchMasterFeatures();
+        } else {
+          toast.error("Failed to add feature");
+        }
+      }
+    } catch (error) {
+      console.error("Error saving feature:", error);
+      toast.error("Failed to save feature");
+    }
+
+    setFeatureDialogOpen(false);
+    setEditingFeature(null);
+  };
+
+  const removeMasterFeature = async (featureId: string) => {
+    try {
+      const response = await fetch(`/api/admin/features/${featureId}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        toast.success("Feature deleted");
+        fetchMasterFeatures();
+      } else {
+        toast.error("Failed to delete feature");
+      }
+    } catch (error) {
+      console.error("Error deleting feature:", error);
+      toast.error("Failed to delete feature");
+    }
+  };
+
+  const togglePackageFeature = async (packageId: string, featureId: string, currentIncluded: boolean) => {
+    try {
+      const response = await fetch(`/api/admin/packages/${packageId}/features`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          featureId,
+          included: !currentIncluded,
+        }),
+      });
+
+      if (response.ok) {
+        // Update local state
+        setMasterFeatures((prev) =>
+          prev.map((f) =>
+            f.id === featureId
+              ? {
+                  ...f,
+                  packageMappings: f.packageMappings?.map((m) =>
+                    m.packageId === packageId ? { ...m, included: !currentIncluded } : m
+                  ) || [],
+                }
+              : f
+          )
+        );
+      } else {
+        toast.error("Failed to update feature");
+      }
+    } catch (error) {
+      console.error("Error toggling feature:", error);
+      toast.error("Failed to update feature");
+    }
+  };
+
   // Generate slug from name
   const generateSlug = () => {
     const slug = service.name
@@ -540,6 +709,11 @@ export default function ServiceEditorPage() {
       <Tabs defaultValue="basic" className="space-y-6">
         <TabsList>
           <TabsTrigger value="basic">Basic Info</TabsTrigger>
+          {!isNew && (
+            <TabsTrigger value="features">
+              Features ({masterFeatures.length})
+            </TabsTrigger>
+          )}
           <TabsTrigger value="packages">
             Packages ({service.packages.length})
           </TabsTrigger>
@@ -742,6 +916,72 @@ export default function ServiceEditorPage() {
           </div>
         </TabsContent>
 
+        {/* Features Tab (Master Feature List) */}
+        {!isNew && (
+          <TabsContent value="features">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Master Feature List</CardTitle>
+                    <CardDescription>
+                      Define all features for comparison table. Order matters - features appear in this order.
+                    </CardDescription>
+                  </div>
+                  <Button onClick={() => openFeatureDialog()}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Feature
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {masterFeatures.length === 0 ? (
+                  <p className="py-8 text-center text-muted-foreground">
+                    No features defined yet. Add features to create comparison table.
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {masterFeatures.map((feature, index) => (
+                      <div
+                        key={feature.id}
+                        className="flex items-center gap-3 rounded-lg border p-3 hover:bg-muted/50"
+                      >
+                        <GripVertical className="h-4 w-4 shrink-0 cursor-grab text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">{index + 1}.</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium truncate">{feature.text}</p>
+                          {feature.tooltip && (
+                            <p className="text-xs text-muted-foreground truncate">{feature.tooltip}</p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openFeatureDialog(feature)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeMasterFeature(feature.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <p className="mt-4 text-xs text-muted-foreground">
+                  Tip: Drag to reorder features. The order determines how they appear in the comparison table.
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
+
         {/* Packages Tab */}
         <TabsContent value="packages">
           <Card>
@@ -750,7 +990,7 @@ export default function ServiceEditorPage() {
                 <div>
                   <CardTitle>Packages</CardTitle>
                   <CardDescription>
-                    Pricing packages for this service
+                    Pricing packages for this service. Click ✓/✗ to toggle feature inclusion.
                   </CardDescription>
                 </div>
                 <Button onClick={() => openPackageDialog()}>
@@ -765,50 +1005,124 @@ export default function ServiceEditorPage() {
                   No packages added yet. Add your first package to get started.
                 </p>
               ) : (
-                <div className="space-y-4">
-                  {service.packages.map((pkg, index) => (
-                    <div
-                      key={index}
-                      className="flex items-start justify-between rounded-lg border p-4"
-                    >
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{pkg.name}</span>
-                          <span className="text-lg font-bold">${pkg.price}</span>
-                          {pkg.isPopular && (
-                            <span className="rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-700">
-                              Popular
-                            </span>
-                          )}
-                        </div>
-                        {pkg.description && (
-                          <p className="text-sm text-muted-foreground">
-                            {pkg.description}
-                          </p>
-                        )}
-                        <div className="flex gap-4 text-xs text-muted-foreground">
-                          <span>{pkg.features?.length || 0} features</span>
-                          <span>{pkg.notIncluded?.length || 0} not included</span>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openPackageDialog(pkg, index)}
-                        >
-                          Edit
-                        </Button>
+                <div className="space-y-6">
+                  {/* Comparison Table View */}
+                  {masterFeatures.length > 0 && (
+                    <div className="overflow-x-auto">
+                      <table className="w-full border-collapse">
+                        <thead>
+                          <tr className="border-b bg-muted/50">
+                            <th className="min-w-[200px] px-4 py-3 text-left text-sm font-medium">
+                              Features
+                            </th>
+                            {service.packages.map((pkg, index) => (
+                              <th
+                                key={pkg.id || index}
+                                className="min-w-[120px] px-4 py-3 text-center"
+                              >
+                                <div className="flex flex-col items-center gap-1">
+                                  <span className="font-semibold">{pkg.name}</span>
+                                  <span className="text-lg font-bold">${pkg.price}</span>
+                                  {pkg.isPopular && (
+                                    <Badge variant="default" className="text-xs">
+                                      Popular
+                                    </Badge>
+                                  )}
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 text-xs"
+                                    onClick={() => openPackageDialog(pkg, index)}
+                                  >
+                                    Edit
+                                  </Button>
+                                </div>
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {masterFeatures.map((feature) => (
+                            <tr key={feature.id} className="border-b hover:bg-muted/30">
+                              <td className="px-4 py-2">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm">{feature.text}</span>
+                                  {feature.tooltip && (
+                                    <TooltipProvider>
+                                      <Tooltip>
+                                        <TooltipTrigger>
+                                          <Info className="h-3 w-3 text-muted-foreground" />
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          <p className="max-w-[200px] text-xs">{feature.tooltip}</p>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
+                                  )}
+                                </div>
+                              </td>
+                              {service.packages.map((pkg) => {
+                                const mapping = feature.packageMappings?.find(
+                                  (m) => m.packageId === pkg.id
+                                );
+                                const isIncluded = mapping?.included ?? false;
+
+                                return (
+                                  <td key={pkg.id} className="px-4 py-2 text-center">
+                                    <button
+                                      onClick={() =>
+                                        pkg.id && togglePackageFeature(pkg.id, feature.id, isIncluded)
+                                      }
+                                      className={cn(
+                                        "inline-flex h-8 w-8 items-center justify-center rounded-full transition-colors",
+                                        isIncluded
+                                          ? "bg-emerald-500 text-white hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-500"
+                                          : "bg-slate-300 text-slate-600 hover:bg-slate-400 dark:bg-slate-600 dark:text-slate-300 dark:hover:bg-slate-500"
+                                      )}
+                                      disabled={!pkg.id}
+                                    >
+                                      {isIncluded ? (
+                                        <Check className="h-4 w-4 stroke-3" />
+                                      ) : (
+                                        <X className="h-4 w-4 stroke-3" />
+                                      )}
+                                    </button>
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  {/* Package Cards (for delete action) */}
+                  <div className="flex flex-wrap gap-4">
+                    {service.packages.map((pkg, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center gap-3 rounded-lg border px-4 py-2"
+                      >
+                        <span className="font-medium">{pkg.name}</span>
+                        <span className="text-muted-foreground">${pkg.price}</span>
                         <Button
                           variant="ghost"
-                          size="sm"
+                          size="icon"
+                          className="h-7 w-7"
                           onClick={() => removePackage(index)}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+
+                  {masterFeatures.length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      Add features in the Features tab to see the comparison table.
+                    </p>
+                  )}
                 </div>
               )}
             </CardContent>
@@ -1154,6 +1468,67 @@ export default function ServiceEditorPage() {
               Cancel
             </Button>
             <Button onClick={saveFaq}>Save FAQ</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Master Feature Dialog */}
+      <Dialog open={featureDialogOpen} onOpenChange={setFeatureDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {editingFeature?.id ? "Edit Feature" : "Add Feature"}
+            </DialogTitle>
+            <DialogDescription>
+              Define a feature for the comparison table
+            </DialogDescription>
+          </DialogHeader>
+          {editingFeature && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Feature Name *</Label>
+                <Input
+                  value={editingFeature.text}
+                  onChange={(e) =>
+                    setEditingFeature({ ...editingFeature, text: e.target.value })
+                  }
+                  placeholder="e.g., US Fintech Bank Account"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Description (optional)</Label>
+                <Textarea
+                  value={editingFeature.description || ""}
+                  onChange={(e) =>
+                    setEditingFeature({
+                      ...editingFeature,
+                      description: e.target.value,
+                    })
+                  }
+                  placeholder="Detailed description of this feature..."
+                  rows={3}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Tooltip (shown on hover in table)</Label>
+                <Input
+                  value={editingFeature.tooltip || ""}
+                  onChange={(e) =>
+                    setEditingFeature({
+                      ...editingFeature,
+                      tooltip: e.target.value,
+                    })
+                  }
+                  placeholder="Brief tooltip text..."
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setFeatureDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={saveMasterFeature}>Save Feature</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
