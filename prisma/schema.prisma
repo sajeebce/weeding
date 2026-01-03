@@ -1407,6 +1407,7 @@ enum FooterWidgetType {
   TESTIMONIAL     // Single rotating testimonial
   COUNTDOWN       // Event countdown timer
   CTA_BANNER      // Call-to-action banner
+  BUTTON          // Custom styled button widget
 }
 
 // Newsletter Subscriber
