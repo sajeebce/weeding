@@ -24,6 +24,7 @@ import {
 import { DynamicIcon } from "lucide-react/dynamic";
 import { Button } from "@/components/ui/button";
 import { CraftButton, CraftButtonLabel, CraftButtonIcon } from "@/components/ui/craft-button";
+import { PrimaryFlowButton } from "@/components/ui/flow-button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -95,6 +96,8 @@ const hoverEffectOptions: { value: ButtonHoverEffect; label: string }[] = [
   { value: "glow-pulse", label: "Glow Pulse" },
   { value: "ripple", label: "Ripple" },
   { value: "craft-expand", label: "Craft Expand (Icon Circle)" },
+  { value: "heartbeat", label: "Heartbeat Pulse" },
+  { value: "flow-border", label: "Flow Border (Rotating Gradient)" },
 ];
 
 // 2025 Modern Button Style Presets
@@ -192,24 +195,7 @@ const buttonStylePresets: ButtonStylePreset[] = [
       hoverEffect: "border-fill",
     },
   },
-  // 6. Glass Morph - Modern, minimal, trendy 2025 (dark glass for visibility)
-  {
-    id: "glass-morph",
-    name: "Glass Morph",
-    description: "Frosted dark glass with subtle border",
-    style: {
-      bgColor: "rgba(30, 41, 59, 0.8)",
-      textColor: "#f8fafc",
-      borderWidth: 1,
-      borderColor: "rgba(148, 163, 184, 0.3)",
-      borderRadius: 12,
-      hoverBgColor: "rgba(51, 65, 85, 0.9)",
-      hoverEffect: "shadow-lift",
-      shadow: "0 4px 20px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
-      hoverShadow: "0 8px 30px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15)",
-    },
-  },
-  // 7. Coral Soft - Friendly, approachable, warm
+  // 6. Coral Soft - Friendly, approachable, warm
   {
     id: "coral-soft",
     name: "Coral Soft",
@@ -287,6 +273,35 @@ const buttonStylePresets: ButtonStylePreset[] = [
       hoverShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
     },
   },
+  // 12. Heartbeat Effect - Attention-grabbing pulsing animation
+  {
+    id: "heartbeat",
+    name: "Heartbeat Effect",
+    description: "Eye-catching pulsing animation for urgent CTAs",
+    style: {
+      bgColor: "#DC2626",
+      textColor: "#ffffff",
+      borderWidth: 0,
+      borderRadius: 8,
+      hoverEffect: "heartbeat",
+      shadow: "0 0 0 0 rgba(220, 38, 38, 0.7)",
+    },
+  },
+  // 13. Flow Button - Rotating border gradient effect
+  {
+    id: "flow-border",
+    name: "Flow Button",
+    description: "Rotating border gradient with conic animation on hover",
+    style: {
+      bgColor: "#2563eb",
+      textColor: "#ffffff",
+      borderWidth: 2,
+      borderColor: "#2563eb",
+      borderRadius: 8,
+      hoverEffect: "flow-border",
+      shadow: "0 0 0 2px rgba(37, 99, 235, 0.3)",
+    },
+  },
 ];
 
 // Announcement Bar Style Presets (adapted from button presets)
@@ -351,18 +366,6 @@ const announcementBarPresets: AnnouncementBarPreset[] = [
       textColor: "#FFD700",
       linkColor: "#FFD700",
       linkHoverColor: "#FFF8DC",
-      linkStyle: "underline",
-    },
-  },
-  {
-    id: "glass-morph",
-    name: "Glass Morph",
-    description: "Modern frosted glass effect",
-    style: {
-      bgColor: "rgba(30, 41, 59, 0.9)",
-      textColor: "#f8fafc",
-      linkColor: "#94a3b8",
-      linkHoverColor: "#e2e8f0",
       linkStyle: "underline",
     },
   },
@@ -439,11 +442,14 @@ function getPreviewHoverClass(effect?: ButtonHoverEffect): string {
       return "hover:scale-95";
     case "glow-pulse":
       return "hover:shadow-[0_0_15px_rgba(59,130,246,0.5)]";
-    // Complex effects handled via inline styles in component
+    case "heartbeat":
+      return "animate-heartbeat";
+    // Complex effects handled via inline styles in component or special components
     case "slide-fill":
     case "border-fill":
     case "gradient-shift":
     case "ripple":
+    case "flow-border":
       return "";
     default:
       return "";
@@ -483,6 +489,21 @@ function PreviewCTAButton({ btn }: { btn: CTAButton }) {
             {craftIcon}
           </CraftButtonIcon>
         </CraftButton>
+      );
+    }
+
+    // Check if this is a FlowButton style (flow-border effect)
+    if (btn.style.hoverEffect === "flow-border") {
+      return (
+        <PrimaryFlowButton
+          className="text-sm"
+          style={{
+            // Override ring color to match button color
+            '--tw-ring-color': `${btn.style.bgColor || '#2563eb'}99`,
+          } as React.CSSProperties}
+        >
+          {btn.text}
+        </PrimaryFlowButton>
       );
     }
 
@@ -2260,9 +2281,6 @@ export default function HeaderBuilderPage() {
                           <AccordionItem value="colors">
                             <AccordionTrigger className="text-sm">
                               Colors
-                              {(btn.style?.bgColor || btn.style?.textColor || btn.style?.useGradient) && (
-                                <Badge variant="secondary" className="ml-2 text-xs">Customized</Badge>
-                              )}
                             </AccordionTrigger>
                             <AccordionContent className="space-y-4 pt-2">
                               {/* Gradient Toggle */}
@@ -2485,17 +2503,18 @@ export default function HeaderBuilderPage() {
                               )}
                             </AccordionContent>
                           </AccordionItem>
+                        </Accordion>
 
+                        {/* Border, Hover, Shadow, Icon - 2x2 Grid */}
+                        <div className="grid grid-cols-2 gap-4 mt-4">
                           {/* Border Section */}
-                          <AccordionItem value="border">
-                            <AccordionTrigger className="text-sm">
+                          <Accordion type="multiple" className="w-full">
+                          <AccordionItem value="border" className="border rounded-lg px-3">
+                            <AccordionTrigger className="text-sm py-2">
                               Border
-                              {(btn.style?.borderWidth || btn.style?.borderRadius) && (
-                                <Badge variant="secondary" className="ml-2 text-xs">Customized</Badge>
-                              )}
                             </AccordionTrigger>
-                            <AccordionContent className="space-y-4 pt-2">
-                              <div className="grid gap-4 md:grid-cols-2">
+                            <AccordionContent className="space-y-3 pb-3">
+                              <div className="space-y-3">
                                 <div className="space-y-2">
                                   <div className="flex items-center justify-between">
                                     <Label className="text-xs">Border Width</Label>
@@ -2533,16 +2552,15 @@ export default function HeaderBuilderPage() {
                               </div>
                             </AccordionContent>
                           </AccordionItem>
+                          </Accordion>
 
                           {/* Hover Effects Section */}
-                          <AccordionItem value="hover">
-                            <AccordionTrigger className="text-sm">
+                          <Accordion type="multiple" className="w-full">
+                          <AccordionItem value="hover" className="border rounded-lg px-3">
+                            <AccordionTrigger className="text-sm py-2">
                               Hover Effects
-                              {(btn.style?.hoverEffect || btn.style?.hoverBgColor || btn.style?.hoverUseGradient) && (
-                                <Badge variant="secondary" className="ml-2 text-xs">Customized</Badge>
-                              )}
                             </AccordionTrigger>
-                            <AccordionContent className="space-y-4 pt-2">
+                            <AccordionContent className="space-y-3 pb-3">
                               <div className="space-y-2">
                                 <Label className="text-xs">Hover Effect</Label>
                                 <Select
@@ -2740,17 +2758,16 @@ export default function HeaderBuilderPage() {
                               )}
                             </AccordionContent>
                           </AccordionItem>
+                          </Accordion>
 
                           {/* Shadow Section */}
-                          <AccordionItem value="shadow">
-                            <AccordionTrigger className="text-sm">
+                          <Accordion type="multiple" className="w-full">
+                          <AccordionItem value="shadow" className="border rounded-lg px-3">
+                            <AccordionTrigger className="text-sm py-2">
                               Shadow
-                              {(btn.style?.shadow || btn.style?.hoverShadow) && (
-                                <Badge variant="secondary" className="ml-2 text-xs">Customized</Badge>
-                              )}
                             </AccordionTrigger>
-                            <AccordionContent className="space-y-4 pt-2">
-                              <div className="grid gap-4 md:grid-cols-2">
+                            <AccordionContent className="space-y-3 pb-3">
+                              <div className="space-y-3">
                                 <div className="space-y-2">
                                   <Label className="text-xs">Box Shadow</Label>
                                   <Input
@@ -2776,16 +2793,15 @@ export default function HeaderBuilderPage() {
                               </div>
                             </AccordionContent>
                           </AccordionItem>
+                          </Accordion>
 
                           {/* Icon Section */}
-                          <AccordionItem value="icon">
-                            <AccordionTrigger className="text-sm">
+                          <Accordion type="multiple" className="w-full">
+                          <AccordionItem value="icon" className="border rounded-lg px-3">
+                            <AccordionTrigger className="text-sm py-2">
                               Icon
-                              {(btn.style?.icon || btn.style?.customIconSvg) && (
-                                <Badge variant="secondary" className="ml-2 text-xs">Customized</Badge>
-                              )}
                             </AccordionTrigger>
-                            <AccordionContent className="space-y-4 pt-2">
+                            <AccordionContent className="space-y-3 pb-3">
                               {/* Use Custom SVG Toggle */}
                               <div className="flex items-center justify-between rounded-lg border p-3">
                                 <div>
@@ -2892,7 +2908,8 @@ export default function HeaderBuilderPage() {
                               )}
                             </AccordionContent>
                           </AccordionItem>
-                        </Accordion>
+                          </Accordion>
+                        </div>
 
                       {/* Live Button Preview with Hover */}
                       <div className="pt-2 border-t">
@@ -3035,9 +3052,6 @@ export default function HeaderBuilderPage() {
                         <AccordionItem value="colors">
                           <AccordionTrigger className="text-sm">
                             Colors
-                            {(formData.loginStyle?.bgColor || formData.loginStyle?.textColor || formData.loginStyle?.useGradient) && (
-                              <Badge variant="secondary" className="ml-2 text-xs">Customized</Badge>
-                            )}
                           </AccordionTrigger>
                           <AccordionContent className="space-y-4 pt-2">
                             {/* Gradient Toggle */}
@@ -3230,9 +3244,6 @@ export default function HeaderBuilderPage() {
                         <AccordionItem value="border">
                           <AccordionTrigger className="text-sm">
                             Border
-                            {(formData.loginStyle?.borderWidth || formData.loginStyle?.borderRadius !== 6) && (
-                              <Badge variant="secondary" className="ml-2 text-xs">Customized</Badge>
-                            )}
                           </AccordionTrigger>
                           <AccordionContent className="space-y-4 pt-2">
                             <div className="grid gap-4 md:grid-cols-2">
@@ -3380,9 +3391,6 @@ export default function HeaderBuilderPage() {
                         <AccordionItem value="icon">
                           <AccordionTrigger className="text-sm">
                             Icon
-                            {(formData.loginStyle?.icon || formData.loginStyle?.customIconSvg) && (
-                              <Badge variant="secondary" className="ml-2 text-xs">Customized</Badge>
-                            )}
                           </AccordionTrigger>
                           <AccordionContent className="space-y-4 pt-2">
                             {/* Use Custom SVG Toggle */}

@@ -1,5 +1,25 @@
 @import "tailwindcss";
 
+@theme inline {
+  /* Heartbeat Animation */
+  --animate-heartbeat: heartbeat 2s infinite ease-in-out;
+
+  @keyframes heartbeat {
+    0% {
+      box-shadow: 0 0 0 0 var(--heartbeat-color, var(--color-destructive));
+      transform: scale(1);
+    }
+    50% {
+      box-shadow: 0 0 0 7px transparent;
+      transform: scale(1.05);
+    }
+    100% {
+      box-shadow: 0 0 0 0 transparent;
+      transform: scale(1);
+    }
+  }
+}
+
 @theme {
   /* Colors - LLCPad Brand */
   --color-primary: #2563eb;
@@ -52,5 +72,66 @@
 
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+
+  /* Flow Button - Rotating border gradient effect */
+  .flow-button-wrapper {
+    position: relative;
+    isolation: isolate;
+    width: fit-content;
+    overflow: hidden;
+    border-radius: 0.5rem;
+    box-shadow: 0 0 0 2px var(--flow-ring-color, var(--color-primary));
+  }
+
+  .flow-button {
+    position: relative;
+    border-radius: 0.5rem;
+    border: 1px solid transparent;
+    background-clip: padding-box;
+    transition-duration: 500ms;
+  }
+
+  .flow-button::after {
+    content: '';
+    position: absolute;
+    inset: -120px;
+    z-index: -1;
+    border-radius: inherit;
+    background-origin: border-box;
+    transition: transform 500ms ease;
+    background: conic-gradient(
+      from 90deg at 50% 50%,
+      var(--color-primary) 0%,
+      var(--color-primary) 50%,
+      rgba(0, 0, 0, 0.15) 51%,
+      rgba(0, 0, 0, 0.15) 99%,
+      var(--color-primary) 100%
+    );
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    padding: 2px;
+  }
+
+  .flow-button:hover::after {
+    transform: rotate(180deg);
+  }
+
+  /* Dark mode variant */
+  .dark .flow-button::after {
+    background: conic-gradient(
+      from 90deg at 50% 50%,
+      var(--color-primary) 0%,
+      var(--color-primary) 50%,
+      rgba(0, 0, 0, 0.3) 51%,
+      rgba(0, 0, 0, 0.3) 99%,
+      var(--color-primary) 100%
+    );
   }
 }

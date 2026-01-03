@@ -1,10 +1,12 @@
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { DynamicIcon } from "lucide-react/dynamic";
 import { Button } from "@/components/ui/button";
 import { CraftButton, CraftButtonLabel, CraftButtonIcon } from "@/components/ui/craft-button";
+import { PrimaryFlowButton } from "@/components/ui/flow-button";
 import { UserMenu } from "./UserMenu";
 import type { CTAButtonsProps } from "../types";
 import type { CTAButton, ButtonCustomStyle, ButtonHoverEffect, GradientDirection } from "@/lib/header-footer/types";
@@ -107,11 +109,14 @@ function getHoverEffectClass(effect?: ButtonHoverEffect): string {
       return "hover:scale-95";
     case "glow-pulse":
       return "hover:shadow-[0_0_15px_rgba(59,130,246,0.5)]";
-    // Complex effects handled via inline styles
+    case "heartbeat":
+      return "animate-heartbeat";
+    // Complex effects handled via inline styles or special components
     case "slide-fill":
     case "border-fill":
     case "gradient-shift":
     case "ripple":
+    case "flow-border":
       return "";
     default:
       return "";
@@ -126,6 +131,11 @@ function isComplexHoverEffect(effect?: ButtonHoverEffect): boolean {
 // Check if effect is CraftButton style
 function isCraftButtonEffect(effect?: ButtonHoverEffect): boolean {
   return effect === "craft-expand";
+}
+
+// Check if effect is FlowButton style
+function isFlowButtonEffect(effect?: ButtonHoverEffect): boolean {
+  return effect === "flow-border";
 }
 
 // Get gradient shift background (larger gradient that shifts position)
@@ -229,7 +239,22 @@ function CTAButtonItem({ btn, index }: { btn: CTAButton; index: number }) {
       );
     }
 
-    // Custom styled button (non-CraftButton)
+    // Check if this is a FlowButton style
+    if (isFlowButtonEffect(btn.style.hoverEffect)) {
+      return (
+        <PrimaryFlowButton
+          key={index}
+          asChild
+          style={{
+            '--tw-ring-color': `${btn.style.bgColor || '#2563eb'}99`,
+          } as React.CSSProperties}
+        >
+          <Link href={btn.url}>{btn.text}</Link>
+        </PrimaryFlowButton>
+      );
+    }
+
+    // Custom styled button (non-CraftButton, non-FlowButton)
     const hoverClass = getHoverEffectClass(btn.style.hoverEffect);
     const normalBg = getNormalBackground(btn.style);
     const hoverBg = getHoverBackground(btn.style);
