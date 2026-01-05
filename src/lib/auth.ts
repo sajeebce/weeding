@@ -6,6 +6,11 @@ import prisma from "@/lib/db";
 import { UserRole } from "@prisma/client";
 
 export const authConfig = {
+  trustHost: true,
+  session: {
+    strategy: "jwt" as const,
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
   providers: [
     Credentials({
       credentials: {
