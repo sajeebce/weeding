@@ -78,8 +78,9 @@ export async function POST(
         addonPriceBDT: addonPriceBDT != null ? parseFloat(String(addonPriceBDT)) : null,
       },
       update: {
-        included: included ?? true,
-        customValue: customValue || null,
+        // Only update fields that were explicitly provided
+        ...(included !== undefined && { included }),
+        ...(customValue !== undefined && { customValue: customValue || null }),
         ...(valueType !== undefined && { valueType }),
         ...(addonPriceUSD !== undefined && { addonPriceUSD: addonPriceUSD != null ? parseFloat(String(addonPriceUSD)) : null }),
         ...(addonPriceBDT !== undefined && { addonPriceBDT: addonPriceBDT != null ? parseFloat(String(addonPriceBDT)) : null }),

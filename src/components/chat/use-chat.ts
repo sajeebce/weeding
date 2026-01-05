@@ -174,6 +174,17 @@ export function useChat() {
                 return prev;
               });
             }
+          } else if (res.status === 404 || res.status === 401) {
+            // Ticket not found or unauthorized - clear stale state
+            localStorage.removeItem(STORAGE_KEY);
+            lastMessageIdRef.current = null;
+            setState((prev) => ({
+              ...prev,
+              ticket: null,
+              sessionToken: null,
+              guestInfo: null,
+              messages: [],
+            }));
           }
         } catch (e) {
           console.error("Failed to poll messages:", e);
@@ -423,9 +434,10 @@ export function useChat() {
           lastMessageIdRef.current = data.messages[data.messages.length - 1].id;
         }
       } else {
-        // If unauthorized, clear the chat state
-        if (res.status === 401) {
+        // If unauthorized or not found, clear the chat state
+        if (res.status === 401 || res.status === 404) {
           localStorage.removeItem(STORAGE_KEY);
+          lastMessageIdRef.current = null;
           setState((prev) => ({
             ...prev,
             isLoading: false,
