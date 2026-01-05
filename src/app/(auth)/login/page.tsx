@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { Eye, EyeOff, Mail, Lock, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,8 +18,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -46,17 +48,23 @@ export default function LoginPage() {
         return;
       }
 
-      // Fetch user info to determine redirect
-      const userResponse = await fetch("/api/auth/me");
-      if (userResponse.ok) {
-        const userData = await userResponse.json();
-        const staffRoles = ["ADMIN", "CONTENT_MANAGER", "SALES_AGENT", "SUPPORT_AGENT"];
-        const redirectUrl = staffRoles.includes(userData.role) ? "/admin" : "/dashboard";
-        router.push(redirectUrl);
+      // Use callbackUrl if provided, otherwise determine by role
+      if (callbackUrl) {
+        router.push(callbackUrl);
         router.refresh();
       } else {
-        router.push("/dashboard");
-        router.refresh();
+        // Fetch user info to determine redirect
+        const userResponse = await fetch("/api/auth/me");
+        if (userResponse.ok) {
+          const userData = await userResponse.json();
+          const staffRoles = ["ADMIN", "CONTENT_MANAGER", "SALES_AGENT", "SUPPORT_AGENT"];
+          const redirectUrl = staffRoles.includes(userData.role) ? "/admin" : "/dashboard";
+          router.push(redirectUrl);
+          router.refresh();
+        } else {
+          router.push("/dashboard");
+          router.refresh();
+        }
       }
     } catch (err) {
       setError("An error occurred. Please try again.");
@@ -161,5 +169,19 @@ export default function LoginPage() {
         </p>
       </CardFooter>
     </Card>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <Card>
+        <CardContent className="flex items-center justify-center p-8">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </CardContent>
+      </Card>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }

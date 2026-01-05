@@ -24,9 +24,13 @@ export async function middleware(request: NextRequest) {
   );
 
   // Get the JWT token from the session cookie (edge-compatible)
+  // NextAuth v5 uses "authjs.session-token" cookie name
   const token = await getToken({
     req: request,
     secret: process.env.AUTH_SECRET,
+    cookieName: process.env.NODE_ENV === "production"
+      ? "__Secure-authjs.session-token"
+      : "authjs.session-token",
   });
 
   // If trying to access protected route without authentication
