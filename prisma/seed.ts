@@ -41,13 +41,11 @@ const serviceCategories = [
   },
 ];
 
-// LLC Formation comparison table features - matches screenshot design
-// These are separate from the legacy "features" array and use the new comparison table structure
+// LLC Formation comparison table features - New Mexico LLC package structure
 const llcFormationComparisonFeatures = [
   {
-    text: "Preparing & Filing the Articles of Organization",
-    tooltip: "We prepare and file your LLC formation documents with the state",
-    description: "Includes: Company name verification, Articles preparation, State filing, Formation certificate",
+    text: "New Mexico State Filing Fee",
+    tooltip: "State filing fee for New Mexico LLC formation ($50)",
     packages: {
       Basic: { valueType: "BOOLEAN" as FeatureValueType, included: true },
       Standard: { valueType: "BOOLEAN" as FeatureValueType, included: true },
@@ -55,54 +53,8 @@ const llcFormationComparisonFeatures = [
     },
   },
   {
-    text: "FREE 1st Year Registered Agent Service!",
-    tooltip: "A registered agent receives legal documents on behalf of your LLC",
-    packages: {
-      Basic: { valueType: "BOOLEAN" as FeatureValueType, included: true },
-      Standard: { valueType: "BOOLEAN" as FeatureValueType, included: true },
-      Premium: { valueType: "BOOLEAN" as FeatureValueType, included: true },
-    },
-  },
-  {
-    text: "FREE 1st Month of Virtual Address Service!",
-    tooltip: "Use our professional business address for mail and documents",
-    packages: {
-      Basic: { valueType: "BOOLEAN" as FeatureValueType, included: true },
-      Standard: { valueType: "BOOLEAN" as FeatureValueType, included: true },
-      Premium: { valueType: "BOOLEAN" as FeatureValueType, included: true },
-    },
-  },
-  {
-    text: "Expedited Filing",
-    tooltip: "Get your LLC approved faster with priority processing",
-    description: "3 business days (instead of 3 weeks)",
-    packages: {
-      Basic: { valueType: "ADDON" as FeatureValueType, included: false, addonPriceUSD: 50 },
-      Standard: { valueType: "ADDON" as FeatureValueType, included: false, addonPriceUSD: 50 },
-      Premium: { valueType: "BOOLEAN" as FeatureValueType, included: true },
-    },
-  },
-  {
-    text: "Business Contract Templates",
-    tooltip: "Professional contract templates for common business needs",
-    packages: {
-      Basic: { valueType: "ADDON" as FeatureValueType, included: false, addonPriceUSD: 150 },
-      Standard: { valueType: "ADDON" as FeatureValueType, included: false, addonPriceUSD: 150 },
-      Premium: { valueType: "BOOLEAN" as FeatureValueType, included: true },
-    },
-  },
-  {
-    text: "EIN Business Tax Number",
-    tooltip: "Your Employer Identification Number from the IRS",
-    packages: {
-      Basic: { valueType: "ADDON" as FeatureValueType, included: false, addonPriceUSD: 70 },
-      Standard: { valueType: "BOOLEAN" as FeatureValueType, included: true },
-      Premium: { valueType: "BOOLEAN" as FeatureValueType, included: true },
-    },
-  },
-  {
-    text: "Operating Agreement",
-    tooltip: "Legal document outlining LLC ownership and operating procedures",
+    text: "Registered Agent (First Year)",
+    tooltip: "A registered agent receives legal documents on behalf of your LLC. Included free for the first year.",
     packages: {
       Basic: { valueType: "ADDON" as FeatureValueType, included: false, addonPriceUSD: 99 },
       Standard: { valueType: "BOOLEAN" as FeatureValueType, included: true },
@@ -110,57 +62,56 @@ const llcFormationComparisonFeatures = [
     },
   },
   {
-    text: "Domain Name + Business Email",
-    tooltip: "Professional domain and email for your business",
+    text: "EIN Application",
+    tooltip: "Employer Identification Number (EIN) from the IRS - required for opening bank accounts and hiring employees",
     packages: {
-      Basic: { valueType: "DASH" as FeatureValueType, included: false },
-      Standard: { valueType: "DASH" as FeatureValueType, included: false },
-      Premium: { valueType: "BOOLEAN" as FeatureValueType, included: true },
-    },
-  },
-  {
-    text: "FREE 1st Year Business Phone Number",
-    tooltip: "US phone number for your business",
-    description: "*Offer valid only for US-based clients.",
-    packages: {
-      Basic: { valueType: "DASH" as FeatureValueType, included: false },
-      Standard: { valueType: "DASH" as FeatureValueType, included: false },
-      Premium: { valueType: "BOOLEAN" as FeatureValueType, included: true },
-    },
-  },
-  {
-    text: "Lifetime Compliance Alerts",
-    tooltip: "Never miss important filing deadlines with our reminder system",
-    packages: {
-      Basic: { valueType: "DASH" as FeatureValueType, included: false },
+      Basic: { valueType: "ADDON" as FeatureValueType, included: false, addonPriceUSD: 70 },
       Standard: { valueType: "BOOLEAN" as FeatureValueType, included: true },
       Premium: { valueType: "BOOLEAN" as FeatureValueType, included: true },
     },
   },
   {
-    text: "Unlimited Phone & Email Support",
-    tooltip: "Get help whenever you need it from our expert team",
+    text: "BOI Filing",
+    tooltip: "Beneficial Ownership Information (BOI) report required by FinCEN for all LLCs",
+    packages: {
+      Basic: { valueType: "ADDON" as FeatureValueType, included: false, addonPriceUSD: 49 },
+      Standard: { valueType: "BOOLEAN" as FeatureValueType, included: true },
+      Premium: { valueType: "BOOLEAN" as FeatureValueType, included: true },
+    },
+  },
+  {
+    text: "US Business Address / Mail Forwarding",
+    tooltip: "Professional US business address with mail scanning and forwarding services",
+    packages: {
+      Basic: { valueType: "ADDON" as FeatureValueType, included: false, addonPriceUSD: 120 },
+      Standard: { valueType: "ADDON" as FeatureValueType, included: false, addonPriceUSD: 120 },
+      Premium: { valueType: "BOOLEAN" as FeatureValueType, included: true },
+    },
+  },
+  {
+    text: "US Business Phone Number",
+    tooltip: "Dedicated US phone number for your business with call forwarding",
+    packages: {
+      Basic: { valueType: "ADDON" as FeatureValueType, included: false, addonPriceUSD: 60 },
+      Standard: { valueType: "ADDON" as FeatureValueType, included: false, addonPriceUSD: 60 },
+      Premium: { valueType: "BOOLEAN" as FeatureValueType, included: true },
+    },
+  },
+  {
+    text: "US Fintech Business Bank Account Setup",
+    tooltip: "We'll help you open a Mercury business bank account - a modern fintech bank perfect for startups and online businesses",
     packages: {
       Basic: { valueType: "DASH" as FeatureValueType, included: false },
-      Standard: { valueType: "BOOLEAN" as FeatureValueType, included: true },
+      Standard: { valueType: "ADDON" as FeatureValueType, included: false, addonPriceUSD: 99 },
       Premium: { valueType: "BOOLEAN" as FeatureValueType, included: true },
     },
   },
   {
-    text: "Online Access Dashboard",
-    tooltip: "Access all your documents and manage your LLC online",
+    text: "Stripe Business Account Setup",
+    tooltip: "We'll help you set up a Stripe account for accepting online payments globally",
     packages: {
-      Basic: { valueType: "BOOLEAN" as FeatureValueType, included: true },
-      Standard: { valueType: "BOOLEAN" as FeatureValueType, included: true },
-      Premium: { valueType: "BOOLEAN" as FeatureValueType, included: true },
-    },
-  },
-  {
-    text: "Business Banking Account Offer",
-    tooltip: "Special offers for business banking from our partners",
-    packages: {
-      Basic: { valueType: "BOOLEAN" as FeatureValueType, included: true },
-      Standard: { valueType: "BOOLEAN" as FeatureValueType, included: true },
+      Basic: { valueType: "DASH" as FeatureValueType, included: false },
+      Standard: { valueType: "ADDON" as FeatureValueType, included: false, addonPriceUSD: 79 },
       Premium: { valueType: "BOOLEAN" as FeatureValueType, included: true },
     },
   },
@@ -211,7 +162,7 @@ const servicesData = [
       {
         name: "Basic",
         price: 0,
-        description: "Essential LLC formation for budget-conscious entrepreneurs",
+        description: "State filing fee only - add services as needed",
         processingTime: "3 weeks",
         processingIcon: "clock",
         badgeText: null,
@@ -222,8 +173,8 @@ const servicesData = [
       },
       {
         name: "Standard",
-        price: 199,
-        description: "Most popular - Everything you need to start your US business",
+        price: 299,
+        description: "Complete LLC formation with EIN and essential services",
         processingTime: "3 weeks",
         processingIcon: "clock",
         badgeText: "Recommended",
@@ -234,8 +185,8 @@ const servicesData = [
       },
       {
         name: "Premium",
-        price: 299,
-        description: "All-inclusive package for serious entrepreneurs",
+        price: 620,
+        description: "Full-service LLC with banking and business setup included",
         processingTime: "3 days",
         processingIcon: "zap",
         badgeText: null,
@@ -1913,7 +1864,7 @@ async function main() {
             serviceId: service.id,
             text: feature.text,
             tooltip: feature.tooltip || null,
-            description: feature.description || null,
+            description: (feature as { description?: string }).description || null,
             sortOrder: i,
           },
         });
