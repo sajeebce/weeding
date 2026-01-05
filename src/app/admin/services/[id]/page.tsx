@@ -199,6 +199,12 @@ export default function ServiceEditorPage() {
   const [featureDialogOpen, setFeatureDialogOpen] = useState(false);
   const [editingFeature, setEditingFeature] = useState<ServiceFeature | null>(null);
 
+  // Pending mapping changes (for batch update)
+  const [pendingMappingChanges, setPendingMappingChanges] = useState<
+    Map<string, Partial<PackageFeatureMapping> & { packageId: string; featureId: string }>
+  >(new Map());
+  const [isSavingMappings, setIsSavingMappings] = useState(false);
+
   const fetchService = useCallback(async () => {
     if (!serviceId) return;
 
@@ -306,17 +312,31 @@ export default function ServiceEditorPage() {
 
     setIsSaving(true);
     try {
+      // First save any pending mapping changes
+      if (pendingMappingChanges.size > 0) {
+        const mappingsSaved = await savePendingMappings();
+        if (!mappingsSaved) {
+          setIsSaving(false);
+          return;
+        }
+      }
+
       const url = isNew
         ? "/api/admin/services"
         : `/api/admin/services/${serviceId}`;
       const method = isNew ? "POST" : "PUT";
 
+      // Don't send features for existing services - they're managed via Features tab
+      // This prevents losing PackageFeatureMap data on save
+      const { features: _features, ...serviceWithoutFeatures } = service;
+
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...service,
-          features: service.features.map((f) => f.text),
+          ...serviceWithoutFeatures,
+          // Only send features for NEW services
+          ...(isNew && { features: service.features.map((f) => f.text) }),
           categoryId: service.categoryId || null,
         }),
       });
@@ -676,56 +696,96 @@ export default function ServiceEditorPage() {
     }
   };
 
-  // Update package feature mapping with all fields
-  const updatePackageFeatureMapping = async (
+  // Update package feature mapping locally (batch update on save)
+  const updatePackageFeatureMapping = (
     packageId: string,
     featureId: string,
     updates: Partial<PackageFeatureMapping>
   ) => {
+    const key = `${packageId}-${featureId}`;
+
+    // Update pending changes
+    setPendingMappingChanges((prev) => {
+      const newMap = new Map(prev);
+      const existing = newMap.get(key) || { packageId, featureId };
+      newMap.set(key, { ...existing, ...updates });
+      return newMap;
+    });
+
+    // Update local UI state immediately
+    setMasterFeatures((prev) =>
+      prev.map((f) => {
+        if (f.id !== featureId) return f;
+
+        const existingMappings = f.packageMappings || [];
+        const mappingExists = existingMappings.some((m) => m.packageId === packageId);
+
+        if (mappingExists) {
+          return {
+            ...f,
+            packageMappings: existingMappings.map((m) =>
+              m.packageId === packageId
+                ? { ...m, ...updates }
+                : m
+            ),
+          };
+        } else {
+          return {
+            ...f,
+            packageMappings: [...existingMappings, { packageId, ...updates } as PackageFeatureMapping],
+          };
+        }
+      })
+    );
+  };
+
+  // Save all pending mapping changes
+  const savePendingMappings = async () => {
+    if (pendingMappingChanges.size === 0) return true;
+
+    setIsSavingMappings(true);
     try {
-      const response = await fetch(`/api/admin/packages/${packageId}/features`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          featureId,
-          ...updates,
-        }),
-      });
+      const changes = Array.from(pendingMappingChanges.values());
 
-      if (response.ok) {
-        const updatedMapping = await response.json();
-        // Update local state
-        setMasterFeatures((prev) =>
-          prev.map((f) => {
-            if (f.id !== featureId) return f;
+      // Group changes by packageId for batch API calls
+      const changesByPackage = changes.reduce((acc, change) => {
+        if (!acc[change.packageId]) {
+          acc[change.packageId] = [];
+        }
+        acc[change.packageId].push(change);
+        return acc;
+      }, {} as Record<string, typeof changes>);
 
-            const existingMappings = f.packageMappings || [];
-            const mappingExists = existingMappings.some((m) => m.packageId === packageId);
+      // Make parallel API calls for each package
+      const results = await Promise.all(
+        Object.entries(changesByPackage).map(async ([packageId, packageChanges]) => {
+          // Send each change for this package
+          const responses = await Promise.all(
+            packageChanges.map((change) =>
+              fetch(`/api/admin/packages/${packageId}/features`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(change),
+              })
+            )
+          );
+          return responses.every((r) => r.ok);
+        })
+      );
 
-            if (mappingExists) {
-              return {
-                ...f,
-                packageMappings: existingMappings.map((m) =>
-                  m.packageId === packageId
-                    ? { ...m, ...updatedMapping }
-                    : m
-                ),
-              };
-            } else {
-              return {
-                ...f,
-                packageMappings: [...existingMappings, updatedMapping],
-              };
-            }
-          })
-        );
-        toast.success("Feature updated");
+      if (results.every(Boolean)) {
+        setPendingMappingChanges(new Map());
+        return true;
       } else {
-        toast.error("Failed to update feature");
+        toast.error("Some feature mappings failed to save");
+        return false;
       }
     } catch (error) {
-      console.error("Error updating feature mapping:", error);
-      toast.error("Failed to update feature");
+      console.error("Error saving feature mappings:", error);
+      toast.error("Failed to save feature mappings");
+      return false;
+    } finally {
+      setIsSavingMappings(false);
     }
   };
 
@@ -774,13 +834,18 @@ export default function ServiceEditorPage() {
               </Link>
             </Button>
           )}
-          <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? (
+          <Button onClick={handleSave} disabled={isSaving || isSavingMappings}>
+            {isSaving || isSavingMappings ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
               <Save className="mr-2 h-4 w-4" />
             )}
             Save Changes
+            {pendingMappingChanges.size > 0 && (
+              <Badge variant="secondary" className="ml-2 bg-orange-100 text-orange-700">
+                {pendingMappingChanges.size}
+              </Badge>
+            )}
           </Button>
         </div>
       </div>
@@ -794,8 +859,11 @@ export default function ServiceEditorPage() {
               Features ({masterFeatures.length})
             </TabsTrigger>
           )}
-          <TabsTrigger value="packages">
+          <TabsTrigger value="packages" className="relative">
             Packages ({service.packages.length})
+            {pendingMappingChanges.size > 0 && (
+              <span className="ml-1 inline-flex h-2 w-2 rounded-full bg-orange-500" title="Unsaved changes" />
+            )}
           </TabsTrigger>
           <TabsTrigger value="faqs">FAQs ({service.faqs.length})</TabsTrigger>
           <TabsTrigger value="seo">SEO</TabsTrigger>
@@ -1251,27 +1319,12 @@ export default function ServiceEditorPage() {
                                                 type="number"
                                                 step="0.01"
                                                 placeholder="e.g. 50"
-                                                defaultValue={addonPriceUSD || ""}
+                                                value={addonPriceUSD ?? ""}
                                                 className="h-8"
-                                                onBlur={(e) => {
+                                                onChange={(e) => {
                                                   if (pkg.id) {
                                                     updatePackageFeatureMapping(pkg.id, feature.id, {
                                                       addonPriceUSD: e.target.value ? parseFloat(e.target.value) : null,
-                                                    });
-                                                  }
-                                                }}
-                                              />
-                                              <Label className="text-xs">Add-on Price (BDT)</Label>
-                                              <Input
-                                                type="number"
-                                                step="1"
-                                                placeholder="e.g. 5000"
-                                                defaultValue={mapping?.addonPriceBDT || ""}
-                                                className="h-8"
-                                                onBlur={(e) => {
-                                                  if (pkg.id) {
-                                                    updatePackageFeatureMapping(pkg.id, feature.id, {
-                                                      addonPriceBDT: e.target.value ? parseFloat(e.target.value) : null,
                                                     });
                                                   }
                                                 }}
@@ -1284,9 +1337,9 @@ export default function ServiceEditorPage() {
                                               <Label className="text-xs">Custom Value</Label>
                                               <Input
                                                 placeholder='e.g. "10 per month"'
-                                                defaultValue={mapping?.customValue || ""}
+                                                value={mapping?.customValue ?? ""}
                                                 className="h-8"
-                                                onBlur={(e) => {
+                                                onChange={(e) => {
                                                   if (pkg.id) {
                                                     updatePackageFeatureMapping(pkg.id, feature.id, {
                                                       customValue: e.target.value || null,
@@ -1540,97 +1593,9 @@ export default function ServiceEditorPage() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label>Included Features</Label>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() =>
-                      setEditingPackage({
-                        ...editingPackage,
-                        features: [...editingPackage.features, { text: "" }],
-                      })
-                    }
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-                {editingPackage.features.map((f, i) => (
-                  <div key={i} className="flex gap-2">
-                    <Input
-                      value={f.text}
-                      onChange={(e) => {
-                        const updated = [...editingPackage.features];
-                        updated[i] = { ...updated[i], text: e.target.value };
-                        setEditingPackage({ ...editingPackage, features: updated });
-                      }}
-                      placeholder="Feature..."
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() =>
-                        setEditingPackage({
-                          ...editingPackage,
-                          features: editingPackage.features.filter((_, idx) => idx !== i),
-                        })
-                      }
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label>Not Included</Label>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() =>
-                      setEditingPackage({
-                        ...editingPackage,
-                        notIncluded: [...editingPackage.notIncluded, { text: "" }],
-                      })
-                    }
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-                {editingPackage.notIncluded.map((n, i) => (
-                  <div key={i} className="flex gap-2">
-                    <Input
-                      value={n.text}
-                      onChange={(e) => {
-                        const updated = [...editingPackage.notIncluded];
-                        updated[i] = { ...updated[i], text: e.target.value };
-                        setEditingPackage({ ...editingPackage, notIncluded: updated });
-                      }}
-                      placeholder="Not included..."
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() =>
-                        setEditingPackage({
-                          ...editingPackage,
-                          notIncluded: editingPackage.notIncluded.filter(
-                            (_, idx) => idx !== i
-                          ),
-                        })
-                      }
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
+              <p className="text-xs text-muted-foreground">
+                Note: Feature inclusion is managed from the Features tab using the comparison table.
+              </p>
             </div>
           )}
           <DialogFooter>

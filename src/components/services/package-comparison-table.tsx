@@ -89,6 +89,12 @@ export function PackageComparisonTable({
     [packages, selectedPackageId]
   );
 
+  // Get package slug from name (for checkout URL)
+  const getPackageSlug = (pkg: Package | undefined) => {
+    if (!pkg) return "basic";
+    return pkg.name.toLowerCase().replace(/\s+/g, "-");
+  };
+
   // Get state fee from selected state
   const stateFee = useMemo(
     () => selectedState?.fee || 0,
@@ -496,9 +502,7 @@ export function PackageComparisonTable({
                 asChild
               >
                 <Link
-                  href={`/checkout?service=${serviceSlug}&package=${selectedPackageId}&state=${selectedState?.code || ""}&addons=${selectedAddons
-                    .map((a) => a.featureId)
-                    .join(",")}`}
+                  href={`/checkout/${serviceSlug}?package=${getPackageSlug(selectedPackage)}${selectedState?.code ? `&state=${selectedState.code}` : ""}${selectedAddons.length > 0 ? `&addons=${selectedAddons.map((a) => a.featureId).join(",")}` : ""}`}
                 >
                   Get Started
                 </Link>
@@ -554,7 +558,7 @@ export function PackageComparisonTable({
           <CardFooter>
             <Button className="w-full bg-orange-500 hover:bg-orange-600" asChild>
               <Link
-                href={`/checkout?service=${serviceSlug}&package=${selectedPackageId}&state=${selectedState?.code || ""}`}
+                href={`/checkout/${serviceSlug}?package=${getPackageSlug(selectedPackage)}${selectedState?.code ? `&state=${selectedState.code}` : ""}${selectedAddons.length > 0 ? `&addons=${selectedAddons.map((a) => a.featureId).join(",")}` : ""}`}
               >
                 Get Started - ${grandTotal}
               </Link>

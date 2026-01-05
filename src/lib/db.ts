@@ -14,15 +14,21 @@ function createPrismaClient() {
     user: process.env.DATABASE_USER || "postgres",
     password: process.env.DATABASE_PASSWORD,
     database: process.env.DATABASE_NAME || "llcpad",
+    // Connection pool optimization
+    max: 10, // Maximum connections in pool
+    min: 2, // Minimum connections to keep
+    idleTimeoutMillis: 30000, // Close idle connections after 30s
+    connectionTimeoutMillis: 5000, // Timeout for new connections
   });
   const adapter = new PrismaPg(pool);
 
+  // Disable query logging for better performance
+  // Set PRISMA_LOG=query in .env to enable query logging when needed
+  const enableQueryLog = process.env.PRISMA_LOG === "query";
+
   return new PrismaClient({
     adapter,
-    log:
-      process.env.NODE_ENV === "development"
-        ? ["query", "error", "warn"]
-        : ["error"],
+    log: enableQueryLog ? ["query", "error", "warn"] : ["error"],
   });
 }
 
