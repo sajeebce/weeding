@@ -2318,187 +2318,241 @@ async function main() {
   }
   console.log("  ✓ Header menu items created");
 
-  // Create Footer Configuration
+  // Create Footer Configuration (skip if already exists to preserve admin customizations)
   console.log("\n🦶 Creating footer configuration...");
 
-  // Clean up existing footer config
-  await prisma.menuItem.deleteMany({ where: { footerWidgetId: { not: null } } });
-  await prisma.footerWidget.deleteMany({});
-  await prisma.footerConfig.deleteMany({});
+  const existingFooter = await prisma.footerConfig.findFirst({ where: { isActive: true } });
 
-  const footerConfig = await prisma.footerConfig.create({
-    data: {
-      name: "Default Footer",
-      isActive: true,
-      layout: "MULTI_COLUMN",
-      columns: 6,
-      newsletterEnabled: true,
-      newsletterTitle: "Subscribe to our newsletter",
-      newsletterSubtitle: "Get updates on new services and offers",
-      showSocialLinks: true,
-      socialPosition: "brand",
-      showContactInfo: true,
-      contactPosition: "brand",
-      bottomBarEnabled: true,
-      showDisclaimer: true,
-      disclaimerText: "LLCPad is not a law firm and does not provide legal advice. The information provided is for general informational purposes only.",
-      showTrustBadges: false,
-      paddingTop: 48,
-      paddingBottom: 32,
-    },
-  });
-  console.log("  ✓ Footer config created");
+  let footerConfig;
+  if (existingFooter) {
+    console.log("  ℹ Active footer config already exists, skipping creation to preserve customizations");
+    footerConfig = existingFooter;
+  } else {
+    // Only clean up and create if no active footer exists
+    await prisma.menuItem.deleteMany({ where: { footerWidgetId: { not: null } } });
+    await prisma.footerWidget.deleteMany({});
+    await prisma.footerConfig.deleteMany({});
 
-  // Create footer widgets
-  // Widget 1: Brand (column 1-2)
-  await prisma.footerWidget.create({
-    data: {
-      footerId: footerConfig.id,
-      type: "BRAND",
-      title: "LLCPad",
-      showTitle: false,
-      column: 1,
-      sortOrder: 0,
-    },
-  });
-
-  // Widget 2: Services (column 3)
-  const servicesWidget = await prisma.footerWidget.create({
-    data: {
-      footerId: footerConfig.id,
-      type: "LINKS",
-      title: "Services",
-      showTitle: true,
-      column: 3,
-      sortOrder: 0,
-    },
-  });
-
-  const serviceLinks = [
-    { label: "LLC Formation", url: "/services/llc-formation" },
-    { label: "EIN Application", url: "/services/ein-application" },
-    { label: "Amazon Seller Account", url: "/services/amazon-seller" },
-    { label: "Registered Agent", url: "/services/registered-agent" },
-    { label: "Virtual Address", url: "/services/virtual-address" },
-    { label: "Business Banking", url: "/services/business-banking" },
-  ];
-
-  for (let i = 0; i < serviceLinks.length; i++) {
-    await prisma.menuItem.create({
+    footerConfig = await prisma.footerConfig.create({
       data: {
-        label: serviceLinks[i].label,
-        url: serviceLinks[i].url,
-        footerWidgetId: servicesWidget.id,
-        sortOrder: i,
-        target: "_self",
-        isVisible: true,
-        visibleOnMobile: true,
+        name: "Default Footer",
+        isActive: true,
+        layout: "MULTI_COLUMN",
+        columns: 6,
+        newsletterEnabled: true,
+        newsletterTitle: "Subscribe to our newsletter",
+        newsletterSubtitle: "Get updates on new services and offers",
+        showSocialLinks: true,
+        socialPosition: "brand",
+        showContactInfo: true,
+        contactPosition: "brand",
+        bottomBarEnabled: true,
+        showDisclaimer: true,
+        disclaimerText: "LLCPad is not a law firm and does not provide legal advice. The information provided is for general informational purposes only.",
+        showTrustBadges: false,
+        paddingTop: 48,
+        paddingBottom: 32,
       },
     });
-  }
+    console.log("  ✓ Footer config created");
 
-  // Widget 3: Company (column 4)
-  const companyWidget = await prisma.footerWidget.create({
-    data: {
-      footerId: footerConfig.id,
-      type: "LINKS",
-      title: "Company",
-      showTitle: true,
-      column: 4,
-      sortOrder: 0,
-    },
-  });
-
-  const companyLinks = [
-    { label: "About Us", url: "/about" },
-    { label: "Pricing", url: "/pricing" },
-    { label: "Blog", url: "/blog" },
-    { label: "FAQs", url: "/faq" },
-    { label: "Contact", url: "/contact" },
-    { label: "Testimonials", url: "/testimonials" },
-  ];
-
-  for (let i = 0; i < companyLinks.length; i++) {
-    await prisma.menuItem.create({
+    // Create footer widgets
+    // Widget 1: Brand (column 1-2)
+    await prisma.footerWidget.create({
       data: {
-        label: companyLinks[i].label,
-        url: companyLinks[i].url,
-        footerWidgetId: companyWidget.id,
-        sortOrder: i,
-        target: "_self",
-        isVisible: true,
-        visibleOnMobile: true,
+        footerId: footerConfig.id,
+        type: "BRAND",
+        title: "LLCPad",
+        showTitle: false,
+        column: 1,
+        sortOrder: 0,
       },
     });
-  }
 
-  // Widget 4: Popular States (column 5)
-  const statesWidget = await prisma.footerWidget.create({
-    data: {
-      footerId: footerConfig.id,
-      type: "LINKS",
-      title: "Popular States",
-      showTitle: true,
-      column: 5,
-      sortOrder: 0,
-    },
-  });
-
-  const stateLinks = [
-    { label: "Wyoming LLC", url: "/llc/wyoming" },
-    { label: "Delaware LLC", url: "/llc/delaware" },
-    { label: "New Mexico LLC", url: "/llc/new-mexico" },
-    { label: "Texas LLC", url: "/llc/texas" },
-    { label: "Florida LLC", url: "/llc/florida" },
-  ];
-
-  for (let i = 0; i < stateLinks.length; i++) {
-    await prisma.menuItem.create({
+    // Widget 2: Services (column 3)
+    const servicesWidget = await prisma.footerWidget.create({
       data: {
-        label: stateLinks[i].label,
-        url: stateLinks[i].url,
-        footerWidgetId: statesWidget.id,
-        sortOrder: i,
-        target: "_self",
-        isVisible: true,
-        visibleOnMobile: true,
+        footerId: footerConfig.id,
+        type: "LINKS",
+        title: "Services",
+        showTitle: true,
+        column: 3,
+        sortOrder: 0,
       },
     });
-  }
 
-  // Widget 5: Legal (column 6)
-  const legalWidget = await prisma.footerWidget.create({
-    data: {
-      footerId: footerConfig.id,
-      type: "LINKS",
-      title: "Legal",
-      showTitle: true,
-      column: 6,
-      sortOrder: 0,
-    },
-  });
+    const serviceLinks = [
+      { label: "LLC Formation", url: "/services/llc-formation" },
+      { label: "EIN Application", url: "/services/ein-application" },
+      { label: "Amazon Seller Account", url: "/services/amazon-seller" },
+      { label: "Registered Agent", url: "/services/registered-agent" },
+      { label: "Virtual Address", url: "/services/virtual-address" },
+      { label: "Business Banking", url: "/services/business-banking" },
+    ];
 
-  const legalLinks = [
-    { label: "Privacy Policy", url: "/privacy" },
-    { label: "Terms of Service", url: "/terms" },
-    { label: "Refund Policy", url: "/refund-policy" },
-    { label: "Disclaimer", url: "/disclaimer" },
-  ];
+    for (let i = 0; i < serviceLinks.length; i++) {
+      await prisma.menuItem.create({
+        data: {
+          label: serviceLinks[i].label,
+          url: serviceLinks[i].url,
+          footerWidgetId: servicesWidget.id,
+          sortOrder: i,
+          target: "_self",
+          isVisible: true,
+          visibleOnMobile: true,
+        },
+      });
+    }
 
-  for (let i = 0; i < legalLinks.length; i++) {
-    await prisma.menuItem.create({
+    // Widget 3: Company (column 4)
+    const companyWidget = await prisma.footerWidget.create({
       data: {
-        label: legalLinks[i].label,
-        url: legalLinks[i].url,
-        footerWidgetId: legalWidget.id,
-        sortOrder: i,
-        target: "_self",
-        isVisible: true,
-        visibleOnMobile: true,
+        footerId: footerConfig.id,
+        type: "LINKS",
+        title: "Company",
+        showTitle: true,
+        column: 4,
+        sortOrder: 0,
       },
     });
+
+    const companyLinks = [
+      { label: "About Us", url: "/about" },
+      { label: "Pricing", url: "/pricing" },
+      { label: "Blog", url: "/blog" },
+      { label: "FAQs", url: "/faq" },
+      { label: "Contact", url: "/contact" },
+      { label: "Testimonials", url: "/testimonials" },
+    ];
+
+    for (let i = 0; i < companyLinks.length; i++) {
+      await prisma.menuItem.create({
+        data: {
+          label: companyLinks[i].label,
+          url: companyLinks[i].url,
+          footerWidgetId: companyWidget.id,
+          sortOrder: i,
+          target: "_self",
+          isVisible: true,
+          visibleOnMobile: true,
+        },
+      });
+    }
+
+    // Widget 4: Popular States (column 5)
+    const statesWidget = await prisma.footerWidget.create({
+      data: {
+        footerId: footerConfig.id,
+        type: "LINKS",
+        title: "Popular States",
+        showTitle: true,
+        column: 5,
+        sortOrder: 0,
+      },
+    });
+
+    const stateLinks = [
+      { label: "Wyoming LLC", url: "/llc/wyoming" },
+      { label: "Delaware LLC", url: "/llc/delaware" },
+      { label: "New Mexico LLC", url: "/llc/new-mexico" },
+      { label: "Texas LLC", url: "/llc/texas" },
+      { label: "Florida LLC", url: "/llc/florida" },
+    ];
+
+    for (let i = 0; i < stateLinks.length; i++) {
+      await prisma.menuItem.create({
+        data: {
+          label: stateLinks[i].label,
+          url: stateLinks[i].url,
+          footerWidgetId: statesWidget.id,
+          sortOrder: i,
+          target: "_self",
+          isVisible: true,
+          visibleOnMobile: true,
+        },
+      });
+    }
+
+    // Widget 5: Legal (column 6)
+    const legalWidget = await prisma.footerWidget.create({
+      data: {
+        footerId: footerConfig.id,
+        type: "LINKS",
+        title: "Legal",
+        showTitle: true,
+        column: 6,
+        sortOrder: 0,
+      },
+    });
+
+    const legalLinks = [
+      { label: "Privacy Policy", url: "/privacy" },
+      { label: "Terms of Service", url: "/terms" },
+      { label: "Refund Policy", url: "/refund-policy" },
+      { label: "Disclaimer", url: "/disclaimer" },
+    ];
+
+    for (let i = 0; i < legalLinks.length; i++) {
+      await prisma.menuItem.create({
+        data: {
+          label: legalLinks[i].label,
+          url: legalLinks[i].url,
+          footerWidgetId: legalWidget.id,
+          sortOrder: i,
+          target: "_self",
+          isVisible: true,
+          visibleOnMobile: true,
+        },
+      });
+    }
+    console.log("  ✓ Footer widgets created");
+  } // End of else block for footer creation
+
+  // Create brand color settings
+  console.log("\n🎨 Creating brand color settings...");
+  const brandSettings = [
+    // Primary Brand Colors - Midnight Emerald Theme
+    { key: "brand_primary_color", value: "#10B981", type: "color" }, // Emerald 500
+    { key: "brand_primary_dark", value: "#059669", type: "color" }, // Emerald 600
+    { key: "brand_primary_light", value: "#34D399", type: "color" }, // Emerald 400
+    { key: "brand_secondary_color", value: "#1E2642", type: "color" }, // Indigo 800
+    { key: "brand_secondary_dark", value: "#0A0F1E", type: "color" }, // Indigo 950
+    { key: "brand_secondary_light", value: "#2D3A5C", type: "color" }, // Indigo 700
+    { key: "brand_accent_color", value: "#F59E0B", type: "color" }, // Gold 500
+    { key: "brand_accent_dark", value: "#D97706", type: "color" }, // Gold 600
+    { key: "brand_accent_light", value: "#FBBF24", type: "color" }, // Gold 400
+    // Semantic Colors
+    { key: "color_success", value: "#10B981", type: "color" },
+    { key: "color_warning", value: "#F59E0B", type: "color" },
+    { key: "color_error", value: "#EF4444", type: "color" },
+    { key: "color_info", value: "#3B82F6", type: "color" },
+  ];
+
+  for (const setting of brandSettings) {
+    await prisma.setting.upsert({
+      where: { key: setting.key },
+      update: { value: setting.value, type: setting.type },
+      create: setting,
+    });
   }
-  console.log("  ✓ Footer widgets created");
+  console.log("  ✓ Brand color settings created");
+
+  // Create social media settings
+  console.log("\n📱 Creating social media settings...");
+  const socialSettings = [
+    { key: "business.social.facebook", value: "https://facebook.com/llcpad", type: "url" },
+    { key: "business.social.twitter", value: "https://x.com/llcpad", type: "url" },
+    { key: "business.social.youtube", value: "https://youtube.com/@llcpad", type: "url" },
+  ];
+
+  for (const setting of socialSettings) {
+    await prisma.setting.upsert({
+      where: { key: setting.key },
+      update: { value: setting.value, type: setting.type },
+      create: setting,
+    });
+  }
+  console.log("  ✓ Social media settings created");
 
   console.log("\n✅ Seeding completed!");
 }
