@@ -77,14 +77,14 @@ function hasCustomStyle(style?: ButtonCustomStyle): boolean {
 // Get background style (gradient or solid color)
 function getNormalBackground(style?: ButtonCustomStyle): string {
   if (style?.useGradient) {
-    return `linear-gradient(${getGradientCSS(style.gradientDirection)}, ${style.gradientFrom || "#10B981"}, ${style.gradientTo || "#059669"})`;
+    return `linear-gradient(${getGradientCSS(style.gradientDirection)}, ${style.gradientFrom || "#F97316"}, ${style.gradientTo || "#EA580C"})`;
   }
-  return style?.bgColor || "#10B981";
+  return style?.bgColor || "#F97316";
 }
 
 function getHoverBackground(style?: ButtonCustomStyle): string {
   if (style?.hoverUseGradient) {
-    return `linear-gradient(${getGradientCSS(style.hoverGradientDirection)}, ${style.hoverGradientFrom || "#059669"}, ${style.hoverGradientTo || "#047857"})`;
+    return `linear-gradient(${getGradientCSS(style.hoverGradientDirection)}, ${style.hoverGradientFrom || "#EA580C"}, ${style.hoverGradientTo || "#C2410C"})`;
   }
   if (style?.hoverBgColor) {
     return style.hoverBgColor;
@@ -109,7 +109,7 @@ function getHoverEffectClass(effect?: ButtonHoverEffect): string {
     case "scale-down":
       return "hover:scale-95";
     case "glow-pulse":
-      return "hover:shadow-[0_0_15px_rgba(16,185,129,0.5)]";
+      return "hover:shadow-[0_0_15px_rgba(249,115,22,0.5)]";
     case "heartbeat":
       return "animate-heartbeat";
     case "stitches":
@@ -150,8 +150,8 @@ function isNeuralButtonEffect(effect?: ButtonHoverEffect): boolean {
 
 // Get gradient shift background (larger gradient that shifts position)
 function getGradientShiftBackground(style: ButtonCustomStyle): string {
-  const fromColor = style.bgColor || "#10B981";
-  const toColor = style.hoverBgColor || "#059669";
+  const fromColor = style.bgColor || "#F97316";
+  const toColor = style.hoverBgColor || "#EA580C";
   return `linear-gradient(90deg, ${fromColor} 0%, ${toColor} 50%, ${fromColor} 100%)`;
 }
 
@@ -165,12 +165,12 @@ function getComplexEffectHoverStyles(style: ButtonCustomStyle): {
     case "slide-fill":
       // Slide fill: inset box-shadow slides from left to right
       return {
-        boxShadow: `inset 200px 0 0 0 ${style.hoverBgColor || "#059669"}`,
+        boxShadow: `inset 200px 0 0 0 ${style.hoverBgColor || "#EA580C"}`,
       };
     case "border-fill":
       // Border fill: inset box-shadow grows to fill the button
       return {
-        boxShadow: `inset 0 0 0 50px ${style.hoverBgColor || "#059669"}`,
+        boxShadow: `inset 0 0 0 50px ${style.hoverBgColor || "#EA580C"}`,
       };
     case "gradient-shift":
       // Gradient shift: background-position animates across larger gradient
@@ -181,7 +181,7 @@ function getComplexEffectHoverStyles(style: ButtonCustomStyle): {
     case "ripple":
       // Ripple: expanding ring from center outward
       return {
-        boxShadow: `0 0 0 8px ${(style.bgColor || "#10B981")}30, 0 0 20px ${(style.bgColor || "#10B981")}20`,
+        boxShadow: `0 0 0 8px ${(style.bgColor || "#F97316")}30, 0 0 20px ${(style.bgColor || "#F97316")}20`,
       };
     default:
       return {};
@@ -197,11 +197,11 @@ function getComplexEffectNormalStyles(style: ButtonCustomStyle): {
   switch (style.hoverEffect) {
     case "slide-fill":
       return {
-        boxShadow: `inset 0 0 0 0 ${style.hoverBgColor || "#059669"}`,
+        boxShadow: `inset 0 0 0 0 ${style.hoverBgColor || "#EA580C"}`,
       };
     case "border-fill":
       return {
-        boxShadow: `inset 0 0 0 0 ${style.hoverBgColor || "#059669"}`,
+        boxShadow: `inset 0 0 0 0 ${style.hoverBgColor || "#EA580C"}`,
       };
     case "gradient-shift":
       return {
@@ -210,7 +210,7 @@ function getComplexEffectNormalStyles(style: ButtonCustomStyle): {
       };
     case "ripple":
       return {
-        boxShadow: `0 0 0 0 ${(style.bgColor || "#10B981")}30`,
+        boxShadow: `0 0 0 0 ${(style.bgColor || "#F97316")}30`,
       };
     default:
       return {};
@@ -256,7 +256,7 @@ function CTAButtonItem({ btn, index }: { btn: CTAButton; index: number }) {
           key={index}
           asChild
           style={{
-            '--tw-ring-color': `${btn.style.bgColor || '#10B981'}99`,
+            '--tw-ring-color': `${btn.style.bgColor || '#F97316'}99`,
           } as React.CSSProperties}
         >
           <Link href={btn.url}>{btn.text}</Link>
@@ -308,7 +308,7 @@ function CTAButtonItem({ btn, index }: { btn: CTAButton; index: number }) {
           color: btn.style.textColor || "#ffffff",
           borderWidth: `${btn.style.borderWidth ?? 1}px`,
           borderStyle: "solid",
-          borderColor: btn.style.borderColor || btn.style.bgColor || "#10B981",
+          borderColor: btn.style.borderColor || btn.style.bgColor || "#F97316",
           borderRadius: `${btn.style.borderRadius ?? 6}px`,
           // Apply initial complex effect styles (for box-shadow/background-position initial state)
           ...(hasComplex ? complexNormalStyles : { boxShadow: btn.style.shadow }),

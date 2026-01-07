@@ -91,7 +91,7 @@ export function ChatWindow({
     return style;
   };
 
-  const primaryColor = settings?.primaryColor || "#10B981";
+  const primaryColor = settings?.primaryColor || "#F97316";
 
   // Minimized state - show compact bar
   if (isMinimized) {

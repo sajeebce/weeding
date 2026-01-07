@@ -22,45 +22,22 @@
 
 @theme {
   /* ============================================
-     LLCPad Brand Design System - "Midnight Emerald"
+     LLCPad Brand Design System - "Midnight Orange"
+     Bizee-Inspired Clean Design
      ============================================ */
 
-  /* Primary - Deep Indigo (Trust & Authority) */
-  --color-indigo-50: #F4F6FB;
-  --color-indigo-100: #E8ECF7;
-  --color-indigo-200: #D0D9F0;
-  --color-indigo-300: #A5B4DB;
-  --color-indigo-400: #7B8FC4;
-  --color-indigo-500: #5166A0;
-  --color-indigo-600: #3D4F7A;
-  --color-indigo-700: #2D3A5C;
-  --color-indigo-800: #1E2642;
-  --color-indigo-900: #111827;
-  --color-indigo-950: #0A0F1E;
+  /* Midnight - Dark Sections (Hero, Footer) */
+  --color-midnight: #0A0F1E;
+  --color-midnight-light: #1E2642;
+  --color-midnight-700: #2D3A5C;
 
-  /* Secondary - Emerald (Success & Growth) */
-  --color-emerald-50: #ECFDF5;
-  --color-emerald-100: #D1FAE5;
-  --color-emerald-200: #A7F3D0;
-  --color-emerald-300: #6EE7B7;
-  --color-emerald-400: #34D399;
-  --color-emerald-500: #10B981;
-  --color-emerald-600: #059669;
-  --color-emerald-700: #047857;
-  --color-emerald-800: #065F46;
-  --color-emerald-900: #064E3B;
-
-  /* Accent - Gold (Premium & Highlight) */
-  --color-gold-50: #FFFBEB;
-  --color-gold-100: #FEF3C7;
-  --color-gold-200: #FDE68A;
-  --color-gold-300: #FCD34D;
-  --color-gold-400: #FBBF24;
-  --color-gold-500: #F59E0B;
-  --color-gold-600: #D97706;
-  --color-gold-700: #B45309;
-  --color-gold-800: #92400E;
-  --color-gold-900: #78350F;
+  /* Orange - Primary Accent (All CTAs) */
+  --color-orange-50: #FFF7ED;
+  --color-orange-100: #FFEDD5;
+  --color-orange-400: #FB923C;
+  --color-orange-500: #F97316;
+  --color-orange-600: #EA580C;
+  --color-orange-700: #C2410C;
 
   /* Neutrals - Slate (Content & UI) */
   --color-slate-50: #F8FAFC;
@@ -75,22 +52,11 @@
   --color-slate-900: #0F172A;
   --color-slate-950: #020617;
 
-  /* Brand Colors - Primary Uses */
-  --color-brand-indigo: #1E2642;
-  --color-brand-indigo-dark: #0A0F1E;
-  --color-brand-indigo-light: #2D3A5C;
-  --color-brand-emerald: #10B981;
-  --color-brand-emerald-dark: #059669;
-  --color-brand-emerald-light: #34D399;
-  --color-brand-gold: #F59E0B;
-  --color-brand-gold-dark: #D97706;
-  --color-brand-gold-light: #FBBF24;
-
-  /* Semantic Colors */
-  --color-success: #10B981;
-  --color-success-bg: #ECFDF5;
-  --color-success-border: #6EE7B7;
-  --color-success-text: #065F46;
+  /* Semantic Colors (Minimal Use) */
+  --color-success: #22C55E;
+  --color-success-bg: #F0FDF4;
+  --color-success-border: #86EFAC;
+  --color-success-text: #166534;
   --color-warning: #F59E0B;
   --color-warning-bg: #FFFBEB;
   --color-warning-border: #FCD34D;
@@ -103,13 +69,14 @@
   --color-info-bg: #EFF6FF;
   --color-info-border: #93C5FD;
   --color-info-text: #1E40AF;
+  --color-star: #FBBF24;
 
-  /* Theme Colors - Using Brand System */
-  --color-primary: #10B981;
+  /* Theme Colors - Midnight Orange System */
+  --color-primary: #F97316;
   --color-primary-foreground: #ffffff;
-  --color-secondary: #1E2642;
+  --color-secondary: #0A0F1E;
   --color-secondary-foreground: #ffffff;
-  --color-accent: #F59E0B;
+  --color-accent: #F97316;
   --color-accent-foreground: #ffffff;
   --color-destructive: #EF4444;
   --color-destructive-foreground: #ffffff;
@@ -121,7 +88,7 @@
   --color-popover-foreground: #0f172a;
   --color-border: #E2E8F0;
   --color-input: #E2E8F0;
-  --color-ring: #10B981;
+  --color-ring: #F97316;
   --color-background: #ffffff;
   --color-foreground: #0f172a;
 

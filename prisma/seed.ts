@@ -2511,18 +2511,18 @@ async function main() {
   // Create brand color settings
   console.log("\n🎨 Creating brand color settings...");
   const brandSettings = [
-    // Primary Brand Colors - Midnight Emerald Theme
-    { key: "brand_primary_color", value: "#10B981", type: "color" }, // Emerald 500
-    { key: "brand_primary_dark", value: "#059669", type: "color" }, // Emerald 600
-    { key: "brand_primary_light", value: "#34D399", type: "color" }, // Emerald 400
-    { key: "brand_secondary_color", value: "#1E2642", type: "color" }, // Indigo 800
-    { key: "brand_secondary_dark", value: "#0A0F1E", type: "color" }, // Indigo 950
-    { key: "brand_secondary_light", value: "#2D3A5C", type: "color" }, // Indigo 700
-    { key: "brand_accent_color", value: "#F59E0B", type: "color" }, // Gold 500
-    { key: "brand_accent_dark", value: "#D97706", type: "color" }, // Gold 600
-    { key: "brand_accent_light", value: "#FBBF24", type: "color" }, // Gold 400
+    // Primary Brand Colors - Midnight Orange Theme
+    { key: "brand_primary_color", value: "#F97316", type: "color" }, // Orange 500
+    { key: "brand_primary_dark", value: "#EA580C", type: "color" }, // Orange 600
+    { key: "brand_primary_light", value: "#FB923C", type: "color" }, // Orange 400
+    { key: "brand_secondary_color", value: "#1E2642", type: "color" }, // Midnight Light
+    { key: "brand_secondary_dark", value: "#0A0F1E", type: "color" }, // Midnight
+    { key: "brand_secondary_light", value: "#2D3A5C", type: "color" }, // Midnight 700
+    { key: "brand_accent_color", value: "#F97316", type: "color" }, // Orange 500 (same as primary)
+    { key: "brand_accent_dark", value: "#C2410C", type: "color" }, // Orange 700
+    { key: "brand_accent_light", value: "#FDBA74", type: "color" }, // Orange 300
     // Semantic Colors
-    { key: "color_success", value: "#10B981", type: "color" },
+    { key: "color_success", value: "#22C55E", type: "color" }, // Green 500
     { key: "color_warning", value: "#F59E0B", type: "color" },
     { key: "color_error", value: "#EF4444", type: "color" },
     { key: "color_info", value: "#3B82F6", type: "color" },

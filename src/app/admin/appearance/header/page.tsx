@@ -297,13 +297,13 @@ const buttonStylePresets: ButtonStylePreset[] = [
     name: "Flow Button",
     description: "Rotating border gradient with conic animation on hover",
     style: {
-      bgColor: "#10B981",
+      bgColor: "#F97316",
       textColor: "#ffffff",
       borderWidth: 2,
-      borderColor: "#10B981",
+      borderColor: "#F97316",
       borderRadius: 8,
       hoverEffect: "flow-border",
-      shadow: "0 0 0 2px rgba(37, 99, 235, 0.3)",
+      shadow: "0 0 0 2px rgba(249, 115, 22, 0.3)",
     },
   },
   // 14. Stitches Button - 3D effect with dashed inner border
@@ -326,7 +326,7 @@ const buttonStylePresets: ButtonStylePreset[] = [
     name: "Ring Hover",
     description: "Elegant ring outline effect on hover with smooth transition",
     style: {
-      bgColor: "#10B981",
+      bgColor: "#F97316",
       textColor: "#ffffff",
       borderWidth: 0,
       borderRadius: 6,
@@ -548,7 +548,7 @@ function PreviewCTAButton({ btn }: { btn: CTAButton }) {
           className="text-sm"
           style={{
             // Override ring color to match button color
-            '--tw-ring-color': `${btn.style.bgColor || '#10B981'}99`,
+            '--tw-ring-color': `${btn.style.bgColor || '#F97316'}99`,
           } as React.CSSProperties}
         >
           {btn.text}
@@ -571,14 +571,14 @@ function PreviewCTAButton({ btn }: { btn: CTAButton }) {
     // Determine background based on gradient settings
     const getNormalBackground = () => {
       if (btn.style?.useGradient) {
-        return `linear-gradient(${getGradientCSS(btn.style.gradientDirection)}, ${btn.style.gradientFrom || "#10B981"}, ${btn.style.gradientTo || "#047857"})`;
+        return `linear-gradient(${getGradientCSS(btn.style.gradientDirection)}, ${btn.style.gradientFrom || "#F97316"}, ${btn.style.gradientTo || "#C2410C"})`;
       }
-      return btn.style?.bgColor || "#10B981";
+      return btn.style?.bgColor || "#F97316";
     };
 
     const getHoverBackground = () => {
       if (btn.style?.hoverUseGradient) {
-        return `linear-gradient(${getGradientCSS(btn.style.hoverGradientDirection)}, ${btn.style.hoverGradientFrom || "#059669"}, ${btn.style.hoverGradientTo || "#065F46"})`;
+        return `linear-gradient(${getGradientCSS(btn.style.hoverGradientDirection)}, ${btn.style.hoverGradientFrom || "#EA580C"}, ${btn.style.hoverGradientTo || "#065F46"})`;
       }
       if (btn.style?.hoverBgColor) {
         return btn.style.hoverBgColor;
@@ -589,8 +589,8 @@ function PreviewCTAButton({ btn }: { btn: CTAButton }) {
 
     // For gradient-shift effect, we need a larger gradient that shifts position
     const getGradientShiftBackground = (hovered: boolean) => {
-      const fromColor = btn.style?.bgColor || "#10B981";
-      const toColor = btn.style?.hoverBgColor || "#047857";
+      const fromColor = btn.style?.bgColor || "#F97316";
+      const toColor = btn.style?.hoverBgColor || "#C2410C";
       // Create a gradient that's twice the width so we can shift it
       return `linear-gradient(90deg, ${fromColor} 0%, ${toColor} 50%, ${fromColor} 100%)`;
     };
@@ -605,15 +605,15 @@ function PreviewCTAButton({ btn }: { btn: CTAButton }) {
           // Non-hover: shadow is positioned off-screen to the left
           return {
             boxShadow: isHovered
-              ? `inset 200px 0 0 0 ${btn.style?.hoverBgColor || "#059669"}`
-              : `inset 0 0 0 0 ${btn.style?.hoverBgColor || "#059669"}`,
+              ? `inset 200px 0 0 0 ${btn.style?.hoverBgColor || "#EA580C"}`
+              : `inset 0 0 0 0 ${btn.style?.hoverBgColor || "#EA580C"}`,
           };
         case "border-fill":
           // Border fill: inset box-shadow grows to fill the button
           return {
             boxShadow: isHovered
-              ? `inset 0 0 0 50px ${btn.style?.hoverBgColor || "#059669"}`
-              : `inset 0 0 0 0 ${btn.style?.hoverBgColor || "#059669"}`,
+              ? `inset 0 0 0 50px ${btn.style?.hoverBgColor || "#EA580C"}`
+              : `inset 0 0 0 0 ${btn.style?.hoverBgColor || "#EA580C"}`,
           };
         case "gradient-shift":
           // Gradient shift: background-position animates across a larger gradient
@@ -625,8 +625,8 @@ function PreviewCTAButton({ btn }: { btn: CTAButton }) {
           // Ripple: expanding ring from center outward
           return {
             boxShadow: isHovered
-              ? `0 0 0 8px ${(btn.style?.bgColor || "#10B981")}30, 0 0 20px ${(btn.style?.bgColor || "#10B981")}20`
-              : `0 0 0 0 ${(btn.style?.bgColor || "#10B981")}30`,
+              ? `0 0 0 8px ${(btn.style?.bgColor || "#F97316")}30, 0 0 20px ${(btn.style?.bgColor || "#F97316")}20`
+              : `0 0 0 0 ${(btn.style?.bgColor || "#F97316")}30`,
           };
         default:
           return {};
@@ -661,7 +661,7 @@ function PreviewCTAButton({ btn }: { btn: CTAButton }) {
           color: isHovered && btn.style.hoverTextColor ? btn.style.hoverTextColor : (btn.style.textColor || "#ffffff"),
           borderWidth: `${btn.style.borderWidth ?? 1}px`,
           borderStyle: "solid",
-          borderColor: btn.style.borderColor || btn.style.bgColor || "#10B981",
+          borderColor: btn.style.borderColor || btn.style.bgColor || "#F97316",
           borderRadius: `${btn.style.borderRadius ?? 6}px`,
           // Apply effect-specific styles (box-shadow, background-position, etc.)
           ...effectStyles,
@@ -784,11 +784,11 @@ export default function HeaderBuilderPage() {
     registerText: "Get Started",
     registerUrl: "/services/llc-formation",
     registerStyle: {
-      bgColor: "#10B981",
+      bgColor: "#F97316",
       textColor: "#ffffff",
       borderWidth: 0,
       borderRadius: 6,
-      hoverBgColor: "#059669",
+      hoverBgColor: "#EA580C",
     } as ButtonCustomStyle,
     searchEnabled: false,
     mobileBreakpoint: 1024,
@@ -833,11 +833,11 @@ export default function HeaderBuilderPage() {
           registerText: activeHeader.registerText,
           registerUrl: activeHeader.registerUrl,
           registerStyle: activeHeader.registerStyle || {
-            bgColor: "#10B981",
+            bgColor: "#F97316",
             textColor: "#ffffff",
             borderWidth: 0,
             borderRadius: 6,
-            hoverBgColor: "#059669",
+            hoverBgColor: "#EA580C",
           },
           searchEnabled: activeHeader.searchEnabled,
           mobileBreakpoint: activeHeader.mobileBreakpoint,
@@ -849,7 +849,7 @@ export default function HeaderBuilderPage() {
           ctaButtons: (activeHeader.ctaButtons || []).map((btn: CTAButton) => ({
             ...btn,
             style: btn.style || {
-              bgColor: "#10B981",
+              bgColor: "#F97316",
               textColor: "#ffffff",
               borderRadius: 6,
               borderWidth: 1,
@@ -918,7 +918,7 @@ export default function HeaderBuilderPage() {
           url: "/",
           variant: "primary",
           style: {
-            bgColor: "#10B981",
+            bgColor: "#F97316",
             textColor: "#ffffff",
             borderRadius: 6,
             borderWidth: 1,
@@ -2353,8 +2353,8 @@ export default function HeaderBuilderPage() {
                                     style: {
                                       ...btn.style,
                                       useGradient: checked,
-                                      gradientFrom: checked ? (btn.style?.gradientFrom || "#10B981") : btn.style?.gradientFrom,
-                                      gradientTo: checked ? (btn.style?.gradientTo || "#047857") : btn.style?.gradientTo,
+                                      gradientFrom: checked ? (btn.style?.gradientFrom || "#F97316") : btn.style?.gradientFrom,
+                                      gradientTo: checked ? (btn.style?.gradientTo || "#C2410C") : btn.style?.gradientTo,
                                       gradientDirection: checked ? (btn.style?.gradientDirection || "to-r") : btn.style?.gradientDirection,
                                     }
                                   })}
@@ -2370,7 +2370,7 @@ export default function HeaderBuilderPage() {
                                       <div className="flex gap-2">
                                         <Input
                                           type="color"
-                                          value={btn.style?.gradientFrom || "#10B981"}
+                                          value={btn.style?.gradientFrom || "#F97316"}
                                           onChange={(e) => updateCTAButton(index, {
                                             style: { ...btn.style, gradientFrom: e.target.value }
                                           })}
@@ -2381,7 +2381,7 @@ export default function HeaderBuilderPage() {
                                           onChange={(e) => updateCTAButton(index, {
                                             style: { ...btn.style, gradientFrom: e.target.value }
                                           })}
-                                          placeholder="#10B981"
+                                          placeholder="#F97316"
                                           className="flex-1 text-xs"
                                         />
                                       </div>
@@ -2391,7 +2391,7 @@ export default function HeaderBuilderPage() {
                                       <div className="flex gap-2">
                                         <Input
                                           type="color"
-                                          value={btn.style?.gradientTo || "#047857"}
+                                          value={btn.style?.gradientTo || "#C2410C"}
                                           onChange={(e) => updateCTAButton(index, {
                                             style: { ...btn.style, gradientTo: e.target.value }
                                           })}
@@ -2402,7 +2402,7 @@ export default function HeaderBuilderPage() {
                                           onChange={(e) => updateCTAButton(index, {
                                             style: { ...btn.style, gradientTo: e.target.value }
                                           })}
-                                          placeholder="#047857"
+                                          placeholder="#C2410C"
                                           className="flex-1 text-xs"
                                         />
                                       </div>
@@ -2434,7 +2434,7 @@ export default function HeaderBuilderPage() {
                                     <div
                                       className="h-8 rounded-md border"
                                       style={{
-                                        background: `linear-gradient(${getGradientCSS(btn.style?.gradientDirection)}, ${btn.style?.gradientFrom || "#10B981"}, ${btn.style?.gradientTo || "#047857"})`
+                                        background: `linear-gradient(${getGradientCSS(btn.style?.gradientDirection)}, ${btn.style?.gradientFrom || "#F97316"}, ${btn.style?.gradientTo || "#C2410C"})`
                                       }}
                                     />
                                   </div>
@@ -2449,7 +2449,7 @@ export default function HeaderBuilderPage() {
                                     <div className="flex gap-2">
                                       <Input
                                         type="color"
-                                        value={btn.style?.bgColor || "#10B981"}
+                                        value={btn.style?.bgColor || "#F97316"}
                                         onChange={(e) => updateCTAButton(index, {
                                           style: { ...btn.style, bgColor: e.target.value }
                                         })}
@@ -2460,7 +2460,7 @@ export default function HeaderBuilderPage() {
                                         onChange={(e) => updateCTAButton(index, {
                                           style: { ...btn.style, bgColor: e.target.value }
                                         })}
-                                        placeholder="#10B981"
+                                        placeholder="#F97316"
                                         className="flex-1 text-xs"
                                       />
                                     </div>
@@ -2491,7 +2491,7 @@ export default function HeaderBuilderPage() {
                                     <div className="flex gap-2">
                                       <Input
                                         type="color"
-                                        value={btn.style?.borderColor || "#10B981"}
+                                        value={btn.style?.borderColor || "#F97316"}
                                         onChange={(e) => updateCTAButton(index, {
                                           style: { ...btn.style, borderColor: e.target.value }
                                         })}
@@ -2502,7 +2502,7 @@ export default function HeaderBuilderPage() {
                                         onChange={(e) => updateCTAButton(index, {
                                           style: { ...btn.style, borderColor: e.target.value }
                                         })}
-                                        placeholder="#10B981"
+                                        placeholder="#F97316"
                                         className="flex-1 text-xs"
                                       />
                                     </div>
@@ -2539,7 +2539,7 @@ export default function HeaderBuilderPage() {
                                     <div className="flex gap-2">
                                       <Input
                                         type="color"
-                                        value={btn.style?.borderColor || "#10B981"}
+                                        value={btn.style?.borderColor || "#F97316"}
                                         onChange={(e) => updateCTAButton(index, {
                                           style: { ...btn.style, borderColor: e.target.value }
                                         })}
@@ -2550,7 +2550,7 @@ export default function HeaderBuilderPage() {
                                         onChange={(e) => updateCTAButton(index, {
                                           style: { ...btn.style, borderColor: e.target.value }
                                         })}
-                                        placeholder="#10B981"
+                                        placeholder="#F97316"
                                         className="flex-1 text-xs"
                                       />
                                     </div>
@@ -2652,7 +2652,7 @@ export default function HeaderBuilderPage() {
                                     style: {
                                       ...btn.style,
                                       hoverUseGradient: checked,
-                                      hoverGradientFrom: checked ? (btn.style?.hoverGradientFrom || "#059669") : btn.style?.hoverGradientFrom,
+                                      hoverGradientFrom: checked ? (btn.style?.hoverGradientFrom || "#EA580C") : btn.style?.hoverGradientFrom,
                                       hoverGradientTo: checked ? (btn.style?.hoverGradientTo || "#065F46") : btn.style?.hoverGradientTo,
                                       hoverGradientDirection: checked ? (btn.style?.hoverGradientDirection || "to-r") : btn.style?.hoverGradientDirection,
                                     }
@@ -2669,7 +2669,7 @@ export default function HeaderBuilderPage() {
                                       <div className="flex gap-2">
                                         <Input
                                           type="color"
-                                          value={btn.style?.hoverGradientFrom || "#059669"}
+                                          value={btn.style?.hoverGradientFrom || "#EA580C"}
                                           onChange={(e) => updateCTAButton(index, {
                                             style: { ...btn.style, hoverGradientFrom: e.target.value }
                                           })}
@@ -2680,7 +2680,7 @@ export default function HeaderBuilderPage() {
                                           onChange={(e) => updateCTAButton(index, {
                                             style: { ...btn.style, hoverGradientFrom: e.target.value }
                                           })}
-                                          placeholder="#059669"
+                                          placeholder="#EA580C"
                                           className="flex-1 text-xs"
                                         />
                                       </div>
@@ -2733,7 +2733,7 @@ export default function HeaderBuilderPage() {
                                     <div
                                       className="h-8 rounded-md border"
                                       style={{
-                                        background: `linear-gradient(${getGradientCSS(btn.style?.hoverGradientDirection)}, ${btn.style?.hoverGradientFrom || "#059669"}, ${btn.style?.hoverGradientTo || "#065F46"})`
+                                        background: `linear-gradient(${getGradientCSS(btn.style?.hoverGradientDirection)}, ${btn.style?.hoverGradientFrom || "#EA580C"}, ${btn.style?.hoverGradientTo || "#065F46"})`
                                       }}
                                     />
                                   </div>
@@ -2748,7 +2748,7 @@ export default function HeaderBuilderPage() {
                                     <div className="flex gap-2">
                                       <Input
                                         type="color"
-                                        value={btn.style?.hoverBgColor || "#059669"}
+                                        value={btn.style?.hoverBgColor || "#EA580C"}
                                         onChange={(e) => updateCTAButton(index, {
                                           style: { ...btn.style, hoverBgColor: e.target.value }
                                         })}
@@ -2759,7 +2759,7 @@ export default function HeaderBuilderPage() {
                                         onChange={(e) => updateCTAButton(index, {
                                           style: { ...btn.style, hoverBgColor: e.target.value }
                                         })}
-                                        placeholder="#059669"
+                                        placeholder="#EA580C"
                                         className="flex-1 text-xs"
                                       />
                                     </div>
@@ -2987,7 +2987,7 @@ export default function HeaderBuilderPage() {
                               // Generate preview background for preset
                               const previewBg = preset.style.useGradient
                                 ? `linear-gradient(${getGradientCSS(preset.style.gradientDirection)}, ${preset.style.gradientFrom}, ${preset.style.gradientTo})`
-                                : preset.style.bgColor || "#10B981";
+                                : preset.style.bgColor || "#F97316";
 
                               return (
                                 <button
@@ -3123,8 +3123,8 @@ export default function HeaderBuilderPage() {
                                   loginStyle: {
                                     ...formData.loginStyle,
                                     useGradient: checked,
-                                    gradientFrom: checked ? (formData.loginStyle?.gradientFrom || "#10B981") : formData.loginStyle?.gradientFrom,
-                                    gradientTo: checked ? (formData.loginStyle?.gradientTo || "#047857") : formData.loginStyle?.gradientTo,
+                                    gradientFrom: checked ? (formData.loginStyle?.gradientFrom || "#F97316") : formData.loginStyle?.gradientFrom,
+                                    gradientTo: checked ? (formData.loginStyle?.gradientTo || "#C2410C") : formData.loginStyle?.gradientTo,
                                   }
                                 })}
                               />
@@ -3138,7 +3138,7 @@ export default function HeaderBuilderPage() {
                                     <div className="flex gap-2">
                                       <Input
                                         type="color"
-                                        value={formData.loginStyle?.gradientFrom || "#10B981"}
+                                        value={formData.loginStyle?.gradientFrom || "#F97316"}
                                         onChange={(e) => setFormData({
                                           ...formData,
                                           loginStyle: { ...formData.loginStyle, gradientFrom: e.target.value }
@@ -3160,7 +3160,7 @@ export default function HeaderBuilderPage() {
                                     <div className="flex gap-2">
                                       <Input
                                         type="color"
-                                        value={formData.loginStyle?.gradientTo || "#047857"}
+                                        value={formData.loginStyle?.gradientTo || "#C2410C"}
                                         onChange={(e) => setFormData({
                                           ...formData,
                                           loginStyle: { ...formData.loginStyle, gradientTo: e.target.value }
@@ -3583,7 +3583,7 @@ export default function HeaderBuilderPage() {
                           {buttonStylePresets.map((preset) => {
                             const previewBg = preset.style.useGradient
                               ? `linear-gradient(${getGradientCSS(preset.style.gradientDirection)}, ${preset.style.gradientFrom}, ${preset.style.gradientTo})`
-                              : preset.style.bgColor || "#10B981";
+                              : preset.style.bgColor || "#F97316";
                             return (
                               <button
                                 key={preset.id}
@@ -3693,14 +3693,14 @@ export default function HeaderBuilderPage() {
                     <Input
                       id="hoverColor"
                       type="color"
-                      value={formData.hoverColor || "#10B981"}
+                      value={formData.hoverColor || "#F97316"}
                       onChange={(e) => setFormData({ ...formData, hoverColor: e.target.value })}
                       className="h-10 w-14 cursor-pointer p-1"
                     />
                     <Input
                       value={formData.hoverColor}
                       onChange={(e) => setFormData({ ...formData, hoverColor: e.target.value })}
-                      placeholder="#10B981 (click color to set)"
+                      placeholder="#F97316 (click color to set)"
                       className="flex-1"
                     />
                   </div>
