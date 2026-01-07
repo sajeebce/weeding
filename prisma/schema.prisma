@@ -1483,3 +1483,81 @@ enum NewsletterSubscriberStatus {
   UNSUBSCRIBED
   BOUNCED
 }
+
+// ============================================
+// LANDING PAGE BUILDER
+// ============================================
+
+// Landing page definition
+model LandingPage {
+  id              String   @id @default(cuid())
+  slug            String   @unique // "homepage", "llc-landing", etc.
+  name            String   // "Homepage", "LLC Landing Page"
+  isActive        Boolean  @default(true)
+  isDefault       Boolean  @default(false) // Is this the main homepage?
+
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+  ogImage         String?
+
+  // Page blocks
+  blocks          LandingPageBlock[]
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  publishedAt     DateTime?
+
+  // Versioning
+  version         Int      @default(1)
+
+  @@index([slug])
+  @@index([isActive, isDefault])
+}
+
+// Individual block on a landing page
+model LandingPageBlock {
+  id            String      @id @default(cuid())
+  landingPageId String
+  landingPage   LandingPage @relation(fields: [landingPageId], references: [id], onDelete: Cascade)
+
+  // Block identity
+  type          String      // "hero", "services-grid", "testimonials", etc.
+  name          String?     // Optional custom name for admin reference
+  sortOrder     Int         @default(0)
+  isActive      Boolean     @default(true)
+
+  // Block settings (JSON)
+  settings      Json        // Type-specific settings
+
+  // Responsive visibility
+  hideOnMobile  Boolean     @default(false)
+  hideOnDesktop Boolean     @default(false)
+
+  // A/B Testing (future)
+  variant       String?     // "A", "B", "C" for A/B testing
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([landingPageId, sortOrder])
+  @@index([landingPageId, isActive])
+}
+
+// Reusable block templates
+model BlockTemplate {
+  id          String   @id @default(cuid())
+  name        String   // "Bizee-style Hero", "Minimal CTA"
+  category    String   // "hero", "cta", "testimonials"
+  type        String   // Block type this template is for
+  settings    Json     // Pre-configured settings
+  thumbnail   String?  // Preview image URL
+  isBuiltIn   Boolean  @default(false) // System template vs user-created
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+  @@index([type])
+}

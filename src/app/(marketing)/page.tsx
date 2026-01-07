@@ -1,3 +1,5 @@
+import prisma from "@/lib/db";
+import { PageRenderer } from "@/components/landing-page/page-renderer";
 import { Hero } from "@/components/sections/hero";
 import { ServicesGrid } from "@/components/sections/services-grid";
 import { HowItWorks } from "@/components/sections/how-it-works";
@@ -41,7 +43,42 @@ const homepageFaqs = [
   },
 ];
 
-export default function HomePage() {
+/**
+ * Fetch the default landing page with its blocks
+ * Falls back to null if no default page exists
+ */
+async function getDefaultLandingPage() {
+  try {
+    const page = await prisma.landingPage.findFirst({
+      where: {
+        isDefault: true,
+        isActive: true,
+      },
+      include: {
+        blocks: {
+          where: { isActive: true },
+          orderBy: { sortOrder: "asc" },
+        },
+      },
+    });
+
+    return page;
+  } catch (error) {
+    console.error("Error fetching landing page:", error);
+    return null;
+  }
+}
+
+export default async function HomePage() {
+  // Fetch dynamic landing page content
+  const landingPage = await getDefaultLandingPage();
+
+  // Use dynamic content if available and has hero blocks, otherwise use static
+  const useDynamicContent =
+    landingPage &&
+    landingPage.blocks.length > 0 &&
+    landingPage.blocks.some((b) => b.type.startsWith("hero"));
+
   return (
     <>
       <MultiJsonLd
@@ -58,14 +95,33 @@ export default function HomePage() {
           }),
         ]}
       />
-      <Hero />
-      <ServicesGrid />
-      <HowItWorks />
-      <PricingTable />
-      <Testimonials />
-      {/* <BlogSection /> */}
-      <FAQSection />
-      <CTASection />
+
+      {useDynamicContent ? (
+        <>
+          {/* Render hero blocks from database */}
+          <PageRenderer
+            blocks={landingPage.blocks.filter((b) => b.type.startsWith("hero"))}
+          />
+          {/* Static sections (will be converted to blocks in future) */}
+          <ServicesGrid />
+          <HowItWorks />
+          <PricingTable />
+          <Testimonials />
+          <FAQSection />
+          <CTASection />
+        </>
+      ) : (
+        <>
+          {/* Fallback to static components */}
+          <Hero />
+          <ServicesGrid />
+          <HowItWorks />
+          <PricingTable />
+          <Testimonials />
+          <FAQSection />
+          <CTASection />
+        </>
+      )}
     </>
   );
 }

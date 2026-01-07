@@ -114,6 +114,7 @@ const navItems: NavItem[] = [
     title: "Appearance",
     icon: Palette,
     children: [
+      { title: "Landing Page", href: "/admin/appearance/landing-page" },
       { title: "Header Builder", href: "/admin/appearance/header" },
       { title: "Menu Builder", href: "/admin/appearance/header/menu" },
       { title: "Footer Builder", href: "/admin/appearance/footer" },
