@@ -62,7 +62,7 @@ function getButtonHoverClass(effect?: ButtonHoverEffect): string {
     case "shadow-press": return "hover:translate-y-0.5 hover:shadow-sm";
     case "scale-up": return "hover:scale-105";
     case "scale-down": return "hover:scale-95";
-    case "glow-pulse": return "hover:shadow-[0_0_15px_rgba(59,130,246,0.5)]";
+    case "glow-pulse": return "hover:shadow-[0_0_15px_rgba(16,185,129,0.5)]";
     case "heartbeat": return "animate-heartbeat";
     case "stitches": return "stitches-button";
     case "ring-hover": return "ring-offset-background hover:ring-primary/90 transition-all duration-300 hover:ring-2 hover:ring-offset-2";
@@ -117,7 +117,7 @@ function FooterButton({
         <PrimaryFlowButton
           className="text-sm"
           style={{
-            '--tw-ring-color': `${style.bgColor || '#2563eb'}99`,
+            '--tw-ring-color': `${style.bgColor || '#10B981'}99`,
           } as React.CSSProperties}
         >
           {text}
@@ -144,14 +144,14 @@ function FooterButton({
 
   const getNormalBackground = () => {
     if (style.useGradient) {
-      return `linear-gradient(${getGradientCSS(style.gradientDirection)}, ${style.gradientFrom || "#2563eb"}, ${style.gradientTo || "#7c3aed"})`;
+      return `linear-gradient(${getGradientCSS(style.gradientDirection)}, ${style.gradientFrom || "#10B981"}, ${style.gradientTo || "#059669"})`;
     }
-    return style.bgColor || "#2563eb";
+    return style.bgColor || "#10B981";
   };
 
   const getHoverBackground = () => {
     if (style.hoverUseGradient) {
-      return `linear-gradient(${getGradientCSS(style.hoverGradientDirection)}, ${style.hoverGradientFrom || "#1d4ed8"}, ${style.hoverGradientTo || "#6d28d9"})`;
+      return `linear-gradient(${getGradientCSS(style.hoverGradientDirection)}, ${style.hoverGradientFrom || "#059669"}, ${style.hoverGradientTo || "#047857"})`;
     }
     if (style.hoverBgColor) {
       return style.hoverBgColor;
@@ -160,8 +160,8 @@ function FooterButton({
   };
 
   const getGradientShiftBackground = () => {
-    const fromColor = style.bgColor || "#2563eb";
-    const toColor = style.hoverBgColor || "#7c3aed";
+    const fromColor = style.bgColor || "#10B981";
+    const toColor = style.hoverBgColor || "#059669";
     return `linear-gradient(90deg, ${fromColor} 0%, ${toColor} 50%, ${fromColor} 100%)`;
   };
 
@@ -172,14 +172,14 @@ function FooterButton({
       case "slide-fill":
         return {
           boxShadow: isHovered
-            ? `inset 200px 0 0 0 ${style.hoverBgColor || "#1d4ed8"}`
-            : `inset 0 0 0 0 ${style.hoverBgColor || "#1d4ed8"}`,
+            ? `inset 200px 0 0 0 ${style.hoverBgColor || "#059669"}`
+            : `inset 0 0 0 0 ${style.hoverBgColor || "#059669"}`,
         };
       case "border-fill":
         return {
           boxShadow: isHovered
-            ? `inset 0 0 0 50px ${style.hoverBgColor || "#1d4ed8"}`
-            : `inset 0 0 0 0 ${style.hoverBgColor || "#1d4ed8"}`,
+            ? `inset 0 0 0 50px ${style.hoverBgColor || "#059669"}`
+            : `inset 0 0 0 0 ${style.hoverBgColor || "#059669"}`,
         };
       case "gradient-shift":
         return {
@@ -189,8 +189,8 @@ function FooterButton({
       case "ripple":
         return {
           boxShadow: isHovered
-            ? `0 0 0 8px ${(style.bgColor || "#2563eb")}30, 0 0 20px ${(style.bgColor || "#2563eb")}20`
-            : `0 0 0 0 ${(style.bgColor || "#2563eb")}30`,
+            ? `0 0 0 8px ${(style.bgColor || "#10B981")}30, 0 0 20px ${(style.bgColor || "#10B981")}20`
+            : `0 0 0 0 ${(style.bgColor || "#10B981")}30`,
         };
       default:
         return {};
@@ -223,7 +223,7 @@ function FooterButton({
         color: isHovered && style.hoverTextColor ? style.hoverTextColor : (style.textColor || "#ffffff"),
         borderWidth: `${style.borderWidth ?? 0}px`,
         borderStyle: "solid",
-        borderColor: style.borderColor || style.bgColor || "#2563eb",
+        borderColor: style.borderColor || style.bgColor || "#10B981",
         borderRadius: `${style.borderRadius ?? 6}px`,
         ...effectStyles,
         ...((!hasComplexEffect && style.shadow) ? { boxShadow: isHovered && style.hoverShadow ? style.hoverShadow : style.shadow } : {}),
@@ -1195,7 +1195,7 @@ export function Footer() {
     "--footer-link-color": styling?.linkColor || "inherit",
     "--footer-link-hover-color": styling?.linkHoverColor || styling?.accentColor || "#22d3ee",
     "--footer-heading-color": styling?.headingColor || "inherit",
-    "--footer-accent-color": styling?.accentColor || "#2563eb",
+    "--footer-accent-color": styling?.accentColor || "#10B981",
     "--footer-divider-color": styling?.dividerColor || styling?.borderColor || "#e5e7eb",
   };
 
@@ -1214,7 +1214,7 @@ export function Footer() {
     if (!borderStyle || borderStyle === "none") return null;
 
     const height = styling?.topBorderHeight || 1;
-    const color = styling?.topBorderColor || styling?.accentColor || "#2563eb";
+    const color = styling?.topBorderColor || styling?.accentColor || "#10B981";
 
     if (borderStyle === "gradient") {
       return (

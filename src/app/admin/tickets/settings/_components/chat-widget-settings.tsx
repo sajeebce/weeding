@@ -141,13 +141,13 @@ export function ChatWidgetSettings({ settings, onUpdate }: ChatWidgetSettingsPro
                 <Input
                   id="primary-color"
                   type="color"
-                  value={(settings.primaryColor as string) || "#2563eb"}
+                  value={(settings.primaryColor as string) || "#10B981"}
                   className="h-10 w-16 cursor-pointer p-1"
                   onChange={(e) => onUpdate("primaryColor", e.target.value)}
                 />
                 <Input
-                  value={(settings.primaryColor as string) || "#2563eb"}
-                  placeholder="#2563eb"
+                  value={(settings.primaryColor as string) || "#10B981"}
+                  placeholder="#10B981"
                   className="flex-1"
                   onChange={(e) => onUpdate("primaryColor", e.target.value)}
                 />

@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   // Standalone output for VPS deployment
   output: "standalone",
 
+
   // Image optimization
   images: {
     remotePatterns: [

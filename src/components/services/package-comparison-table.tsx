@@ -277,8 +277,8 @@ export function PackageComparisonTable({
                             pkg.badgeColor === "orange"
                               ? "bg-orange-500"
                               : pkg.badgeColor === "green"
-                              ? "bg-green-500"
-                              : "bg-blue-500"
+                              ? "bg-emerald-500"
+                              : "bg-emerald-500"
                           )}
                         >
                           {pkg.badgeText}
@@ -592,8 +592,8 @@ export function PackageComparisonTable({
                       pkg.badgeColor === "orange"
                         ? "bg-orange-500"
                         : pkg.badgeColor === "green"
-                        ? "bg-green-500"
-                        : "bg-blue-500"
+                        ? "bg-emerald-500"
+                        : "bg-emerald-500"
                     )}
                   >
                     {pkg.badgeText}

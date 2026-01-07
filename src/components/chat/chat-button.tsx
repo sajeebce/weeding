@@ -60,7 +60,7 @@ export function ChatButton({
 
   const size = settings?.buttonSize || "medium";
   const sizeClasses = SIZE_MAP[size];
-  const primaryColor = settings?.primaryColor || "#2563eb";
+  const primaryColor = settings?.primaryColor || "#10B981";
   const textColor = settings?.textColor || "#ffffff";
   const showBadge = settings?.showUnreadBadge !== false;
 

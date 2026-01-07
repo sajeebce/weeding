@@ -352,10 +352,10 @@ const buttonStylePresets: ButtonStylePreset[] = [
     name: "Flow Button",
     description: "Rotating border gradient with conic animation on hover",
     style: {
-      bgColor: "#2563eb",
+      bgColor: "#10B981",
       textColor: "#ffffff",
       borderWidth: 2,
-      borderColor: "#2563eb",
+      borderColor: "#10B981",
       borderRadius: 8,
       hoverEffect: "flow-border",
       shadow: "0 0 0 2px rgba(37, 99, 235, 0.3)",
@@ -379,7 +379,7 @@ const buttonStylePresets: ButtonStylePreset[] = [
     name: "Ring Hover",
     description: "Elegant ring outline effect on hover with smooth transition",
     style: {
-      bgColor: "#2563eb",
+      bgColor: "#10B981",
       textColor: "#ffffff",
       borderWidth: 0,
       borderRadius: 6,
@@ -475,7 +475,7 @@ function FooterButtonPreview({ style }: { style: ButtonCustomStyle }) {
       <PrimaryFlowButton
         className="text-sm"
         style={{
-          '--tw-ring-color': `${style.bgColor || '#2563eb'}99`,
+          '--tw-ring-color': `${style.bgColor || '#10B981'}99`,
         } as React.CSSProperties}
       >
         {text}
@@ -497,14 +497,14 @@ function FooterButtonPreview({ style }: { style: ButtonCustomStyle }) {
 
   const getNormalBackground = () => {
     if (style.useGradient) {
-      return `linear-gradient(${getGradientCSS(style.gradientDirection)}, ${style.gradientFrom || "#2563eb"}, ${style.gradientTo || "#7c3aed"})`;
+      return `linear-gradient(${getGradientCSS(style.gradientDirection)}, ${style.gradientFrom || "#10B981"}, ${style.gradientTo || "#047857"})`;
     }
-    return style.bgColor || "#2563eb";
+    return style.bgColor || "#10B981";
   };
 
   const getHoverBackground = () => {
     if (style.hoverUseGradient) {
-      return `linear-gradient(${getGradientCSS(style.hoverGradientDirection)}, ${style.hoverGradientFrom || "#1d4ed8"}, ${style.hoverGradientTo || "#6d28d9"})`;
+      return `linear-gradient(${getGradientCSS(style.hoverGradientDirection)}, ${style.hoverGradientFrom || "#059669"}, ${style.hoverGradientTo || "#065F46"})`;
     }
     if (style.hoverBgColor) {
       return style.hoverBgColor;
@@ -513,8 +513,8 @@ function FooterButtonPreview({ style }: { style: ButtonCustomStyle }) {
   };
 
   const getGradientShiftBackground = () => {
-    const fromColor = style.bgColor || "#2563eb";
-    const toColor = style.hoverBgColor || "#7c3aed";
+    const fromColor = style.bgColor || "#10B981";
+    const toColor = style.hoverBgColor || "#047857";
     return `linear-gradient(90deg, ${fromColor} 0%, ${toColor} 50%, ${fromColor} 100%)`;
   };
 
@@ -525,14 +525,14 @@ function FooterButtonPreview({ style }: { style: ButtonCustomStyle }) {
       case "slide-fill":
         return {
           boxShadow: isHovered
-            ? `inset 200px 0 0 0 ${style.hoverBgColor || "#1d4ed8"}`
-            : `inset 0 0 0 0 ${style.hoverBgColor || "#1d4ed8"}`,
+            ? `inset 200px 0 0 0 ${style.hoverBgColor || "#059669"}`
+            : `inset 0 0 0 0 ${style.hoverBgColor || "#059669"}`,
         };
       case "border-fill":
         return {
           boxShadow: isHovered
-            ? `inset 0 0 0 50px ${style.hoverBgColor || "#1d4ed8"}`
-            : `inset 0 0 0 0 ${style.hoverBgColor || "#1d4ed8"}`,
+            ? `inset 0 0 0 50px ${style.hoverBgColor || "#059669"}`
+            : `inset 0 0 0 0 ${style.hoverBgColor || "#059669"}`,
         };
       case "gradient-shift":
         return {
@@ -542,8 +542,8 @@ function FooterButtonPreview({ style }: { style: ButtonCustomStyle }) {
       case "ripple":
         return {
           boxShadow: isHovered
-            ? `0 0 0 8px ${(style.bgColor || "#2563eb")}30, 0 0 20px ${(style.bgColor || "#2563eb")}20`
-            : `0 0 0 0 ${(style.bgColor || "#2563eb")}30`,
+            ? `0 0 0 8px ${(style.bgColor || "#10B981")}30, 0 0 20px ${(style.bgColor || "#10B981")}20`
+            : `0 0 0 0 ${(style.bgColor || "#10B981")}30`,
         };
       default:
         return {};
@@ -574,7 +574,7 @@ function FooterButtonPreview({ style }: { style: ButtonCustomStyle }) {
         color: isHovered && style.hoverTextColor ? style.hoverTextColor : (style.textColor || "#ffffff"),
         borderWidth: `${style.borderWidth ?? 1}px`,
         borderStyle: "solid",
-        borderColor: style.borderColor || style.bgColor || "#2563eb",
+        borderColor: style.borderColor || style.bgColor || "#10B981",
         borderRadius: `${style.borderRadius ?? 6}px`,
         ...effectStyles,
         ...((!hasComplexEffect && style.shadow) ? { boxShadow: isHovered && style.hoverShadow ? style.hoverShadow : style.shadow } : {}),
@@ -1499,9 +1499,9 @@ export default function FooterBuilderPage() {
               color: formData.textColor || undefined,
               // CSS custom properties for dynamic hover effects
               "--link-color": formData.linkColor || "#64748b",
-              "--link-hover-color": formData.linkHoverColor || "#2563eb",
+              "--link-hover-color": formData.linkHoverColor || "#10B981",
               "--heading-color": formData.headingColor || "#1e293b",
-              "--accent-color": formData.accentColor || "#2563eb",
+              "--accent-color": formData.accentColor || "#10B981",
               "--divider-color": formData.dividerColor || "#1e293b",
             } as React.CSSProperties}
           >
@@ -3054,14 +3054,14 @@ export default function FooterBuilderPage() {
                     <Input
                       id="linkHoverColor"
                       type="color"
-                      value={formData.linkHoverColor || "#2563eb"}
+                      value={formData.linkHoverColor || "#10B981"}
                       onChange={(e) => setFormData({ ...formData, linkHoverColor: e.target.value })}
                       className="h-10 w-14 cursor-pointer p-1"
                     />
                     <Input
                       value={formData.linkHoverColor}
                       onChange={(e) => setFormData({ ...formData, linkHoverColor: e.target.value })}
-                      placeholder="#2563eb"
+                      placeholder="#10B981"
                       className="flex-1"
                     />
                   </div>
@@ -3073,14 +3073,14 @@ export default function FooterBuilderPage() {
                     <Input
                       id="accentColor"
                       type="color"
-                      value={formData.accentColor || "#2563eb"}
+                      value={formData.accentColor || "#10B981"}
                       onChange={(e) => setFormData({ ...formData, accentColor: e.target.value })}
                       className="h-10 w-14 cursor-pointer p-1"
                     />
                     <Input
                       value={formData.accentColor}
                       onChange={(e) => setFormData({ ...formData, accentColor: e.target.value })}
-                      placeholder="#2563eb"
+                      placeholder="#10B981"
                       className="flex-1"
                     />
                   </div>
@@ -3932,7 +3932,7 @@ export default function FooterBuilderPage() {
                     {buttonStylePresets.map((preset) => {
                       const previewBg = preset.style.useGradient
                         ? `linear-gradient(${getGradientCSS(preset.style.gradientDirection)}, ${preset.style.gradientFrom}, ${preset.style.gradientTo})`
-                        : preset.style.bgColor || "#2563eb";
+                        : preset.style.bgColor || "#10B981";
 
                       return (
                         <button
@@ -3988,8 +3988,8 @@ export default function FooterBuilderPage() {
                               style: {
                                 ...(widgetFormData.content as { style?: ButtonCustomStyle })?.style,
                                 useGradient: checked,
-                                gradientFrom: checked ? ((widgetFormData.content as { style?: ButtonCustomStyle })?.style?.gradientFrom || "#2563eb") : undefined,
-                                gradientTo: checked ? ((widgetFormData.content as { style?: ButtonCustomStyle })?.style?.gradientTo || "#7c3aed") : undefined,
+                                gradientFrom: checked ? ((widgetFormData.content as { style?: ButtonCustomStyle })?.style?.gradientFrom || "#10B981") : undefined,
+                                gradientTo: checked ? ((widgetFormData.content as { style?: ButtonCustomStyle })?.style?.gradientTo || "#047857") : undefined,
                               },
                             },
                           })}
@@ -4004,7 +4004,7 @@ export default function FooterBuilderPage() {
                               <div className="flex gap-2">
                                 <Input
                                   type="color"
-                                  value={(widgetFormData.content as { style?: ButtonCustomStyle })?.style?.gradientFrom || "#2563eb"}
+                                  value={(widgetFormData.content as { style?: ButtonCustomStyle })?.style?.gradientFrom || "#10B981"}
                                   onChange={(e) => setWidgetFormData({
                                     ...widgetFormData,
                                     content: {
@@ -4032,7 +4032,7 @@ export default function FooterBuilderPage() {
                               <div className="flex gap-2">
                                 <Input
                                   type="color"
-                                  value={(widgetFormData.content as { style?: ButtonCustomStyle })?.style?.gradientTo || "#7c3aed"}
+                                  value={(widgetFormData.content as { style?: ButtonCustomStyle })?.style?.gradientTo || "#047857"}
                                   onChange={(e) => setWidgetFormData({
                                     ...widgetFormData,
                                     content: {
@@ -4114,7 +4114,7 @@ export default function FooterBuilderPage() {
                             <div className="flex gap-2">
                               <Input
                                 type="color"
-                                value={(widgetFormData.content as { style?: ButtonCustomStyle })?.style?.bgColor || "#2563eb"}
+                                value={(widgetFormData.content as { style?: ButtonCustomStyle })?.style?.bgColor || "#10B981"}
                                 onChange={(e) => setWidgetFormData({
                                   ...widgetFormData,
                                   content: {
@@ -4170,7 +4170,7 @@ export default function FooterBuilderPage() {
                             <div className="flex gap-2">
                               <Input
                                 type="color"
-                                value={(widgetFormData.content as { style?: ButtonCustomStyle })?.style?.borderColor || "#2563eb"}
+                                value={(widgetFormData.content as { style?: ButtonCustomStyle })?.style?.borderColor || "#10B981"}
                                 onChange={(e) => setWidgetFormData({
                                   ...widgetFormData,
                                   content: {
@@ -4282,7 +4282,7 @@ export default function FooterBuilderPage() {
                         <div className="flex gap-2">
                           <Input
                             type="color"
-                            value={(widgetFormData.content as { style?: ButtonCustomStyle })?.style?.hoverBgColor || "#1d4ed8"}
+                            value={(widgetFormData.content as { style?: ButtonCustomStyle })?.style?.hoverBgColor || "#059669"}
                             onChange={(e) => setWidgetFormData({
                               ...widgetFormData,
                               content: {
@@ -4301,7 +4301,7 @@ export default function FooterBuilderPage() {
                                 style: { ...(widgetFormData.content as { style?: ButtonCustomStyle })?.style, hoverBgColor: e.target.value },
                               },
                             })}
-                            placeholder="#1d4ed8"
+                            placeholder="#059669"
                             className="flex-1 text-xs"
                           />
                         </div>
