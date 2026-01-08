@@ -97,19 +97,40 @@ interface LinkInputProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  openInNewTab?: boolean;
+  onOpenInNewTabChange?: (value: boolean) => void;
 }
 
-export function LinkInput({ label, value, onChange, placeholder }: LinkInputProps) {
+export function LinkInput({
+  label,
+  value,
+  onChange,
+  placeholder,
+  openInNewTab,
+  onOpenInNewTabChange,
+}: LinkInputProps) {
   return (
     <FormField label={label}>
-      <div className="relative">
-        <Input
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder || "/page-url"}
-          className="pr-9"
-        />
-        <LinkIcon className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+      <div className="space-y-2">
+        <div className="relative">
+          <Input
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder || "/page-url or https://..."}
+            className="pr-9"
+          />
+          <LinkIcon className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        </div>
+        {onOpenInNewTabChange && (
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-muted-foreground">Open in new tab</span>
+            <Switch
+              checked={openInNewTab ?? false}
+              onCheckedChange={onOpenInNewTabChange}
+              className="scale-75"
+            />
+          </div>
+        )}
       </div>
     </FormField>
   );

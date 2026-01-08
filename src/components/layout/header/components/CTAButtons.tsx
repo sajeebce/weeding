@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
+import { SmartLink } from "@/components/ui/smart-link";
 import { ArrowUpRight } from "lucide-react";
 import { DynamicIcon } from "lucide-react/dynamic";
 import { Button } from "@/components/ui/button";
@@ -239,12 +239,12 @@ function CTAButtonItem({ btn, index }: { btn: CTAButton; index: number }) {
             boxShadow: btn.style.shadow,
           }}
         >
-          <Link href={btn.url}>
+          <SmartLink href={btn.url} openInNewTab={btn.openInNewTab}>
             <CraftButtonLabel>{btn.text}</CraftButtonLabel>
             <CraftButtonIcon>
               {craftIcon}
             </CraftButtonIcon>
-          </Link>
+          </SmartLink>
         </CraftButton>
       );
     }
@@ -259,7 +259,7 @@ function CTAButtonItem({ btn, index }: { btn: CTAButton; index: number }) {
             '--tw-ring-color': `${btn.style.bgColor || '#F97316'}99`,
           } as React.CSSProperties}
         >
-          <Link href={btn.url}>{btn.text}</Link>
+          <SmartLink href={btn.url} openInNewTab={btn.openInNewTab}>{btn.text}</SmartLink>
         </PrimaryFlowButton>
       );
     }
@@ -268,7 +268,7 @@ function CTAButtonItem({ btn, index }: { btn: CTAButton; index: number }) {
     if (isNeuralButtonEffect(btn.style.hoverEffect)) {
       return (
         <NeuralButton key={index} asChild>
-          <Link href={btn.url}>{btn.text}</Link>
+          <SmartLink href={btn.url} openInNewTab={btn.openInNewTab}>{btn.text}</SmartLink>
         </NeuralButton>
       );
     }
@@ -294,9 +294,10 @@ function CTAButtonItem({ btn, index }: { btn: CTAButton; index: number }) {
     };
 
     return (
-      <Link
+      <SmartLink
         key={index}
         href={btn.url}
+        openInNewTab={btn.openInNewTab}
         className={cn(
           "inline-flex items-center justify-center px-4 py-2 text-sm font-medium overflow-hidden",
           hoverClass,
@@ -355,7 +356,7 @@ function CTAButtonItem({ btn, index }: { btn: CTAButton; index: number }) {
         {btn.style?.iconPosition === "left" && renderButtonIcon(btn.style)}
         <span>{btn.text}</span>
         {btn.style?.iconPosition !== "left" && renderButtonIcon(btn.style)}
-      </Link>
+      </SmartLink>
     );
   }
 
@@ -370,7 +371,7 @@ function CTAButtonItem({ btn, index }: { btn: CTAButton; index: number }) {
 
   return (
     <Button key={index} variant={variant} asChild>
-      <Link href={btn.url}>{btn.text}</Link>
+      <SmartLink href={btn.url} openInNewTab={btn.openInNewTab}>{btn.text}</SmartLink>
     </Button>
   );
 }
@@ -442,12 +443,12 @@ export function CTAButtons({
               boxShadow: loginStyle.shadow,
             }}
           >
-            <Link href={loginUrl}>
+            <SmartLink href={loginUrl} openInNewTab={loginStyle.openInNewTab}>
               <CraftButtonLabel>{authConfig.loginText || "Sign In"}</CraftButtonLabel>
               <CraftButtonIcon>
                 {craftIcon}
               </CraftButtonIcon>
-            </Link>
+            </SmartLink>
           </CraftButton>
         );
       }
@@ -470,8 +471,9 @@ export function CTAButtons({
       };
 
       return (
-        <Link
+        <SmartLink
           href={loginUrl}
+          openInNewTab={loginStyle.openInNewTab}
           className={cn(
             "inline-flex items-center justify-center px-4 py-2 text-sm font-medium overflow-hidden",
             hoverClass,
@@ -525,14 +527,14 @@ export function CTAButtons({
           {loginStyle?.iconPosition === "left" && renderButtonIcon(loginStyle)}
           <span>{authConfig.loginText || "Sign In"}</span>
           {loginStyle?.iconPosition !== "left" && renderButtonIcon(loginStyle)}
-        </Link>
+        </SmartLink>
       );
     }
 
     // Default ghost button
     return (
       <Button variant="ghost" asChild>
-        <Link href={loginUrl}>{authConfig.loginText || "Sign In"}</Link>
+        <SmartLink href={loginUrl}>{authConfig.loginText || "Sign In"}</SmartLink>
       </Button>
     );
   };
@@ -547,7 +549,7 @@ export function CTAButtons({
         ))
       ) : (
         <Button asChild>
-          <Link href="/services/llc-formation">Get Started</Link>
+          <SmartLink href="/services/llc-formation">Get Started</SmartLink>
         </Button>
       )}
     </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import {
   GripVertical,
   Settings,
@@ -279,6 +279,39 @@ export function LivePreviewCanvas({
     [blocks]
   );
 
+  // Scroll detection for auto-hide scrollbar
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [isScrolling, setIsScrolling] = useState(false);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    if (!scrollContainer) return;
+
+    const handleScroll = () => {
+      setIsScrolling(true);
+
+      // Clear existing timeout
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+
+      // Hide scrollbar after 1 second of no scrolling
+      scrollTimeoutRef.current = setTimeout(() => {
+        setIsScrolling(false);
+      }, 1000);
+    };
+
+    scrollContainer.addEventListener("scroll", handleScroll);
+
+    return () => {
+      scrollContainer.removeEventListener("scroll", handleScroll);
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const handleClickOutside = useCallback(
     (e: React.MouseEvent) => {
       if (e.target === e.currentTarget) {
@@ -302,7 +335,13 @@ export function LivePreviewCanvas({
       </div>
 
       {/* Preview Area */}
-      <div className="flex-1 overflow-auto p-4 scrollbar-auto-hide">
+      <div
+        ref={scrollContainerRef}
+        className={cn(
+          "flex-1 overflow-auto p-4 scrollbar-on-scroll",
+          isScrolling && "is-scrolling"
+        )}
+      >
         <div
           className={cn(
             "mx-auto overflow-hidden rounded-lg border bg-background shadow-sm transition-all",

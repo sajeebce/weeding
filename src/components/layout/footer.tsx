@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { SmartLink } from "@/components/ui/smart-link";
 import { useMemo, useState, useEffect, useRef } from "react";
 import {
   Facebook,
@@ -79,20 +80,21 @@ function FooterButton({
   text,
   url,
   style,
-  target = "_self"
+  openInNewTab = false,
 }: {
   text: string;
   url: string;
   style: ButtonCustomStyle;
-  target?: "_self" | "_blank";
+  openInNewTab?: boolean;
 }) {
   const [isHovered, setIsHovered] = useState(false);
-  const isExternal = target === "_blank" || url.startsWith("http");
+  const isExternal = /^(https?:\/\/|mailto:|tel:|#)/.test(url);
+  const shouldOpenNewTab = openInNewTab || style.openInNewTab;
 
   // Special button components based on hover effect
   if (style.hoverEffect === "craft-expand") {
     return (
-      <Link href={url} target={target}>
+      <SmartLink href={url} openInNewTab={shouldOpenNewTab}>
         <CraftButton
           bgColor={style.bgColor || "#18181b"}
           textColor={style.textColor || "#ffffff"}
@@ -107,13 +109,13 @@ function FooterButton({
             <ArrowUpRight className="size-3 stroke-2 transition-transform duration-500 group-hover:rotate-45" />
           </CraftButtonIcon>
         </CraftButton>
-      </Link>
+      </SmartLink>
     );
   }
 
   if (style.hoverEffect === "flow-border") {
     return (
-      <Link href={url} target={target}>
+      <SmartLink href={url} openInNewTab={shouldOpenNewTab}>
         <PrimaryFlowButton
           className="text-sm"
           style={{
@@ -123,18 +125,18 @@ function FooterButton({
           {text}
           {isExternal && <ExternalLink className="ml-1.5 h-3.5 w-3.5" />}
         </PrimaryFlowButton>
-      </Link>
+      </SmartLink>
     );
   }
 
   if (style.hoverEffect === "neural") {
     return (
-      <Link href={url} target={target}>
+      <SmartLink href={url} openInNewTab={shouldOpenNewTab}>
         <NeuralButton size="sm">
           {text}
           {isExternal && <ExternalLink className="ml-1.5 h-3.5 w-3.5" />}
         </NeuralButton>
-      </Link>
+      </SmartLink>
     );
   }
 
@@ -210,9 +212,9 @@ function FooterButton({
   };
 
   return (
-    <Link
+    <SmartLink
       href={url}
-      target={target}
+      openInNewTab={shouldOpenNewTab}
       className={cn(
         "relative inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium cursor-pointer overflow-hidden",
         hoverClass,
@@ -233,7 +235,7 @@ function FooterButton({
     >
       {text}
       {isExternal && <ExternalLink className="h-3.5 w-3.5" />}
-    </Link>
+    </SmartLink>
   );
 }
 
@@ -957,12 +959,13 @@ function FooterWidgetRenderer({
         text?: string;
         url?: string;
         target?: "_self" | "_blank";
+        openInNewTab?: boolean;
         style?: ButtonCustomStyle;
       } | null;
 
       const buttonText = buttonContent?.text || "Click Here";
       const buttonUrl = buttonContent?.url || "#";
-      const buttonTarget = buttonContent?.target || "_self";
+      const buttonOpenInNewTab = buttonContent?.openInNewTab ?? buttonContent?.target === "_blank";
       const buttonStyle = buttonContent?.style || {};
 
       return (
@@ -975,7 +978,7 @@ function FooterWidgetRenderer({
               text={buttonText}
               url={buttonUrl}
               style={buttonStyle}
-              target={buttonTarget}
+              openInNewTab={buttonOpenInNewTab}
             />
           </div>
         </div>

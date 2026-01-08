@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { SmartLink } from "@/components/ui/smart-link";
 import { Badge } from "@/components/ui/badge";
 import {
   CheckCircle,
@@ -105,6 +105,7 @@ interface StyledCTAButtonProps {
   variant?: "solid" | "outline" | "secondary" | "ghost";
   className?: string;
   isPreview?: boolean;
+  openInNewTab?: boolean;
 }
 
 function StyledCTAButton({
@@ -117,6 +118,7 @@ function StyledCTAButton({
   variant = "solid",
   className,
   isPreview = false,
+  openInNewTab = false,
 }: StyledCTAButtonProps) {
   // Disable hover state in preview mode
   const [isHovered, setIsHovered] = useState(false);
@@ -139,7 +141,7 @@ function StyledCTAButton({
         )}
         asChild
       >
-        <Link href={href}>
+        <SmartLink href={href} openInNewTab={openInNewTab}>
           {text}
           {showPrice && priceText && (
             <span className="ml-2 text-sm opacity-80">{priceText}</span>
@@ -150,7 +152,7 @@ function StyledCTAButton({
               !isPreview && "transition-transform group-hover/cta:translate-x-1"
             )} />
           )}
-        </Link>
+        </SmartLink>
       </Button>
     );
   }
@@ -164,7 +166,7 @@ function StyledCTAButton({
   if (style?.hoverEffect === "craft-expand") {
     const craftIcon = hasIcon ? buttonIcon : <ArrowUpRight className="size-3 stroke-2 transition-transform duration-500" />;
     return (
-      <Link href={href} className={cn("w-full sm:w-auto", className)}>
+      <SmartLink href={href} openInNewTab={openInNewTab} className={cn("w-full sm:w-auto", className)}>
         <CraftButton
           bgColor={style.bgColor || "#18181b"}
           textColor={style.textColor || "#ffffff"}
@@ -179,14 +181,14 @@ function StyledCTAButton({
           </CraftButtonLabel>
           <CraftButtonIcon>{craftIcon}</CraftButtonIcon>
         </CraftButton>
-      </Link>
+      </SmartLink>
     );
   }
 
   // Special component for flow-border effect
   if (style?.hoverEffect === "flow-border") {
     return (
-      <Link href={href} className={cn("group/cta w-full sm:w-auto", className)}>
+      <SmartLink href={href} openInNewTab={openInNewTab} className={cn("group/cta w-full sm:w-auto", className)}>
         <PrimaryFlowButton
           className={cn("text-base", isPreview && "pointer-events-none [&]:hover:after:transform-none")}
           style={{
@@ -207,14 +209,14 @@ function StyledCTAButton({
             )} />
           )}
         </PrimaryFlowButton>
-      </Link>
+      </SmartLink>
     );
   }
 
   // Special component for neural effect
   if (style?.hoverEffect === "neural") {
     return (
-      <Link href={href} className={cn("group/cta w-full sm:w-auto", className)}>
+      <SmartLink href={href} openInNewTab={openInNewTab} className={cn("group/cta w-full sm:w-auto", className)}>
         <NeuralButton size="default" disabled={isPreview}>
           {hasIcon && iconPosition === "left" && buttonIcon}
           {text}
@@ -229,7 +231,7 @@ function StyledCTAButton({
             )} />
           )}
         </NeuralButton>
-      </Link>
+      </SmartLink>
     );
   }
 
@@ -302,8 +304,9 @@ function StyledCTAButton({
   const effectStyles = getBaseStylesForEffect();
 
   return (
-    <Link
+    <SmartLink
       href={href}
+      openInNewTab={openInNewTab}
       className={cn(
         "group/cta inline-flex items-center justify-center gap-2 px-6 py-3 text-base font-medium overflow-hidden w-full sm:w-auto",
         !isPreview && "transition-all duration-300",
@@ -337,7 +340,7 @@ function StyledCTAButton({
           !isPreview && "transition-transform group-hover/cta:translate-x-1"
         )} />
       )}
-    </Link>
+    </SmartLink>
   );
 }
 
@@ -458,6 +461,7 @@ export function HeroCentered({ settings, isPreview = false }: HeroCenteredProps)
               showArrow={true}
               variant={settings.primaryCTA.variant}
               isPreview={isPreview}
+              openInNewTab={settings.primaryCTA.openInNewTab}
             />
 
             {settings.secondaryCTA.enabled && (
@@ -468,6 +472,7 @@ export function HeroCentered({ settings, isPreview = false }: HeroCenteredProps)
                 showArrow={false}
                 variant={settings.secondaryCTA.variant || "outline"}
                 isPreview={isPreview}
+                openInNewTab={settings.secondaryCTA.openInNewTab}
               />
             )}
           </div>

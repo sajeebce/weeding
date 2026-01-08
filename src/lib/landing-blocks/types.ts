@@ -169,6 +169,7 @@ export interface HeroCTASettings {
   showPrice?: boolean;
   priceText?: string;
   icon?: string;
+  openInNewTab?: boolean;
   style?: ButtonCustomStyle;
 }
 
@@ -179,6 +180,7 @@ export interface HeroSecondaryCTASettings {
   link: string;
   variant: CTAVariant;
   icon?: string;
+  openInNewTab?: boolean;
   style?: ButtonCustomStyle;
 }
 

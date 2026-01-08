@@ -76,6 +76,9 @@ export interface ButtonCustomStyle {
   icon?: string; // Lucide icon name (e.g., "arrow-right", "arrow-up-right")
   iconPosition?: "left" | "right"; // Icon position relative to text
   customIconSvg?: string; // Custom SVG string for external icons
+
+  // Link behavior
+  openInNewTab?: boolean; // Open link in new tab
 }
 
 export interface CTAButton {
@@ -84,6 +87,7 @@ export interface CTAButton {
   variant: "primary" | "secondary" | "outline" | "ghost";
   icon?: string;
   enabled?: boolean;
+  openInNewTab?: boolean; // Open link in new tab
   // Phase 5: Optional custom style override (backward compatible)
   style?: ButtonCustomStyle;
 }

@@ -2327,7 +2327,16 @@ export default function HeaderBuilderPage() {
                               <Input
                                 value={btn.url}
                                 onChange={(e) => updateCTAButton(index, { url: e.target.value })}
+                                placeholder="/page-url or https://..."
                               />
+                              <div className="flex items-center justify-between text-xs pt-1">
+                                <span className="text-muted-foreground">Open in new tab</span>
+                                <Switch
+                                  checked={btn.openInNewTab ?? false}
+                                  onCheckedChange={(checked) => updateCTAButton(index, { openInNewTab: checked })}
+                                  className="scale-75"
+                                />
+                              </div>
                             </div>
                           </div>
 

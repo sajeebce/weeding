@@ -262,6 +262,8 @@ export function HeroContentSettings({
           value={s.primaryCTA.link}
           onChange={(v) => updateNested("primaryCTA", "link", v)}
           placeholder="/services/llc-formation"
+          openInNewTab={s.primaryCTA.openInNewTab}
+          onOpenInNewTabChange={(v) => updateNested("primaryCTA", "openInNewTab", v)}
         />
         <ToggleSwitch
           label="Show Price"
@@ -311,6 +313,8 @@ export function HeroContentSettings({
               value={s.secondaryCTA.link}
               onChange={(v) => updateNested("secondaryCTA", "link", v)}
               placeholder="/pricing"
+              openInNewTab={s.secondaryCTA.openInNewTab}
+              onOpenInNewTabChange={(v) => updateNested("secondaryCTA", "openInNewTab", v)}
             />
 
             {/* Button Style Editor */}

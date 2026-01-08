@@ -3909,8 +3909,19 @@ export default function FooterBuilderPage() {
                         ...widgetFormData,
                         content: { ...widgetFormData.content, url: e.target.value },
                       })}
-                      placeholder="/contact"
+                      placeholder="/page-url or https://..."
                     />
+                    <div className="flex items-center justify-between text-xs pt-1">
+                      <span className="text-muted-foreground">Open in new tab</span>
+                      <Switch
+                        checked={(widgetFormData.content as { openInNewTab?: boolean })?.openInNewTab ?? false}
+                        onCheckedChange={(checked) => setWidgetFormData({
+                          ...widgetFormData,
+                          content: { ...widgetFormData.content, openInNewTab: checked },
+                        })}
+                        className="scale-75"
+                      />
+                    </div>
                   </div>
                 </div>
 
