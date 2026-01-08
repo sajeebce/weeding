@@ -23,13 +23,24 @@ import {
 } from "lucide-react";
 import { useBusinessConfig } from "@/hooks/use-business-config";
 import { useFooterConfig, getWidgetsByColumn, getWidgetLinks } from "@/hooks/use-footer-config";
-import type { FooterWidget, PublicFooterResponse, ButtonCustomStyle, ButtonHoverEffect, GradientDirection } from "@/lib/header-footer/types";
+import type { FooterWidget, PublicFooterResponse, ButtonCustomStyle } from "@/lib/header-footer/types";
 import { CraftButton, CraftButtonLabel, CraftButtonIcon } from "@/components/ui/craft-button";
 import { PrimaryFlowButton } from "@/components/ui/flow-button";
 import { NeuralButton } from "@/components/ui/neural-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+
+// Shared button utilities
+import {
+  getNormalBackground,
+  getHoverBackground,
+  getGradientShiftBackground,
+  getHoverEffectClass,
+  isComplexHoverEffect,
+  getComplexEffectStyles,
+  getFinalBackground,
+} from "@/lib/button-utils";
 
 // TikTok icon component
 function TikTokIcon({ className }: { className?: string }) {
@@ -38,41 +49,6 @@ function TikTokIcon({ className }: { className?: string }) {
       <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z" />
     </svg>
   );
-}
-
-// Helper functions for button styling
-function getGradientCSS(direction?: GradientDirection): string {
-  switch (direction) {
-    case "to-r": return "to right";
-    case "to-l": return "to left";
-    case "to-t": return "to top";
-    case "to-b": return "to bottom";
-    case "to-tr": return "to top right";
-    case "to-tl": return "to top left";
-    case "to-br": return "to bottom right";
-    case "to-bl": return "to bottom left";
-    default: return "to right";
-  }
-}
-
-function getButtonHoverClass(effect?: ButtonHoverEffect): string {
-  switch (effect) {
-    case "darken": return "hover:brightness-90";
-    case "lighten": return "hover:brightness-110";
-    case "shadow-lift": return "hover:-translate-y-0.5 hover:shadow-lg";
-    case "shadow-press": return "hover:translate-y-0.5 hover:shadow-sm";
-    case "scale-up": return "hover:scale-105";
-    case "scale-down": return "hover:scale-95";
-    case "glow-pulse": return "hover:shadow-[0_0_15px_rgba(249,115,22,0.5)]";
-    case "heartbeat": return "animate-heartbeat";
-    case "stitches": return "stitches-button";
-    case "ring-hover": return "ring-offset-background hover:ring-primary/90 transition-all duration-300 hover:ring-2 hover:ring-offset-2";
-    default: return "";
-  }
-}
-
-function isComplexButtonEffect(effect?: ButtonHoverEffect): boolean {
-  return effect === "slide-fill" || effect === "border-fill" || effect === "gradient-shift" || effect === "ripple";
 }
 
 // Footer Button Component
@@ -140,76 +116,10 @@ function FooterButton({
     );
   }
 
-  // Standard button with custom styling
-  const hoverClass = getButtonHoverClass(style.hoverEffect);
-  const hasComplexEffect = isComplexButtonEffect(style.hoverEffect);
-
-  const getNormalBackground = () => {
-    if (style.useGradient) {
-      return `linear-gradient(${getGradientCSS(style.gradientDirection)}, ${style.gradientFrom || "#F97316"}, ${style.gradientTo || "#EA580C"})`;
-    }
-    return style.bgColor || "#F97316";
-  };
-
-  const getHoverBackground = () => {
-    if (style.hoverUseGradient) {
-      return `linear-gradient(${getGradientCSS(style.hoverGradientDirection)}, ${style.hoverGradientFrom || "#EA580C"}, ${style.hoverGradientTo || "#C2410C"})`;
-    }
-    if (style.hoverBgColor) {
-      return style.hoverBgColor;
-    }
-    return getNormalBackground();
-  };
-
-  const getGradientShiftBackground = () => {
-    const fromColor = style.bgColor || "#F97316";
-    const toColor = style.hoverBgColor || "#EA580C";
-    return `linear-gradient(90deg, ${fromColor} 0%, ${toColor} 50%, ${fromColor} 100%)`;
-  };
-
-  const getComplexEffectStyles = (): React.CSSProperties => {
-    if (!hasComplexEffect) return {};
-
-    switch (style.hoverEffect) {
-      case "slide-fill":
-        return {
-          boxShadow: isHovered
-            ? `inset 200px 0 0 0 ${style.hoverBgColor || "#EA580C"}`
-            : `inset 0 0 0 0 ${style.hoverBgColor || "#EA580C"}`,
-        };
-      case "border-fill":
-        return {
-          boxShadow: isHovered
-            ? `inset 0 0 0 50px ${style.hoverBgColor || "#EA580C"}`
-            : `inset 0 0 0 0 ${style.hoverBgColor || "#EA580C"}`,
-        };
-      case "gradient-shift":
-        return {
-          backgroundSize: "200% 100%",
-          backgroundPosition: isHovered ? "100% 0" : "0% 0",
-        };
-      case "ripple":
-        return {
-          boxShadow: isHovered
-            ? `0 0 0 8px ${(style.bgColor || "#F97316")}30, 0 0 20px ${(style.bgColor || "#F97316")}20`
-            : `0 0 0 0 ${(style.bgColor || "#F97316")}30`,
-        };
-      default:
-        return {};
-    }
-  };
-
-  const effectStyles = getComplexEffectStyles();
-
-  const getFinalBackground = () => {
-    if (style.hoverEffect === "gradient-shift") {
-      return getGradientShiftBackground();
-    }
-    if (style.hoverEffect === "slide-fill" || style.hoverEffect === "border-fill") {
-      return getNormalBackground();
-    }
-    return isHovered ? getHoverBackground() : getNormalBackground();
-  };
+  // Standard button with custom styling - uses shared utilities
+  const hoverClass = getHoverEffectClass(style.hoverEffect);
+  const hasComplexEffect = isComplexHoverEffect(style.hoverEffect);
+  const effectStyles = getComplexEffectStyles(style, isHovered);
 
   return (
     <SmartLink
@@ -221,7 +131,7 @@ function FooterButton({
         hasComplexEffect ? "transition-all duration-500 ease-out" : "transition-all duration-300"
       )}
       style={{
-        background: getFinalBackground(),
+        background: getFinalBackground(style, isHovered),
         color: isHovered && style.hoverTextColor ? style.hoverTextColor : (style.textColor || "#ffffff"),
         borderWidth: `${style.borderWidth ?? 0}px`,
         borderStyle: "solid",

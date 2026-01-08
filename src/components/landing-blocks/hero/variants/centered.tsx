@@ -18,10 +18,20 @@ import {
   TrustBadges,
   StatsSection,
 } from "@/components/landing-blocks/shared";
-import { getGradientCSS, getPreviewHoverClass } from "@/components/admin/button-style-editor";
 import { CraftButton, CraftButtonLabel, CraftButtonIcon } from "@/components/ui/craft-button";
 import { PrimaryFlowButton } from "@/components/ui/flow-button";
 import { NeuralButton } from "@/components/ui/neural-button";
+
+// Shared button utilities
+import {
+  getGradientCSS,
+  getHoverEffectClass,
+  isComplexHoverEffect,
+  getComplexEffectStyles,
+  getFinalBackground,
+  hasCustomStyle,
+} from "@/lib/button-utils";
+import { renderButtonIcon } from "@/lib/button-icon-utils";
 
 interface HeroCenteredProps {
   settings: HeroSettings;
@@ -46,53 +56,8 @@ function normalizeFeatureItems(items: unknown): FeatureItem[] {
   });
 }
 
-// Check if custom style is defined (has any meaningful style properties)
-function hasCustomStyle(style?: ButtonCustomStyle): boolean {
-  if (!style) return false;
-  return !!(
-    style.bgColor ||
-    style.useGradient ||
-    style.textColor ||
-    style.borderWidth ||
-    style.borderRadius !== undefined ||
-    style.hoverEffect
-  );
-}
-
-// Get button icon component from style
-function getButtonIcon(style?: ButtonCustomStyle): React.ReactNode {
-  if (!style) return null;
-
-  // Custom SVG icon
-  if (style.customIconSvg?.trim()) {
-    return (
-      <span
-        className="inline-flex items-center justify-center w-4 h-4 [&>svg]:w-full [&>svg]:h-full"
-        dangerouslySetInnerHTML={{ __html: style.customIconSvg }}
-      />
-    );
-  }
-
-  // Lucide icon
-  if (style.icon) {
-    const icons = LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string }>>;
-    // Convert kebab-case to PascalCase
-    const pascalName = style.icon.split('-').map(part =>
-      part.charAt(0).toUpperCase() + part.slice(1)
-    ).join('');
-    const IconComponent = icons[pascalName] || icons[style.icon];
-    if (IconComponent) {
-      return <IconComponent className="w-4 h-4" />;
-    }
-  }
-
-  return null;
-}
-
-// Check if effect needs special rendering
-function isComplexHoverEffect(effect?: string): boolean {
-  return effect === "slide-fill" || effect === "border-fill" || effect === "gradient-shift" || effect === "ripple";
-}
+// hasCustomStyle, isComplexHoverEffect are now imported from @/lib/button-utils
+// renderButtonIcon is now imported from @/lib/button-icon-utils
 
 // Styled CTA Button Component
 interface StyledCTAButtonProps {
@@ -157,8 +122,8 @@ function StyledCTAButton({
     );
   }
 
-  // Get icon from style
-  const buttonIcon = getButtonIcon(style);
+  // Get icon from style using shared utility
+  const buttonIcon = renderButtonIcon(style);
   const hasIcon = buttonIcon !== null;
   const iconPosition = style?.iconPosition || "right";
 
@@ -235,73 +200,9 @@ function StyledCTAButton({
     );
   }
 
-  // Custom styled button with complex hover effects
-  const getNormalBackground = () => {
-    if (style?.useGradient && style?.gradientFrom && style?.gradientTo) {
-      return `linear-gradient(${getGradientCSS(style.gradientDirection)}, ${style.gradientFrom}, ${style.gradientTo})`;
-    }
-    return style?.bgColor || "#F97316";
-  };
-
-  const getHoverBackground = () => {
-    if (style?.hoverBgColor) return style.hoverBgColor;
-    return getNormalBackground();
-  };
-
-  // For gradient-shift effect
-  const getGradientShiftBackground = () => {
-    const fromColor = style?.bgColor || "#F97316";
-    const toColor = style?.hoverBgColor || "#C2410C";
-    return `linear-gradient(90deg, ${fromColor} 0%, ${toColor} 50%, ${fromColor} 100%)`;
-  };
-
+  // Custom styled button with complex hover effects - using shared utilities
   const hasComplexEffect = isComplexHoverEffect(style?.hoverEffect);
-
-  // Get base styles for complex effects
-  const getBaseStylesForEffect = (): React.CSSProperties => {
-    if (!hasComplexEffect) return {};
-
-    switch (style?.hoverEffect) {
-      case "slide-fill":
-        return {
-          boxShadow: effectiveHover
-            ? `inset 200px 0 0 0 ${style?.hoverBgColor || "#EA580C"}`
-            : `inset 0 0 0 0 ${style?.hoverBgColor || "#EA580C"}`,
-        };
-      case "border-fill":
-        return {
-          boxShadow: effectiveHover
-            ? `inset 0 0 0 50px ${style?.hoverBgColor || "#EA580C"}`
-            : `inset 0 0 0 0 ${style?.hoverBgColor || "#EA580C"}`,
-        };
-      case "gradient-shift":
-        return {
-          backgroundSize: "200% 100%",
-          backgroundPosition: effectiveHover ? "100% 0" : "0% 0",
-        };
-      case "ripple":
-        return {
-          boxShadow: effectiveHover
-            ? `0 0 0 8px ${(style?.bgColor || "#F97316")}30, 0 0 20px ${(style?.bgColor || "#F97316")}20`
-            : `0 0 0 0 ${(style?.bgColor || "#F97316")}30`,
-        };
-      default:
-        return {};
-    }
-  };
-
-  // Determine final background based on effect type
-  const getFinalBackground = () => {
-    if (style?.hoverEffect === "gradient-shift") {
-      return getGradientShiftBackground();
-    }
-    if (style?.hoverEffect === "slide-fill" || style?.hoverEffect === "border-fill") {
-      return getNormalBackground();
-    }
-    return effectiveHover ? getHoverBackground() : getNormalBackground();
-  };
-
-  const effectStyles = getBaseStylesForEffect();
+  const effectStyles = getComplexEffectStyles(style, effectiveHover);
 
   return (
     <SmartLink
@@ -310,11 +211,11 @@ function StyledCTAButton({
       className={cn(
         "group/cta inline-flex items-center justify-center gap-2 px-6 py-3 text-base font-medium overflow-hidden w-full sm:w-auto",
         !isPreview && "transition-all duration-300",
-        !isPreview && getPreviewHoverClass(style?.hoverEffect),
+        !isPreview && getHoverEffectClass(style?.hoverEffect),
         className
       )}
       style={{
-        background: getFinalBackground(),
+        background: getFinalBackground(style, effectiveHover),
         color: effectiveHover && style?.hoverTextColor ? style.hoverTextColor : (style?.textColor || "#ffffff"),
         borderWidth: `${style?.borderWidth ?? 0}px`,
         borderStyle: "solid",

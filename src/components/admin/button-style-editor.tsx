@@ -26,6 +26,15 @@ import { PrimaryFlowButton } from "@/components/ui/flow-button";
 import { NeuralButton } from "@/components/ui/neural-button";
 import type { ButtonCustomStyle, ButtonHoverEffect, GradientDirection } from "@/lib/header-footer/types";
 
+// Shared button utilities
+import {
+  getGradientCSS,
+  getHoverEffectClass,
+  isComplexHoverEffect,
+  getComplexEffectStyles,
+  getFinalBackground,
+} from "@/lib/button-utils";
+
 // Gradient direction options
 const gradientDirectionOptions: { value: GradientDirection; label: string }[] = [
   { value: "to-r", label: "→ Right" },
@@ -287,44 +296,11 @@ export const buttonStylePresets: ButtonStylePreset[] = [
   },
 ];
 
-// Convert gradient direction to CSS
-export function getGradientCSS(direction?: GradientDirection): string {
-  switch (direction) {
-    case "to-r": return "to right";
-    case "to-l": return "to left";
-    case "to-t": return "to top";
-    case "to-b": return "to bottom";
-    case "to-tr": return "to top right";
-    case "to-tl": return "to top left";
-    case "to-br": return "to bottom right";
-    case "to-bl": return "to bottom left";
-    default: return "to right";
-  }
-}
+// Re-export getGradientCSS for backward compatibility (used by centered.tsx)
+export { getGradientCSS } from "@/lib/button-utils";
 
-// Get hover effect CSS class for preview
-export function getPreviewHoverClass(effect?: ButtonHoverEffect): string {
-  switch (effect) {
-    case "darken": return "hover:brightness-90";
-    case "lighten": return "hover:brightness-110";
-    case "shadow-lift": return "hover:-translate-y-0.5 hover:shadow-lg";
-    case "shadow-press": return "hover:translate-y-0.5 hover:shadow-sm";
-    case "scale-up": return "hover:scale-105";
-    case "scale-down": return "hover:scale-95";
-    case "glow-pulse": return "hover:shadow-[0_0_15px_rgba(59,130,246,0.5)]";
-    case "heartbeat": return "animate-heartbeat";
-    case "stitches": return "stitches-button";
-    case "ring-hover": return "ring-offset-background hover:ring-primary/90 transition-all duration-300 hover:ring-2 hover:ring-offset-2";
-    case "slide-fill":
-    case "border-fill":
-    case "gradient-shift":
-    case "ripple":
-    case "flow-border":
-    case "neural":
-      return "";
-    default: return "";
-  }
-}
+// Re-export getHoverEffectClass as getPreviewHoverClass for backward compatibility
+export { getHoverEffectClass as getPreviewHoverClass } from "@/lib/button-utils";
 
 // Get Lucide icon component by name
 function getLucideIcon(name: string): React.ComponentType<{ className?: string }> | null {
@@ -358,10 +334,7 @@ function renderPreviewIcon(style: ButtonCustomStyle) {
   return null;
 }
 
-// Check if effect needs special rendering
-function isComplexHoverEffect(effect?: ButtonHoverEffect): boolean {
-  return effect === "slide-fill" || effect === "border-fill" || effect === "gradient-shift" || effect === "ripple";
-}
+// isComplexHoverEffect is now imported from @/lib/button-utils
 
 // Button Preview Component
 function ButtonPreview({ style, text = "Button" }: { style: ButtonCustomStyle; text?: string }) {
@@ -412,80 +385,16 @@ function ButtonPreview({ style, text = "Button" }: { style: ButtonCustomStyle; t
     );
   }
 
-  // Normal background calculation
-  const getNormalBackground = () => {
-    if (style.useGradient && style.gradientFrom && style.gradientTo) {
-      return `linear-gradient(${getGradientCSS(style.gradientDirection)}, ${style.gradientFrom}, ${style.gradientTo})`;
-    }
-    return style.bgColor || "#F97316";
-  };
-
-  const getHoverBackground = () => {
-    if (style.hoverBgColor) return style.hoverBgColor;
-    return getNormalBackground();
-  };
-
-  // For gradient-shift effect
-  const getGradientShiftBackground = () => {
-    const fromColor = style.bgColor || "#F97316";
-    const toColor = style.hoverBgColor || "#C2410C";
-    return `linear-gradient(90deg, ${fromColor} 0%, ${toColor} 50%, ${fromColor} 100%)`;
-  };
-
+  // Use shared utilities for styling
   const hasComplexEffect = isComplexHoverEffect(style.hoverEffect);
-
-  // Get base styles for complex effects
-  const getBaseStylesForEffect = (): React.CSSProperties => {
-    if (!hasComplexEffect) return {};
-
-    switch (style.hoverEffect) {
-      case "slide-fill":
-        return {
-          boxShadow: isHovered
-            ? `inset 200px 0 0 0 ${style.hoverBgColor || "#EA580C"}`
-            : `inset 0 0 0 0 ${style.hoverBgColor || "#EA580C"}`,
-        };
-      case "border-fill":
-        return {
-          boxShadow: isHovered
-            ? `inset 0 0 0 50px ${style.hoverBgColor || "#EA580C"}`
-            : `inset 0 0 0 0 ${style.hoverBgColor || "#EA580C"}`,
-        };
-      case "gradient-shift":
-        return {
-          backgroundSize: "200% 100%",
-          backgroundPosition: isHovered ? "100% 0" : "0% 0",
-        };
-      case "ripple":
-        return {
-          boxShadow: isHovered
-            ? `0 0 0 8px ${(style.bgColor || "#F97316")}30, 0 0 20px ${(style.bgColor || "#F97316")}20`
-            : `0 0 0 0 ${(style.bgColor || "#F97316")}30`,
-        };
-      default:
-        return {};
-    }
-  };
-
-  // Determine final background based on effect type
-  const getFinalBackground = () => {
-    if (style.hoverEffect === "gradient-shift") {
-      return getGradientShiftBackground();
-    }
-    if (style.hoverEffect === "slide-fill" || style.hoverEffect === "border-fill") {
-      return getNormalBackground();
-    }
-    return isHovered ? getHoverBackground() : getNormalBackground();
-  };
-
-  const effectStyles = getBaseStylesForEffect();
+  const effectStyles = getComplexEffectStyles(style, isHovered);
 
   return (
     <button
       type="button"
-      className={`inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium transition-all duration-300 overflow-hidden ${getPreviewHoverClass(style.hoverEffect)}`}
+      className={`inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium transition-all duration-300 overflow-hidden ${getHoverEffectClass(style.hoverEffect)}`}
       style={{
-        background: getFinalBackground(),
+        background: getFinalBackground(style, isHovered),
         color: isHovered && style.hoverTextColor ? style.hoverTextColor : (style.textColor || "#ffffff"),
         borderWidth: `${style.borderWidth ?? 0}px`,
         borderStyle: "solid",

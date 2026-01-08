@@ -3,219 +3,30 @@
 import * as React from "react";
 import { SmartLink } from "@/components/ui/smart-link";
 import { ArrowUpRight } from "lucide-react";
-import { DynamicIcon } from "lucide-react/dynamic";
 import { Button } from "@/components/ui/button";
 import { CraftButton, CraftButtonLabel, CraftButtonIcon } from "@/components/ui/craft-button";
 import { PrimaryFlowButton } from "@/components/ui/flow-button";
 import { NeuralButton } from "@/components/ui/neural-button";
 import { UserMenu } from "./UserMenu";
 import type { CTAButtonsProps } from "../types";
-import type { CTAButton, ButtonCustomStyle, ButtonHoverEffect, GradientDirection } from "@/lib/header-footer/types";
+import type { CTAButton } from "@/lib/header-footer/types";
 import { cn } from "@/lib/utils";
 
-// Render icon based on style settings using DynamicIcon for Lucide icons
-function renderButtonIcon(style?: ButtonCustomStyle, className?: string) {
-  if (!style?.icon || style.icon === "none" || style.icon.trim() === "") return null;
-
-  // Custom SVG
-  if (style.icon === "custom") {
-    if (!style.customIconSvg?.trim()) return null;
-    return (
-      <span
-        className={cn("inline-flex shrink-0", className)}
-        dangerouslySetInnerHTML={{ __html: style.customIconSvg }}
-      />
-    );
-  }
-
-  // Lucide icon - use DynamicIcon for dynamic loading by name
-  // Only render if icon name looks valid (contains only letters, numbers, and hyphens)
-  const iconName = style.icon.trim().toLowerCase();
-  if (!/^[a-z][a-z0-9-]*$/.test(iconName)) return null;
-
-  return (
-    <DynamicIcon
-      // @ts-expect-error - DynamicIcon accepts any valid lucide icon name
-      name={iconName}
-      className={cn("size-4 shrink-0", className)}
-    />
-  );
-}
-
-// Convert gradient direction to CSS
-function getGradientCSS(direction?: GradientDirection): string {
-  switch (direction) {
-    case "to-r": return "to right";
-    case "to-l": return "to left";
-    case "to-t": return "to top";
-    case "to-b": return "to bottom";
-    case "to-tr": return "to top right";
-    case "to-tl": return "to top left";
-    case "to-br": return "to bottom right";
-    case "to-bl": return "to bottom left";
-    default: return "to right";
-  }
-}
-
-// Check if button has custom styles
-function hasCustomStyle(style?: ButtonCustomStyle): boolean {
-  if (!style) return false;
-  return !!(
-    style.bgColor ||
-    style.textColor ||
-    style.borderColor ||
-    style.borderWidth !== undefined ||
-    style.borderRadius !== undefined ||
-    style.hoverBgColor ||
-    style.hoverTextColor ||
-    style.hoverEffect ||
-    style.useGradient ||
-    style.hoverUseGradient
-  );
-}
-
-// Get background style (gradient or solid color)
-function getNormalBackground(style?: ButtonCustomStyle): string {
-  if (style?.useGradient) {
-    return `linear-gradient(${getGradientCSS(style.gradientDirection)}, ${style.gradientFrom || "#F97316"}, ${style.gradientTo || "#EA580C"})`;
-  }
-  return style?.bgColor || "#F97316";
-}
-
-function getHoverBackground(style?: ButtonCustomStyle): string {
-  if (style?.hoverUseGradient) {
-    return `linear-gradient(${getGradientCSS(style.hoverGradientDirection)}, ${style.hoverGradientFrom || "#EA580C"}, ${style.hoverGradientTo || "#C2410C"})`;
-  }
-  if (style?.hoverBgColor) {
-    return style.hoverBgColor;
-  }
-  // Fallback to normal background
-  return getNormalBackground(style);
-}
-
-// Get hover effect CSS class
-function getHoverEffectClass(effect?: ButtonHoverEffect): string {
-  switch (effect) {
-    case "darken":
-      return "hover:brightness-90";
-    case "lighten":
-      return "hover:brightness-110";
-    case "shadow-lift":
-      return "hover:-translate-y-0.5 hover:shadow-lg";
-    case "shadow-press":
-      return "hover:translate-y-0.5 hover:shadow-sm";
-    case "scale-up":
-      return "hover:scale-105";
-    case "scale-down":
-      return "hover:scale-95";
-    case "glow-pulse":
-      return "hover:shadow-[0_0_15px_rgba(249,115,22,0.5)]";
-    case "heartbeat":
-      return "animate-heartbeat";
-    case "stitches":
-      return "stitches-button";
-    case "ring-hover":
-      return "ring-offset-background hover:ring-primary/90 transition-all duration-300 hover:ring-2 hover:ring-offset-2";
-    // Complex effects handled via inline styles or special components
-    case "slide-fill":
-    case "border-fill":
-    case "gradient-shift":
-    case "ripple":
-    case "flow-border":
-      return "";
-    default:
-      return "";
-  }
-}
-
-// Check if effect needs special handling
-function isComplexHoverEffect(effect?: ButtonHoverEffect): boolean {
-  return effect === "slide-fill" || effect === "border-fill" || effect === "gradient-shift" || effect === "ripple";
-}
-
-// Check if effect is CraftButton style
-function isCraftButtonEffect(effect?: ButtonHoverEffect): boolean {
-  return effect === "craft-expand";
-}
-
-// Check if effect is FlowButton style
-function isFlowButtonEffect(effect?: ButtonHoverEffect): boolean {
-  return effect === "flow-border";
-}
-
-// Check if effect is NeuralButton style
-function isNeuralButtonEffect(effect?: ButtonHoverEffect): boolean {
-  return effect === "neural";
-}
-
-// Get gradient shift background (larger gradient that shifts position)
-function getGradientShiftBackground(style: ButtonCustomStyle): string {
-  const fromColor = style.bgColor || "#F97316";
-  const toColor = style.hoverBgColor || "#EA580C";
-  return `linear-gradient(90deg, ${fromColor} 0%, ${toColor} 50%, ${fromColor} 100%)`;
-}
-
-// Get complex effect styles for hover state
-function getComplexEffectHoverStyles(style: ButtonCustomStyle): {
-  boxShadow?: string;
-  backgroundSize?: string;
-  backgroundPosition?: string;
-} {
-  switch (style.hoverEffect) {
-    case "slide-fill":
-      // Slide fill: inset box-shadow slides from left to right
-      return {
-        boxShadow: `inset 200px 0 0 0 ${style.hoverBgColor || "#EA580C"}`,
-      };
-    case "border-fill":
-      // Border fill: inset box-shadow grows to fill the button
-      return {
-        boxShadow: `inset 0 0 0 50px ${style.hoverBgColor || "#EA580C"}`,
-      };
-    case "gradient-shift":
-      // Gradient shift: background-position animates across larger gradient
-      return {
-        backgroundSize: "200% 100%",
-        backgroundPosition: "100% 0",
-      };
-    case "ripple":
-      // Ripple: expanding ring from center outward
-      return {
-        boxShadow: `0 0 0 8px ${(style.bgColor || "#F97316")}30, 0 0 20px ${(style.bgColor || "#F97316")}20`,
-      };
-    default:
-      return {};
-  }
-}
-
-// Get complex effect styles for normal (non-hover) state
-function getComplexEffectNormalStyles(style: ButtonCustomStyle): {
-  boxShadow?: string;
-  backgroundSize?: string;
-  backgroundPosition?: string;
-} {
-  switch (style.hoverEffect) {
-    case "slide-fill":
-      return {
-        boxShadow: `inset 0 0 0 0 ${style.hoverBgColor || "#EA580C"}`,
-      };
-    case "border-fill":
-      return {
-        boxShadow: `inset 0 0 0 0 ${style.hoverBgColor || "#EA580C"}`,
-      };
-    case "gradient-shift":
-      return {
-        backgroundSize: "200% 100%",
-        backgroundPosition: "0% 0",
-      };
-    case "ripple":
-      return {
-        boxShadow: `0 0 0 0 ${(style.bgColor || "#F97316")}30`,
-      };
-    default:
-      return {};
-  }
-}
+// Shared button utilities
+import {
+  getNormalBackground,
+  getHoverBackground,
+  getGradientShiftBackground,
+  getHoverEffectClass,
+  isComplexHoverEffect,
+  isCraftButtonEffect,
+  isFlowButtonEffect,
+  isNeuralButtonEffect,
+  getComplexEffectHoverStyles,
+  getComplexEffectNormalStyles,
+  hasCustomStyle,
+} from "@/lib/button-utils";
+import { renderButtonIcon } from "@/lib/button-icon-utils";
 
 // Render a single CTA button with custom or preset styles
 function CTAButtonItem({ btn, index }: { btn: CTAButton; index: number }) {
