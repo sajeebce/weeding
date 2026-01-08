@@ -136,6 +136,7 @@ const navItems: NavItem[] = [
 export function AdminSidebar() {
   const pathname = usePathname();
   const { config } = useBusinessConfig();
+  const [mounted, setMounted] = useState(false); // Prevent transition flash on initial load
   const [collapsed, setCollapsed] = useState(false); // Expanded by default
   const [openItems, setOpenItems] = useState<string[]>([]);
 
@@ -151,6 +152,8 @@ export function AdminSidebar() {
       const saved = localStorage.getItem("admin-sidebar-collapsed");
       setCollapsed(saved === "true");
     }
+    // Mark as mounted after state is set to prevent transition flash
+    setMounted(true);
   }, [isLandingPage]);
 
   const handleCollapsedChange = (value: boolean) => {
@@ -182,7 +185,8 @@ export function AdminSidebar() {
     <TooltipProvider delayDuration={0}>
       <aside
         className={cn(
-          "flex h-screen flex-col border-r bg-card transition-all duration-300",
+          "flex h-screen flex-col border-r bg-card",
+          mounted && "transition-all duration-300", // Only animate after initial load
           collapsed ? "w-16" : "w-64"
         )}
       >
