@@ -136,20 +136,29 @@ const navItems: NavItem[] = [
 export function AdminSidebar() {
   const pathname = usePathname();
   const { config } = useBusinessConfig();
-  const [collapsed, setCollapsed] = useState(true); // Collapsed by default - show only icons
+  const [collapsed, setCollapsed] = useState(false); // Expanded by default
   const [openItems, setOpenItems] = useState<string[]>([]);
 
-  // Persist collapsed state to localStorage
+  // Landing page always starts collapsed, other pages respect user preference
+  const isLandingPage = pathname === "/admin/appearance/landing-page";
+
   useEffect(() => {
-    const saved = localStorage.getItem("admin-sidebar-collapsed");
-    if (saved !== null) {
+    if (isLandingPage) {
+      // Landing page: always collapsed
+      setCollapsed(true);
+    } else {
+      // Other pages: use localStorage preference (default: expanded/false)
+      const saved = localStorage.getItem("admin-sidebar-collapsed");
       setCollapsed(saved === "true");
     }
-  }, []);
+  }, [isLandingPage]);
 
   const handleCollapsedChange = (value: boolean) => {
     setCollapsed(value);
-    localStorage.setItem("admin-sidebar-collapsed", String(value));
+    // Only save preference for non-landing pages
+    if (!isLandingPage) {
+      localStorage.setItem("admin-sidebar-collapsed", String(value));
+    }
   };
 
   const toggleItem = (title: string) => {
