@@ -24,22 +24,19 @@ import {
   Eye,
   ArrowLeft,
   Loader2,
-  Plus,
   Smartphone,
   Monitor,
   LayoutGrid,
+  ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { LandingPage, LandingPageBlock } from "@prisma/client";
-import type { HeroSettings } from "@/lib/landing-blocks/types";
 
-// Components
-import { BlockLibrary } from "./components/block-library";
-import { BlockCanvas } from "./components/block-canvas";
-import { SettingsPanel } from "./components/settings-panel";
-import { PreviewFrame } from "./components/preview-frame";
+// New Components
+import { BuilderPanel } from "./components/builder-panel";
+import { LivePreviewCanvas } from "./components/live-preview-canvas";
 
 type PageWithBlocks = LandingPage & { blocks: LandingPageBlock[] };
 
@@ -51,8 +48,8 @@ export default function LandingPageBuilderPage() {
   const [isDirty, setIsDirty] = useState(false);
   const [isSaving, setSaving] = useState(false);
   const [isLoading, setLoading] = useState(true);
-  const [showPreview, setShowPreview] = useState(false);
   const [previewDevice, setPreviewDevice] = useState<"desktop" | "mobile">("desktop");
+  const [pendingInsertPosition, setPendingInsertPosition] = useState<number | null>(null);
 
   // DnD sensors
   const sensors = useSensors(
@@ -111,9 +108,12 @@ export default function LandingPageBuilderPage() {
     loadPage();
   }, []);
 
-  // Add block handler
+  // Add block handler - uses pendingInsertPosition if no position provided
   const handleAddBlock = useCallback(async (type: string, position?: number) => {
     if (!page) return;
+
+    // Use pending position if available, otherwise use provided position or append to end
+    const insertPosition = position ?? pendingInsertPosition ?? blocks.length;
 
     try {
       const response = await fetch(`/api/admin/landing-pages/${page.id}/blocks`, {
@@ -121,29 +121,27 @@ export default function LandingPageBuilderPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           type,
-          sortOrder: position,
+          sortOrder: insertPosition,
         }),
       });
 
       const newBlock = await response.json();
 
       setBlocks((prev) => {
-        if (position !== undefined) {
-          const updated = [...prev];
-          updated.splice(position, 0, newBlock);
-          return updated.map((b, i) => ({ ...b, sortOrder: i }));
-        }
-        return [...prev, newBlock];
+        const updated = [...prev];
+        updated.splice(insertPosition, 0, newBlock);
+        return updated.map((b, i) => ({ ...b, sortOrder: i }));
       });
 
       setSelectedBlockId(newBlock.id);
+      setPendingInsertPosition(null); // Clear pending position after insertion
       setIsDirty(true);
       toast.success("Block added");
     } catch (error) {
       console.error("Error adding block:", error);
       toast.error("Failed to add block");
     }
-  }, [page]);
+  }, [page, pendingInsertPosition, blocks.length]);
 
   // Update block settings handler
   const handleUpdateBlockSettings = useCallback(async (blockId: string, settings: Record<string, unknown>) => {
@@ -285,7 +283,7 @@ export default function LandingPageBuilderPage() {
   };
 
   // Get selected block
-  const selectedBlock = blocks.find((b) => b.id === selectedBlockId);
+  const selectedBlock = blocks.find((b) => b.id === selectedBlockId) || null;
 
   if (isLoading) {
     return (
@@ -338,13 +336,12 @@ export default function LandingPageBuilderPage() {
             </Button>
           </div>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowPreview(!showPreview)}
-          >
-            <Eye className="mr-2 h-4 w-4" />
-            {showPreview ? "Edit" : "Preview"}
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/" target="_blank">
+              <Eye className="mr-2 h-4 w-4" />
+              Preview
+              <ExternalLink className="ml-1 h-3 w-3" />
+            </Link>
           </Button>
 
           <Button
@@ -362,63 +359,58 @@ export default function LandingPageBuilderPage() {
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex flex-1 overflow-hidden">
-        {showPreview ? (
-          <PreviewFrame
+      {/* Main Content - Two Panel Layout */}
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="flex flex-1 overflow-hidden">
+          {/* Left Panel - Builder Panel (Context-Aware) */}
+          <BuilderPanel
             blocks={blocks}
-            device={previewDevice}
+            selectedBlock={selectedBlock}
+            onAddBlock={handleAddBlock}
+            onSelectBlock={setSelectedBlockId}
+            onUpdateSettings={(settings) =>
+              selectedBlockId && handleUpdateBlockSettings(selectedBlockId, settings)
+            }
+            pendingInsertPosition={pendingInsertPosition}
+            onClearPendingPosition={() => setPendingInsertPosition(null)}
+            className="w-[360px] shrink-0"
           />
-        ) : (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
+
+          {/* Right Panel - Live Preview Canvas */}
+          <SortableContext
+            items={blocks.map((b) => b.id)}
+            strategy={verticalListSortingStrategy}
           >
-            {/* Block Library */}
-            <BlockLibrary
-              onAddBlock={handleAddBlock}
-              className="w-64 border-r"
+            <LivePreviewCanvas
+              blocks={blocks}
+              selectedBlockId={selectedBlockId}
+              onSelectBlock={setSelectedBlockId}
+              onRequestAddBlock={(position) => {
+                setSelectedBlockId(null); // Switch to browse mode
+                setPendingInsertPosition(position);
+              }}
+              onDeleteBlock={handleDeleteBlock}
+              onDuplicateBlock={handleDuplicateBlock}
+              device={previewDevice}
+              className="flex-1"
             />
+          </SortableContext>
 
-            {/* Canvas */}
-            <SortableContext
-              items={blocks.map((b) => b.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              <BlockCanvas
-                blocks={blocks}
-                selectedBlockId={selectedBlockId}
-                onSelectBlock={setSelectedBlockId}
-                onDeleteBlock={handleDeleteBlock}
-                onDuplicateBlock={handleDuplicateBlock}
-                onAddBlock={handleAddBlock}
-                className="flex-1"
-              />
-            </SortableContext>
-
-            {/* Settings Panel */}
-            <SettingsPanel
-              block={selectedBlock}
-              onUpdateSettings={(settings) =>
-                selectedBlockId && handleUpdateBlockSettings(selectedBlockId, settings)
-              }
-              onClose={() => setSelectedBlockId(null)}
-              className="w-80 border-l"
-            />
-
-            {/* Drag Overlay */}
-            <DragOverlay>
-              {activeId ? (
-                <div className="rounded-lg border bg-card p-4 shadow-lg">
-                  {blocks.find((b) => b.id === activeId)?.type || "Block"}
-                </div>
-              ) : null}
-            </DragOverlay>
-          </DndContext>
-        )}
-      </div>
+          {/* Drag Overlay */}
+          <DragOverlay>
+            {activeId ? (
+              <div className="rounded-lg border bg-card p-4 shadow-lg">
+                {blocks.find((b) => b.id === activeId)?.type || "Block"}
+              </div>
+            ) : null}
+          </DragOverlay>
+        </div>
+      </DndContext>
     </div>
   );
 }
