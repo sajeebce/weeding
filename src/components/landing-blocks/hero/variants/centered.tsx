@@ -131,7 +131,8 @@ export function HeroCentered({ settings }: HeroCenteredProps) {
                     key={feature.id}
                     className={cn(
                       "flex items-center gap-2 text-sm text-slate-400",
-                      (settings.features.iconPosition ?? "left") === "right" && "flex-row-reverse"
+                      (settings.features.iconPosition ?? "left") === "right" && "flex-row-reverse",
+                      (settings.features.layout ?? "list") === "grid" && (settings.features.columns ?? 3) > 1 && "justify-center"
                     )}
                   >
                     <Icon
