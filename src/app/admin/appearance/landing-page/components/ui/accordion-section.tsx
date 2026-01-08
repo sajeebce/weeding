@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronRight } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface AccordionSectionProps {
@@ -26,34 +26,39 @@ export function AccordionSection({
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <div className={cn("", className)}>
-      {/* Clickable Header Card */}
+    <div
+      className={cn(
+        "overflow-hidden rounded-xl border bg-background transition-all duration-200",
+        isOpen ? "border-primary/40 shadow-sm" : "hover:border-muted-foreground/30",
+        className
+      )}
+    >
+      {/* Clickable Header */}
       <div
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "flex w-full cursor-pointer items-center justify-between rounded-lg border bg-background px-4 py-3.5 transition-all duration-200",
-          "hover:border-primary/30 hover:bg-muted/50",
-          isOpen && "border-primary/40 bg-muted/30"
+          "flex w-full cursor-pointer items-center justify-between px-4 py-3.5 transition-colors",
+          isOpen ? "bg-primary/5" : "hover:bg-muted/50"
         )}
       >
         <div className="flex items-center gap-3">
           <div
             className={cn(
-              "flex h-7 w-7 items-center justify-center rounded-md bg-muted transition-colors",
-              isOpen && "bg-primary/10"
+              "flex h-7 w-7 items-center justify-center rounded-lg transition-colors",
+              isOpen ? "bg-primary/10" : "bg-muted"
             )}
           >
-            <ChevronRight
+            <ChevronDown
               className={cn(
-                "h-4 w-4 text-muted-foreground transition-transform duration-200",
-                isOpen && "rotate-90 text-primary"
+                "h-4 w-4 transition-transform duration-200",
+                isOpen ? "text-primary" : "-rotate-90 text-muted-foreground"
               )}
             />
           </div>
           <span
             className={cn(
-              "text-sm font-medium text-foreground/80 transition-colors",
-              isOpen && "text-foreground"
+              "text-sm font-medium transition-colors",
+              isOpen ? "text-foreground" : "text-foreground/70"
             )}
           >
             {title}
@@ -74,10 +79,10 @@ export function AccordionSection({
         )}
       </div>
 
-      {/* Content */}
+      {/* Content - Connected to header */}
       {isOpen && (
-        <div className="mt-3 space-y-4 rounded-lg border border-dashed border-muted-foreground/20 bg-muted/20 p-4">
-          {children}
+        <div className="border-t border-primary/20 bg-muted/30 px-4 py-4">
+          <div className="space-y-4">{children}</div>
         </div>
       )}
     </div>
