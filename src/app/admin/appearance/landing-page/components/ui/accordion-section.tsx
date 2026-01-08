@@ -28,11 +28,11 @@ export function AccordionSection({
   return (
     <div className={cn("border-b pb-4", className)}>
       {/* Header */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center justify-between py-3"
-      >
-        <div className="flex items-center gap-2">
+      <div className="flex w-full items-center justify-between py-3">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="flex items-center gap-2"
+        >
           <ChevronDown
             className={cn(
               "h-4 w-4 text-muted-foreground transition-transform",
@@ -40,21 +40,18 @@ export function AccordionSection({
             )}
           />
           <span className="text-sm font-semibold">{title}</span>
-        </div>
+        </button>
 
         {action && (
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              action.onClick();
-            }}
+            onClick={action.onClick}
             className="flex items-center gap-1 rounded px-2 py-1 text-xs text-primary hover:bg-primary/10"
           >
             {action.icon && <action.icon className="h-3 w-3" />}
             {action.label}
           </button>
         )}
-      </button>
+      </div>
 
       {/* Content */}
       {isOpen && <div className="space-y-4 pl-6">{children}</div>}

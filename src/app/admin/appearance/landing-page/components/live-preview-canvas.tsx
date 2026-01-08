@@ -114,7 +114,7 @@ function PreviewBlock({
         variant: variantMap[block.type] || "centered",
       };
 
-      return <HeroBlock settings={mergedSettings} />;
+      return <HeroBlock settings={mergedSettings} isPreview />;
     }
 
     // Placeholder for other block types
@@ -222,31 +222,36 @@ function PreviewBlock({
         </div>
 
         {/* Block Content */}
-        <div
-          className="relative cursor-pointer"
-          onClick={onSelect}
-        >
-          {/* Selection/Hover Border */}
+        <div className="relative">
+          {/* Selection/Hover Border - Clickable overlay that blocks ALL mouse events */}
           <div
             className={cn(
-              "pointer-events-none absolute inset-0 z-40 border-2 transition-colors",
+              "absolute inset-0 z-40 border-2 transition-colors cursor-pointer",
               isSelected
                 ? "border-primary"
                 : isHovered
                 ? "border-primary/50"
                 : "border-transparent"
             )}
+            onClick={onSelect}
+            onMouseMove={(e) => e.stopPropagation()}
+            onMouseOver={(e) => e.stopPropagation()}
+            onMouseOut={(e) => e.stopPropagation()}
           />
 
           {/* Block Label */}
           {showControls && (
-            <div className="absolute left-2 top-2 z-50 rounded bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground">
+            <div className="absolute left-2 top-2 z-50 rounded bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground pointer-events-none">
               {block.type}
             </div>
           )}
 
-          {/* Actual Block Render */}
-          <div className="pointer-events-none">
+          {/* Actual Block Render - Completely isolated */}
+          <div
+            data-preview-mode
+            className="select-none"
+            style={{ pointerEvents: 'none' }}
+          >
             {renderBlockContent()}
           </div>
         </div>

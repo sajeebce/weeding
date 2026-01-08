@@ -342,4 +342,59 @@
   .stitches-button:active::before {
     border-color: rgba(255, 255, 255, 0.5);
   }
+
+  /*
+   * Preview Mode - Disable ALL hover/interactive effects
+   * The preview content should look static - no hover effects at all
+   */
+  [data-preview-mode],
+  [data-preview-mode] * {
+    pointer-events: none !important;
+  }
+
+  /* Disable ALL transitions in preview - prevents hover animations */
+  [data-preview-mode] *,
+  [data-preview-mode] *::before,
+  [data-preview-mode] *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  /* Reset hover transforms */
+  [data-preview-mode] *:hover {
+    transform: none !important;
+  }
+
+  /* Disable group-hover transforms */
+  [data-preview-mode] .group:hover [class*="group-hover"],
+  [data-preview-mode] [class*="group\/"]:hover [class*="group-hover"] {
+    transform: none !important;
+  }
+
+  /* Disable flow-button rotating border effect */
+  [data-preview-mode] .flow-button::after {
+    transform: none !important;
+  }
+
+  /* Flow button disabled state - no hover animation */
+  .flow-button-disabled .flow-button::after {
+    transform: none !important;
+    animation: none !important;
+  }
+
+  .flow-button-disabled .flow-button:hover::after {
+    transform: none !important;
+  }
+
+  /* Disable all hover background color changes in preview mode */
+  [data-preview-mode] *:hover {
+    background-color: inherit !important;
+  }
+
+  /* Disable button scale effects in preview mode */
+  [data-preview-mode] button:hover,
+  [data-preview-mode] a:hover {
+    transform: none !important;
+  }
+
 }

@@ -3,6 +3,10 @@
 // ============================================
 
 import type { LandingPageBlock } from "@prisma/client";
+import type { ButtonCustomStyle } from "@/lib/header-footer/types";
+
+// Re-export for convenience
+export type { ButtonCustomStyle } from "@/lib/header-footer/types";
 
 // Block Categories
 export type BlockCategory =
@@ -165,6 +169,7 @@ export interface HeroCTASettings {
   showPrice?: boolean;
   priceText?: string;
   icon?: string;
+  style?: ButtonCustomStyle;
 }
 
 // Hero Secondary CTA Settings
@@ -174,6 +179,7 @@ export interface HeroSecondaryCTASettings {
   link: string;
   variant: CTAVariant;
   icon?: string;
+  style?: ButtonCustomStyle;
 }
 
 // Trust Rating Settings

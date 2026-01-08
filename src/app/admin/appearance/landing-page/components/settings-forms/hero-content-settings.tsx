@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 import { Sparkles } from "lucide-react";
 import type { LandingPageBlock } from "@prisma/client";
-import type { HeroSettings, HeroVariant, FeatureItem, FeatureListLayout, FeatureIconPosition } from "@/lib/landing-blocks/types";
+import type { HeroSettings, HeroVariant, FeatureItem, FeatureListLayout, FeatureIconPosition, ButtonCustomStyle } from "@/lib/landing-blocks/types";
 import { defaultHeroSettings } from "@/lib/landing-blocks/defaults";
 import { AccordionSection } from "../ui/accordion-section";
 import {
@@ -14,6 +14,7 @@ import {
   SelectInput,
 } from "../ui/form-controls";
 import { FeatureListEditor } from "../ui/feature-list-editor";
+import { ButtonStyleEditor } from "@/components/admin/button-style-editor";
 
 interface HeroContentSettingsProps {
   block: LandingPageBlock;
@@ -291,6 +292,18 @@ export function HeroContentSettings({
             placeholder="From $0"
           />
         )}
+
+        {/* Button Style Editor */}
+        <div className="mt-4 pt-4 border-t">
+          <ButtonStyleEditor
+            style={s.primaryCTA.style || {}}
+            onChange={(style: ButtonCustomStyle) => updateNested("primaryCTA", "style", style)}
+            buttonText={s.primaryCTA.text || "Button"}
+            showPreview={true}
+            showPresets={true}
+            compact={true}
+          />
+        </div>
       </AccordionSection>
 
       {/* Secondary CTA Section */}
@@ -314,6 +327,18 @@ export function HeroContentSettings({
               onChange={(v) => updateNested("secondaryCTA", "link", v)}
               placeholder="/pricing"
             />
+
+            {/* Button Style Editor */}
+            <div className="mt-4 pt-4 border-t">
+              <ButtonStyleEditor
+                style={s.secondaryCTA.style || {}}
+                onChange={(style: ButtonCustomStyle) => updateNested("secondaryCTA", "style", style)}
+                buttonText={s.secondaryCTA.text || "Button"}
+                showPreview={true}
+                showPresets={true}
+                compact={true}
+              />
+            </div>
           </>
         )}
       </AccordionSection>

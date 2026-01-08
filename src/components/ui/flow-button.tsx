@@ -15,16 +15,18 @@ interface FlowButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> 
   asChild?: boolean
 }
 
-function PrimaryFlowButton({ children, size, asChild = false, className, ...props }: FlowButtonProps) {
+function PrimaryFlowButton({ children, size, asChild = false, className, disabled, ...props }: FlowButtonProps) {
   return (
-    <div className={cn('flow-button-wrapper', className)}>
+    <div className={cn('flow-button-wrapper', disabled && 'flow-button-disabled', className)}>
       <Button
         size={size}
         asChild={asChild}
         className={cn(
-          'flow-button hover:bg-primary',
+          'flow-button',
+          !disabled && 'hover:bg-primary',
           size === 'lg' && 'text-base'
         )}
+        disabled={disabled}
         {...props}
       >
         {children}

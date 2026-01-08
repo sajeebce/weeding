@@ -17,10 +17,12 @@ interface NeuralButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement
 }
 
 function NeuralButton(props: NeuralButtonProps) {
-  const { children, asChild = false, size, className, ...rest } = props
+  const { children, asChild = false, size, className, disabled, ...rest } = props
 
   const neuralStyles = cn(
-    'relative z-[1] overflow-hidden rounded-xl !bg-sky-700 text-white font-medium !ring-2 !ring-sky-700/70 transition-transform duration-200 ease-in-out hover:scale-105 active:scale-95 dark:!bg-sky-500 dark:!ring-sky-500/60',
+    'relative z-[1] overflow-hidden rounded-xl !bg-sky-700 text-white font-medium !ring-2 !ring-sky-700/70 transition-transform duration-200 ease-in-out dark:!bg-sky-500 dark:!ring-sky-500/60',
+    // Only add hover/active effects when not disabled (preview mode)
+    !disabled && 'hover:scale-105 active:scale-95',
 
     // size-based adjustments
     size === 'lg' && 'text-base has-[>svg]:px-6',

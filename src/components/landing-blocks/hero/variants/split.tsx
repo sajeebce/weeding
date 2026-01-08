@@ -23,8 +23,8 @@ interface HeroSplitProps {
 }
 
 // Get Lucide icon component by name
-function getLucideIcon(name: string): React.ComponentType<{ className?: string }> {
-  const icons = LucideIcons as Record<string, React.ComponentType<{ className?: string }>>;
+function getLucideIcon(name: string): React.ComponentType<{ className?: string; style?: React.CSSProperties }> {
+  const icons = LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string; style?: React.CSSProperties }>>;
   return icons[name] || CheckCircle;
 }
 

@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 
 interface CraftButtonContextValue {
   size?: 'sm' | 'default' | 'lg'
+  isPreview?: boolean
 }
 
 const CraftButtonContext = React.createContext<CraftButtonContextValue>({})
@@ -29,10 +30,12 @@ interface CraftButtonIconProps {
 }
 
 function CraftButtonLabel({ children, className }: CraftButtonLabelProps) {
+  const { isPreview } = React.useContext(CraftButtonContext)
   return (
     <span
       className={cn(
-        'relative z-20 transition-colors duration-500 group-hover:text-zinc-900',
+        'relative z-20 transition-colors duration-500',
+        !isPreview && 'group-hover:text-zinc-900',
         className
       )}
     >
@@ -42,7 +45,7 @@ function CraftButtonLabel({ children, className }: CraftButtonLabelProps) {
 }
 
 function CraftButtonIcon({ children, className }: CraftButtonIconProps) {
-  const { size } = React.useContext(CraftButtonContext)
+  const { size, isPreview } = React.useContext(CraftButtonContext)
   const iconSize = size === 'lg' ? 'size-6' : size === 'sm' ? 'size-4' : 'size-5'
 
   return (
@@ -50,14 +53,16 @@ function CraftButtonIcon({ children, className }: CraftButtonIconProps) {
       {/* Expanding circle on hover */}
       <span
         className={cn(
-          'absolute inset-0 -z-10 rounded-full bg-white transition-transform duration-500 ease-out group-hover:scale-[15]',
+          'absolute inset-0 -z-10 rounded-full bg-white transition-transform duration-500 ease-out',
+          !isPreview && 'group-hover:scale-[15]',
           iconSize
         )}
       />
       {/* Icon container */}
       <span
         className={cn(
-          'relative z-20 flex items-center justify-center rounded-full bg-white text-zinc-900 transition-all duration-500 group-hover:bg-zinc-900 group-hover:text-white',
+          'relative z-20 flex items-center justify-center rounded-full bg-white text-zinc-900 transition-all duration-500',
+          !isPreview && 'group-hover:bg-zinc-900 group-hover:text-white',
           iconSize
         )}
       >
@@ -78,11 +83,15 @@ function CraftButton(props: CraftButtonProps) {
     style,
     onMouseEnter,
     onMouseLeave,
+    disabled,
     ...rest
   } = props
 
   const [isHovered, setIsHovered] = React.useState(false)
   const Comp = asChild ? Slot : 'button'
+
+  // When disabled, don't apply hover state (used for preview mode)
+  const effectiveHover = disabled ? false : isHovered
 
   // Get height based on size
   const sizeClasses = {
@@ -92,17 +101,19 @@ function CraftButton(props: CraftButtonProps) {
   }
 
   const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (disabled) return
     setIsHovered(true)
     onMouseEnter?.(e)
   }
 
   const handleMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (disabled) return
     setIsHovered(false)
     onMouseLeave?.(e)
   }
 
   return (
-    <CraftButtonContext.Provider value={{ size }}>
+    <CraftButtonContext.Provider value={{ size, isPreview: disabled }}>
       <Comp
         className={cn(
           'group relative inline-flex cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-full font-medium transition-all duration-500',
@@ -110,13 +121,14 @@ function CraftButton(props: CraftButtonProps) {
           className
         )}
         style={{
-          backgroundColor: isHovered ? '#ffffff' : bgColor,
+          backgroundColor: effectiveHover ? '#ffffff' : bgColor,
           color: textColor,
-          boxShadow: isHovered ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)' : undefined,
+          boxShadow: effectiveHover ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)' : undefined,
           ...style,
         }}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
+        disabled={disabled}
         {...rest}
       >
         {children}

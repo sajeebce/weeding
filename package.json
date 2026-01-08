@@ -4,8 +4,7 @@
   "description": "US LLC Formation & Amazon Seller Services Platform",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "dev:turbo": "next dev --turbopack",
+    "dev": "next dev --turbopack",
     "build": "cross-env NODE_ENV=production next build",
     "start": "next start",
     "lint": "next lint",
