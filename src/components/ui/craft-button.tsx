@@ -48,6 +48,17 @@ function CraftButtonIcon({ children, className }: CraftButtonIconProps) {
   const { size, isPreview } = React.useContext(CraftButtonContext)
   const iconSize = size === 'lg' ? 'size-6' : size === 'sm' ? 'size-4' : 'size-5'
 
+  // Clone children and add rotation class directly to the icon element
+  const rotatingIcon = React.isValidElement(children)
+    ? React.cloneElement(children as React.ReactElement<{ className?: string }>, {
+        className: cn(
+          (children as React.ReactElement<{ className?: string }>).props.className,
+          'transition-transform duration-500',
+          !isPreview && 'group-hover:rotate-45'
+        ),
+      })
+    : children
+
   return (
     <span className={cn('relative z-10', iconSize, className)}>
       {/* Expanding circle on hover */}
@@ -58,7 +69,7 @@ function CraftButtonIcon({ children, className }: CraftButtonIconProps) {
           iconSize
         )}
       />
-      {/* Icon container */}
+      {/* Icon container with built-in icon rotation */}
       <span
         className={cn(
           'relative z-20 flex items-center justify-center rounded-full bg-white text-zinc-900 transition-all duration-500',
@@ -66,7 +77,7 @@ function CraftButtonIcon({ children, className }: CraftButtonIconProps) {
           iconSize
         )}
       >
-        {children}
+        {rotatingIcon}
       </span>
     </span>
   )

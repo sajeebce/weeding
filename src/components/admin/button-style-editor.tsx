@@ -345,7 +345,7 @@ function ButtonPreview({ style, text = "Button" }: { style: ButtonCustomStyle; t
 
   // Special component for craft-expand effect
   if (style.hoverEffect === "craft-expand") {
-    const craftIcon = showIcon ? icon : <ArrowUpRight className="size-3 stroke-2 transition-transform duration-500 group-hover:rotate-45" />;
+    const craftIcon = showIcon ? icon : <ArrowUpRight className="size-3 stroke-2" />;
     return (
       <CraftButton
         bgColor={style.bgColor || "#18181b"}

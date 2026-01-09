@@ -37,8 +37,8 @@ function CTAButtonItem({ btn, index }: { btn: CTAButton; index: number }) {
     if (isCraftButtonEffect(btn.style.hoverEffect)) {
       // Get the icon to use in CraftButton
       const craftIcon = btn.style.icon && btn.style.icon !== "none"
-        ? renderButtonIcon(btn.style, "size-3 stroke-2 transition-transform duration-500 group-hover:rotate-45")
-        : <ArrowUpRight className="size-3 stroke-2 transition-transform duration-500 group-hover:rotate-45" />;
+        ? renderButtonIcon(btn.style, "size-3 stroke-2")
+        : <ArrowUpRight className="size-3 stroke-2" />;
 
       return (
         <CraftButton
@@ -242,8 +242,8 @@ export function CTAButtons({
       // Check if this is a CraftButton style
       if (isCraftButtonEffect(loginStyle.hoverEffect)) {
         const craftIcon = loginStyle.icon && loginStyle.icon !== "none"
-          ? renderButtonIcon(loginStyle, "size-3 stroke-2 transition-transform duration-500 group-hover:rotate-45")
-          : <ArrowUpRight className="size-3 stroke-2 transition-transform duration-500 group-hover:rotate-45" />;
+          ? renderButtonIcon(loginStyle, "size-3 stroke-2")
+          : <ArrowUpRight className="size-3 stroke-2" />;
 
         return (
           <CraftButton

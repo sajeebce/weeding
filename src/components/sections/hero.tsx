@@ -1,14 +1,12 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   CheckCircle,
-  ArrowRight,
   Shield,
   Clock,
   Globe,
   Star,
 } from "lucide-react";
+import { HeroCTAButtons } from "./hero-cta-buttons";
 
 const features = [
   "Fast 24-48 hour processing",
@@ -73,26 +71,7 @@ export function Hero() {
           </div>
 
           {/* CTA Buttons */}
-          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Button
-              size="lg"
-              className="group w-full bg-orange-500 text-white hover:bg-orange-600 transition-all sm:w-auto"
-              asChild
-            >
-              <Link href="/services/llc-formation">
-                Start Your LLC Now
-                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Link>
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              className="w-full border-white/20 bg-transparent text-white hover:bg-white/10 sm:w-auto"
-              asChild
-            >
-              <Link href="/pricing">View Pricing</Link>
-            </Button>
-          </div>
+          <HeroCTAButtons />
 
           {/* Trust Indicators */}
           <div className="mt-8 flex items-center justify-center gap-2 text-sm text-slate-400">
