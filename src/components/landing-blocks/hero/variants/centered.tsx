@@ -255,29 +255,49 @@ export function HeroCentered({ settings, isPreview = false, device }: HeroCenter
   // Helper to check if a color is a hex color
   const isHexColor = (color: string) => color?.startsWith("#");
 
-  // Parse headline with highlight
+  // Parse headline with highlight (supports multiple comma-separated words)
   const renderHeadline = () => {
     if (!settings.headline.highlightWord) {
       return settings.headline.text;
     }
 
-    const parts = settings.headline.text.split(settings.headline.highlightWord);
-    if (parts.length === 1) {
+    const highlightColor = settings.headline.highlightColor || "#f97316";
+
+    // Split highlight words by comma and trim whitespace
+    const highlightWords = settings.headline.highlightWord
+      .split(",")
+      .map((word) => word.trim())
+      .filter(Boolean);
+
+    if (highlightWords.length === 0) {
       return settings.headline.text;
     }
 
-    const highlightColor = settings.headline.highlightColor || "#f97316";
+    // Create a regex pattern that matches any of the highlight words
+    const pattern = new RegExp(`(${highlightWords.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'g');
+    const parts = settings.headline.text.split(pattern);
 
     return (
       <>
-        {parts[0]}
-        <span
-          className={!isHexColor(highlightColor) ? highlightColor : undefined}
-          style={isHexColor(highlightColor) ? { color: highlightColor } : undefined}
-        >
-          {settings.headline.highlightWord}
-        </span>
-        {parts[1]}
+        {parts.map((part, index) => {
+          // Check if this part is one of the highlight words
+          const isHighlight = highlightWords.some(
+            (word) => word.toLowerCase() === part.toLowerCase()
+          );
+
+          if (isHighlight) {
+            return (
+              <span
+                key={index}
+                className={!isHexColor(highlightColor) ? highlightColor : undefined}
+                style={isHexColor(highlightColor) ? { color: highlightColor } : undefined}
+              >
+                {part}
+              </span>
+            );
+          }
+          return part;
+        })}
       </>
     );
   };

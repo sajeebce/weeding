@@ -124,11 +124,11 @@ export function HeroContentSettings({
           placeholder="Start Your US LLC in 24 Hours"
         />
         <TextInput
-          label="Highlight Word"
+          label="Highlight Words"
           value={s.headline.highlightWord || ""}
           onChange={(v) => updateNested("headline", "highlightWord", v)}
-          placeholder="US LLC"
-          description="This word will be highlighted with primary color"
+          placeholder="US LLC, 24 Hours"
+          description="Separate multiple words with comma (e.g., US LLC, 24 Hours)"
         />
         <SelectInput
           label="Size"
