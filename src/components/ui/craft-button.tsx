@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { Slot } from '@radix-ui/react-slot'
 import { cn } from '@/lib/utils'
+import { CRAFT_BG_DARK, WHITE } from '@/lib/button-constants'
 
 interface CraftButtonContextValue {
   size?: 'sm' | 'default' | 'lg'
@@ -89,8 +90,8 @@ function CraftButton(props: CraftButtonProps) {
     size = 'default',
     asChild = false,
     className,
-    bgColor = '#18181b',
-    textColor = '#ffffff',
+    bgColor = CRAFT_BG_DARK,
+    textColor = WHITE,
     style,
     onMouseEnter,
     onMouseLeave,

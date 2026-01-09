@@ -61,6 +61,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { BUTTON_STYLE_PRESETS, type ButtonStylePreset } from "@/lib/button-presets";
 
 const layoutOptions: { value: HeaderLayout; label: string; description: string }[] = [
   { value: "DEFAULT", label: "Default", description: "Logo left, Nav center, CTA right" },
@@ -102,250 +103,6 @@ const hoverEffectOptions: { value: ButtonHoverEffect; label: string }[] = [
   { value: "stitches", label: "Stitches (3D Dashed Border)" },
   { value: "ring-hover", label: "Ring Hover" },
   { value: "neural", label: "Neural (Animated Border Beam)" },
-];
-
-// 2025 Modern Button Style Presets
-// Research: https://shapebootstrap.net/hover-effects-for-buttons-modern-techniques-in-web-design-2025/
-// Research: https://www.lambdatest.com/blog/best-css-button-hover-effects/
-interface ButtonStylePreset {
-  id: string;
-  name: string;
-  description: string;
-  style: ButtonCustomStyle;
-}
-
-const buttonStylePresets: ButtonStylePreset[] = [
-  // 1. Ocean Gradient - Calm, trustworthy, professional
-  {
-    id: "ocean-gradient",
-    name: "Ocean Gradient",
-    description: "Smooth blue-to-cyan gradient with lift effect",
-    style: {
-      useGradient: true,
-      gradientFrom: "#0066FF",
-      gradientTo: "#00D4FF",
-      gradientDirection: "to-r",
-      textColor: "#ffffff",
-      borderWidth: 0,
-      borderRadius: 8,
-      hoverEffect: "shadow-lift",
-      shadow: "0 2px 8px rgba(0, 102, 255, 0.3)",
-      hoverShadow: "0 8px 25px rgba(0, 102, 255, 0.4)",
-    },
-  },
-  // 2. Sunset Glow - Energetic, vibrant, attention-grabbing
-  {
-    id: "sunset-glow",
-    name: "Sunset Glow",
-    description: "Orange-to-pink gradient with glow pulse",
-    style: {
-      useGradient: true,
-      gradientFrom: "#FF6B35",
-      gradientTo: "#F72585",
-      gradientDirection: "to-r",
-      textColor: "#ffffff",
-      borderWidth: 0,
-      borderRadius: 25,
-      hoverEffect: "glow-pulse",
-      shadow: "0 4px 15px rgba(247, 37, 133, 0.3)",
-    },
-  },
-  // 3. Neon Cyber - Futuristic, tech-forward, bold
-  {
-    id: "neon-cyber",
-    name: "Neon Cyber",
-    description: "Electric purple with slide fill effect",
-    style: {
-      bgColor: "#7C3AED",
-      textColor: "#ffffff",
-      borderWidth: 2,
-      borderColor: "#A855F7",
-      borderRadius: 6,
-      hoverBgColor: "#A855F7",
-      hoverEffect: "slide-fill",
-      shadow: "0 0 20px rgba(168, 85, 247, 0.3)",
-    },
-  },
-  // 4. Emerald Success - Growth, positive action, eco-friendly
-  {
-    id: "emerald-success",
-    name: "Emerald Success",
-    description: "Rich green gradient with scale effect",
-    style: {
-      useGradient: true,
-      gradientFrom: "#059669",
-      gradientTo: "#10B981",
-      gradientDirection: "to-tr",
-      textColor: "#ffffff",
-      borderWidth: 0,
-      borderRadius: 10,
-      hoverEffect: "scale-up",
-      shadow: "0 4px 12px rgba(16, 185, 129, 0.3)",
-    },
-  },
-  // 5. Midnight Premium - Luxury, high-end, sophisticated
-  {
-    id: "midnight-premium",
-    name: "Midnight Premium",
-    description: "Deep dark with gold accent border fill",
-    style: {
-      bgColor: "#1a1a2e",
-      textColor: "#FFD700",
-      borderWidth: 2,
-      borderColor: "#FFD700",
-      borderRadius: 4,
-      hoverBgColor: "#FFD700",
-      hoverTextColor: "#1a1a2e",
-      hoverEffect: "border-fill",
-    },
-  },
-  // 6. Coral Soft - Friendly, approachable, warm
-  {
-    id: "coral-soft",
-    name: "Coral Soft",
-    description: "Soft coral with ripple effect",
-    style: {
-      bgColor: "#FF6F61",
-      textColor: "#ffffff",
-      borderWidth: 0,
-      borderRadius: 20,
-      hoverBgColor: "#FF8577",
-      hoverEffect: "ripple",
-      shadow: "0 3px 10px rgba(255, 111, 97, 0.3)",
-    },
-  },
-  // 8. Arctic Shift - Cool, modern, dynamic
-  {
-    id: "arctic-shift",
-    name: "Arctic Shift",
-    description: "Cool blue gradient with shift animation",
-    style: {
-      useGradient: true,
-      gradientFrom: "#667eea",
-      gradientTo: "#764ba2",
-      gradientDirection: "to-r",
-      textColor: "#ffffff",
-      borderWidth: 0,
-      borderRadius: 8,
-      hoverBgColor: "#764ba2",
-      hoverEffect: "gradient-shift",
-    },
-  },
-  // 9. Red Alert CTA - Urgency, action, conversion-focused
-  {
-    id: "red-alert",
-    name: "Red Alert CTA",
-    description: "High-contrast red for urgent actions",
-    style: {
-      bgColor: "#DC2626",
-      textColor: "#ffffff",
-      borderWidth: 0,
-      borderRadius: 6,
-      hoverBgColor: "#B91C1C",
-      hoverEffect: "shadow-press",
-      shadow: "0 4px 14px rgba(220, 38, 38, 0.4)",
-    },
-  },
-  // 10. Outline Modern - Clean, minimal, versatile
-  {
-    id: "outline-modern",
-    name: "Outline Modern",
-    description: "Clean outline with slide fill on hover",
-    style: {
-      bgColor: "transparent",
-      textColor: "#2563EB",
-      borderWidth: 2,
-      borderColor: "#2563EB",
-      borderRadius: 8,
-      hoverBgColor: "#2563EB",
-      hoverTextColor: "#ffffff",
-      hoverEffect: "slide-fill",
-    },
-  },
-  // 11. Craft Button - Modern expanding icon effect (shadcnstudio)
-  {
-    id: "craft-expand",
-    name: "Craft Button",
-    description: "Modern pill button with expanding icon circle on hover",
-    style: {
-      bgColor: "#18181b",
-      textColor: "#ffffff",
-      borderWidth: 0,
-      borderRadius: 9999, // fully rounded (pill shape)
-      hoverEffect: "craft-expand",
-      shadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-      hoverShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-    },
-  },
-  // 12. Heartbeat Effect - Attention-grabbing pulsing animation
-  {
-    id: "heartbeat",
-    name: "Heartbeat Effect",
-    description: "Eye-catching pulsing animation for urgent CTAs",
-    style: {
-      bgColor: "#DC2626",
-      textColor: "#ffffff",
-      borderWidth: 0,
-      borderRadius: 8,
-      hoverEffect: "heartbeat",
-      shadow: "0 0 0 0 rgba(220, 38, 38, 0.7)",
-    },
-  },
-  // 13. Flow Button - Rotating border gradient effect
-  {
-    id: "flow-border",
-    name: "Flow Button",
-    description: "Rotating border gradient with conic animation on hover",
-    style: {
-      bgColor: "#F97316",
-      textColor: "#ffffff",
-      borderWidth: 2,
-      borderColor: "#F97316",
-      borderRadius: 8,
-      hoverEffect: "flow-border",
-      shadow: "0 0 0 2px rgba(249, 115, 22, 0.3)",
-    },
-  },
-  // 14. Stitches Button - 3D effect with dashed inner border
-  {
-    id: "stitches",
-    name: "Stitches Button",
-    description: "3D stitched effect with dashed inner border and shadow depth",
-    style: {
-      bgColor: "#0ea5e9",
-      textColor: "#ffffff",
-      borderWidth: 2,
-      borderColor: "#0ea5e9",
-      borderRadius: 8,
-      hoverEffect: "stitches",
-    },
-  },
-  // 15. Ring Hover - Ring outline appears on hover
-  {
-    id: "ring-hover",
-    name: "Ring Hover",
-    description: "Elegant ring outline effect on hover with smooth transition",
-    style: {
-      bgColor: "#F97316",
-      textColor: "#ffffff",
-      borderWidth: 0,
-      borderRadius: 6,
-      hoverEffect: "ring-hover",
-    },
-  },
-  // 16. Neural Button - Animated border beam with scale effect
-  {
-    id: "neural",
-    name: "Neural Button",
-    description: "Futuristic button with animated border beam and scale effects",
-    style: {
-      bgColor: "#0369a1",
-      textColor: "#ffffff",
-      borderWidth: 0,
-      borderRadius: 12,
-      hoverEffect: "neural",
-    },
-  },
 ];
 
 // Announcement Bar Style Presets (adapted from button presets)
@@ -2992,7 +2749,7 @@ export default function HeaderBuilderPage() {
                             Click to apply a modern 2025 button style. You can customize further after applying.
                           </p>
                           <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-                            {buttonStylePresets.map((preset) => {
+                            {BUTTON_STYLE_PRESETS.map((preset) => {
                               // Generate preview background for preset
                               const previewBg = preset.style.useGradient
                                 ? `linear-gradient(${getGradientCSS(preset.style.gradientDirection)}, ${preset.style.gradientFrom}, ${preset.style.gradientTo})`
@@ -3589,7 +3346,7 @@ export default function HeaderBuilderPage() {
                           Click to apply a modern 2025 button style. You can customize further after applying.
                         </p>
                         <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-                          {buttonStylePresets.map((preset) => {
+                          {BUTTON_STYLE_PRESETS.map((preset) => {
                             const previewBg = preset.style.useGradient
                               ? `linear-gradient(${getGradientCSS(preset.style.gradientDirection)}, ${preset.style.gradientFrom}, ${preset.style.gradientTo})`
                               : preset.style.bgColor || "#F97316";

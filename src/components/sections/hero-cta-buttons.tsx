@@ -8,6 +8,7 @@ import {
   CraftButtonIcon,
 } from "@/components/ui/craft-button";
 import { ArrowRight } from "lucide-react";
+import { ORANGE_PRIMARY, WHITE } from "@/lib/button-constants";
 
 export function HeroCTAButtons() {
   return (
@@ -15,8 +16,8 @@ export function HeroCTAButtons() {
       <CraftButton
         size="lg"
         className="w-full sm:w-auto"
-        bgColor="#f97316"
-        textColor="#ffffff"
+        bgColor={ORANGE_PRIMARY}
+        textColor={WHITE}
         asChild
       >
         <Link href="/services/llc-formation">
@@ -30,7 +31,7 @@ export function HeroCTAButtons() {
         size="lg"
         className="w-full border border-white/20 sm:w-auto"
         bgColor="transparent"
-        textColor="#ffffff"
+        textColor={WHITE}
         asChild
       >
         <Link href="/pricing">

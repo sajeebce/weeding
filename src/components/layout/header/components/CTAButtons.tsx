@@ -27,6 +27,7 @@ import {
   hasCustomStyle,
 } from "@/lib/button-utils";
 import { renderButtonIcon } from "@/lib/button-icon-utils";
+import { CRAFT_BG_DARK, WHITE, ORANGE_PRIMARY } from "@/lib/button-constants";
 
 // Render a single CTA button with custom or preset styles
 function CTAButtonItem({ btn, index }: { btn: CTAButton; index: number }) {
@@ -44,8 +45,8 @@ function CTAButtonItem({ btn, index }: { btn: CTAButton; index: number }) {
         <CraftButton
           key={index}
           asChild
-          bgColor={btn.style.bgColor || "#18181b"}
-          textColor={btn.style.textColor || "#ffffff"}
+          bgColor={btn.style.bgColor || CRAFT_BG_DARK}
+          textColor={btn.style.textColor || WHITE}
           style={{
             boxShadow: btn.style.shadow,
           }}
@@ -67,7 +68,7 @@ function CTAButtonItem({ btn, index }: { btn: CTAButton; index: number }) {
           key={index}
           asChild
           style={{
-            '--tw-ring-color': `${btn.style.bgColor || '#F97316'}99`,
+            '--tw-ring-color': `${btn.style.bgColor || ORANGE_PRIMARY}99`,
           } as React.CSSProperties}
         >
           <SmartLink href={btn.url} openInNewTab={btn.openInNewTab}>{btn.text}</SmartLink>
@@ -120,7 +121,7 @@ function CTAButtonItem({ btn, index }: { btn: CTAButton; index: number }) {
           color: btn.style.textColor || "#ffffff",
           borderWidth: `${btn.style.borderWidth ?? 1}px`,
           borderStyle: "solid",
-          borderColor: btn.style.borderColor || btn.style.bgColor || "#F97316",
+          borderColor: btn.style.borderColor || btn.style.bgColor || ORANGE_PRIMARY,
           borderRadius: `${btn.style.borderRadius ?? 6}px`,
           // Apply initial complex effect styles (for box-shadow/background-position initial state)
           ...(hasComplex ? complexNormalStyles : { boxShadow: btn.style.shadow }),
@@ -248,8 +249,8 @@ export function CTAButtons({
         return (
           <CraftButton
             asChild
-            bgColor={loginStyle.bgColor || "#18181b"}
-            textColor={loginStyle.textColor || "#ffffff"}
+            bgColor={loginStyle.bgColor || CRAFT_BG_DARK}
+            textColor={loginStyle.textColor || WHITE}
             style={{
               boxShadow: loginStyle.shadow,
             }}

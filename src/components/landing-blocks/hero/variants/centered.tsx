@@ -32,6 +32,7 @@ import {
   hasCustomStyle,
 } from "@/lib/button-utils";
 import { renderButtonIcon } from "@/lib/button-icon-utils";
+import { CRAFT_BG_DARK, WHITE, ORANGE_PRIMARY } from "@/lib/button-constants";
 
 interface HeroCenteredProps {
   settings: HeroSettings;
@@ -133,8 +134,8 @@ function StyledCTAButton({
     return (
       <SmartLink href={href} openInNewTab={openInNewTab} className={cn("w-full sm:w-auto", className)}>
         <CraftButton
-          bgColor={style.bgColor || "#18181b"}
-          textColor={style.textColor || "#ffffff"}
+          bgColor={style.bgColor || CRAFT_BG_DARK}
+          textColor={style.textColor || WHITE}
           size="default"
           disabled={isPreview}
         >
@@ -157,7 +158,7 @@ function StyledCTAButton({
         <PrimaryFlowButton
           className={cn("text-base", isPreview && "pointer-events-none [&]:hover:after:transform-none")}
           style={{
-            '--tw-ring-color': `${style.bgColor || '#F97316'}99`,
+            '--tw-ring-color': `${style.bgColor || ORANGE_PRIMARY}99`,
           } as React.CSSProperties}
           disabled={isPreview}
         >

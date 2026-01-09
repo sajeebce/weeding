@@ -28,6 +28,7 @@ import { CraftButton, CraftButtonLabel, CraftButtonIcon } from "@/components/ui/
 import { PrimaryFlowButton } from "@/components/ui/flow-button";
 import { NeuralButton } from "@/components/ui/neural-button";
 import { Button } from "@/components/ui/button";
+import { CRAFT_BG_DARK, WHITE, ORANGE_PRIMARY } from "@/lib/button-constants";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
@@ -72,8 +73,8 @@ function FooterButton({
     return (
       <SmartLink href={url} openInNewTab={shouldOpenNewTab}>
         <CraftButton
-          bgColor={style.bgColor || "#18181b"}
-          textColor={style.textColor || "#ffffff"}
+          bgColor={style.bgColor || CRAFT_BG_DARK}
+          textColor={style.textColor || WHITE}
           size="sm"
           style={{
             boxShadow: style.shadow,
@@ -95,7 +96,7 @@ function FooterButton({
         <PrimaryFlowButton
           className="text-sm"
           style={{
-            '--tw-ring-color': `${style.bgColor || '#F97316'}99`,
+            '--tw-ring-color': `${style.bgColor || ORANGE_PRIMARY}99`,
           } as React.CSSProperties}
         >
           {text}
@@ -135,7 +136,7 @@ function FooterButton({
         color: isHovered && style.hoverTextColor ? style.hoverTextColor : (style.textColor || "#ffffff"),
         borderWidth: `${style.borderWidth ?? 0}px`,
         borderStyle: "solid",
-        borderColor: style.borderColor || style.bgColor || "#F97316",
+        borderColor: style.borderColor || style.bgColor || ORANGE_PRIMARY,
         borderRadius: `${style.borderRadius ?? 6}px`,
         ...effectStyles,
         ...((!hasComplexEffect && style.shadow) ? { boxShadow: isHovered && style.hoverShadow ? style.hoverShadow : style.shadow } : {}),
@@ -1108,7 +1109,7 @@ export function Footer() {
     "--footer-link-color": styling?.linkColor || "inherit",
     "--footer-link-hover-color": styling?.linkHoverColor || styling?.accentColor || "#22d3ee",
     "--footer-heading-color": styling?.headingColor || "inherit",
-    "--footer-accent-color": styling?.accentColor || "#F97316",
+    "--footer-accent-color": styling?.accentColor || ORANGE_PRIMARY,
     "--footer-divider-color": styling?.dividerColor || styling?.borderColor || "#e5e7eb",
   };
 
@@ -1127,7 +1128,7 @@ export function Footer() {
     if (!borderStyle || borderStyle === "none") return null;
 
     const height = styling?.topBorderHeight || 1;
-    const color = styling?.topBorderColor || styling?.accentColor || "#F97316";
+    const color = styling?.topBorderColor || styling?.accentColor || ORANGE_PRIMARY;
 
     if (borderStyle === "gradient") {
       return (

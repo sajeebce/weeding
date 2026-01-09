@@ -35,6 +35,10 @@ import {
   getFinalBackground,
 } from "@/lib/button-utils";
 
+// Centralized button presets and constants
+import { BUTTON_STYLE_PRESETS, type ButtonStylePreset } from "@/lib/button-presets";
+import { CRAFT_BG_DARK, WHITE, ORANGE_PRIMARY, ORANGE_PRIMARY_HOVER } from "@/lib/button-constants";
+
 // Gradient direction options
 const gradientDirectionOptions: { value: GradientDirection; label: string }[] = [
   { value: "to-r", label: "→ Right" },
@@ -67,233 +71,6 @@ const hoverEffectOptions: { value: ButtonHoverEffect; label: string }[] = [
   { value: "stitches", label: "Stitches (3D Dashed Border)" },
   { value: "ring-hover", label: "Ring Hover" },
   { value: "neural", label: "Neural (Animated Border Beam)" },
-];
-
-// 2025 Modern Button Style Presets
-export interface ButtonStylePreset {
-  id: string;
-  name: string;
-  description: string;
-  style: ButtonCustomStyle;
-}
-
-export const buttonStylePresets: ButtonStylePreset[] = [
-  {
-    id: "ocean-gradient",
-    name: "Ocean",
-    description: "Smooth blue-to-cyan gradient with lift effect",
-    style: {
-      useGradient: true,
-      gradientFrom: "#0066FF",
-      gradientTo: "#00D4FF",
-      gradientDirection: "to-r",
-      textColor: "#ffffff",
-      borderWidth: 0,
-      borderRadius: 8,
-      hoverEffect: "shadow-lift",
-      shadow: "0 2px 8px rgba(0, 102, 255, 0.3)",
-      hoverShadow: "0 8px 25px rgba(0, 102, 255, 0.4)",
-    },
-  },
-  {
-    id: "sunset-glow",
-    name: "Sunset",
-    description: "Orange-to-pink gradient with glow pulse",
-    style: {
-      useGradient: true,
-      gradientFrom: "#FF6B35",
-      gradientTo: "#F72585",
-      gradientDirection: "to-r",
-      textColor: "#ffffff",
-      borderWidth: 0,
-      borderRadius: 25,
-      hoverEffect: "glow-pulse",
-      shadow: "0 4px 15px rgba(247, 37, 133, 0.3)",
-    },
-  },
-  {
-    id: "neon-cyber",
-    name: "Neon",
-    description: "Electric purple with slide fill effect",
-    style: {
-      bgColor: "#7C3AED",
-      textColor: "#ffffff",
-      borderWidth: 2,
-      borderColor: "#A855F7",
-      borderRadius: 6,
-      hoverBgColor: "#A855F7",
-      hoverEffect: "slide-fill",
-      shadow: "0 0 20px rgba(168, 85, 247, 0.3)",
-    },
-  },
-  {
-    id: "emerald-success",
-    name: "Emerald",
-    description: "Rich green gradient with scale effect",
-    style: {
-      useGradient: true,
-      gradientFrom: "#059669",
-      gradientTo: "#10B981",
-      gradientDirection: "to-tr",
-      textColor: "#ffffff",
-      borderWidth: 0,
-      borderRadius: 10,
-      hoverEffect: "scale-up",
-      shadow: "0 4px 12px rgba(16, 185, 129, 0.3)",
-    },
-  },
-  {
-    id: "midnight-premium",
-    name: "Midnight",
-    description: "Deep dark with gold accent border fill",
-    style: {
-      bgColor: "#1a1a2e",
-      textColor: "#FFD700",
-      borderWidth: 2,
-      borderColor: "#FFD700",
-      borderRadius: 4,
-      hoverBgColor: "#FFD700",
-      hoverTextColor: "#1a1a2e",
-      hoverEffect: "border-fill",
-    },
-  },
-  {
-    id: "coral-soft",
-    name: "Coral",
-    description: "Soft coral with ripple effect",
-    style: {
-      bgColor: "#FF6F61",
-      textColor: "#ffffff",
-      borderWidth: 0,
-      borderRadius: 20,
-      hoverBgColor: "#FF8577",
-      hoverEffect: "ripple",
-      shadow: "0 3px 10px rgba(255, 111, 97, 0.3)",
-    },
-  },
-  {
-    id: "arctic-shift",
-    name: "Arctic",
-    description: "Cool blue gradient with shift animation",
-    style: {
-      useGradient: true,
-      gradientFrom: "#667eea",
-      gradientTo: "#764ba2",
-      gradientDirection: "to-r",
-      textColor: "#ffffff",
-      borderWidth: 0,
-      borderRadius: 8,
-      hoverBgColor: "#764ba2",
-      hoverEffect: "gradient-shift",
-    },
-  },
-  {
-    id: "red-alert",
-    name: "Red",
-    description: "High-contrast red for urgent actions",
-    style: {
-      bgColor: "#DC2626",
-      textColor: "#ffffff",
-      borderWidth: 0,
-      borderRadius: 6,
-      hoverBgColor: "#B91C1C",
-      hoverEffect: "shadow-press",
-      shadow: "0 4px 14px rgba(220, 38, 38, 0.4)",
-    },
-  },
-  {
-    id: "outline-modern",
-    name: "Outline",
-    description: "Clean outline with slide fill on hover",
-    style: {
-      bgColor: "transparent",
-      textColor: "#2563EB",
-      borderWidth: 2,
-      borderColor: "#2563EB",
-      borderRadius: 8,
-      hoverBgColor: "#2563EB",
-      hoverTextColor: "#ffffff",
-      hoverEffect: "slide-fill",
-    },
-  },
-  {
-    id: "craft-expand",
-    name: "Craft",
-    description: "Modern pill button with expanding icon circle on hover",
-    style: {
-      bgColor: "#18181b",
-      textColor: "#ffffff",
-      borderWidth: 0,
-      borderRadius: 9999,
-      hoverEffect: "craft-expand",
-      shadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-      hoverShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-    },
-  },
-  {
-    id: "heartbeat",
-    name: "Heartbeat",
-    description: "Eye-catching pulsing animation for urgent CTAs",
-    style: {
-      bgColor: "#DC2626",
-      textColor: "#ffffff",
-      borderWidth: 0,
-      borderRadius: 8,
-      hoverEffect: "heartbeat",
-      shadow: "0 0 0 0 rgba(220, 38, 38, 0.7)",
-    },
-  },
-  {
-    id: "flow-border",
-    name: "Flow",
-    description: "Rotating border gradient with conic animation on hover",
-    style: {
-      bgColor: "#F97316",
-      textColor: "#ffffff",
-      borderWidth: 2,
-      borderColor: "#F97316",
-      borderRadius: 8,
-      hoverEffect: "flow-border",
-      shadow: "0 0 0 2px rgba(249, 115, 22, 0.3)",
-    },
-  },
-  {
-    id: "stitches",
-    name: "Stitches",
-    description: "3D stitched effect with dashed inner border and shadow depth",
-    style: {
-      bgColor: "#0ea5e9",
-      textColor: "#ffffff",
-      borderWidth: 2,
-      borderColor: "#0ea5e9",
-      borderRadius: 8,
-      hoverEffect: "stitches",
-    },
-  },
-  {
-    id: "ring-hover",
-    name: "Ring",
-    description: "Elegant ring outline effect on hover with smooth transition",
-    style: {
-      bgColor: "#F97316",
-      textColor: "#ffffff",
-      borderWidth: 0,
-      borderRadius: 6,
-      hoverEffect: "ring-hover",
-    },
-  },
-  {
-    id: "neural",
-    name: "Neural",
-    description: "Futuristic button with animated border beam and scale effects",
-    style: {
-      bgColor: "#0369a1",
-      textColor: "#ffffff",
-      borderWidth: 0,
-      borderRadius: 12,
-      hoverEffect: "neural",
-    },
-  },
 ];
 
 // Re-export getGradientCSS for backward compatibility (used by centered.tsx)
@@ -348,8 +125,8 @@ function ButtonPreview({ style, text = "Button" }: { style: ButtonCustomStyle; t
     const craftIcon = showIcon ? icon : <ArrowUpRight className="size-3 stroke-2" />;
     return (
       <CraftButton
-        bgColor={style.bgColor || "#18181b"}
-        textColor={style.textColor || "#ffffff"}
+        bgColor={style.bgColor || CRAFT_BG_DARK}
+        textColor={style.textColor || WHITE}
         size="sm"
       >
         <CraftButtonLabel>{text}</CraftButtonLabel>
@@ -364,7 +141,7 @@ function ButtonPreview({ style, text = "Button" }: { style: ButtonCustomStyle; t
       <PrimaryFlowButton
         className="text-sm"
         style={{
-          '--tw-ring-color': `${style.bgColor || '#F97316'}99`,
+          '--tw-ring-color': `${style.bgColor || ORANGE_PRIMARY}99`,
         } as React.CSSProperties}
       >
         {showIcon && style.iconPosition === "left" && icon}
@@ -395,7 +172,7 @@ function ButtonPreview({ style, text = "Button" }: { style: ButtonCustomStyle; t
       className={`inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium transition-all duration-300 overflow-hidden ${getHoverEffectClass(style.hoverEffect)}`}
       style={{
         background: getFinalBackground(style, isHovered),
-        color: isHovered && style.hoverTextColor ? style.hoverTextColor : (style.textColor || "#ffffff"),
+        color: isHovered && style.hoverTextColor ? style.hoverTextColor : (style.textColor || WHITE),
         borderWidth: `${style.borderWidth ?? 0}px`,
         borderStyle: "solid",
         borderColor: isHovered && style.hoverBorderColor ? style.hoverBorderColor : (style.borderColor || "transparent"),
@@ -456,10 +233,10 @@ export function ButtonStyleEditor({
             Tap to apply a style preset
           </p>
           <div className={`grid gap-1.5 ${compact ? "grid-cols-3 sm:grid-cols-4" : "grid-cols-3 sm:grid-cols-4 md:grid-cols-5"}`}>
-            {buttonStylePresets.map((preset) => {
+            {BUTTON_STYLE_PRESETS.map((preset) => {
               const previewBg = preset.style.useGradient
                 ? `linear-gradient(${getGradientCSS(preset.style.gradientDirection)}, ${preset.style.gradientFrom}, ${preset.style.gradientTo})`
-                : preset.style.bgColor || "#F97316";
+                : preset.style.bgColor || ORANGE_PRIMARY;
 
               return (
                 <button
@@ -473,7 +250,7 @@ export function ButtonStyleEditor({
                     className="inline-flex items-center justify-center px-1.5 py-0.5 text-[8px] font-medium rounded transition-all mb-0.5"
                     style={{
                       background: previewBg,
-                      color: preset.style.textColor || "#ffffff",
+                      color: preset.style.textColor || WHITE,
                       borderWidth: `${preset.style.borderWidth ?? 0}px`,
                       borderStyle: "solid",
                       borderColor: preset.style.borderColor || "transparent",
@@ -508,8 +285,8 @@ export function ButtonStyleEditor({
                 checked={style.useGradient || false}
                 onCheckedChange={(checked) => updateStyle({
                   useGradient: checked,
-                  gradientFrom: checked ? (style.gradientFrom || "#F97316") : undefined,
-                  gradientTo: checked ? (style.gradientTo || "#C2410C") : undefined,
+                  gradientFrom: checked ? (style.gradientFrom || ORANGE_PRIMARY) : undefined,
+                  gradientTo: checked ? (style.gradientTo || ORANGE_PRIMARY_HOVER) : undefined,
                 })}
               />
             </div>
@@ -522,7 +299,7 @@ export function ButtonStyleEditor({
                     <div className="flex gap-2">
                       <Input
                         type="color"
-                        value={style.gradientFrom || "#F97316"}
+                        value={style.gradientFrom || ORANGE_PRIMARY}
                         onChange={(e) => updateStyle({ gradientFrom: e.target.value })}
                         className="h-9 w-12 cursor-pointer p-1"
                       />
@@ -571,7 +348,7 @@ export function ButtonStyleEditor({
                   <div className="flex gap-2">
                     <Input
                       type="color"
-                      value={style.textColor || "#ffffff"}
+                      value={style.textColor || WHITE}
                       onChange={(e) => updateStyle({ textColor: e.target.value })}
                       className="h-9 w-12 cursor-pointer p-1"
                     />
@@ -590,7 +367,7 @@ export function ButtonStyleEditor({
                   <div className="flex gap-2">
                     <Input
                       type="color"
-                      value={style.bgColor || "#F97316"}
+                      value={style.bgColor || ORANGE_PRIMARY}
                       onChange={(e) => updateStyle({ bgColor: e.target.value })}
                       className="h-9 w-12 cursor-pointer p-1"
                     />
@@ -606,7 +383,7 @@ export function ButtonStyleEditor({
                   <div className="flex gap-2">
                     <Input
                       type="color"
-                      value={style.textColor || "#ffffff"}
+                      value={style.textColor || WHITE}
                       onChange={(e) => updateStyle({ textColor: e.target.value })}
                       className="h-9 w-12 cursor-pointer p-1"
                     />
@@ -622,7 +399,7 @@ export function ButtonStyleEditor({
                   <div className="flex gap-2">
                     <Input
                       type="color"
-                      value={style.borderColor || "#F97316"}
+                      value={style.borderColor || ORANGE_PRIMARY}
                       onChange={(e) => updateStyle({ borderColor: e.target.value })}
                       className="h-9 w-12 cursor-pointer p-1"
                     />
@@ -723,14 +500,14 @@ export function ButtonStyleEditor({
               <div className="flex gap-2">
                 <Input
                   type="color"
-                  value={style.hoverTextColor || "#ffffff"}
+                  value={style.hoverTextColor || WHITE}
                   onChange={(e) => updateStyle({ hoverTextColor: e.target.value })}
                   className="h-9 w-12 cursor-pointer p-1"
                 />
                 <Input
                   value={style.hoverTextColor || ""}
                   onChange={(e) => updateStyle({ hoverTextColor: e.target.value })}
-                  placeholder="#ffffff"
+                  placeholder={WHITE}
                   className="flex-1 text-xs"
                 />
               </div>
