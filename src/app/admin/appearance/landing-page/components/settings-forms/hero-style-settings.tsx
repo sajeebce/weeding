@@ -11,7 +11,6 @@ import {
   ColorPicker,
   SliderInput,
   ToggleSwitch,
-  TextInput,
   IconButtonGroup,
 } from "../ui/form-controls";
 
@@ -31,6 +30,9 @@ export function HeroStyleSettings({
     ...defaultHeroSettings,
     ...settings,
     background: { ...defaultHeroSettings.background, ...settings?.background },
+    badge: { ...defaultHeroSettings.badge, ...settings?.badge },
+    headline: { ...defaultHeroSettings.headline, ...settings?.headline },
+    subheadline: { ...defaultHeroSettings.subheadline, ...settings?.subheadline },
     trustText: { ...defaultHeroSettings.trustText, ...settings?.trustText },
     trustBadges: { ...defaultHeroSettings.trustBadges, ...settings?.trustBadges },
     stats: { ...defaultHeroSettings.stats, ...settings?.stats },
@@ -238,102 +240,236 @@ export function HeroStyleSettings({
         )}
       </AccordionSection>
 
-      {/* Trust Indicators Section */}
-      <AccordionSection title="Trust Indicators">
-        <ToggleSwitch
-          label="Show Trust Text"
-          checked={s.trustText?.enabled ?? false}
-          onChange={(checked) => {
+      {/* Badge Style */}
+      <AccordionSection title="Badge Style" defaultOpen={false}>
+        <ColorPicker
+          label="Background Color"
+          value={s.badge?.bgColor || "#f9731933"}
+          onChange={(v) => {
             onUpdateSettings({
               ...s,
-              trustText: {
-                ...s.trustText,
-                enabled: checked,
+              badge: {
+                ...s.badge,
+                bgColor: v,
               },
             });
           }}
         />
-        {s.trustText?.enabled && (
-          <>
-            <TextInput
-              label="Trust Text"
-              value={s.trustText?.text || ""}
-              onChange={(v) => {
-                onUpdateSettings({
-                  ...s,
-                  trustText: {
-                    ...s.trustText,
-                    text: v,
-                  },
-                });
-              }}
-              placeholder="4.9/5 from 2,000+ reviews"
-            />
-            <ToggleSwitch
-              label="Show Star Rating"
-              checked={s.trustText?.showRating ?? false}
-              onChange={(checked) => {
-                onUpdateSettings({
-                  ...s,
-                  trustText: {
-                    ...s.trustText,
-                    showRating: checked,
-                  },
-                });
-              }}
-            />
-          </>
-        )}
-
-        <ToggleSwitch
-          label="Show Trust Badges"
-          checked={s.trustBadges?.enabled ?? false}
-          onChange={(checked) => {
+        <ColorPicker
+          label="Text Color"
+          value={s.badge?.textColor || "#fb923c"}
+          onChange={(v) => {
             onUpdateSettings({
               ...s,
-              trustBadges: {
-                ...s.trustBadges,
-                enabled: checked,
+              badge: {
+                ...s.badge,
+                textColor: v,
               },
             });
           }}
         />
-
-        <ToggleSwitch
-          label="Show Stats Section"
-          checked={s.stats?.enabled ?? false}
-          onChange={(checked) => {
+        <ColorPicker
+          label="Border Color"
+          value={s.badge?.borderColor || "#f9731980"}
+          onChange={(v) => {
             onUpdateSettings({
               ...s,
-              stats: {
-                ...s.stats,
-                enabled: checked,
+              badge: {
+                ...s.badge,
+                borderColor: v,
               },
             });
           }}
         />
       </AccordionSection>
 
-      {/* Button Styles Section */}
-      <AccordionSection title="Button Styles" defaultOpen={false}>
-        <SelectInput
-          label="Primary Button Variant"
-          value={s.primaryCTA?.variant || "solid"}
+      {/* Headline Style */}
+      <AccordionSection title="Headline Style" defaultOpen={false}>
+        <ColorPicker
+          label="Text Color"
+          value={s.headline?.color || "#ffffff"}
           onChange={(v) => {
             onUpdateSettings({
               ...s,
-              primaryCTA: {
-                ...s.primaryCTA,
-                variant: v as "solid" | "outline" | "secondary" | "ghost",
+              headline: {
+                ...s.headline,
+                color: v,
               },
             });
           }}
-          options={[
-            { value: "solid", label: "Solid" },
-            { value: "outline", label: "Outline" },
-            { value: "secondary", label: "Secondary" },
-            { value: "ghost", label: "Ghost" },
-          ]}
+        />
+        <ColorPicker
+          label="Highlight Color"
+          value={s.headline?.highlightColor || "#f97316"}
+          onChange={(v) => {
+            onUpdateSettings({
+              ...s,
+              headline: {
+                ...s.headline,
+                highlightColor: v,
+              },
+            });
+          }}
+        />
+      </AccordionSection>
+
+      {/* Subheadline Style */}
+      <AccordionSection title="Subheadline Style" defaultOpen={false}>
+        <ColorPicker
+          label="Text Color"
+          value={s.subheadline?.color || "#94a3b8"}
+          onChange={(v) => {
+            onUpdateSettings({
+              ...s,
+              subheadline: {
+                ...s.subheadline,
+                color: v,
+              },
+            });
+          }}
+        />
+      </AccordionSection>
+
+      {/* Trust Text Style */}
+      <AccordionSection title="Trust Text Style" defaultOpen={false}>
+        <ColorPicker
+          label="Text Color"
+          value={s.trustText?.textColor || "#9ca3af"}
+          onChange={(v) => {
+            onUpdateSettings({
+              ...s,
+              trustText: {
+                ...s.trustText,
+                textColor: v,
+              },
+            });
+          }}
+        />
+        <ColorPicker
+          label="Star Color"
+          value={s.trustText?.starColor || "#facc15"}
+          onChange={(v) => {
+            onUpdateSettings({
+              ...s,
+              trustText: {
+                ...s.trustText,
+                starColor: v,
+              },
+            });
+          }}
+        />
+      </AccordionSection>
+
+      {/* Trust Badges Style */}
+      <AccordionSection title="Trust Badges Style" defaultOpen={false}>
+        <ColorPicker
+          label="Icon Color"
+          value={s.trustBadges?.iconColor || "#f97316"}
+          onChange={(v) => {
+            onUpdateSettings({
+              ...s,
+              trustBadges: {
+                ...s.trustBadges,
+                iconColor: v,
+              },
+            });
+          }}
+        />
+        <ColorPicker
+          label="Text Color"
+          value={s.trustBadges?.textColor || "#ffffff"}
+          onChange={(v) => {
+            onUpdateSettings({
+              ...s,
+              trustBadges: {
+                ...s.trustBadges,
+                textColor: v,
+              },
+            });
+          }}
+        />
+        <ColorPicker
+          label="Background Color"
+          value={s.trustBadges?.bgColor || "#1e293b"}
+          onChange={(v) => {
+            onUpdateSettings({
+              ...s,
+              trustBadges: {
+                ...s.trustBadges,
+                bgColor: v,
+              },
+            });
+          }}
+        />
+        <ColorPicker
+          label="Border Color"
+          value={s.trustBadges?.borderColor || "#334155"}
+          onChange={(v) => {
+            onUpdateSettings({
+              ...s,
+              trustBadges: {
+                ...s.trustBadges,
+                borderColor: v,
+              },
+            });
+          }}
+        />
+      </AccordionSection>
+
+      {/* Stats Style */}
+      <AccordionSection title="Stats Style" defaultOpen={false}>
+        <ColorPicker
+          label="Value Color"
+          value={s.stats?.valueColor || "#f97316"}
+          onChange={(v) => {
+            onUpdateSettings({
+              ...s,
+              stats: {
+                ...s.stats,
+                valueColor: v,
+              },
+            });
+          }}
+        />
+        <ColorPicker
+          label="Label Color"
+          value={s.stats?.labelColor || "#9ca3af"}
+          onChange={(v) => {
+            onUpdateSettings({
+              ...s,
+              stats: {
+                ...s.stats,
+                labelColor: v,
+              },
+            });
+          }}
+        />
+        <ColorPicker
+          label="Divider Color"
+          value={s.stats?.dividerColor || "#334155"}
+          onChange={(v) => {
+            onUpdateSettings({
+              ...s,
+              stats: {
+                ...s.stats,
+                dividerColor: v,
+              },
+            });
+          }}
+        />
+        <ToggleSwitch
+          label="Counting Animation"
+          description="Numbers animate from 0 to value on page load"
+          checked={s.stats?.animateCount ?? true}
+          onChange={(checked) => {
+            onUpdateSettings({
+              ...s,
+              stats: {
+                ...s.stats,
+                animateCount: checked,
+              },
+            });
+          }}
         />
       </AccordionSection>
     </div>

@@ -40,6 +40,7 @@ interface PreviewBlockProps {
   onMoveDown: () => void;
   isFirst: boolean;
   isLast: boolean;
+  device: "desktop" | "mobile";
 }
 
 // ============================================
@@ -79,6 +80,7 @@ function PreviewBlock({
   onMoveDown,
   isFirst,
   isLast,
+  device,
 }: PreviewBlockProps) {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -114,7 +116,7 @@ function PreviewBlock({
         variant: variantMap[block.type] || "centered",
       };
 
-      return <HeroBlock settings={mergedSettings} isPreview />;
+      return <HeroBlock settings={mergedSettings} isPreview device={device} />;
     }
 
     // Placeholder for other block types
@@ -388,6 +390,7 @@ export function LivePreviewCanvas({
                     }}
                     isFirst={index === 0}
                     isLast={index === sortedBlocks.length - 1}
+                    device={device}
                   />
 
                   {/* Add Block Button After Block */}

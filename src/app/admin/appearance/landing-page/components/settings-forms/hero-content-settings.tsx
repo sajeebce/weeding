@@ -2,7 +2,7 @@
 
 import { useCallback } from "react";
 import type { LandingPageBlock } from "@prisma/client";
-import type { HeroSettings, HeroVariant, FeatureItem, FeatureListLayout, FeatureIconPosition, ButtonCustomStyle } from "@/lib/landing-blocks/types";
+import type { HeroSettings, HeroVariant, FeatureItem, FeatureListLayout, FeatureIconPosition, ButtonCustomStyle, TrustBadgeItem, StatItem } from "@/lib/landing-blocks/types";
 import { defaultHeroSettings } from "@/lib/landing-blocks/defaults";
 import { AccordionSection } from "../ui/accordion-section";
 import {
@@ -13,7 +13,10 @@ import {
   SelectInput,
 } from "../ui/form-controls";
 import { FeatureListEditor } from "../ui/feature-list-editor";
+import { TrustBadgesEditor } from "../ui/trust-badges-editor";
+import { StatsEditor } from "../ui/stats-editor";
 import { ButtonStyleEditor } from "@/components/admin/button-style-editor";
+import { NumberInput } from "../ui/form-controls";
 
 interface HeroContentSettingsProps {
   block: LandingPageBlock;
@@ -60,6 +63,9 @@ export function HeroContentSettings({
     features: migratedFeatures,
     primaryCTA: { ...defaultHeroSettings.primaryCTA, ...settings?.primaryCTA },
     secondaryCTA: { ...defaultHeroSettings.secondaryCTA, ...settings?.secondaryCTA },
+    trustText: { ...defaultHeroSettings.trustText, ...settings?.trustText },
+    trustBadges: { ...defaultHeroSettings.trustBadges, ...settings?.trustBadges },
+    stats: { ...defaultHeroSettings.stats, ...settings?.stats },
   };
 
   const updateNested = useCallback(
@@ -330,6 +336,58 @@ export function HeroContentSettings({
             </div>
           </>
         )}
+      </AccordionSection>
+
+      {/* Trust Text Section */}
+      <AccordionSection title="Trust Text">
+        <ToggleSwitch
+          label="Show Trust Text"
+          checked={s.trustText?.enabled ?? false}
+          onChange={(checked) => updateNested("trustText", "enabled", checked)}
+        />
+        {s.trustText?.enabled && (
+          <>
+            <TextInput
+              label="Trust Text"
+              value={s.trustText?.text || ""}
+              onChange={(v) => updateNested("trustText", "text", v)}
+              placeholder="4.9/5 from 2,000+ reviews"
+            />
+            <ToggleSwitch
+              label="Show Star Rating"
+              checked={s.trustText?.showRating ?? false}
+              onChange={(checked) => updateNested("trustText", "showRating", checked)}
+            />
+            {s.trustText?.showRating && (
+              <TextInput
+                label="Rating Value"
+                value={s.trustText?.rating?.toString() || "4.9"}
+                onChange={(v) => updateNested("trustText", "rating", parseFloat(v) || 0)}
+                placeholder="4.9"
+              />
+            )}
+          </>
+        )}
+      </AccordionSection>
+
+      {/* Trust Badges Section */}
+      <AccordionSection title="Trust Badges">
+        <TrustBadgesEditor
+          enabled={s.trustBadges?.enabled ?? false}
+          items={s.trustBadges?.items || []}
+          onEnabledChange={(enabled) => updateNested("trustBadges", "enabled", enabled)}
+          onItemsChange={(items) => updateNested("trustBadges", "items", items)}
+        />
+      </AccordionSection>
+
+      {/* Stats Section */}
+      <AccordionSection title="Stats Section">
+        <StatsEditor
+          enabled={s.stats?.enabled ?? false}
+          items={s.stats?.items || []}
+          onEnabledChange={(enabled) => updateNested("stats", "enabled", enabled)}
+          onItemsChange={(items) => updateNested("stats", "items", items)}
+        />
       </AccordionSection>
     </div>
   );

@@ -265,17 +265,18 @@ export function ColorPicker({ label, value, onChange }: ColorPickerProps) {
   return (
     <FormField label={label}>
       <div className="flex gap-2">
-        <div
-          className="h-9 w-12 shrink-0 cursor-pointer rounded border"
-          style={{ backgroundColor: value }}
-          onClick={() => {
-            const input = document.createElement("input");
-            input.type = "color";
-            input.value = value;
-            input.onchange = (e) => onChange((e.target as HTMLInputElement).value);
-            input.click();
-          }}
-        />
+        <div className="relative h-9 w-12 shrink-0">
+          <div
+            className="h-full w-full rounded border cursor-pointer"
+            style={{ backgroundColor: value }}
+          />
+          <input
+            type="color"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+          />
+        </div>
         <Input
           value={value}
           onChange={(e) => onChange(e.target.value)}

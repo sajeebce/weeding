@@ -12,6 +12,7 @@ import {
 interface HeroBlockProps {
   settings?: Partial<HeroSettings>;
   isPreview?: boolean;
+  device?: "desktop" | "mobile";
 }
 
 // Variant component map
@@ -26,7 +27,7 @@ const variants = {
   "with-form": HeroCentered, // Fallback to centered
 } as const;
 
-export function HeroBlock({ settings, isPreview = false }: HeroBlockProps) {
+export function HeroBlock({ settings, isPreview = false, device }: HeroBlockProps) {
   // Merge with defaults
   const mergedSettings: HeroSettings = {
     ...defaultHeroSettings,
@@ -76,7 +77,7 @@ export function HeroBlock({ settings, isPreview = false }: HeroBlockProps) {
   // Get the variant component
   const Variant = variants[mergedSettings.variant] || HeroCentered;
 
-  return <Variant settings={mergedSettings} isPreview={isPreview} />;
+  return <Variant settings={mergedSettings} isPreview={isPreview} device={device} />;
 }
 
 // Export for direct use

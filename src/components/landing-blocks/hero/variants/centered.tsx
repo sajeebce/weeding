@@ -37,6 +37,7 @@ import { CRAFT_BG_DARK, WHITE, ORANGE_PRIMARY } from "@/lib/button-constants";
 interface HeroCenteredProps {
   settings: HeroSettings;
   isPreview?: boolean;
+  device?: "desktop" | "mobile";
 }
 
 // Get Lucide icon component by name
@@ -246,9 +247,13 @@ function StyledCTAButton({
   );
 }
 
-export function HeroCentered({ settings, isPreview = false }: HeroCenteredProps) {
+export function HeroCentered({ settings, isPreview = false, device }: HeroCenteredProps) {
+  const forceMobileLayout = device === "mobile";
   // Normalize features for backward compatibility
   const normalizedFeatures = normalizeFeatureItems(settings.features.items);
+
+  // Helper to check if a color is a hex color
+  const isHexColor = (color: string) => color?.startsWith("#");
 
   // Parse headline with highlight
   const renderHeadline = () => {
@@ -261,10 +266,17 @@ export function HeroCentered({ settings, isPreview = false }: HeroCenteredProps)
       return settings.headline.text;
     }
 
+    const highlightColor = settings.headline.highlightColor || "#f97316";
+
     return (
       <>
         {parts[0]}
-        <span className="text-orange-500">{settings.headline.highlightWord}</span>
+        <span
+          className={!isHexColor(highlightColor) ? highlightColor : undefined}
+          style={isHexColor(highlightColor) ? { color: highlightColor } : undefined}
+        >
+          {settings.headline.highlightWord}
+        </span>
         {parts[1]}
       </>
     );
@@ -287,7 +299,19 @@ export function HeroCentered({ settings, isPreview = false }: HeroCenteredProps)
         <div className="mx-auto max-w-4xl text-center">
           {/* Badge */}
           {settings.badge.enabled && (
-            <Badge className="mb-6 border-orange-500/50 bg-orange-500/20 px-4 py-2 text-sm font-medium text-orange-400 hover:bg-orange-500/30">
+            <Badge
+              className={cn(
+                "mb-6 font-medium",
+                forceMobileLayout
+                  ? "px-3 py-1.5 text-xs max-w-[90%] text-center leading-tight"
+                  : "px-4 py-2 text-sm"
+              )}
+              style={{
+                backgroundColor: settings.badge.bgColor || "#f9731933",
+                color: settings.badge.textColor || "#fb923c",
+                borderColor: settings.badge.borderColor || "#f9731980",
+              }}
+            >
               {settings.badge.emoji && `${settings.badge.emoji} `}
               {settings.badge.text}
             </Badge>
@@ -296,9 +320,11 @@ export function HeroCentered({ settings, isPreview = false }: HeroCenteredProps)
           {/* Headline */}
           <h1
             className={cn(
-              "font-bold tracking-tight text-white",
-              getHeadlineSize()
+              "font-bold tracking-tight",
+              getHeadlineSize(),
+              !isHexColor(settings.headline.color || "#ffffff") && (settings.headline.color || "text-white")
             )}
+            style={isHexColor(settings.headline.color || "#ffffff") ? { color: settings.headline.color } : undefined}
           >
             {renderHeadline()}
           </h1>
@@ -306,11 +332,13 @@ export function HeroCentered({ settings, isPreview = false }: HeroCenteredProps)
           {/* Subheadline */}
           <p
             className={cn(
-              "mt-6 text-slate-400",
+              "mt-6",
               settings.subheadline.size === "sm" && "text-base",
               settings.subheadline.size === "base" && "text-lg",
-              settings.subheadline.size === "lg" && "text-lg sm:text-xl"
+              settings.subheadline.size === "lg" && "text-lg sm:text-xl",
+              !isHexColor(settings.subheadline.color || "#94a3b8") && (settings.subheadline.color || "text-slate-400")
             )}
+            style={isHexColor(settings.subheadline.color || "#94a3b8") ? { color: settings.subheadline.color } : undefined}
           >
             {settings.subheadline.text}
           </p>
@@ -381,20 +409,26 @@ export function HeroCentered({ settings, isPreview = false }: HeroCenteredProps)
 
           {/* Trust Text / Rating */}
           {settings.trustText.enabled && (
-            <div className="mt-8 flex items-center justify-center gap-2 text-sm text-slate-400">
+            <div
+              className="mt-8 flex items-center justify-center gap-2 text-sm"
+              style={{ color: settings.trustText.textColor || "#9ca3af" }}
+            >
               {settings.trustText.showRating && (
                 <div className="flex">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={cn(
-                        "h-4 w-4",
-                        i < Math.floor(settings.trustText.rating)
-                          ? "fill-amber-400 text-amber-400"
-                          : "fill-slate-600 text-slate-600"
-                      )}
-                    />
-                  ))}
+                  {[...Array(5)].map((_, i) => {
+                    const starColor = settings.trustText.starColor || "#facc15";
+                    const isFilled = i < Math.floor(settings.trustText.rating);
+                    return (
+                      <Star
+                        key={i}
+                        className="h-4 w-4"
+                        style={{
+                          fill: isFilled ? starColor : "#475569",
+                          color: isFilled ? starColor : "#475569",
+                        }}
+                      />
+                    );
+                  })}
                 </div>
               )}
               <span>{settings.trustText.text}</span>
@@ -404,16 +438,31 @@ export function HeroCentered({ settings, isPreview = false }: HeroCenteredProps)
 
         {/* Trust Badges */}
         {settings.trustBadges.enabled && settings.trustBadges.items.length > 0 && (
-          <div className="mt-16">
+          <div className={forceMobileLayout ? "mt-10" : "mt-10 md:mt-16"}>
             <div className="mx-auto max-w-3xl">
-              <TrustBadges items={settings.trustBadges.items} />
+              <TrustBadges
+                items={settings.trustBadges.items}
+                forceMobileLayout={forceMobileLayout}
+                iconColor={settings.trustBadges.iconColor}
+                textColor={settings.trustBadges.textColor}
+                bgColor={settings.trustBadges.bgColor}
+                borderColor={settings.trustBadges.borderColor}
+              />
             </div>
           </div>
         )}
 
         {/* Stats Section */}
         {settings.stats.enabled && settings.stats.items.length > 0 && (
-          <StatsSection items={settings.stats.items} className="mt-16" />
+          <StatsSection
+            items={settings.stats.items}
+            className={forceMobileLayout ? "mt-10" : "mt-10 md:mt-16"}
+            forceMobileLayout={forceMobileLayout}
+            valueColor={settings.stats.valueColor}
+            labelColor={settings.stats.labelColor}
+            dividerColor={settings.stats.dividerColor}
+            animateCount={settings.stats.animateCount ?? true}
+          />
         )}
       </div>
     </HeroBackground>
