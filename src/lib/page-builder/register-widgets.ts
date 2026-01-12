@@ -8,6 +8,7 @@ import { WidgetRegistry } from "./widget-registry";
 import {
   DEFAULT_HERO_CONTENT_SETTINGS,
   DEFAULT_IMAGE_SETTINGS,
+  DEFAULT_IMAGE_SLIDER_SETTINGS,
   DEFAULT_TRUST_BADGES_SETTINGS,
   DEFAULT_STATS_SECTION_SETTINGS,
   DEFAULT_LEAD_FORM_SETTINGS,
@@ -18,7 +19,7 @@ import {
 
 // Import widget components
 import { HeroContentWidget } from "@/components/page-builder/widgets/content";
-import { ImageWidget } from "@/components/page-builder/widgets/media";
+import { ImageWidget, ImageSliderWidget } from "@/components/page-builder/widgets/media";
 import {
   TrustBadgesWidget,
   StatsSectionWidget,
@@ -67,6 +68,16 @@ export function registerAllWidgets() {
     category: "media",
     defaultSettings: DEFAULT_IMAGE_SETTINGS,
     component: ImageWidget,
+  });
+
+  WidgetRegistry.register({
+    type: "image-slider",
+    name: "Image Slider",
+    description: "Hero slider with Ken Burns, 3D effects, and content layers",
+    icon: "GalleryHorizontal",
+    category: "media",
+    defaultSettings: DEFAULT_IMAGE_SLIDER_SETTINGS,
+    component: ImageSliderWidget,
   });
 
   // Social Proof Widgets

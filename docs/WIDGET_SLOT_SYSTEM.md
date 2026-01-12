@@ -182,6 +182,7 @@ type WidgetType =
 
   // Media Widgets
   | "image"
+  | "image-slider"
   | "video"
   | "gallery"
   | "lottie"
@@ -534,6 +535,396 @@ interface VideoWidget {
 }
 ```
 
+### 7. Image Slider Widget
+
+Modern, feature-rich image slider/carousel widget inspired by Slider Revolution, Swiper.js, and 2025 design trends. Designed for high-impact hero sections, product showcases, and portfolios.
+
+#### Research Summary (2025 Modern Design Analysis)
+
+| Source | Key Insights |
+|--------|--------------|
+| **[Slider Revolution](https://www.sliderrevolution.com/)** | Layer-based animations, IN/OUT system, timeline control, Ken Burns effects |
+| **[Swiper.js v12](https://swiperjs.com/)** | Cube, Coverflow, Cards, Flip effects; parallax; touch-first |
+| **[Codrops GSAP Tutorial](https://tympanus.net/codrops/2025/04/21/mastering-carousels-with-gsap-from-basics-to-advanced-animation/)** | GSAP-powered smooth transitions, infinite loops, 3D transforms |
+| **[Splide.js](https://splidejs.com/)** | Lightweight, accessible, progress bar indicators |
+| **[2025 Carousel Trends](https://uicreative.net/blog/10-best-carousel-design-2025.html)** | Minimal full-screen, subtle parallax, vertical sliders, 3-5 slides max |
+
+#### Design Principles
+
+1. **Mobile-First**: Touch/swipe as primary interaction, responsive breakpoints
+2. **Performance**: Lazy loading, lightweight bundle, GPU-accelerated animations
+3. **Accessibility**: Keyboard navigation, ARIA labels, pause controls
+4. **Minimal by Default**: 3-5 slides recommended, focused messaging
+5. **Flexible Effects**: From subtle fades to dramatic 3D transforms
+
+```typescript
+interface ImageSliderWidget {
+  type: "image-slider";
+  settings: {
+    // === SLIDES ===
+    slides: SlideItem[];
+
+    // === SLIDER TYPE ===
+    sliderType:
+      | "standard"      // Classic horizontal slider
+      | "hero"          // Full-width hero slider
+      | "carousel"      // Multiple visible slides
+      | "gallery"       // With thumbnail navigation
+      | "split"         // Split-screen (content + image)
+      | "vertical";     // Vertical scroll slider
+
+    // === TRANSITION EFFECTS ===
+    effect:
+      | "slide"         // Standard horizontal slide
+      | "fade"          // Crossfade between slides
+      | "cube"          // 3D cube rotation
+      | "coverflow"     // 3D coverflow (like iTunes)
+      | "flip"          // 3D flip effect
+      | "cards"         // Stacked cards effect
+      | "creative"      // Custom creative transforms
+      | "parallax";     // Parallax depth effect
+
+    // Creative effect custom transforms (when effect = "creative")
+    creativeEffect?: {
+      prev: {
+        translate: [number, number, number];  // [x%, y%, z(px)]
+        rotate: [number, number, number];     // [x, y, z] degrees
+        scale: number;
+        opacity: number;
+      };
+      next: {
+        translate: [number, number, number];
+        rotate: [number, number, number];
+        scale: number;
+        opacity: number;
+      };
+    };
+
+    // === AUTOPLAY ===
+    autoplay: {
+      enabled: boolean;
+      delay: number;                // Delay between slides (ms), default 5000
+      pauseOnHover: boolean;        // Pause when hovering
+      pauseOnInteraction: boolean;  // Pause after user interaction
+      reverseDirection: boolean;    // Reverse autoplay direction
+      showPauseButton: boolean;     // Show pause/play button
+    };
+
+    // === NAVIGATION ===
+    navigation: {
+      arrows: {
+        enabled: boolean;
+        style: "default" | "minimal" | "rounded" | "square" | "floating" | "outside";
+        size: "sm" | "md" | "lg";
+        color: string;
+        backgroundColor?: string;
+        hoverEffect: "none" | "scale" | "glow" | "slide";
+        position: "sides" | "bottom" | "bottom-right";  // Arrow placement
+        showOnHover: boolean;  // Only show arrows on hover
+      };
+
+      pagination: {
+        enabled: boolean;
+        type: "dots" | "fraction" | "progressbar" | "bullets-dynamic" | "custom";
+        position: "bottom" | "top" | "left" | "right";
+        clickable: boolean;
+        activeColor: string;
+        inactiveColor: string;
+        // For progressbar type
+        progressbarFill: "horizontal" | "vertical";
+        progressbarPosition: "top" | "bottom";
+      };
+
+      thumbnails: {
+        enabled: boolean;
+        position: "bottom" | "left" | "right";
+        size: number;           // Thumbnail size in px
+        gap: number;            // Gap between thumbnails
+        activeStyle: "border" | "opacity" | "scale";
+        aspectRatio: "1:1" | "16:9" | "4:3";
+      };
+
+      keyboard: boolean;          // Enable keyboard navigation
+      mousewheel: boolean;        // Enable mousewheel navigation
+      grabCursor: boolean;        // Show grab cursor on hover
+    };
+
+    // === TOUCH & SWIPE ===
+    touch: {
+      enabled: boolean;
+      threshold: number;          // Swipe threshold in px (default 50)
+      resistance: boolean;        // Resistance at edges
+      shortSwipes: boolean;       // Allow short swipes
+      longSwipesRatio: number;    // Ratio (0-1) for long swipe (default 0.5)
+    };
+
+    // === LOOP & SPEED ===
+    loop: boolean;                 // Enable infinite loop
+    speed: number;                 // Transition speed in ms (default 500)
+    slidesPerView: number | "auto"; // Slides visible (for carousel type)
+    spaceBetween: number;         // Gap between slides in carousel
+    centeredSlides: boolean;      // Center active slide
+
+    // === KEN BURNS EFFECT ===
+    kenBurns: {
+      enabled: boolean;
+      duration: number;           // Effect duration in ms (default 8000)
+      scale: {
+        start: number;            // Starting scale (e.g., 1)
+        end: number;              // Ending scale (e.g., 1.2)
+      };
+      position: "random" | "center" | "top" | "bottom" | "left" | "right";
+      direction: "in" | "out" | "random";  // Zoom in, out, or random
+    };
+
+    // === PARALLAX DEPTH ===
+    parallax: {
+      enabled: boolean;
+      // Per-layer parallax data attributes will be on slide content
+    };
+
+    // === SPLIT SCREEN (for sliderType = "split") ===
+    splitScreen?: {
+      contentPosition: "left" | "right";
+      ratio: "50-50" | "40-60" | "60-40" | "33-66" | "66-33";
+      contentBackground?: string;
+      mobileStack: "content-first" | "image-first";
+    };
+
+    // === LAYOUT & SIZING ===
+    height:
+      | "auto"           // Based on content
+      | "viewport"       // 100vh
+      | "large"          // 80vh
+      | "medium"         // 60vh
+      | "small"          // 40vh
+      | number;          // Custom px value
+    maxWidth: "sm" | "md" | "lg" | "xl" | "2xl" | "full";
+    aspectRatio?: "16:9" | "21:9" | "4:3" | "1:1" | "auto";
+
+    // === STYLING ===
+    borderRadius: number;
+    shadow: "none" | "sm" | "md" | "lg" | "xl" | "2xl";
+    overflow: "hidden" | "visible";  // For 3D effects that extend beyond
+
+    // === RESPONSIVE ===
+    responsive?: {
+      mobile?: {
+        slidesPerView?: number;
+        spaceBetween?: number;
+        effect?: string;
+        navigation?: { arrows?: { enabled?: boolean } };
+      };
+      tablet?: {
+        slidesPerView?: number;
+        spaceBetween?: number;
+      };
+    };
+  };
+}
+
+// === SLIDE ITEM ===
+interface SlideItem {
+  id: string;
+
+  // === IMAGE ===
+  image: {
+    src: string;
+    alt: string;
+    objectFit: "cover" | "contain" | "fill";
+    objectPosition: "center" | "top" | "bottom" | "left" | "right";
+    // Ken Burns override per slide
+    kenBurnsOverride?: {
+      direction: "in" | "out";
+      position: "center" | "top" | "bottom" | "left" | "right";
+    };
+  };
+
+  // === OVERLAY ===
+  overlay?: {
+    enabled: boolean;
+    type: "solid" | "gradient";
+    color?: string;
+    gradient?: {
+      type: "linear" | "radial";
+      angle?: number;        // For linear
+      colors: Array<{ color: string; position: number }>;
+    };
+    opacity: number;
+  };
+
+  // === CONTENT LAYERS (Slider Revolution style) ===
+  content?: {
+    enabled: boolean;
+    position:
+      | "center"
+      | "top-left" | "top-center" | "top-right"
+      | "center-left" | "center-right"
+      | "bottom-left" | "bottom-center" | "bottom-right";
+    maxWidth: "sm" | "md" | "lg" | "xl" | "full";
+    padding: number;
+    textAlign: "left" | "center" | "right";
+
+    // Content elements (each with individual animations)
+    badge?: {
+      show: boolean;
+      text: string;
+      icon?: string;
+      style: "pill" | "outline" | "solid";
+      animation: LayerAnimation;
+    };
+
+    headline?: {
+      show: boolean;
+      text: string;
+      size: "sm" | "md" | "lg" | "xl" | "2xl" | "3xl";
+      color: string;
+      highlightWords?: string[];
+      highlightColor?: string;
+      animation: LayerAnimation;
+    };
+
+    subheadline?: {
+      show: boolean;
+      text: string;
+      size: "sm" | "md" | "lg";
+      color: string;
+      animation: LayerAnimation;
+    };
+
+    description?: {
+      show: boolean;
+      text: string;
+      color: string;
+      animation: LayerAnimation;
+    };
+
+    buttons?: {
+      show: boolean;
+      items: Array<{
+        text: string;
+        link: string;
+        style: "primary" | "secondary" | "outline" | "ghost";
+        openInNewTab: boolean;
+      }>;
+      animation: LayerAnimation;
+    };
+  };
+
+  // === VIDEO BACKGROUND ===
+  videoBackground?: {
+    enabled: boolean;
+    src: string;
+    type: "mp4" | "webm" | "youtube" | "vimeo";
+    muted: boolean;
+    loop: boolean;
+    playbackRate: number;      // 0.5 - 2.0
+    fallbackImage: string;     // Fallback for mobile/no-autoplay
+  };
+
+  // === LINK ===
+  link?: {
+    url: string;
+    openInNewTab: boolean;
+    ariaLabel: string;
+  };
+}
+
+// === LAYER ANIMATION (Slider Revolution style IN/OUT) ===
+interface LayerAnimation {
+  in: {
+    type: "none" | "fade" | "slide-up" | "slide-down" | "slide-left" | "slide-right"
+        | "zoom" | "zoom-out" | "rotate" | "flip" | "bounce" | "elastic";
+    duration: number;       // ms
+    delay: number;          // ms (stagger effect)
+    easing: "linear" | "ease" | "ease-in" | "ease-out" | "ease-in-out" | "bounce" | "elastic";
+  };
+  out?: {
+    type: "none" | "fade" | "slide-up" | "slide-down" | "slide-left" | "slide-right"
+        | "zoom" | "zoom-out" | "rotate" | "flip";
+    duration: number;
+    easing: string;
+  };
+}
+```
+
+#### Image Slider Features Summary
+
+| Category | Features |
+|----------|----------|
+| **Slider Types** | Standard, Hero (fullscreen), Carousel (multi-slide), Gallery (thumbnails), Split-screen, Vertical |
+| **Transition Effects** | Slide, Fade, Cube 3D, Coverflow 3D, Flip 3D, Cards, Creative (custom), Parallax |
+| **Ken Burns** | Zoom in/out, Pan directions, Random variations, Per-slide override |
+| **Navigation** | Arrows (6 styles), Dots, Fraction, Progress bar, Thumbnails |
+| **Autoplay** | Configurable delay, Pause on hover/interaction, Pause button, Reverse direction |
+| **Touch/Swipe** | Enabled by default, Configurable threshold, Resistance at edges |
+| **Content Layers** | Badge, Headline, Subheadline, Description, Buttons - each with IN/OUT animations |
+| **Video Background** | MP4, WebM, YouTube, Vimeo support with fallback images |
+| **Responsive** | Mobile/tablet breakpoint overrides |
+| **Accessibility** | Keyboard navigation, ARIA labels, Pause controls |
+
+#### Implementation Notes
+
+**Libraries to Consider:**
+- **Swiper.js v12** - Primary choice for effects, touch, responsive
+- **GSAP** - For advanced animations and smooth transitions
+- **CSS-only Ken Burns** - Lightweight pan/zoom without extra dependencies
+
+**Performance Best Practices:**
+```typescript
+// Lazy load slides not in view
+<SwiperSlide lazy={true}>
+  <img data-src="image.jpg" className="swiper-lazy" />
+  <div className="swiper-lazy-preloader"></div>
+</SwiperSlide>
+
+// Preload adjacent slides
+preloadImages: false,
+lazy: {
+  loadPrevNext: true,
+  loadPrevNextAmount: 2
+}
+```
+
+**Ken Burns CSS Implementation:**
+```css
+@keyframes kenBurnsZoomIn {
+  0% {
+    transform: scale(1) translate(0, 0);
+  }
+  100% {
+    transform: scale(1.2) translate(-2%, -2%);
+  }
+}
+
+@keyframes kenBurnsZoomOut {
+  0% {
+    transform: scale(1.2) translate(-2%, -2%);
+  }
+  100% {
+    transform: scale(1) translate(0, 0);
+  }
+}
+
+.slide-active .ken-burns {
+  animation: kenBurnsZoomIn 8s ease-out forwards;
+}
+```
+
+**Mobile Optimization:**
+```typescript
+responsive: {
+  mobile: {
+    slidesPerView: 1,
+    spaceBetween: 0,
+    effect: "fade",  // Simpler effect on mobile
+    navigation: {
+      arrows: { enabled: false }  // Hide arrows, use swipe
+    }
+  }
+}
+```
+
 ### 7. Testimonial Widget
 
 ```typescript
@@ -585,7 +976,8 @@ When user clicks "+" in a column:
 │                                                         │
 │  📷 Media                                               │
 │  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐      │
-│  │ Image   │ │ Video   │ │ Gallery │ │ Lottie  │      │
+│  │ Image   │ │ Image   │ │ Video   │ │ Gallery │      │
+│  │         │ │ Slider  │ │         │ │         │      │
 │  └─────────┘ └─────────┘ └─────────┘ └─────────┘      │
 │                                                         │
 │  📋 Forms                                               │
@@ -844,6 +1236,7 @@ model LandingPage {
 ### Phase 4: More Widgets
 - [x] Video widget
 - [x] Testimonial widget
+- [ ] **Image Slider widget** (Ken Burns, 3D effects, content layers)
 - [ ] FAQ widget
 - [ ] Pricing widgets
 
@@ -895,6 +1288,18 @@ model LandingPage {
 
 ## Changelog
 
+### v3.1 (2026-01-12)
+- **Image Slider Widget**: Comprehensive specification added
+  - 6 slider types: Standard, Hero, Carousel, Gallery, Split-screen, Vertical
+  - 8 transition effects including Cube 3D, Coverflow, Flip, Cards
+  - Ken Burns (pan/zoom) effect with per-slide override
+  - Slider Revolution style content layers with IN/OUT animations
+  - Multi-navigation: Arrows, Dots, Progress bar, Thumbnails
+  - Video background support (MP4, WebM, YouTube, Vimeo)
+  - Touch/swipe with configurable threshold
+  - Responsive breakpoint overrides
+  - Based on 2025 research: Swiper.js, Slider Revolution, GSAP techniques
+
 ### v3.0 (2026-01-12)
 - **Image Widget**: Complete rewrite with modern features
   - 13 hover effects (zoom, glow, shine, tilt, lift, etc.)
@@ -913,4 +1318,4 @@ model LandingPage {
 - Widget registry system
 - Core widgets implementation
 
-*Document Version: 3.0 - Comprehensive Widget System*
+*Document Version: 3.1 - Image Slider Widget Specification*

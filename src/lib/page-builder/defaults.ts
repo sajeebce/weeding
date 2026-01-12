@@ -5,6 +5,8 @@
 import type {
   HeroContentWidgetSettings,
   ImageWidgetSettings,
+  ImageSliderWidgetSettings,
+  LayerAnimation,
   TrustBadgesWidgetSettings,
   StatsSectionWidgetSettings,
   LeadFormWidgetSettings,
@@ -376,6 +378,229 @@ export const DEFAULT_DIVIDER_SETTINGS: DividerWidgetSettings = {
   textBackground: "#0f172a",
 };
 
+// Default Layer Animation
+export const DEFAULT_LAYER_ANIMATION: LayerAnimation = {
+  in: {
+    type: "fade",
+    duration: 600,
+    delay: 0,
+    easing: "ease-out",
+  },
+};
+
+export const DEFAULT_IMAGE_SLIDER_SETTINGS: ImageSliderWidgetSettings = {
+  // Slides
+  slides: [
+    {
+      id: "slide_1",
+      image: {
+        src: "",
+        alt: "Slide 1",
+        objectFit: "cover",
+        objectPosition: "center",
+      },
+      overlay: {
+        enabled: true,
+        type: "gradient",
+        gradient: {
+          type: "linear",
+          angle: 180,
+          colors: [
+            { color: "#00000000", position: 0 },
+            { color: "#000000cc", position: 100 },
+          ],
+        },
+        opacity: 0.6,
+      },
+      content: {
+        enabled: true,
+        position: "center-left",
+        maxWidth: "lg",
+        padding: 48,
+        textAlign: "left",
+        headline: {
+          show: true,
+          text: "Welcome to Our Service",
+          size: "2xl",
+          color: "#ffffff",
+          highlightWords: "Service",
+          highlightColor: "#f97316",
+          animation: {
+            in: { type: "slide-up", duration: 600, delay: 0, easing: "ease-out" },
+          },
+        },
+        subheadline: {
+          show: true,
+          text: "Professional solutions for your business needs",
+          size: "lg",
+          color: "#e2e8f0",
+          animation: {
+            in: { type: "slide-up", duration: 600, delay: 100, easing: "ease-out" },
+          },
+        },
+        buttons: {
+          show: true,
+          items: [
+            {
+              id: "btn_1",
+              text: "Get Started",
+              link: "/contact",
+              style: "primary",
+              openInNewTab: false,
+            },
+          ],
+          animation: {
+            in: { type: "slide-up", duration: 600, delay: 200, easing: "ease-out" },
+          },
+        },
+      },
+    },
+    {
+      id: "slide_2",
+      image: {
+        src: "",
+        alt: "Slide 2",
+        objectFit: "cover",
+        objectPosition: "center",
+      },
+      overlay: {
+        enabled: true,
+        type: "solid",
+        color: "#000000",
+        opacity: 0.4,
+      },
+      content: {
+        enabled: true,
+        position: "center",
+        maxWidth: "lg",
+        padding: 48,
+        textAlign: "center",
+        headline: {
+          show: true,
+          text: "Trusted by Thousands",
+          size: "2xl",
+          color: "#ffffff",
+          animation: {
+            in: { type: "zoom", duration: 600, delay: 0, easing: "ease-out" },
+          },
+        },
+        subheadline: {
+          show: true,
+          text: "Join our growing community of satisfied customers",
+          size: "lg",
+          color: "#e2e8f0",
+          animation: {
+            in: { type: "fade", duration: 600, delay: 100, easing: "ease-out" },
+          },
+        },
+      },
+    },
+  ],
+
+  // Slider Type
+  sliderType: "hero",
+
+  // Transition Effects
+  effect: "fade",
+
+  // Autoplay
+  autoplay: {
+    enabled: true,
+    delay: 5000,
+    pauseOnHover: true,
+    pauseOnInteraction: true,
+    reverseDirection: false,
+    showPauseButton: true,
+  },
+
+  // Navigation
+  navigation: {
+    arrows: {
+      enabled: true,
+      style: "default",
+      size: "md",
+      color: "#ffffff",
+      backgroundColor: "rgba(0,0,0,0.3)",
+      hoverEffect: "scale",
+      position: "sides",
+      showOnHover: true,
+    },
+    pagination: {
+      enabled: true,
+      type: "dots",
+      position: "bottom",
+      clickable: true,
+      activeColor: "#f97316",
+      inactiveColor: "rgba(255,255,255,0.5)",
+    },
+    thumbnails: {
+      enabled: false,
+      position: "bottom",
+      size: 80,
+      gap: 8,
+      activeStyle: "border",
+      aspectRatio: "16:9",
+    },
+    keyboard: true,
+    mousewheel: false,
+    grabCursor: true,
+  },
+
+  // Touch & Swipe
+  touch: {
+    enabled: true,
+    threshold: 50,
+    resistance: true,
+    shortSwipes: true,
+    longSwipesRatio: 0.5,
+  },
+
+  // Loop & Speed
+  loop: true,
+  speed: 600,
+  slidesPerView: 1,
+  spaceBetween: 0,
+  centeredSlides: false,
+
+  // Ken Burns Effect
+  kenBurns: {
+    enabled: true,
+    duration: 8000,
+    scale: {
+      start: 1,
+      end: 1.15,
+    },
+    position: "random",
+    direction: "random",
+  },
+
+  // Parallax
+  parallax: {
+    enabled: false,
+  },
+
+  // Layout & Sizing
+  height: "medium",
+  maxWidth: "full",
+  aspectRatio: "auto",
+
+  // Styling
+  borderRadius: 0,
+  shadow: "none",
+  overflow: "hidden",
+
+  // Responsive
+  responsive: {
+    mobile: {
+      slidesPerView: 1,
+      effect: "fade",
+      navigation: {
+        arrows: { enabled: false },
+      },
+    },
+  },
+};
+
 // ============================================
 // EXPORT ALL DEFAULTS
 // ============================================
@@ -383,6 +608,7 @@ export const DEFAULT_DIVIDER_SETTINGS: DividerWidgetSettings = {
 export const WIDGET_DEFAULTS: Record<string, unknown> = {
   "hero-content": DEFAULT_HERO_CONTENT_SETTINGS,
   "image": DEFAULT_IMAGE_SETTINGS,
+  "image-slider": DEFAULT_IMAGE_SLIDER_SETTINGS,
   "trust-badges": DEFAULT_TRUST_BADGES_SETTINGS,
   "stats-section": DEFAULT_STATS_SECTION_SETTINGS,
   "lead-form": DEFAULT_LEAD_FORM_SETTINGS,

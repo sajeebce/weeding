@@ -80,6 +80,7 @@
     "stripe": "^20.0.0",
     "suneditor": "^2.47.8",
     "suneditor-react": "^3.6.1",
+    "swiper": "^12.0.3",
     "tailwind-merge": "^3.4.0",
     "yet-another-react-lightbox": "^3.27.0",
     "zod": "^4.1.13",

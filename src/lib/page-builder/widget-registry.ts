@@ -8,6 +8,7 @@ import type {
   WidgetDefinition,
   WidgetCategoryInfo,
 } from "./types";
+import { DEFAULT_SECTION_SETTINGS, DEFAULT_COLUMN_SETTINGS } from "./defaults";
 
 // Widget Category Information
 export const WIDGET_CATEGORIES: WidgetCategoryInfo[] = [
@@ -158,13 +159,7 @@ export function createSection(layout: import("./types").SectionLayout = "1"): im
     order: 0,
     layout,
     columns,
-    settings: {
-      fullWidth: false,
-      paddingTop: 48,
-      paddingBottom: 48,
-      gap: 24,
-      maxWidth: "xl",
-    },
+    settings: DEFAULT_SECTION_SETTINGS,
   };
 }
 

@@ -128,6 +128,7 @@ export type WidgetType =
   | "rich-text"
   // Media Widgets
   | "image"
+  | "image-slider"
   | "video"
   | "gallery"
   | "lottie"
@@ -378,6 +379,317 @@ export interface ImageWidgetSettings {
     grayscale: number; // 0-100%
     sepia: number; // 0-100%
     hueRotate: number; // 0-360deg
+  };
+}
+
+// ============================================
+// IMAGE SLIDER WIDGET TYPES
+// ============================================
+
+export type SliderType = "standard" | "hero" | "carousel" | "gallery" | "split" | "vertical";
+
+export type SliderEffect =
+  | "slide"
+  | "fade"
+  | "cube"
+  | "coverflow"
+  | "flip"
+  | "cards"
+  | "creative"
+  | "parallax";
+
+export type ArrowStyle = "default" | "minimal" | "rounded" | "square" | "floating" | "outside";
+export type PaginationType = "dots" | "fraction" | "progressbar" | "bullets-dynamic" | "custom";
+export type LayerAnimationType =
+  | "none"
+  | "fade"
+  | "slide-up"
+  | "slide-down"
+  | "slide-left"
+  | "slide-right"
+  | "zoom"
+  | "zoom-out"
+  | "rotate"
+  | "flip"
+  | "bounce"
+  | "elastic";
+
+export type LayerAnimationEasing =
+  | "linear"
+  | "ease"
+  | "ease-in"
+  | "ease-out"
+  | "ease-in-out"
+  | "bounce"
+  | "elastic";
+
+// Layer Animation for content elements
+export interface LayerAnimation {
+  in: {
+    type: LayerAnimationType;
+    duration: number;
+    delay: number;
+    easing: LayerAnimationEasing;
+  };
+  out?: {
+    type: LayerAnimationType;
+    duration: number;
+    easing: string;
+  };
+}
+
+// Slide Content Configuration
+export interface SlideContentConfig {
+  enabled: boolean;
+  position:
+    | "center"
+    | "top-left"
+    | "top-center"
+    | "top-right"
+    | "center-left"
+    | "center-right"
+    | "bottom-left"
+    | "bottom-center"
+    | "bottom-right";
+  maxWidth: "sm" | "md" | "lg" | "xl" | "full";
+  padding: number;
+  textAlign: "left" | "center" | "right";
+
+  badge?: {
+    show: boolean;
+    text: string;
+    icon?: string;
+    style: "pill" | "outline" | "solid";
+    animation: LayerAnimation;
+  };
+
+  headline?: {
+    show: boolean;
+    text: string;
+    size: "sm" | "md" | "lg" | "xl" | "2xl" | "3xl";
+    color: string;
+    highlightWords?: string;
+    highlightColor?: string;
+    animation: LayerAnimation;
+  };
+
+  subheadline?: {
+    show: boolean;
+    text: string;
+    size: "sm" | "md" | "lg";
+    color: string;
+    animation: LayerAnimation;
+  };
+
+  description?: {
+    show: boolean;
+    text: string;
+    color: string;
+    animation: LayerAnimation;
+  };
+
+  buttons?: {
+    show: boolean;
+    items: Array<{
+      id: string;
+      text: string;
+      link: string;
+      style: "primary" | "secondary" | "outline" | "ghost";
+      openInNewTab: boolean;
+    }>;
+    animation: LayerAnimation;
+  };
+}
+
+// Individual Slide Item
+export interface SlideItem {
+  id: string;
+
+  // Image
+  image: {
+    src: string;
+    alt: string;
+    objectFit: "cover" | "contain" | "fill";
+    objectPosition: "center" | "top" | "bottom" | "left" | "right";
+    kenBurnsOverride?: {
+      direction: "in" | "out";
+      position: "center" | "top" | "bottom" | "left" | "right";
+    };
+  };
+
+  // Overlay
+  overlay?: {
+    enabled: boolean;
+    type: "solid" | "gradient";
+    color?: string;
+    gradient?: {
+      type: "linear" | "radial";
+      angle?: number;
+      colors: Array<{ color: string; position: number }>;
+    };
+    opacity: number;
+  };
+
+  // Content Layers
+  content?: SlideContentConfig;
+
+  // Video Background
+  videoBackground?: {
+    enabled: boolean;
+    src: string;
+    type: "mp4" | "webm" | "youtube" | "vimeo";
+    muted: boolean;
+    loop: boolean;
+    playbackRate: number;
+    fallbackImage: string;
+  };
+
+  // Link (entire slide clickable)
+  link?: {
+    url: string;
+    openInNewTab: boolean;
+    ariaLabel: string;
+  };
+}
+
+// Main Image Slider Widget Settings
+export interface ImageSliderWidgetSettings {
+  // Slides
+  slides: SlideItem[];
+
+  // Slider Type
+  sliderType: SliderType;
+
+  // Transition Effects
+  effect: SliderEffect;
+  creativeEffect?: {
+    prev: {
+      translate: [number, number, number];
+      rotate: [number, number, number];
+      scale: number;
+      opacity: number;
+    };
+    next: {
+      translate: [number, number, number];
+      rotate: [number, number, number];
+      scale: number;
+      opacity: number;
+    };
+  };
+
+  // Autoplay
+  autoplay: {
+    enabled: boolean;
+    delay: number;
+    pauseOnHover: boolean;
+    pauseOnInteraction: boolean;
+    reverseDirection: boolean;
+    showPauseButton: boolean;
+  };
+
+  // Navigation
+  navigation: {
+    arrows: {
+      enabled: boolean;
+      style: ArrowStyle;
+      size: "sm" | "md" | "lg";
+      color: string;
+      backgroundColor?: string;
+      hoverEffect: "none" | "scale" | "glow" | "slide";
+      position: "sides" | "bottom" | "bottom-right";
+      showOnHover: boolean;
+    };
+
+    pagination: {
+      enabled: boolean;
+      type: PaginationType;
+      position: "bottom" | "top" | "left" | "right";
+      clickable: boolean;
+      activeColor: string;
+      inactiveColor: string;
+      progressbarFill?: "horizontal" | "vertical";
+      progressbarPosition?: "top" | "bottom";
+    };
+
+    thumbnails: {
+      enabled: boolean;
+      position: "bottom" | "left" | "right";
+      size: number;
+      gap: number;
+      activeStyle: "border" | "opacity" | "scale";
+      aspectRatio: "1:1" | "16:9" | "4:3";
+    };
+
+    keyboard: boolean;
+    mousewheel: boolean;
+    grabCursor: boolean;
+  };
+
+  // Touch & Swipe
+  touch: {
+    enabled: boolean;
+    threshold: number;
+    resistance: boolean;
+    shortSwipes: boolean;
+    longSwipesRatio: number;
+  };
+
+  // Loop & Speed
+  loop: boolean;
+  speed: number;
+  slidesPerView: number | "auto";
+  spaceBetween: number;
+  centeredSlides: boolean;
+
+  // Ken Burns Effect
+  kenBurns: {
+    enabled: boolean;
+    duration: number;
+    scale: {
+      start: number;
+      end: number;
+    };
+    position: "random" | "center" | "top" | "bottom" | "left" | "right";
+    direction: "in" | "out" | "random";
+  };
+
+  // Parallax
+  parallax: {
+    enabled: boolean;
+  };
+
+  // Split Screen
+  splitScreen?: {
+    contentPosition: "left" | "right";
+    ratio: "50-50" | "40-60" | "60-40" | "33-66" | "66-33";
+    contentBackground?: string;
+    mobileStack: "content-first" | "image-first";
+  };
+
+  // Layout & Sizing
+  height: "auto" | "viewport" | "large" | "medium" | "small" | number;
+  maxWidth: "sm" | "md" | "lg" | "xl" | "2xl" | "full";
+  aspectRatio?: "16:9" | "21:9" | "4:3" | "1:1" | "auto";
+
+  // Styling
+  borderRadius: number;
+  shadow: "none" | "sm" | "md" | "lg" | "xl" | "2xl";
+  overflow: "hidden" | "visible";
+
+  // Responsive
+  responsive?: {
+    mobile?: {
+      slidesPerView?: number;
+      spaceBetween?: number;
+      effect?: SliderEffect;
+      navigation?: {
+        arrows?: { enabled?: boolean };
+      };
+    };
+    tablet?: {
+      slidesPerView?: number;
+      spaceBetween?: number;
+    };
   };
 }
 

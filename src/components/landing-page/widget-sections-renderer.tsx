@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import {
   HeroContentWidget,
   ImageWidget,
+  ImageSliderWidget,
   TrustBadgesWidget,
   StatsSectionWidget,
   DividerWidget,
@@ -236,6 +237,9 @@ function WidgetRenderer({ widget }: WidgetRendererProps) {
 
       case "divider":
         return <DividerWidget settings={widget.settings as any} />;
+
+      case "image-slider":
+        return <ImageSliderWidget settings={widget.settings as any} />;
 
       default:
         // Unknown widget type - render nothing in production

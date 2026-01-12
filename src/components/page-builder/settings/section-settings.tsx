@@ -84,31 +84,31 @@ export function SectionSettingsPanel({
   onSettingsChange,
   onLayoutChange,
 }: SectionSettingsProps) {
-  // Merge with defaults
-  const s: SectionSettings = {
+  // Merge with defaults - use type assertion to handle optional fields
+  const s = {
     ...DEFAULT_SECTION_SETTINGS,
     ...settings,
     background: {
       ...DEFAULT_SECTION_BACKGROUND,
-      ...settings?.background,
+      ...(settings?.background || {}),
       gradient: {
         ...DEFAULT_SECTION_BACKGROUND.gradient,
-        ...settings?.background?.gradient,
+        ...(settings?.background?.gradient || {}),
       },
       image: {
         ...DEFAULT_SECTION_BACKGROUND.image,
-        ...settings?.background?.image,
+        ...(settings?.background?.image || {}),
       },
       video: {
         ...DEFAULT_SECTION_BACKGROUND.video,
-        ...settings?.background?.video,
+        ...(settings?.background?.video || {}),
       },
       overlay: {
         ...DEFAULT_SECTION_BACKGROUND.overlay,
-        ...settings?.background?.overlay,
+        ...(settings?.background?.overlay || {}),
       },
     },
-  };
+  } as SectionSettings;
 
   const updateField = <K extends keyof SectionSettings>(
     key: K,

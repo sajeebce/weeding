@@ -34,6 +34,7 @@ import * as LucideIcons from "lucide-react";
 import {
   HeroContentWidgetSettingsPanel,
   ImageWidgetSettingsPanel,
+  ImageSliderSettingsPanel,
   TrustBadgesWidgetSettingsPanel,
   StatsSectionWidgetSettingsPanel,
   SectionSettingsPanel,
@@ -349,6 +350,15 @@ function EditMode({ widget, section, columnId, onBack, onUpdateSettings, onUpdat
             />
           )}
 
+          {/* Image Slider Widget */}
+          {widget.type === "image-slider" && (
+            <ImageSliderSettingsPanel
+              settings={widget.settings as any}
+              onChange={onUpdateSettings}
+              activeTab={activeTab}
+            />
+          )}
+
           {/* Trust Badges Widget */}
           {widget.type === "trust-badges" && (
             <TrustBadgesWidgetSettingsPanel
@@ -377,7 +387,7 @@ function EditMode({ widget, section, columnId, onBack, onUpdateSettings, onUpdat
           )}
 
           {/* Fallback for unknown widget types */}
-          {!["hero-content", "image", "trust-badges", "stats-section", "divider"].includes(widget.type) && (
+          {!["hero-content", "image", "image-slider", "trust-badges", "stats-section", "divider"].includes(widget.type) && (
             <p className="text-center text-sm text-muted-foreground">
               Settings for {widget.type} coming soon.
             </p>

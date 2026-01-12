@@ -23,16 +23,16 @@ export function ImageWidgetSettingsPanel({
   onChange,
   activeTab = "content",
 }: ImageWidgetSettingsProps) {
-  // Deep merge with defaults
-  const s: ImageWidgetSettings = {
+  // Deep merge with defaults - use explicit typing to handle optional fields
+  const s = {
     ...DEFAULT_IMAGE_SETTINGS,
     ...settings,
-    border: { ...DEFAULT_IMAGE_SETTINGS.border, ...settings.border },
-    caption: { ...DEFAULT_IMAGE_SETTINGS.caption, ...settings.caption },
-    overlay: { ...DEFAULT_IMAGE_SETTINGS.overlay, ...settings.overlay },
-    parallax: { ...DEFAULT_IMAGE_SETTINGS.parallax, ...settings.parallax },
-    filters: { ...DEFAULT_IMAGE_SETTINGS.filters, ...settings.filters },
-  };
+    border: { ...DEFAULT_IMAGE_SETTINGS.border, ...(settings.border || {}) },
+    caption: { ...DEFAULT_IMAGE_SETTINGS.caption, ...(settings.caption || {}) },
+    overlay: { ...DEFAULT_IMAGE_SETTINGS.overlay, ...(settings.overlay || {}) },
+    parallax: { ...DEFAULT_IMAGE_SETTINGS.parallax, ...(settings.parallax || {}) },
+    filters: { ...DEFAULT_IMAGE_SETTINGS.filters, ...(settings.filters || {}) },
+  } as ImageWidgetSettings;
 
   const updateField = <K extends keyof ImageWidgetSettings>(
     key: K,

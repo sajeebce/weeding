@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
   Save,
@@ -37,6 +37,39 @@ export default function WidgetBasedLandingPageBuilder() {
   const [isSaving, setSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [previewDevice, setPreviewDevice] = useState<"desktop" | "mobile">("desktop");
+
+  // Scroll detection for auto-hide scrollbar
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [isScrolling, setIsScrolling] = useState(false);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    if (!scrollContainer) return;
+
+    const handleScroll = () => {
+      setIsScrolling(true);
+
+      // Clear existing timeout
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+
+      // Hide scrollbar after 1 second of no scrolling
+      scrollTimeoutRef.current = setTimeout(() => {
+        setIsScrolling(false);
+      }, 1000);
+    };
+
+    scrollContainer.addEventListener("scroll", handleScroll);
+
+    return () => {
+      scrollContainer.removeEventListener("scroll", handleScroll);
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Load saved data on mount
   useEffect(() => {
@@ -410,7 +443,13 @@ export default function WidgetBasedLandingPageBuilder() {
         />
 
         {/* Right Panel - Page Builder Canvas */}
-        <div className="flex-1 overflow-auto bg-muted/30">
+        <div
+          ref={scrollContainerRef}
+          className={cn(
+            "flex-1 overflow-auto bg-muted/30 scrollbar-on-scroll",
+            isScrolling && "is-scrolling"
+          )}
+        >
           <div className="p-4">
             {/* Device Frame */}
             <div className="text-center text-xs text-muted-foreground mb-2">

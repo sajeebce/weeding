@@ -126,11 +126,9 @@ export function DividerWidget({ settings: partialSettings, isPreview }: DividerW
             maxWidth: `calc((${width}% - ${(iconSize || 20) + 32}px) / 2)`,
           }}
         />
-        <IconComponent
-          className="shrink-0"
-          size={iconSize}
-          style={{ color: iconColor }}
-        />
+        <span className="shrink-0" style={{ color: iconColor }}>
+          <IconComponent size={iconSize} />
+        </span>
         <div
           className="flex-1"
           style={{

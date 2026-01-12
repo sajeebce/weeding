@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, use } from "react";
+import { useState, useEffect, useCallback, use, useRef } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -146,6 +146,9 @@ export default function AdminTicketDetailPage({ params }: PageProps) {
   const [isSending, setIsSending] = useState(false);
   const [sendEmail, setSendEmail] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
+  const [typingUserName, setTypingUserName] = useState<string | null>(null);
+  const lastMessageIdRef = useRef<string | null>(null);
+  const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const fetchTicket = useCallback(async () => {
     try {
@@ -181,11 +184,15 @@ export default function AdminTicketDetailPage({ params }: PageProps) {
     loadData();
   }, [fetchTicket, fetchCannedResponses]);
 
-  // Real-time updates
+  // Real-time updates via Pusher (if configured)
   useTicketChannel(id, {
     onMessageNew: (event) => {
       setTicket((prev) => {
         if (!prev) return prev;
+        // Avoid duplicates
+        if (prev.messages.some((m) => m.id === event.message.id)) {
+          return prev;
+        }
         return {
           ...prev,
           messages: [...prev.messages, event.message as Message],
@@ -195,6 +202,66 @@ export default function AdminTicketDetailPage({ params }: PageProps) {
     onTypingStart: () => setIsTyping(true),
     onTypingStop: () => setIsTyping(false),
   });
+
+  // Polling fallback for real-time updates (when Pusher is not configured)
+  useEffect(() => {
+    if (!ticket) return;
+
+    // Set initial last message ID
+    if (ticket.messages.length > 0 && !lastMessageIdRef.current) {
+      lastMessageIdRef.current = ticket.messages[ticket.messages.length - 1].id;
+    }
+
+    const pollMessages = async () => {
+      try {
+        const cursor = lastMessageIdRef.current;
+        const url = cursor
+          ? `/api/admin/tickets/${id}/messages?cursor=${cursor}`
+          : `/api/admin/tickets/${id}/messages`;
+
+        const res = await fetch(url);
+        if (res.ok) {
+          const data = await res.json();
+
+          // Update typing indicator
+          setIsTyping(data.isCustomerTyping || false);
+          setTypingUserName(data.customerTypingName || null);
+
+          // Add new messages if any
+          if (data.messages && data.messages.length > 0) {
+            setTicket((prev) => {
+              if (!prev) return prev;
+              // Filter out duplicates
+              const existingIds = new Set(prev.messages.map((m) => m.id));
+              const newMessages = data.messages.filter(
+                (m: Message) => !existingIds.has(m.id)
+              );
+
+              if (newMessages.length > 0) {
+                lastMessageIdRef.current = newMessages[newMessages.length - 1].id;
+                return {
+                  ...prev,
+                  messages: [...prev.messages, ...newMessages],
+                };
+              }
+              return prev;
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Failed to poll messages:", error);
+      }
+    };
+
+    // Poll every 3 seconds
+    pollIntervalRef.current = setInterval(pollMessages, 3000);
+
+    return () => {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+      }
+    };
+  }, [id, ticket]);
 
   const handleStatusChange = async (status: string) => {
     try {
@@ -240,7 +307,7 @@ export default function AdminTicketDetailPage({ params }: PageProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           content: reply,
-          sendEmail,
+          sendEmailNotification: sendEmail,
         }),
       });
 
@@ -256,6 +323,10 @@ export default function AdminTicketDetailPage({ params }: PageProps) {
         });
         setReply("");
         toast.success("Reply sent");
+      } else {
+        const errorData = await res.json().catch(() => ({}));
+        console.error("Failed to send reply:", res.status, errorData);
+        toast.error(errorData.error || `Failed to send reply (${res.status})`);
       }
     } catch (error) {
       console.error("Failed to send reply:", error);
@@ -488,13 +559,20 @@ export default function AdminTicketDetailPage({ params }: PageProps) {
               {isTyping && (
                 <div className="flex gap-4">
                   <Avatar className="h-10 w-10 shrink-0">
-                    <AvatarFallback className="bg-muted">...</AvatarFallback>
+                    <AvatarFallback className="bg-muted">
+                      {typingUserName?.charAt(0).toUpperCase() || "?"}
+                    </AvatarFallback>
                   </Avatar>
-                  <div className="rounded-lg bg-muted p-4">
-                    <div className="flex gap-1">
-                      <span className="h-2 w-2 rounded-full bg-gray-400 animate-bounce [animation-delay:-0.3s]" />
-                      <span className="h-2 w-2 rounded-full bg-gray-400 animate-bounce [animation-delay:-0.15s]" />
-                      <span className="h-2 w-2 rounded-full bg-gray-400 animate-bounce" />
+                  <div className="space-y-1">
+                    <span className="text-xs text-muted-foreground">
+                      {typingUserName || "Customer"} is typing...
+                    </span>
+                    <div className="rounded-lg bg-muted p-4">
+                      <div className="flex gap-1">
+                        <span className="h-2 w-2 rounded-full bg-gray-400 animate-bounce [animation-delay:-0.3s]" />
+                        <span className="h-2 w-2 rounded-full bg-gray-400 animate-bounce [animation-delay:-0.15s]" />
+                        <span className="h-2 w-2 rounded-full bg-gray-400 animate-bounce" />
+                      </div>
                     </div>
                   </div>
                 </div>
