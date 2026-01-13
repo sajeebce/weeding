@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import {
   Search,
@@ -119,13 +119,23 @@ export default function AdminTicketsPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const isInitialMount = useRef(true);
+
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const fetchTickets = useCallback(async () => {
     try {
       const params = new URLSearchParams();
       if (statusFilter !== "all") params.set("status", statusFilter);
       if (priorityFilter !== "all") params.set("priority", priorityFilter);
-      if (search) params.set("search", search);
+      if (debouncedSearch) params.set("search", debouncedSearch);
 
       const res = await fetch(`/api/admin/tickets?${params.toString()}`);
       if (res.ok) {
@@ -135,7 +145,7 @@ export default function AdminTicketsPage() {
     } catch (error) {
       console.error("Failed to fetch tickets:", error);
     }
-  }, [statusFilter, priorityFilter, search]);
+  }, [statusFilter, priorityFilter, debouncedSearch]);
 
   const fetchStats = useCallback(async () => {
     try {
@@ -155,6 +165,7 @@ export default function AdminTicketsPage() {
     }
   }, []);
 
+  // Initial load
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
@@ -162,9 +173,19 @@ export default function AdminTicketsPage() {
       setIsLoading(false);
     };
     loadData();
-  }, [fetchTickets, fetchStats]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // Real-time updates
+  // Fetch when filters change (skip initial mount)
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    fetchTickets();
+  }, [statusFilter, priorityFilter, debouncedSearch, fetchTickets]);
+
+  // Real-time updates - use refs to avoid recreating handlers
   useAdminNotifications({
     onTicketNew: () => {
       fetchTickets();
@@ -175,14 +196,6 @@ export default function AdminTicketsPage() {
       fetchStats();
     },
   });
-
-  // Debounced search
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchTickets();
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [search, fetchTickets]);
 
   const handleStatusChange = async (ticketId: string, status: string) => {
     try {

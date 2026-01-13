@@ -140,6 +140,12 @@ export async function POST(
       return NextResponse.json({ error: "Ticket not found" }, { status: 404 });
     }
 
+    // Verify sender exists in User table before setting senderId
+    const senderExists = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true },
+    });
+
     // Create message
     const message = await prisma.supportMessage.create({
       data: {
@@ -147,7 +153,7 @@ export async function POST(
         content: data.content,
         senderType: "AGENT",
         senderName: session.user.name || "Support Agent",
-        senderId: session.user.id,
+        senderId: senderExists ? session.user.id : null,
         type: data.type,
       },
       include: {

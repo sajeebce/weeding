@@ -1,21 +1,12 @@
-import prisma from "@/lib/db";
-import { PageRenderer } from "@/components/landing-page/page-renderer";
 import { WidgetSectionsRenderer } from "@/components/landing-page/widget-sections-renderer";
-import { Hero } from "@/components/sections/hero";
-import { ServicesGrid } from "@/components/sections/services-grid";
-import { HowItWorks } from "@/components/sections/how-it-works";
-import { PricingTable } from "@/components/sections/pricing-table";
-import { Testimonials } from "@/components/sections/testimonials";
-import { BlogSection } from "@/components/sections/blog-section";
-import { FAQSection } from "@/components/sections/faq-section";
-import { CTASection } from "@/components/sections/cta-section";
-import { JsonLd, MultiJsonLd } from "@/components/seo/json-ld";
+import { NoTemplateFallback } from "@/components/templates/no-template-fallback";
+import { MultiJsonLd } from "@/components/seo/json-ld";
 import {
   generateOrganizationSchema,
   generateFAQSchema,
   generateProductSchema,
 } from "@/lib/seo";
-import type { Section } from "@/lib/page-builder/types";
+import { getHomeTemplate } from "@/lib/templates/get-template";
 
 const homepageFaqs = [
   {
@@ -45,77 +36,9 @@ const homepageFaqs = [
   },
 ];
 
-const HOMEPAGE_SLUG = "homepage";
-const WIDGET_BLOCK_TYPE = "widget-page-sections";
-
-/**
- * Fetch widget page builder sections from the database
- */
-async function getWidgetSections(): Promise<Section[]> {
-  try {
-    const page = await prisma.landingPage.findUnique({
-      where: { slug: HOMEPAGE_SLUG },
-      include: {
-        blocks: {
-          where: { type: WIDGET_BLOCK_TYPE, isActive: true },
-        },
-      },
-    });
-
-    if (!page || page.blocks.length === 0) {
-      return [];
-    }
-
-    const widgetBlock = page.blocks.find((b) => b.type === WIDGET_BLOCK_TYPE);
-    const sections = widgetBlock?.settings as Section[] | null;
-
-    return Array.isArray(sections) ? sections : [];
-  } catch (error) {
-    console.error("Error fetching widget sections:", error);
-    return [];
-  }
-}
-
-/**
- * Fetch the default landing page with its blocks
- * Falls back to null if no default page exists
- */
-async function getDefaultLandingPage() {
-  try {
-    const page = await prisma.landingPage.findFirst({
-      where: {
-        isDefault: true,
-        isActive: true,
-      },
-      include: {
-        blocks: {
-          where: { isActive: true },
-          orderBy: { sortOrder: "asc" },
-        },
-      },
-    });
-
-    return page;
-  } catch (error) {
-    console.error("Error fetching landing page:", error);
-    return null;
-  }
-}
-
 export default async function HomePage() {
-  // Fetch widget page builder sections (new system)
-  const widgetSections = await getWidgetSections();
-
-  // Fetch old block-based landing page content (fallback)
-  const landingPage = await getDefaultLandingPage();
-
-  // Priority: Widget sections > Old blocks > Static components
-  const useWidgetSections = widgetSections.length > 0;
-  const useOldBlocks =
-    !useWidgetSections &&
-    landingPage &&
-    landingPage.blocks.length > 0 &&
-    landingPage.blocks.some((b) => b.type.startsWith("hero"));
+  // Try to get the assigned HOME template
+  const template = await getHomeTemplate();
 
   return (
     <>
@@ -134,43 +57,12 @@ export default async function HomePage() {
         ]}
       />
 
-      {useWidgetSections ? (
-        <>
-          {/* Render widget page builder sections */}
-          <WidgetSectionsRenderer sections={widgetSections} />
-          {/* Static sections below hero */}
-          <ServicesGrid />
-          <HowItWorks />
-          <PricingTable />
-          <Testimonials />
-          <FAQSection />
-          <CTASection />
-        </>
-      ) : useOldBlocks ? (
-        <>
-          {/* Render old hero blocks from database */}
-          <PageRenderer
-            blocks={landingPage!.blocks.filter((b) => b.type.startsWith("hero"))}
-          />
-          {/* Static sections */}
-          <ServicesGrid />
-          <HowItWorks />
-          <PricingTable />
-          <Testimonials />
-          <FAQSection />
-          <CTASection />
-        </>
+      {template ? (
+        // Render the assigned template
+        <WidgetSectionsRenderer sections={template.sections} />
       ) : (
-        <>
-          {/* Fallback to static components */}
-          <Hero />
-          <ServicesGrid />
-          <HowItWorks />
-          <PricingTable />
-          <Testimonials />
-          <FAQSection />
-          <CTASection />
-        </>
+        // No template assigned - show setup guide for admins, coming soon for visitors
+        <NoTemplateFallback pageType="home" />
       )}
     </>
   );
