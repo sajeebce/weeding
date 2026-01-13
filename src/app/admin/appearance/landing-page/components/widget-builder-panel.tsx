@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useDraggable } from "@dnd-kit/core";
+import { CSS } from "@dnd-kit/utilities";
 import {
   Search,
   ArrowLeft,
@@ -13,6 +15,7 @@ import {
   ChevronRight,
   ChevronDown,
   Sparkles,
+  GripVertical,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -39,6 +42,7 @@ import {
   StatsSectionWidgetSettingsPanel,
   SectionSettingsPanel,
   DividerWidgetSettingsPanel,
+  ServiceCardWidgetSettingsPanel,
 } from "@/components/page-builder/settings";
 import { NumberInput } from "@/app/admin/appearance/landing-page/components/ui/form-controls";
 import { AccordionSection } from "@/app/admin/appearance/landing-page/components/ui/accordion-section";
@@ -79,6 +83,56 @@ function getLucideIcon(
     React.ComponentType<{ className?: string }>
   >;
   return icons[name] || LucideIcons.Box;
+}
+
+// ============================================
+// DRAGGABLE WIDGET ITEM
+// ============================================
+
+interface DraggableWidgetItemProps {
+  widgetType: WidgetType;
+  name: string;
+  icon: string;
+  onClick: () => void;
+}
+
+function DraggableWidgetItem({ widgetType, name, icon, onClick }: DraggableWidgetItemProps) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: `widget-${widgetType}`,
+    data: {
+      widgetType,
+    },
+  });
+
+  const style = transform
+    ? {
+        transform: CSS.Translate.toString(transform),
+      }
+    : undefined;
+
+  const WidgetIcon = getLucideIcon(icon);
+
+  return (
+    <button
+      ref={setNodeRef}
+      style={style}
+      {...listeners}
+      {...attributes}
+      onClick={onClick}
+      className={cn(
+        "group flex flex-col items-center gap-2 rounded-lg border bg-card p-3 transition-all",
+        "hover:border-primary hover:bg-muted/50 cursor-grab active:cursor-grabbing",
+        isDragging && "opacity-50 shadow-lg ring-2 ring-primary"
+      )}
+    >
+      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted transition-colors group-hover:bg-primary/10">
+        <WidgetIcon className="h-5 w-5 text-muted-foreground group-hover:text-primary" />
+      </div>
+      <span className="text-center text-xs font-medium leading-tight text-foreground/70 group-hover:text-foreground">
+        {name}
+      </span>
+    </button>
+  );
 }
 
 // ============================================
@@ -236,23 +290,15 @@ function BrowseMode({ onAddWidget, onSwitchToLayers, pendingColumn, onClearPendi
                 {isExpanded && (
                   <div className="border-t border-primary/20 bg-muted/30 p-3">
                     <div className="grid grid-cols-2 gap-2">
-                      {group.widgets.map((widget) => {
-                        const WidgetIcon = getLucideIcon(widget.icon);
-                        return (
-                          <button
-                            key={widget.type}
-                            onClick={() => onAddWidget(widget.type)}
-                            className="group flex flex-col items-center gap-2 rounded-lg border bg-card p-3 transition-all hover:border-primary hover:bg-muted/50"
-                          >
-                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted transition-colors group-hover:bg-primary/10">
-                              <WidgetIcon className="h-5 w-5 text-muted-foreground group-hover:text-primary" />
-                            </div>
-                            <span className="text-center text-xs font-medium leading-tight text-foreground/70 group-hover:text-foreground">
-                              {widget.name}
-                            </span>
-                          </button>
-                        );
-                      })}
+                      {group.widgets.map((widget) => (
+                        <DraggableWidgetItem
+                          key={widget.type}
+                          widgetType={widget.type}
+                          name={widget.name}
+                          icon={widget.icon}
+                          onClick={() => onAddWidget(widget.type)}
+                        />
+                      ))}
                     </div>
                   </div>
                 )}
@@ -386,8 +432,17 @@ function EditMode({ widget, section, columnId, onBack, onUpdateSettings, onUpdat
             />
           )}
 
+          {/* Service Card Widget */}
+          {widget.type === "service-card" && (
+            <ServiceCardWidgetSettingsPanel
+              settings={widget.settings as any}
+              onChange={onUpdateSettings}
+              activeTab={activeTab}
+            />
+          )}
+
           {/* Fallback for unknown widget types */}
-          {!["hero-content", "image", "image-slider", "trust-badges", "stats-section", "divider"].includes(widget.type) && (
+          {!["hero-content", "image", "image-slider", "trust-badges", "stats-section", "divider", "service-card"].includes(widget.type) && (
             <p className="text-center text-sm text-muted-foreground">
               Settings for {widget.type} coming soon.
             </p>

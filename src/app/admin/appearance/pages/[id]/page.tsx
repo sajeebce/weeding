@@ -4,6 +4,15 @@ import { useState, useCallback, useEffect, useRef, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
+  DndContext,
+  DragOverlay,
+  useSensor,
+  useSensors,
+  PointerSensor,
+  DragStartEvent,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
   Save,
   Eye,
   ArrowLeft,
@@ -15,6 +24,7 @@ import {
   Settings2,
   LayoutTemplate,
 } from "lucide-react";
+import * as LucideIcons from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -43,7 +53,7 @@ import type {
   WidgetType,
   BuilderSelection,
 } from "@/lib/page-builder/types";
-import { createSection, createWidget } from "@/lib/page-builder/widget-registry";
+import { createSection, createWidget, WidgetRegistry } from "@/lib/page-builder/widget-registry";
 
 // Reuse existing components from landing-page builder
 import { WidgetBuilderPanel } from "../../landing-page/components/widget-builder-panel";
@@ -109,6 +119,18 @@ export default function PageEditorPage({ params }: { params: Promise<{ id: strin
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [isScrolling, setIsScrolling] = useState(false);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Drag-and-drop state
+  const [activeDragWidget, setActiveDragWidget] = useState<WidgetType | null>(null);
+
+  // DnD sensors with activation constraint to prevent accidental drags
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // 8px movement required before drag starts
+      },
+    })
+  );
 
   useEffect(() => {
     const scrollContainer = scrollContainerRef.current;
@@ -398,6 +420,32 @@ export default function PageEditorPage({ params }: { params: Promise<{ id: strin
     setSelection((prev) => (prev.widgetId === widgetId ? { type: null } : prev));
   }, []);
 
+  // Drag-and-drop handlers
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    const widgetType = event.active.data.current?.widgetType as WidgetType;
+    if (widgetType) {
+      setActiveDragWidget(widgetType);
+    }
+  }, []);
+
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveDragWidget(null);
+
+    if (!over) return;
+
+    const widgetType = active.data.current?.widgetType as WidgetType;
+    const dropData = over.data.current as { sectionId: string; columnId: string } | undefined;
+
+    if (widgetType && dropData?.sectionId && dropData?.columnId) {
+      handleAddWidget(dropData.sectionId, dropData.columnId, widgetType);
+    }
+  }, [handleAddWidget]);
+
+  const handleDragCancel = useCallback(() => {
+    setActiveDragWidget(null);
+  }, []);
+
   // Save handler
   const handleSave = async () => {
     setSaving(true);
@@ -641,60 +689,75 @@ export default function PageEditorPage({ params }: { params: Promise<{ id: strin
         </div>
       </div>
 
-      {/* Main Content - Two Panel Layout */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Left Panel - Widget Builder Panel */}
-        <WidgetBuilderPanel
-          sections={sections}
-          selection={selection}
-          onAddSection={handleAddSection}
-          onAddWidget={handleAddWidget}
-          onUpdateSection={handleUpdateSection}
-          onUpdateSectionLayout={handleUpdateSectionLayout}
-          onUpdateWidget={handleUpdateWidget}
-          onUpdateWidgetSpacing={handleUpdateWidgetSpacing}
-          onSelectSection={handleSelectSection}
-          onSelectWidget={handleSelectWidget}
-          onClearSelection={handleClearSelection}
-          pendingWidgetColumn={pendingWidgetColumn}
-          onClearPendingColumn={() => setPendingWidgetColumn(null)}
-          className="w-[320px] shrink-0"
-        />
+      {/* Main Content - Two Panel Layout with DnD */}
+      <DndContext
+        sensors={sensors}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        onDragCancel={handleDragCancel}
+      >
+        <div className="flex flex-1 overflow-hidden">
+          {/* Left Panel - Widget Builder Panel */}
+          <WidgetBuilderPanel
+            sections={sections}
+            selection={selection}
+            onAddSection={handleAddSection}
+            onAddWidget={handleAddWidget}
+            onUpdateSection={handleUpdateSection}
+            onUpdateSectionLayout={handleUpdateSectionLayout}
+            onUpdateWidget={handleUpdateWidget}
+            onUpdateWidgetSpacing={handleUpdateWidgetSpacing}
+            onSelectSection={handleSelectSection}
+            onSelectWidget={handleSelectWidget}
+            onClearSelection={handleClearSelection}
+            pendingWidgetColumn={pendingWidgetColumn}
+            onClearPendingColumn={() => setPendingWidgetColumn(null)}
+            className="w-[320px] shrink-0"
+          />
 
-        {/* Right Panel - Page Builder Canvas */}
-        <div
-          ref={scrollContainerRef}
-          className={cn(
-            "flex-1 overflow-auto bg-muted/30 scrollbar-on-scroll",
-            isScrolling && "is-scrolling"
-          )}
-        >
-          <div className="p-4">
-            {/* Device Frame */}
-            <div className="text-center text-xs text-muted-foreground mb-2">
-              {previewDevice === "desktop" ? "Desktop (1440px)" : "Mobile (375px)"}
-            </div>
-            <div
-              className={cn(
-                "mx-auto bg-background rounded-lg border overflow-hidden transition-all duration-300",
-                previewDevice === "desktop" ? "max-w-full" : "max-w-[375px]"
-              )}
-            >
-              <WidgetPageBuilder
-                sections={sections}
-                onChange={setSections}
-                selection={selection}
-                onSelectionChange={handleSelectionChange}
-                onRequestAddWidget={handleRequestAddWidget}
-                onDeleteSection={handleDeleteSection}
-                onDuplicateSection={handleDuplicateSection}
-                onDeleteWidget={handleDeleteWidget}
-                device={previewDevice}
-              />
+          {/* Right Panel - Page Builder Canvas */}
+          <div
+            ref={scrollContainerRef}
+            className={cn(
+              "flex-1 overflow-auto bg-muted/30 scrollbar-on-scroll",
+              isScrolling && "is-scrolling"
+            )}
+          >
+            <div className="p-4">
+              {/* Device Frame */}
+              <div className="text-center text-xs text-muted-foreground mb-2">
+                {previewDevice === "desktop" ? "Desktop (1440px)" : "Mobile (375px)"}
+              </div>
+              <div
+                className={cn(
+                  "mx-auto bg-background rounded-lg border overflow-hidden transition-all duration-300",
+                  previewDevice === "desktop" ? "max-w-full" : "max-w-[375px]"
+                )}
+              >
+                <WidgetPageBuilder
+                  sections={sections}
+                  onChange={setSections}
+                  selection={selection}
+                  onSelectionChange={handleSelectionChange}
+                  onRequestAddWidget={handleRequestAddWidget}
+                  onDeleteSection={handleDeleteSection}
+                  onDuplicateSection={handleDuplicateSection}
+                  onDeleteWidget={handleDeleteWidget}
+                  device={previewDevice}
+                  isDraggingWidget={activeDragWidget !== null}
+                />
+              </div>
             </div>
           </div>
         </div>
-      </div>
+
+        {/* Drag Overlay - Shows widget preview while dragging */}
+        <DragOverlay dropAnimation={null}>
+          {activeDragWidget && (
+            <DragOverlayContent widgetType={activeDragWidget} />
+          )}
+        </DragOverlay>
+      </DndContext>
     </div>
   );
 }
@@ -711,4 +774,27 @@ function getColumnCount(layout: SectionLayout): number {
     case "1-1-1-1": return 4;
     default: return 1;
   }
+}
+
+// Get Lucide icon component by name
+function getLucideIcon(name: string): React.ComponentType<{ className?: string }> {
+  const icons = LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string }>>;
+  return icons[name] || LucideIcons.Box;
+}
+
+// Drag Overlay Content - Shows widget preview while dragging
+function DragOverlayContent({ widgetType }: { widgetType: WidgetType }) {
+  const widgetDef = WidgetRegistry.get(widgetType);
+  if (!widgetDef) return null;
+
+  const WidgetIcon = getLucideIcon(widgetDef.icon);
+
+  return (
+    <div className="flex items-center gap-3 rounded-lg border-2 border-primary bg-background px-4 py-3 shadow-xl">
+      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+        <WidgetIcon className="h-5 w-5 text-primary" />
+      </div>
+      <span className="text-sm font-medium">{widgetDef.name}</span>
+    </div>
+  );
 }

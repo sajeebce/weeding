@@ -147,6 +147,7 @@ export type WidgetType =
   | "pricing-card"
   | "pricing-table"
   | "feature-comparison"
+  | "service-card"
   // Layout Widgets
   | "spacer"
   | "divider"
@@ -857,6 +858,127 @@ export interface DividerWidgetSettings {
   textSize?: "sm" | "md" | "lg";
   textColor?: string;
   textBackground?: string;
+}
+
+// ============================================
+// SERVICE CARD WIDGET TYPES
+// ============================================
+
+export type ServiceCardStyle =
+  | "minimal"
+  | "elevated"
+  | "glassmorphism"
+  | "gradient-border"
+  | "spotlight"
+  | "neon-glow";
+
+export type ServiceCardHoverEffect =
+  | "none"
+  | "lift"
+  | "glow"
+  | "border-color"
+  | "scale";
+
+export type ServiceCardIconAnimation =
+  | "none"
+  | "bounce"
+  | "rotate"
+  | "scale"
+  | "shake"
+  | "pulse";
+
+export type ServiceCardIconStyle =
+  | "rounded"
+  | "circle"
+  | "square"
+  | "gradient-bg"
+  | "outline";
+
+export type ServiceCardSortBy =
+  | "popular"
+  | "price-asc"
+  | "price-desc"
+  | "name";
+
+export interface ServiceCardWidgetSettings {
+  // Data Filters (from database)
+  filters: {
+    categories: string[];           // Category slugs to filter
+    limit: number;                  // 4, 6, 8, 12
+    sortBy: ServiceCardSortBy;
+    popularOnly: boolean;
+    activeOnly: boolean;
+  };
+
+  // Card Style
+  cardStyle: ServiceCardStyle;
+
+  // Layout
+  layout: {
+    columns: 1 | 2 | 3 | 4;
+    gap: number;
+    cardAlignment: "stretch" | "start" | "center";
+  };
+
+  // Icon Settings
+  icon: {
+    show: boolean;
+    style: ServiceCardIconStyle;
+    size: "sm" | "md" | "lg";
+    position: "top-left" | "top-center" | "inline";
+    backgroundColor?: string;
+    iconColor?: string;
+    hoverAnimation: ServiceCardIconAnimation;
+  };
+
+  // Content Display
+  content: {
+    showDescription: boolean;
+    descriptionLines: 1 | 2 | 3;
+    showPrice: boolean;
+    pricePosition: "bottom" | "top-right" | "badge";
+    showBadge: boolean;
+    badgePosition: "top-right" | "top-left" | "inline";
+    showFeatures: boolean;
+    maxFeatures: 2 | 3 | 4;
+    showCategory: boolean;
+    showArrow: boolean;
+  };
+
+  // Hover Effects
+  hover: {
+    effect: ServiceCardHoverEffect;
+    iconEffect: "none" | "invert" | "scale" | "bounce";
+    transitionDuration: number;
+    glowColor?: string;
+  };
+
+  // Colors (optional overrides)
+  colors: {
+    cardBackground?: string;
+    borderColor?: string;
+    titleColor?: string;
+    descriptionColor?: string;
+    priceColor?: string;
+    hoverBorderColor?: string;
+    gradientFrom?: string;
+    gradientTo?: string;
+    gradientVia?: string;
+  };
+
+  // Border & Radius
+  borderRadius: number;
+  borderWidth: number;
+
+  // Responsive
+  responsive: {
+    tablet: {
+      columns: 1 | 2 | 3;
+    };
+    mobile: {
+      columns: 1 | 2;
+    };
+  };
 }
 
 // ============================================

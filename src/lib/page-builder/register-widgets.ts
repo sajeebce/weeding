@@ -15,6 +15,7 @@ import {
   DEFAULT_HEADING_SETTINGS,
   DEFAULT_TEXT_BLOCK_SETTINGS,
   DEFAULT_DIVIDER_SETTINGS,
+  DEFAULT_SERVICE_CARD_SETTINGS,
 } from "./defaults";
 
 // Import widget components
@@ -25,6 +26,7 @@ import {
   StatsSectionWidget,
 } from "@/components/page-builder/widgets/social-proof";
 import { DividerWidget } from "@/components/page-builder/widgets/layout";
+import { ServiceCardWidget } from "@/components/page-builder/widgets/commerce";
 
 // Register all widgets
 export function registerAllWidgets() {
@@ -121,6 +123,17 @@ export function registerAllWidgets() {
     category: "layout",
     defaultSettings: DEFAULT_DIVIDER_SETTINGS,
     component: DividerWidget,
+  });
+
+  // Commerce Widgets
+  WidgetRegistry.register({
+    type: "service-card",
+    name: "Service Cards",
+    description: "Display services in beautiful card layouts with 6 style variants",
+    icon: "LayoutGrid",
+    category: "commerce",
+    defaultSettings: DEFAULT_SERVICE_CARD_SETTINGS,
+    component: ServiceCardWidget,
   });
 }
 

@@ -20,6 +20,7 @@ import type {
   SectionBackground,
   ColumnSettings,
   GlobalSettings,
+  ServiceCardWidgetSettings,
 } from "./types";
 
 // ============================================
@@ -378,6 +379,73 @@ export const DEFAULT_DIVIDER_SETTINGS: DividerWidgetSettings = {
   textBackground: "#0f172a",
 };
 
+export const DEFAULT_SERVICE_CARD_SETTINGS: ServiceCardWidgetSettings = {
+  // Data Filters
+  filters: {
+    categories: [], // Empty = all categories
+    limit: 8,
+    sortBy: "popular",
+    popularOnly: false,
+    activeOnly: true,
+  },
+
+  // Card Style Variant
+  cardStyle: "elevated",
+
+  // Layout Configuration
+  layout: {
+    columns: 4,
+    gap: 24,
+    cardAlignment: "stretch",
+  },
+
+  // Icon Settings
+  icon: {
+    show: true,
+    style: "rounded",
+    size: "md",
+    position: "top-left",
+    backgroundColor: undefined, // Uses theme primary/10
+    iconColor: undefined, // Uses theme primary
+    hoverAnimation: "scale",
+  },
+
+  // Content Display Options
+  content: {
+    showDescription: true,
+    descriptionLines: 2,
+    showPrice: true,
+    pricePosition: "bottom",
+    showBadge: true,
+    badgePosition: "top-right",
+    showFeatures: false,
+    maxFeatures: 3,
+    showCategory: false,
+    showArrow: true,
+  },
+
+  // Hover Effects
+  hover: {
+    effect: "lift",
+    iconEffect: "scale",
+    transitionDuration: 200,
+    glowColor: undefined, // For neon-glow style
+  },
+
+  // Color Overrides (optional - uses theme colors by default)
+  colors: {},
+
+  // Card Styling
+  borderRadius: 12,
+  borderWidth: 1,
+
+  // Responsive Breakpoints
+  responsive: {
+    tablet: { columns: 2 },
+    mobile: { columns: 1 },
+  },
+};
+
 // Default Layer Animation
 export const DEFAULT_LAYER_ANIMATION: LayerAnimation = {
   in: {
@@ -618,4 +686,5 @@ export const WIDGET_DEFAULTS: Record<string, unknown> = {
   "text-block": DEFAULT_TEXT_BLOCK_SETTINGS,
   "spacer": DEFAULT_SPACER_SETTINGS,
   "divider": DEFAULT_DIVIDER_SETTINGS,
+  "service-card": DEFAULT_SERVICE_CARD_SETTINGS,
 };

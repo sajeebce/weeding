@@ -11,6 +11,7 @@ import {
   StatsSectionWidget,
   DividerWidget,
 } from "@/components/page-builder/widgets";
+import { ServiceCardWidget } from "@/components/page-builder/widgets/commerce";
 
 // Helper: Generate background styles from SectionBackground
 function getBackgroundStyles(bg: SectionBackground): React.CSSProperties {
@@ -240,6 +241,9 @@ function WidgetRenderer({ widget }: WidgetRendererProps) {
 
       case "image-slider":
         return <ImageSliderWidget settings={widget.settings as any} />;
+
+      case "service-card":
+        return <ServiceCardWidget settings={widget.settings as any} />;
 
       default:
         // Unknown widget type - render nothing in production

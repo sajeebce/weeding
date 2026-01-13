@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useDroppable } from "@dnd-kit/core";
 import { Plus, Trash2, GripVertical, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type {
@@ -34,7 +35,90 @@ interface WidgetPageBuilderProps {
   onDeleteWidget?: (sectionId: string, columnId: string, widgetId: string) => void;
   isPreviewMode?: boolean;
   device?: "desktop" | "mobile";
+  isDraggingWidget?: boolean;
   className?: string;
+}
+
+// ============================================
+// DROPPABLE WIDGET ZONE
+// ============================================
+
+interface DroppableWidgetZoneProps {
+  sectionId: string;
+  columnId: string;
+  isEmpty: boolean;
+  isDraggingWidget: boolean;
+  onRequestAddWidget: () => void;
+}
+
+function DroppableWidgetZone({
+  sectionId,
+  columnId,
+  isEmpty,
+  isDraggingWidget,
+  onRequestAddWidget,
+}: DroppableWidgetZoneProps) {
+  const { isOver, setNodeRef } = useDroppable({
+    id: `drop-${sectionId}-${columnId}`,
+    data: {
+      sectionId,
+      columnId,
+    },
+  });
+
+  // Empty state - full height drop zone
+  if (isEmpty) {
+    return (
+      <div
+        ref={setNodeRef}
+        onClick={(e) => {
+          e.stopPropagation();
+          onRequestAddWidget();
+        }}
+        className={cn(
+          "flex flex-col items-center justify-center gap-2 w-full h-full min-h-[100px]",
+          "border-2 border-dashed rounded-lg transition-all duration-200",
+          isOver
+            ? "border-primary bg-primary/10 scale-[1.02]"
+            : isDraggingWidget
+              ? "border-primary/50 bg-primary/5 animate-pulse"
+              : "border-slate-600 hover:border-slate-500",
+          "text-slate-500 hover:text-slate-400 cursor-pointer"
+        )}
+      >
+        <Plus className={cn("h-6 w-6", isOver && "text-primary")} />
+        <span className={cn("text-sm", isOver && "text-primary font-medium")}>
+          {isOver ? "Drop here" : "Add Widget"}
+        </span>
+      </div>
+    );
+  }
+
+  // Non-empty state - compact drop zone at bottom
+  return (
+    <div
+      ref={setNodeRef}
+      onClick={(e) => {
+        e.stopPropagation();
+        onRequestAddWidget();
+      }}
+      className={cn(
+        "flex items-center justify-center gap-1 w-full py-2 mt-2",
+        "border-2 border-dashed rounded-md transition-all duration-200",
+        isOver
+          ? "border-primary bg-primary/10 py-4"
+          : isDraggingWidget
+            ? "border-primary/50 bg-primary/5 py-3"
+            : "border-slate-700 hover:border-slate-500",
+        "text-slate-600 hover:text-slate-400 cursor-pointer"
+      )}
+    >
+      <Plus className={cn("h-4 w-4", isOver && "text-primary")} />
+      <span className={cn("text-xs", isOver && "text-primary font-medium")}>
+        {isOver ? "Drop here" : "Add Widget"}
+      </span>
+    </div>
+  );
 }
 
 export function WidgetPageBuilder({
@@ -48,6 +132,7 @@ export function WidgetPageBuilder({
   onDeleteWidget,
   isPreviewMode = false,
   device = "desktop",
+  isDraggingWidget = false,
   className,
 }: WidgetPageBuilderProps) {
   const [showLayoutSelector, setShowLayoutSelector] = useState(false);
@@ -297,23 +382,15 @@ export function WidgetPageBuilder({
                     }
                   }}
                 >
-                  {/* Empty State / Add Widget Button */}
+                  {/* Empty State - Droppable Zone */}
                   {column.widgets.length === 0 && !isPreviewMode && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onRequestAddWidget(section.id, column.id);
-                      }}
-                      className={cn(
-                        "flex flex-col items-center justify-center gap-2 w-full h-full min-h-[100px]",
-                        "border-2 border-dashed border-slate-600 rounded-lg",
-                        "text-slate-500 hover:text-slate-400 hover:border-slate-500",
-                        "transition-colors duration-200"
-                      )}
-                    >
-                      <Plus className="h-6 w-6" />
-                      <span className="text-sm">Add Widget</span>
-                    </button>
+                    <DroppableWidgetZone
+                      sectionId={section.id}
+                      columnId={column.id}
+                      isEmpty={true}
+                      isDraggingWidget={isDraggingWidget}
+                      onRequestAddWidget={() => onRequestAddWidget(section.id, column.id)}
+                    />
                   )}
 
                   {/* Widgets */}
@@ -335,23 +412,15 @@ export function WidgetPageBuilder({
                     />
                   ))}
 
-                  {/* Add Widget Button (when column has widgets) */}
+                  {/* Add Widget Button (when column has widgets) - Droppable Zone */}
                   {column.widgets.length > 0 && !isPreviewMode && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onRequestAddWidget(section.id, column.id);
-                      }}
-                      className={cn(
-                        "flex items-center justify-center gap-1 w-full py-2 mt-2",
-                        "border-2 border-dashed border-slate-700 rounded-md",
-                        "text-slate-600 hover:text-slate-400 hover:border-slate-500",
-                        "transition-all duration-200"
-                      )}
-                    >
-                      <Plus className="h-4 w-4" />
-                      <span className="text-xs">Add Widget</span>
-                    </button>
+                    <DroppableWidgetZone
+                      sectionId={section.id}
+                      columnId={column.id}
+                      isEmpty={false}
+                      isDraggingWidget={isDraggingWidget}
+                      onRequestAddWidget={() => onRequestAddWidget(section.id, column.id)}
+                    />
                   )}
                 </div>
               );
