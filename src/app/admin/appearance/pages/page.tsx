@@ -230,11 +230,12 @@ export default function PagesListPage() {
 
     setIsSubmitting(true);
     try {
+      const templateValue = selectedTemplateType === "none" ? null : selectedTemplateType || null;
       const response = await fetch(`/api/admin/pages/${selectedPage.id}/template`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          templateType: selectedTemplateType || null,
+          templateType: templateValue,
         }),
       });
 
@@ -251,8 +252,8 @@ export default function PagesListPage() {
           if (p.id === selectedPage.id) {
             return {
               ...p,
-              templateType: selectedTemplateType || null,
-              isTemplateActive: !!selectedTemplateType,
+              templateType: templateValue,
+              isTemplateActive: !!templateValue,
             };
           }
           // Unset previous template holder if any
@@ -265,10 +266,10 @@ export default function PagesListPage() {
 
       setShowTemplateDialog(false);
       setSelectedPage(null);
-      setSelectedTemplateType("");
+      setSelectedTemplateType("none");
       toast.success(
-        selectedTemplateType
-          ? `Page assigned as ${TEMPLATE_LABELS[selectedTemplateType]} template`
+        templateValue
+          ? `Page assigned as ${TEMPLATE_LABELS[templateValue]} template`
           : "Template unassigned"
       );
 
@@ -473,7 +474,7 @@ export default function PagesListPage() {
                           <DropdownMenuItem
                             onClick={() => {
                               setSelectedPage(page);
-                              setSelectedTemplateType(page.templateType || "");
+                              setSelectedTemplateType(page.templateType || "none");
                               setShowTemplateDialog(true);
                             }}
                           >
@@ -595,7 +596,7 @@ export default function PagesListPage() {
                   <SelectValue placeholder="Select page type..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None (Custom Page)</SelectItem>
+                  <SelectItem value="none">None (Custom Page)</SelectItem>
                   {Object.entries(TEMPLATE_LABELS).map(([value, label]) => {
                     const template = templates.find((t) => t.type === value);
                     const isAssigned = template?.isAssigned && template.assignedPage?.id !== selectedPage?.id;
@@ -608,7 +609,7 @@ export default function PagesListPage() {
                   })}
                 </SelectContent>
               </Select>
-              {selectedTemplateType && (
+              {selectedTemplateType && selectedTemplateType !== "none" && (
                 <p className="text-xs text-muted-foreground">
                   {templates.find((t) => t.type === selectedTemplateType)?.description}
                 </p>
@@ -621,7 +622,7 @@ export default function PagesListPage() {
             </Button>
             <Button onClick={handleAssignTemplate} disabled={isSubmitting}>
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {selectedTemplateType ? "Assign Template" : "Unassign"}
+              {selectedTemplateType && selectedTemplateType !== "none" ? "Assign Template" : "Unassign"}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -141,7 +141,9 @@ export async function POST(request: NextRequest) {
         isActive: page.isActive,
         templateType: page.templateType,
         isTemplateActive: page.isTemplateActive,
+        sectionsCount: 0,
         createdAt: page.createdAt,
+        updatedAt: page.updatedAt,
       },
       { status: 201 }
     );

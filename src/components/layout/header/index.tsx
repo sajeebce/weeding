@@ -139,22 +139,20 @@ export function Header() {
     await signOut({ callbackUrl: "/" });
   };
 
-  // Check if custom styling is set
-  const hasCustomBgColor = !!headerConfig?.styling?.bgColor;
+  // Check if custom styling is set - use explicit white as default
+  const bgColor = headerConfig?.styling?.bgColor || "#ffffff";
   const hasCustomTextColor = !!headerConfig?.styling?.textColor;
 
-  // Get styling from header config
-  const headerStyle = {
-    ...(hasCustomBgColor && !headerConfig?.transparent && { backgroundColor: headerConfig.styling.bgColor }),
+  // Get styling from header config - always set background color
+  const headerStyle: React.CSSProperties = {
+    ...(!headerConfig?.transparent && { backgroundColor: bgColor }),
     ...(hasCustomTextColor && { color: headerConfig.styling.textColor }),
   };
 
-  // Transparent header styles - don't apply bg class if custom bgColor is set
+  // Transparent header styles - always use inline style for background
   const transparentStyles = headerConfig?.transparent && !isScrolled
     ? "bg-transparent text-white"
-    : hasCustomBgColor
-      ? "border-b" // Only border, let inline style handle background
-      : "bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b";
+    : "border-b"; // Let inline style handle background
 
   // Common layout props
   const layoutProps = {
