@@ -91,7 +91,7 @@ export function TrustBadgesWidget({ settings, isPreview = false }: TrustBadgesWi
       className={cn(
         "grid gap-4",
         getColumnsClass(),
-        centered && "mx-auto max-w-3xl"
+        centered && "mx-auto max-w-4xl"
       )}
     >
       {badges.map((badge) => {
@@ -99,7 +99,7 @@ export function TrustBadgesWidget({ settings, isPreview = false }: TrustBadgesWi
         return (
           <div
             key={badge.id}
-            className="flex flex-col items-center gap-2 px-4 py-5 rounded-xl border backdrop-blur-sm transition-all duration-200 hover:scale-[1.02]"
+            className="flex flex-col items-center justify-center gap-2 px-4 py-5 rounded-xl border text-center backdrop-blur-sm transition-all duration-200 hover:scale-[1.02]"
             style={{
               backgroundColor: style.backgroundColor,
               borderColor: style.borderColor,

@@ -21,6 +21,8 @@ import type {
   ColumnSettings,
   GlobalSettings,
   ServiceCardWidgetSettings,
+  ServiceListWidgetSettings,
+  ProcessStepsWidgetSettings,
 } from "./types";
 
 // ============================================
@@ -381,6 +383,34 @@ export const DEFAULT_DIVIDER_SETTINGS: DividerWidgetSettings = {
 };
 
 export const DEFAULT_SERVICE_CARD_SETTINGS: ServiceCardWidgetSettings = {
+  // Header Section
+  header: {
+    show: true,
+    badge: {
+      show: true,
+      text: "Our Services",
+      style: "pill",
+      bgColor: "#f9731933",
+      textColor: "#fb923c",
+      borderColor: "#f9731980",
+    },
+    heading: {
+      text: "Everything You Need to Start Your US Business",
+      highlightWords: "US Business",
+      highlightColor: "#f97316",
+      size: "xl",
+      color: "#ffffff",
+    },
+    description: {
+      show: true,
+      text: "From LLC formation to Amazon seller accounts, we provide end-to-end support for international entrepreneurs.",
+      size: "lg",
+      color: "#94a3b8",
+    },
+    alignment: "center",
+    marginBottom: 48,
+  },
+
   // Data Filters
   filters: {
     categories: [], // Empty = all categories
@@ -444,6 +474,263 @@ export const DEFAULT_SERVICE_CARD_SETTINGS: ServiceCardWidgetSettings = {
   responsive: {
     tablet: { columns: 2 },
     mobile: { columns: 1 },
+  },
+};
+
+export const DEFAULT_SERVICE_LIST_SETTINGS: ServiceListWidgetSettings = {
+  // Header Section
+  header: {
+    show: true,
+    badge: {
+      show: false, // No badge in clean design
+      text: "Services",
+      style: "pill",
+      bgColor: "#f9731933",
+      textColor: "#fb923c",
+      borderColor: "#f9731980",
+    },
+    heading: {
+      text: "All Services",
+      highlightWords: "",
+      highlightColor: "#f97316",
+      size: "lg", // Smaller, cleaner heading
+      color: "#0f172a", // Dark text for light theme
+    },
+    description: {
+      show: true,
+      text: "Explore our complete range of business services",
+      size: "md", // Smaller description
+      color: "#64748b", // Muted gray
+    },
+    alignment: "center",
+    marginBottom: 40,
+  },
+
+  // Data Filters
+  filters: {
+    showAllCategories: true,
+    categories: [],
+    limitServicesPerCategory: 0, // 0 = no limit
+    sortServicesBy: "order",
+    activeOnly: true,
+  },
+
+  // Layout Configuration
+  layout: {
+    columns: 4,
+    gap: 32, // More spacing between cards
+    cardStyle: "bordered", // Clean bordered style
+  },
+
+  // Category Card Settings
+  categoryCard: {
+    showIcon: true,
+    iconStyle: "rounded",
+    iconSize: "sm", // Smaller icons
+    iconBgColor: "#fff7ed", // Light orange background
+    iconColor: "#f97316", // Primary orange
+    showTagline: true,
+    titleSize: "md", // Medium title
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#e2e8f0", // Light gray border
+    backgroundColor: "#ffffff", // White background
+    padding: 24,
+  },
+
+  // Service Item Settings
+  serviceItem: {
+    showPrice: true,
+    priceColor: "#64748b", // Gray price (muted)
+    nameColor: "#0f172a", // Dark text
+    hoverEffect: "highlight",
+    divider: false, // No dividers for cleaner look
+    dividerColor: "#e2e8f0",
+    padding: 8, // Less padding
+    fontSize: "sm",
+  },
+
+  // CTA Section
+  cta: {
+    show: false, // No CTA by default for cleaner look
+    text: "Not sure which services you need?",
+    textColor: "#64748b",
+    primaryButton: {
+      show: true,
+      text: "View All Services",
+      link: "/services",
+      openInNewTab: false,
+      style: {
+        bgColor: "#f97316",
+        textColor: "#ffffff",
+        borderRadius: 6,
+        hoverEffect: "darken",
+      },
+    },
+    secondaryButton: {
+      show: true,
+      text: "Get Free Consultation",
+      link: "/contact",
+      openInNewTab: false,
+      style: {
+        bgColor: "transparent",
+        textColor: "#0f172a",
+        borderWidth: 1,
+        borderColor: "#e2e8f0",
+        borderRadius: 6,
+        hoverEffect: "darken",
+        hoverBgColor: "#f8fafc",
+      },
+    },
+    alignment: "center",
+    marginTop: 48,
+  },
+
+  // Responsive Breakpoints
+  responsive: {
+    tablet: { columns: 2 },
+    mobile: { columns: 1 },
+  },
+};
+
+export const DEFAULT_PROCESS_STEPS_SETTINGS: ProcessStepsWidgetSettings = {
+  // Header Section - matches screenshot design
+  header: {
+    show: true,
+    badge: {
+      show: true,
+      text: "How It Works",
+      style: "pill",
+      bgColor: "#1e3a5f",
+      textColor: "#ffffff",
+      borderColor: "#1e3a5f",
+    },
+    heading: {
+      text: "Start Your LLC in 4 Simple Steps",
+      highlightWords: "",
+      highlightColor: "#f97316",
+      size: "xl",
+      color: "#0f172a", // Dark text for light theme
+    },
+    description: {
+      show: true,
+      text: "We've simplified the process so you can focus on what matters — building your business.",
+      size: "md",
+      color: "#64748b",
+    },
+    alignment: "center",
+    marginBottom: 48,
+  },
+
+  // Steps Data - matches screenshot
+  steps: [
+    {
+      id: "step_1",
+      icon: "ClipboardList",
+      title: "Choose Your Package",
+      description: "Select the LLC formation package that fits your needs. Pick your state and provide basic information about your business.",
+    },
+    {
+      id: "step_2",
+      icon: "FileCheck",
+      title: "We Handle the Paperwork",
+      description: "Our team prepares and files all necessary documents with the state. We ensure everything is accurate and compliant.",
+    },
+    {
+      id: "step_3",
+      icon: "FileText",
+      title: "Receive Your Documents",
+      description: "Get your LLC approval, Articles of Organization, Operating Agreement, and EIN delivered to your email within 24-48 hours.",
+    },
+    {
+      id: "step_4",
+      icon: "Rocket",
+      title: "Launch Your Business",
+      description: "Open your US business bank account, set up your Amazon seller account, and start accepting payments. You're ready to go!",
+    },
+  ],
+
+  // Layout
+  layout: {
+    type: "horizontal",
+    columns: 4,
+    gap: 24,
+    verticalSpacing: 48,
+  },
+
+  // Step Number Badge
+  stepNumber: {
+    show: true,
+    style: "circle",
+    size: "sm",
+    bgColor: "#f97316",
+    textColor: "#ffffff",
+    borderColor: "#f97316",
+    position: "top-right",
+  },
+
+  // Step Icon
+  stepIcon: {
+    show: true,
+    style: "circle",
+    size: "lg",
+    bgColor: "#fff7ed", // Light orange/peach background
+    iconColor: "#f97316", // Orange icon
+    borderColor: "transparent",
+    hoverAnimation: "bounce",
+  },
+
+  // Step Content
+  stepContent: {
+    titleSize: "md",
+    titleColor: "#0f172a", // Dark text
+    descriptionSize: "sm",
+    descriptionColor: "#64748b", // Gray text
+    alignment: "center",
+  },
+
+  // Connector Line - Animated!
+  connector: {
+    show: true,
+    style: "solid",
+    animation: "dot-travel", // Animated dots traveling along line
+    thickness: 2,
+    color: "#fde8d7", // Light orange
+    secondaryColor: "#f97316", // Orange for gradient/effects
+    animationSpeed: "medium",
+    animationDirection: "forward",
+    dotSize: 8,
+    dotColor: "#f97316",
+  },
+
+  // Card Style (no cards, transparent background)
+  card: {
+    show: false,
+    backgroundColor: "transparent",
+    borderRadius: 0,
+    borderWidth: 0,
+    borderColor: "transparent",
+    padding: 0,
+    shadow: "none",
+    hoverEffect: "none",
+  },
+
+  // Responsive
+  responsive: {
+    tablet: {
+      layout: "horizontal",
+      columns: 2,
+    },
+    mobile: {
+      layout: "vertical",
+      columns: 1,
+    },
+  },
+
+  // Animation
+  animation: {
+    staggerDelay: 150,
+    animateOnScroll: true,
   },
 };
 
@@ -688,4 +975,6 @@ export const WIDGET_DEFAULTS: Record<string, unknown> = {
   "spacer": DEFAULT_SPACER_SETTINGS,
   "divider": DEFAULT_DIVIDER_SETTINGS,
   "service-card": DEFAULT_SERVICE_CARD_SETTINGS,
+  "service-list": DEFAULT_SERVICE_LIST_SETTINGS,
+  "process-steps": DEFAULT_PROCESS_STEPS_SETTINGS,
 };

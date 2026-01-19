@@ -10,8 +10,9 @@ import {
   TrustBadgesWidget,
   StatsSectionWidget,
   DividerWidget,
+  ProcessStepsWidget,
 } from "@/components/page-builder/widgets";
-import { ServiceCardWidget } from "@/components/page-builder/widgets/commerce";
+import { ServiceCardWidget, ServiceListWidget } from "@/components/page-builder/widgets/commerce";
 
 // Helper: Generate background styles from SectionBackground
 function getBackgroundStyles(bg: SectionBackground): React.CSSProperties {
@@ -244,6 +245,12 @@ function WidgetRenderer({ widget }: WidgetRendererProps) {
 
       case "service-card":
         return <ServiceCardWidget settings={widget.settings as any} />;
+
+      case "service-list":
+        return <ServiceListWidget settings={widget.settings as any} />;
+
+      case "process-steps":
+        return <ProcessStepsWidget settings={widget.settings as any} />;
 
       default:
         // Unknown widget type - render nothing in production

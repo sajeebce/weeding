@@ -16,17 +16,19 @@ import {
   DEFAULT_TEXT_BLOCK_SETTINGS,
   DEFAULT_DIVIDER_SETTINGS,
   DEFAULT_SERVICE_CARD_SETTINGS,
+  DEFAULT_SERVICE_LIST_SETTINGS,
+  DEFAULT_PROCESS_STEPS_SETTINGS,
 } from "./defaults";
 
 // Import widget components
-import { HeroContentWidget } from "@/components/page-builder/widgets/content";
+import { HeroContentWidget, ProcessStepsWidget } from "@/components/page-builder/widgets/content";
 import { ImageWidget, ImageSliderWidget } from "@/components/page-builder/widgets/media";
 import {
   TrustBadgesWidget,
   StatsSectionWidget,
 } from "@/components/page-builder/widgets/social-proof";
 import { DividerWidget } from "@/components/page-builder/widgets/layout";
-import { ServiceCardWidget } from "@/components/page-builder/widgets/commerce";
+import { ServiceCardWidget, ServiceListWidget } from "@/components/page-builder/widgets/commerce";
 
 // Register all widgets
 export function registerAllWidgets() {
@@ -134,6 +136,26 @@ export function registerAllWidgets() {
     category: "commerce",
     defaultSettings: DEFAULT_SERVICE_CARD_SETTINGS,
     component: ServiceCardWidget,
+  });
+
+  WidgetRegistry.register({
+    type: "service-list",
+    name: "Service List",
+    description: "Display service categories with their services and prices",
+    icon: "List",
+    category: "commerce",
+    defaultSettings: DEFAULT_SERVICE_LIST_SETTINGS,
+    component: ServiceListWidget,
+  });
+
+  WidgetRegistry.register({
+    type: "process-steps",
+    name: "Process Steps",
+    description: "How It Works section with animated connector lines",
+    icon: "ListOrdered",
+    category: "content",
+    defaultSettings: DEFAULT_PROCESS_STEPS_SETTINGS,
+    component: ProcessStepsWidget,
   });
 }
 

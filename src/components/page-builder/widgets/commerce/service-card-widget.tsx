@@ -10,6 +10,7 @@ import type {
   ServiceCardWidgetSettings,
   ServiceCardStyle,
   ServiceCardHoverEffect,
+  BadgeStyle,
 } from "@/lib/page-builder/types";
 
 // Service type from database
@@ -58,6 +59,146 @@ function formatPrice(price: string | number): string {
   const numPrice = typeof price === "string" ? parseFloat(price) : price;
   if (isNaN(numPrice)) return "Contact Us";
   return `From $${numPrice.toLocaleString()}`;
+}
+
+// Get badge style classes
+function getBadgeStyles(style: BadgeStyle, colors: { bgColor?: string; textColor?: string; borderColor?: string }) {
+  const baseClasses = "inline-flex items-center gap-1.5 px-3 py-1 text-sm font-medium";
+
+  switch (style) {
+    case "outline":
+      return {
+        className: cn(baseClasses, "rounded-full border bg-transparent"),
+        style: {
+          borderColor: colors.borderColor || "#f9731980",
+          color: colors.textColor || "#fb923c",
+        },
+      };
+    case "solid":
+      return {
+        className: cn(baseClasses, "rounded-md border-0"),
+        style: {
+          backgroundColor: colors.bgColor || "#f97316",
+          color: colors.textColor || "#ffffff",
+        },
+      };
+    case "pill":
+    default:
+      return {
+        className: cn(baseClasses, "rounded-full border"),
+        style: {
+          backgroundColor: colors.bgColor || "#f9731933",
+          borderColor: colors.borderColor || "#f9731980",
+          color: colors.textColor || "#fb923c",
+        },
+      };
+  }
+}
+
+// Render text with highlighted words
+function renderHighlightedText(
+  text: string,
+  highlightWords?: string,
+  highlightColor?: string
+) {
+  if (!highlightWords) {
+    return text;
+  }
+
+  const regex = new RegExp(`(${highlightWords})`, "gi");
+  const parts = text.split(regex);
+
+  return parts.map((part, index) => {
+    if (part.toLowerCase() === highlightWords.toLowerCase()) {
+      return (
+        <span
+          key={index}
+          style={{ color: highlightColor || "#f97316" }}
+        >
+          {part}
+        </span>
+      );
+    }
+    return part;
+  });
+}
+
+// Header Section Component
+function SectionHeader({ settings }: { settings: ServiceCardWidgetSettings }) {
+  const { header } = settings;
+
+  if (!header?.show) return null;
+
+  const badgeStyles = getBadgeStyles(header.badge.style, {
+    bgColor: header.badge.bgColor,
+    textColor: header.badge.textColor,
+    borderColor: header.badge.borderColor,
+  });
+
+  const headingSizeClasses = {
+    sm: "text-xl md:text-2xl",
+    md: "text-2xl md:text-3xl",
+    lg: "text-3xl md:text-4xl",
+    xl: "text-4xl md:text-5xl",
+    "2xl": "text-5xl md:text-6xl",
+  };
+
+  const descriptionSizeClasses = {
+    sm: "text-sm",
+    md: "text-base",
+    lg: "text-lg",
+  };
+
+  const alignmentClasses = {
+    left: "text-left items-start",
+    center: "text-center items-center",
+    right: "text-right items-end",
+  };
+
+  return (
+    <div
+      className={cn(
+        "flex flex-col gap-4",
+        alignmentClasses[header.alignment]
+      )}
+      style={{ marginBottom: `${header.marginBottom}px` }}
+    >
+      {/* Badge */}
+      {header.badge.show && (
+        <span className={badgeStyles.className} style={badgeStyles.style}>
+          {header.badge.text}
+        </span>
+      )}
+
+      {/* Heading */}
+      <h2
+        className={cn(
+          "font-bold tracking-tight",
+          headingSizeClasses[header.heading.size]
+        )}
+        style={{ color: header.heading.color || "#ffffff" }}
+      >
+        {renderHighlightedText(
+          header.heading.text,
+          header.heading.highlightWords,
+          header.heading.highlightColor
+        )}
+      </h2>
+
+      {/* Description */}
+      {header.description.show && (
+        <p
+          className={cn(
+            "max-w-3xl",
+            descriptionSizeClasses[header.description.size]
+          )}
+          style={{ color: header.description.color || "#94a3b8" }}
+        >
+          {header.description.text}
+        </p>
+      )}
+    </div>
+  );
 }
 
 // Get responsive column classes
@@ -171,10 +312,11 @@ function ElevatedCard({
 }) {
   const Icon = getLucideIcon(service.icon);
   const iconSize = getIconSizeClasses(settings.icon.size);
+  const hasBadge = settings.content.showBadge && service.isPopular;
 
   return (
     <>
-      {settings.content.showBadge && service.isPopular && (
+      {hasBadge && (
         <Badge
           className={cn(
             "absolute top-3 z-10 bg-accent text-accent-foreground",
@@ -201,7 +343,11 @@ function ElevatedCard({
             />
           </div>
         )}
-        <h3 className="text-lg font-semibold text-foreground">{service.name}</h3>
+        <h3 className={cn(
+          "text-lg font-semibold text-foreground",
+          // Add top margin when icon is hidden but badge is shown to prevent overlap
+          !settings.icon.show && hasBadge && "mt-4"
+        )}>{service.name}</h3>
       </div>
       <div className="px-6 pb-6 space-y-4">
         {settings.content.showDescription && (
@@ -240,10 +386,11 @@ function GlassmorphismCard({
 }) {
   const Icon = getLucideIcon(service.icon);
   const iconSize = getIconSizeClasses(settings.icon.size);
+  const hasBadge = settings.content.showBadge && service.isPopular;
 
   return (
     <>
-      {settings.content.showBadge && service.isPopular && (
+      {hasBadge && (
         <Badge
           className={cn(
             "absolute top-3 z-10 bg-white/10 text-white backdrop-blur-sm border border-white/20",
@@ -264,7 +411,10 @@ function GlassmorphismCard({
             <Icon className={cn(iconSize.icon, "text-white")} />
           </div>
         )}
-        <h3 className="text-lg font-semibold text-white">{service.name}</h3>
+        <h3 className={cn(
+          "text-lg font-semibold text-white",
+          !settings.icon.show && hasBadge && "mt-4"
+        )}>{service.name}</h3>
         {settings.content.showCategory && service.category && (
           <span className="text-xs text-white/60">{service.category.name}</span>
         )}
@@ -306,6 +456,7 @@ function GradientBorderCard({
 }) {
   const Icon = getLucideIcon(service.icon);
   const iconSize = getIconSizeClasses(settings.icon.size);
+  const hasBadge = settings.content.showBadge && service.isPopular;
 
   return (
     <div className="relative p-[2px] rounded-xl bg-gradient-to-br from-primary via-purple-500 to-pink-500 group-hover:from-primary group-hover:via-orange-400 group-hover:to-yellow-400 transition-all">
@@ -313,7 +464,7 @@ function GradientBorderCard({
         className="relative bg-card rounded-xl h-full"
         style={{ borderRadius: `${Math.max(0, settings.borderRadius - 2)}px` }}
       >
-        {settings.content.showBadge && service.isPopular && (
+        {hasBadge && (
           <Badge
             className={cn(
               "absolute top-3 z-10 bg-gradient-to-r from-primary to-purple-500 text-white border-0",
@@ -334,7 +485,10 @@ function GradientBorderCard({
               <Icon className={cn(iconSize.icon, "text-primary")} />
             </div>
           )}
-          <h3 className="text-lg font-semibold text-foreground">{service.name}</h3>
+          <h3 className={cn(
+            "text-lg font-semibold text-foreground",
+            !settings.icon.show && hasBadge && "mt-4"
+          )}>{service.name}</h3>
         </div>
         <div className="px-6 pb-6 space-y-4">
           {settings.content.showDescription && (
@@ -374,13 +528,14 @@ function SpotlightCard({
 }) {
   const Icon = getLucideIcon(service.icon);
   const iconSize = getIconSizeClasses(settings.icon.size);
+  const hasBadge = settings.content.showBadge && service.isPopular;
 
   return (
     <>
       {/* Spotlight gradient overlay on hover */}
       <div className="absolute inset-0 bg-gradient-to-br from-white/0 via-white/0 to-white/0 opacity-0 group-hover:opacity-100 group-hover:from-white/5 group-hover:via-transparent group-hover:to-transparent transition-opacity rounded-xl pointer-events-none" />
 
-      {settings.content.showBadge && service.isPopular && (
+      {hasBadge && (
         <Badge
           className={cn(
             "absolute top-3 z-10 bg-accent text-accent-foreground",
@@ -407,7 +562,10 @@ function SpotlightCard({
             />
           </div>
         )}
-        <h3 className="text-lg font-semibold text-foreground">{service.name}</h3>
+        <h3 className={cn(
+          "text-lg font-semibold text-foreground",
+          !settings.icon.show && hasBadge && "mt-4"
+        )}>{service.name}</h3>
       </div>
       <div className="relative z-10 px-6 pb-6 space-y-4">
         {settings.content.showDescription && (
@@ -447,6 +605,7 @@ function NeonGlowCard({
   const Icon = getLucideIcon(service.icon);
   const iconSize = getIconSizeClasses(settings.icon.size);
   const glowColor = settings.hover.glowColor || "#f97316";
+  const hasBadge = settings.content.showBadge && service.isPopular;
 
   return (
     <>
@@ -456,7 +615,7 @@ function NeonGlowCard({
         style={{ backgroundColor: glowColor, opacity: 0.3 }}
       />
 
-      {settings.content.showBadge && service.isPopular && (
+      {hasBadge && (
         <Badge
           className={cn(
             "absolute top-3 z-10 bg-black/50 backdrop-blur-sm border",
@@ -490,7 +649,10 @@ function NeonGlowCard({
           </div>
         )}
         <h3
-          className="text-lg font-semibold transition-all group-hover:drop-shadow-[0_0_10px_var(--glow-color)]"
+          className={cn(
+            "text-lg font-semibold transition-all group-hover:drop-shadow-[0_0_10px_var(--glow-color)]",
+            !settings.icon.show && hasBadge && "mt-4"
+          )}
           style={{
             color: glowColor,
             // @ts-ignore
@@ -683,28 +845,34 @@ export function ServiceCardWidget({ settings, isPreview = false }: ServiceCardWi
 
   if (services.length === 0) {
     return (
-      <div className="flex items-center justify-center h-32 bg-muted/30 rounded-xl border border-dashed border-muted-foreground/30">
-        <p className="text-sm text-muted-foreground">
-          No services found. Add services from the admin panel.
-        </p>
+      <div>
+        <SectionHeader settings={settings} />
+        <div className="flex items-center justify-center h-32 bg-muted/30 rounded-xl border border-dashed border-muted-foreground/30">
+          <p className="text-sm text-muted-foreground">
+            No services found. Add services from the admin panel.
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div
-      className={cn(
-        "grid",
-        getColumnClasses(settings.layout.columns, settings.responsive),
-        settings.layout.cardAlignment === "start" && "items-start",
-        settings.layout.cardAlignment === "center" && "items-center",
-        settings.layout.cardAlignment === "stretch" && "items-stretch"
-      )}
-      style={{ gap: `${settings.layout.gap}px` }}
-    >
-      {services.map((service) => (
-        <ServiceCard key={service.id} service={service} settings={settings} />
-      ))}
+    <div>
+      <SectionHeader settings={settings} />
+      <div
+        className={cn(
+          "grid",
+          getColumnClasses(settings.layout.columns, settings.responsive),
+          settings.layout.cardAlignment === "start" && "items-start",
+          settings.layout.cardAlignment === "center" && "items-center",
+          settings.layout.cardAlignment === "stretch" && "items-stretch"
+        )}
+        style={{ gap: `${settings.layout.gap}px` }}
+      >
+        {services.map((service) => (
+          <ServiceCard key={service.id} service={service} settings={settings} />
+        ))}
+      </div>
     </div>
   );
 }

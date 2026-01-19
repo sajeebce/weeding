@@ -126,6 +126,7 @@ export type WidgetType =
   | "text-block"
   | "heading"
   | "rich-text"
+  | "process-steps"
   // Media Widgets
   | "image"
   | "image-slider"
@@ -148,6 +149,7 @@ export type WidgetType =
   | "pricing-table"
   | "feature-comparison"
   | "service-card"
+  | "service-list"
   // Layout Widgets
   | "spacer"
   | "divider"
@@ -903,6 +905,34 @@ export type ServiceCardSortBy =
   | "name";
 
 export interface ServiceCardWidgetSettings {
+  // Header Section (above cards)
+  header: {
+    show: boolean;
+    badge: {
+      show: boolean;
+      text: string;
+      style: BadgeStyle;
+      bgColor?: string;
+      textColor?: string;
+      borderColor?: string;
+    };
+    heading: {
+      text: string;
+      highlightWords?: string;
+      highlightColor?: string;
+      size: "sm" | "md" | "lg" | "xl" | "2xl";
+      color?: string;
+    };
+    description: {
+      show: boolean;
+      text: string;
+      size: "sm" | "md" | "lg";
+      color?: string;
+    };
+    alignment: "left" | "center" | "right";
+    marginBottom: number;
+  };
+
   // Data Filters (from database)
   filters: {
     categories: string[];           // Category slugs to filter
@@ -1068,4 +1098,275 @@ export interface WidgetCategoryInfo {
   name: string;
   icon: string;
   description: string;
+}
+
+// ============================================
+// SERVICE LIST WIDGET TYPES (All Services)
+// ============================================
+
+export type ServiceListCardStyle = "minimal" | "bordered" | "elevated" | "glassmorphism";
+
+export interface ServiceListWidgetSettings {
+  // Header Section
+  header: {
+    show: boolean;
+    badge: {
+      show: boolean;
+      text: string;
+      style: BadgeStyle;
+      bgColor?: string;
+      textColor?: string;
+    };
+    heading: {
+      text: string;
+      size: "sm" | "md" | "lg" | "xl" | "2xl";
+      color?: string;
+    };
+    description: {
+      show: boolean;
+      text: string;
+      size: "sm" | "md" | "lg";
+      color?: string;
+    };
+    alignment: "left" | "center" | "right";
+    marginBottom: number;
+  };
+
+  // Data Filters
+  filters: {
+    showAllCategories: boolean;
+    categories: string[]; // Category IDs to show (if not showAll)
+    limitServicesPerCategory: number; // 0 = show all
+    sortServicesBy: "sort-order" | "name" | "price-asc" | "price-desc" | "popular";
+    activeOnly: boolean;
+  };
+
+  // Layout
+  layout: {
+    columns: 1 | 2 | 3 | 4;
+    gap: number;
+    cardStyle: ServiceListCardStyle;
+  };
+
+  // Category Card Style
+  categoryCard: {
+    showIcon: boolean;
+    iconStyle: "circle" | "rounded" | "square" | "none";
+    iconSize: "sm" | "md" | "lg";
+    iconBgColor?: string;
+    iconColor?: string;
+    showTagline: boolean;
+    titleSize: "sm" | "md" | "lg";
+    borderRadius: number;
+    borderWidth: number;
+    borderColor?: string;
+    backgroundColor?: string;
+    padding: number;
+  };
+
+  // Service Item Style
+  serviceItem: {
+    showPrice: boolean;
+    priceColor?: string;
+    nameColor?: string;
+    hoverEffect: "none" | "highlight" | "underline" | "scale";
+    divider: boolean;
+    dividerColor?: string;
+    padding: number;
+    fontSize: "sm" | "md" | "lg";
+  };
+
+  // CTA Section (Footer)
+  cta: {
+    show: boolean;
+    text: string;
+    textColor?: string;
+    primaryButton: {
+      show: boolean;
+      text: string;
+      link: string;
+      openInNewTab?: boolean;
+      badge?: string;
+      style?: ButtonCustomStyle;
+    };
+    secondaryButton: {
+      show: boolean;
+      text: string;
+      link: string;
+      openInNewTab?: boolean;
+      style?: ButtonCustomStyle;
+    };
+    alignment: "left" | "center" | "right";
+    marginTop: number;
+  };
+
+  // Responsive
+  responsive: {
+    tablet: {
+      columns: 1 | 2 | 3;
+    };
+    mobile: {
+      columns: 1 | 2;
+    };
+  };
+}
+
+// ============================================
+// PROCESS STEPS WIDGET TYPES (How It Works)
+// ============================================
+
+export type ProcessStepsLayout = "horizontal" | "vertical" | "alternating";
+
+export type ConnectorLineStyle =
+  | "solid"
+  | "dashed"
+  | "dotted"
+  | "gradient";
+
+export type ConnectorAnimation =
+  | "none"
+  | "flow"           // Gradient flow animation
+  | "pulse"          // Pulsing glow effect
+  | "dash-flow"      // Animated dashes moving
+  | "dot-travel"     // Dots traveling along the line
+  | "shimmer"        // Shimmer/shine effect
+  | "draw";          // Line drawing animation on scroll
+
+export type StepNumberStyle =
+  | "circle"
+  | "circle-outline"
+  | "rounded-square"
+  | "badge"
+  | "none";
+
+export type StepIconStyle =
+  | "circle"
+  | "circle-outline"
+  | "rounded"
+  | "square"
+  | "floating";
+
+export interface ProcessStep {
+  id: string;
+  number?: number;           // Optional custom number
+  icon: string;              // Lucide icon name
+  title: string;
+  description: string;
+}
+
+export interface ProcessStepsWidgetSettings {
+  // Header Section
+  header: {
+    show: boolean;
+    badge: {
+      show: boolean;
+      text: string;
+      style: BadgeStyle;
+      bgColor?: string;
+      textColor?: string;
+      borderColor?: string;
+    };
+    heading: {
+      text: string;
+      highlightWords?: string;
+      highlightColor?: string;
+      size: "sm" | "md" | "lg" | "xl" | "2xl";
+      color?: string;
+    };
+    description: {
+      show: boolean;
+      text: string;
+      size: "sm" | "md" | "lg";
+      color?: string;
+    };
+    alignment: "left" | "center" | "right";
+    marginBottom: number;
+  };
+
+  // Steps Data
+  steps: ProcessStep[];
+
+  // Layout
+  layout: {
+    type: ProcessStepsLayout;
+    columns: 2 | 3 | 4 | 5;     // For horizontal layout
+    gap: number;
+    verticalSpacing: number;    // For vertical/alternating layout
+  };
+
+  // Step Number Badge
+  stepNumber: {
+    show: boolean;
+    style: StepNumberStyle;
+    size: "sm" | "md" | "lg";
+    bgColor?: string;
+    textColor?: string;
+    borderColor?: string;
+    position: "top-left" | "top-center" | "top-right";
+  };
+
+  // Step Icon
+  stepIcon: {
+    show: boolean;
+    style: StepIconStyle;
+    size: "sm" | "md" | "lg" | "xl";
+    bgColor?: string;
+    iconColor?: string;
+    borderColor?: string;
+    hoverAnimation: "none" | "bounce" | "pulse" | "rotate" | "shake";
+  };
+
+  // Step Content
+  stepContent: {
+    titleSize: "sm" | "md" | "lg" | "xl";
+    titleColor?: string;
+    descriptionSize: "sm" | "md" | "lg";
+    descriptionColor?: string;
+    alignment: "left" | "center" | "right";
+  };
+
+  // Connector Line
+  connector: {
+    show: boolean;
+    style: ConnectorLineStyle;
+    animation: ConnectorAnimation;
+    thickness: number;         // 1-6 px
+    color?: string;
+    secondaryColor?: string;   // For gradient
+    animationSpeed: "slow" | "medium" | "fast";
+    animationDirection: "forward" | "backward" | "alternate";
+    // For dot-travel animation
+    dotSize?: number;
+    dotColor?: string;
+  };
+
+  // Card Style (for each step)
+  card: {
+    show: boolean;
+    backgroundColor?: string;
+    borderRadius: number;
+    borderWidth: number;
+    borderColor?: string;
+    padding: number;
+    shadow: "none" | "sm" | "md" | "lg";
+    hoverEffect: "none" | "lift" | "glow" | "scale";
+  };
+
+  // Responsive
+  responsive: {
+    tablet: {
+      layout: ProcessStepsLayout;
+      columns: 2 | 3 | 4;
+    };
+    mobile: {
+      layout: "vertical";
+      columns: 1;
+    };
+  };
+
+  // Animation
+  animation: {
+    staggerDelay: number;      // Delay between each step appearing (ms)
+    animateOnScroll: boolean;
+  };
 }

@@ -6,3 +6,5 @@ export { StatsSectionWidgetSettingsPanel } from "./stats-section-settings";
 export { SectionSettingsPanel } from "./section-settings";
 export { DividerWidgetSettingsPanel } from "./divider-widget-settings";
 export { ServiceCardWidgetSettingsPanel } from "./service-card-settings";
+export { ServiceListWidgetSettingsPanel } from "./service-list-settings";
+export { ProcessStepsWidgetSettingsPanel } from "./process-steps-settings";
