@@ -1370,3 +1370,248 @@ export interface ProcessStepsWidgetSettings {
     animateOnScroll: boolean;
   };
 }
+
+// =============================================================================
+// PRICING TABLE WIDGET SETTINGS
+// =============================================================================
+
+/**
+ * Feature value display type matching database enum
+ */
+export type PricingFeatureValueType = "BOOLEAN" | "TEXT" | "ADDON" | "DASH";
+
+/**
+ * Table layout style options
+ */
+export type PricingTableLayoutStyle = "classic" | "modern" | "minimal" | "bordered";
+
+/**
+ * Card layout style options (for mobile/responsive)
+ */
+export type PricingCardLayoutStyle = "stacked" | "swipeable" | "accordion";
+
+/**
+ * State fee position options
+ */
+export type StateFeePosition = "above-table" | "below-header" | "in-summary";
+
+/**
+ * Order summary position options
+ */
+export type OrderSummaryPosition = "right" | "left" | "bottom" | "floating";
+
+/**
+ * CTA button style
+ */
+export type PricingCTAStyle = "solid" | "outline" | "gradient" | "glow";
+
+/**
+ * State fee configuration
+ */
+export interface StateFeeConfig {
+  enabled: boolean;
+  position: StateFeePosition;
+  label: string;                    // "Select your state"
+  showFeeBreakdown: boolean;        // Show state fee amount separately
+  defaultState?: string;            // Default state code (e.g., "WY")
+  highlightSavings: boolean;        // Show "Save $X" for cheaper states
+  sortBy: "name" | "fee-asc" | "fee-desc" | "popular";
+}
+
+/**
+ * Order summary sidebar configuration
+ */
+export interface OrderSummaryConfig {
+  enabled: boolean;
+  position: OrderSummaryPosition;
+  title: string;                    // "Order Summary"
+  showPackageDetails: boolean;      // Show selected package breakdown
+  showStateFee: boolean;            // Show state fee in summary
+  showAddons: boolean;              // Show selected addons
+  showTotal: boolean;               // Show total price
+  stickyOnScroll: boolean;          // Sticky sidebar on scroll
+  ctaButton: {
+    text: string;                   // "Proceed to Checkout"
+    style: PricingCTAStyle;
+    bgColor?: string;
+    textColor?: string;
+    hoverBgColor?: string;
+  };
+  // Mobile-specific
+  mobileStyle: "sticky-bar" | "expandable" | "bottom-sheet";
+}
+
+/**
+ * Table header style configuration
+ */
+export interface PricingTableHeaderConfig {
+  showPackageNames: boolean;
+  showPackagePrices: boolean;
+  showPopularBadge: boolean;
+  popularBadgeText: string;         // "Most Popular"
+  popularBadgeColor?: string;
+  stickyHeader: boolean;            // Sticky on scroll
+  highlightColumn?: number;         // 0-indexed, which column to highlight
+  highlightColor?: string;
+}
+
+/**
+ * Feature row style configuration
+ */
+export interface PricingFeatureRowConfig {
+  showTooltips: boolean;
+  tooltipPosition: "top" | "right" | "bottom" | "left";
+  showFeatureDescriptions: boolean;
+  alternateRowColors: boolean;
+  rowHoverEffect: boolean;
+  // Value type display
+  booleanStyle: {
+    trueIcon: "check" | "checkCircle" | "checkSquare" | "star";
+    falseIcon: "x" | "xCircle" | "minus" | "dash";
+    trueColor?: string;
+    falseColor?: string;
+  };
+  addonStyle: {
+    showPrice: boolean;
+    priceFormat: "inline" | "below" | "tooltip";
+    toggleStyle: "switch" | "checkbox" | "button";
+    selectedColor?: string;
+  };
+}
+
+/**
+ * CTA button row configuration
+ */
+export interface PricingCTARowConfig {
+  show: boolean;
+  position: "header" | "footer" | "both";
+  buttonText: string;               // "Get Started" or "Choose {package}"
+  buttonStyle: PricingCTAStyle;
+  buttonSize: "sm" | "md" | "lg";
+  // Per-package customization
+  usePackageColors: boolean;        // Use package's accent color
+  defaultBgColor?: string;
+  defaultTextColor?: string;
+  hoverAnimation: "none" | "lift" | "glow" | "pulse";
+}
+
+/**
+ * Main Pricing Table Widget Settings
+ */
+export interface PricingTableWidgetSettings {
+  // Header Section (above table)
+  header: {
+    show: boolean;
+    badge: {
+      show: boolean;
+      text: string;
+      style: BadgeStyle;
+      bgColor?: string;
+      textColor?: string;
+      borderColor?: string;
+    };
+    heading: {
+      text: string;
+      highlightWords?: string;
+      highlightColor?: string;
+      size: "sm" | "md" | "lg" | "xl" | "2xl";
+      color?: string;
+    };
+    description: {
+      show: boolean;
+      text: string;
+      size: "sm" | "md" | "lg";
+      color?: string;
+    };
+    alignment: "left" | "center" | "right";
+    marginBottom: number;
+  };
+
+  // Data Source
+  dataSource: {
+    type: "service" | "manual";
+    serviceSlug?: string;           // Service to pull packages from
+    // Manual mode fields (for future use)
+    manualPackages?: Array<{
+      id: string;
+      name: string;
+      price: number;
+      currency: "USD" | "BDT";
+      isPopular?: boolean;
+    }>;
+  };
+
+  // State Fee Configuration
+  stateFee: StateFeeConfig;
+
+  // Order Summary Configuration
+  orderSummary: OrderSummaryConfig;
+
+  // Table Layout & Style
+  tableStyle: {
+    layout: PricingTableLayoutStyle;
+    borderRadius: number;
+    borderWidth: number;
+    borderColor?: string;
+    backgroundColor?: string;
+    shadow: "none" | "sm" | "md" | "lg" | "xl";
+    maxWidth: "full" | "7xl" | "6xl" | "5xl" | "4xl";
+  };
+
+  // Table Header Configuration
+  tableHeader: PricingTableHeaderConfig;
+
+  // Feature Rows Configuration
+  featureRows: PricingFeatureRowConfig;
+
+  // CTA Buttons Configuration
+  ctaButtons: PricingCTARowConfig;
+
+  // Feature Groups (collapsible sections)
+  featureGroups: {
+    enabled: boolean;
+    defaultExpanded: boolean;
+    showGroupIcons: boolean;
+    collapseAnimation: "none" | "slide" | "fade";
+  };
+
+  // Responsive Settings
+  responsive: {
+    breakpoint: number;             // px at which to switch to mobile layout
+    mobileLayout: PricingCardLayoutStyle;
+    // Card-specific settings for mobile
+    mobileCard: {
+      showAllFeatures: boolean;     // or collapse to show only key features
+      keyFeaturesCount: number;     // How many features to show when collapsed
+      expandButtonText: string;     // "Show all features"
+    };
+  };
+
+  // Animation Settings
+  animation: {
+    enabled: boolean;
+    tableEntrance: "none" | "fade" | "slide-up" | "scale";
+    rowStagger: boolean;
+    staggerDelay: number;
+    highlightOnHover: boolean;
+  };
+
+  // Currency Display
+  currency: {
+    primary: "USD" | "BDT";
+    showBoth: boolean;              // Show both USD and BDT
+    format: "symbol" | "code" | "both";  // $100 | USD 100 | $100 USD
+  };
+
+  // Color Overrides (optional - uses theme by default)
+  colors: {
+    useTheme: boolean;
+    headerBg?: string;
+    headerText?: string;
+    featureLabelText?: string;
+    packageColumnBg?: string;
+    highlightedColumnBg?: string;
+    rowBorderColor?: string;
+    addonToggleActive?: string;
+  };
+}

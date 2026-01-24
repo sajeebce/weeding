@@ -23,6 +23,7 @@ import type {
   ServiceCardWidgetSettings,
   ServiceListWidgetSettings,
   ProcessStepsWidgetSettings,
+  PricingTableWidgetSettings,
 } from "./types";
 
 // ============================================
@@ -734,6 +735,178 @@ export const DEFAULT_PROCESS_STEPS_SETTINGS: ProcessStepsWidgetSettings = {
   },
 };
 
+export const DEFAULT_PRICING_TABLE_SETTINGS: PricingTableWidgetSettings = {
+  // Header Section
+  header: {
+    show: true,
+    badge: {
+      show: true,
+      text: "Pricing",
+      style: "pill",
+      bgColor: "#f9731933",
+      textColor: "#fb923c",
+      borderColor: "#f9731980",
+    },
+    heading: {
+      text: "Choose Your Package",
+      highlightWords: "Package",
+      highlightColor: "#f97316",
+      size: "xl",
+      color: "#0f172a",
+    },
+    description: {
+      show: true,
+      text: "Select the perfect plan for your business needs. All packages include our expert support.",
+      size: "md",
+      color: "#64748b",
+    },
+    alignment: "center",
+    marginBottom: 48,
+  },
+
+  // Data Source - binds to service
+  dataSource: {
+    type: "service",
+    serviceSlug: undefined, // Will be selected in settings panel
+    manualPackages: undefined,
+  },
+
+  // State Fee Configuration
+  stateFee: {
+    enabled: true,
+    position: "above-table",
+    label: "Select your state",
+    showFeeBreakdown: true,
+    defaultState: "WY",
+    highlightSavings: true,
+    sortBy: "popular",
+  },
+
+  // Order Summary Configuration
+  orderSummary: {
+    enabled: true,
+    position: "right",
+    title: "Order Summary",
+    showPackageDetails: true,
+    showStateFee: true,
+    showAddons: true,
+    showTotal: true,
+    stickyOnScroll: true,
+    ctaButton: {
+      text: "Proceed to Checkout",
+      style: "solid",
+      bgColor: "#f97316",
+      textColor: "#ffffff",
+      hoverBgColor: "#ea580c",
+    },
+    mobileStyle: "sticky-bar",
+  },
+
+  // Table Layout & Style
+  tableStyle: {
+    layout: "modern",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    backgroundColor: "#ffffff",
+    shadow: "lg",
+    maxWidth: "7xl",
+  },
+
+  // Table Header Configuration
+  tableHeader: {
+    showPackageNames: true,
+    showPackagePrices: true,
+    showPopularBadge: true,
+    popularBadgeText: "Most Popular",
+    popularBadgeColor: "#f97316",
+    stickyHeader: true,
+    highlightColumn: 1, // Highlight second package (0-indexed)
+    highlightColor: "#fff7ed",
+  },
+
+  // Feature Rows Configuration
+  featureRows: {
+    showTooltips: true,
+    tooltipPosition: "top",
+    showFeatureDescriptions: false,
+    alternateRowColors: true,
+    rowHoverEffect: true,
+    booleanStyle: {
+      trueIcon: "checkCircle",
+      falseIcon: "x",
+      trueColor: "#22c55e",
+      falseColor: "#94a3b8",
+    },
+    addonStyle: {
+      showPrice: true,
+      priceFormat: "inline",
+      toggleStyle: "switch",
+      selectedColor: "#f97316",
+    },
+  },
+
+  // CTA Buttons Configuration
+  ctaButtons: {
+    show: true,
+    position: "footer",
+    buttonText: "Get Started",
+    buttonStyle: "solid",
+    buttonSize: "lg",
+    usePackageColors: false,
+    defaultBgColor: "#f97316",
+    defaultTextColor: "#ffffff",
+    hoverAnimation: "lift",
+  },
+
+  // Feature Groups
+  featureGroups: {
+    enabled: true,
+    defaultExpanded: true,
+    showGroupIcons: true,
+    collapseAnimation: "slide",
+  },
+
+  // Responsive Settings
+  responsive: {
+    breakpoint: 768,
+    mobileLayout: "stacked",
+    mobileCard: {
+      showAllFeatures: false,
+      keyFeaturesCount: 5,
+      expandButtonText: "Show all features",
+    },
+  },
+
+  // Animation Settings
+  animation: {
+    enabled: true,
+    tableEntrance: "fade",
+    rowStagger: true,
+    staggerDelay: 50,
+    highlightOnHover: true,
+  },
+
+  // Currency Display
+  currency: {
+    primary: "USD",
+    showBoth: false,
+    format: "symbol",
+  },
+
+  // Color Overrides
+  colors: {
+    useTheme: true,
+    headerBg: undefined,
+    headerText: undefined,
+    featureLabelText: undefined,
+    packageColumnBg: undefined,
+    highlightedColumnBg: undefined,
+    rowBorderColor: undefined,
+    addonToggleActive: undefined,
+  },
+};
+
 // Default Layer Animation
 export const DEFAULT_LAYER_ANIMATION: LayerAnimation = {
   in: {
@@ -977,4 +1150,5 @@ export const WIDGET_DEFAULTS: Record<string, unknown> = {
   "service-card": DEFAULT_SERVICE_CARD_SETTINGS,
   "service-list": DEFAULT_SERVICE_LIST_SETTINGS,
   "process-steps": DEFAULT_PROCESS_STEPS_SETTINGS,
+  "pricing-table": DEFAULT_PRICING_TABLE_SETTINGS,
 };

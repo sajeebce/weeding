@@ -45,6 +45,7 @@ import {
   ServiceCardWidgetSettingsPanel,
   ServiceListWidgetSettingsPanel,
   ProcessStepsWidgetSettingsPanel,
+  PricingTableWidgetSettingsPanel,
 } from "@/components/page-builder/settings";
 import { NumberInput } from "@/app/admin/appearance/landing-page/components/ui/form-controls";
 import { AccordionSection } from "@/app/admin/appearance/landing-page/components/ui/accordion-section";
@@ -461,8 +462,17 @@ function EditMode({ widget, section, columnId, onBack, onUpdateSettings, onUpdat
             />
           )}
 
+          {/* Pricing Table Widget */}
+          {widget.type === "pricing-table" && (
+            <PricingTableWidgetSettingsPanel
+              settings={widget.settings as any}
+              onChange={onUpdateSettings}
+              activeTab={activeTab}
+            />
+          )}
+
           {/* Fallback for unknown widget types */}
-          {!["hero-content", "image", "image-slider", "trust-badges", "stats-section", "divider", "service-card", "service-list", "process-steps"].includes(widget.type) && (
+          {!["hero-content", "image", "image-slider", "trust-badges", "stats-section", "divider", "service-card", "service-list", "process-steps", "pricing-table"].includes(widget.type) && (
             <p className="text-center text-sm text-muted-foreground">
               Settings for {widget.type} coming soon.
             </p>

@@ -12,7 +12,7 @@ import {
   DividerWidget,
   ProcessStepsWidget,
 } from "@/components/page-builder/widgets";
-import { ServiceCardWidget, ServiceListWidget } from "@/components/page-builder/widgets/commerce";
+import { ServiceCardWidget, ServiceListWidget, PricingTableWidget } from "@/components/page-builder/widgets/commerce";
 
 // Helper: Generate background styles from SectionBackground
 function getBackgroundStyles(bg: SectionBackground): React.CSSProperties {
@@ -251,6 +251,9 @@ function WidgetRenderer({ widget }: WidgetRendererProps) {
 
       case "process-steps":
         return <ProcessStepsWidget settings={widget.settings as any} />;
+
+      case "pricing-table":
+        return <PricingTableWidget settings={widget.settings as any} />;
 
       default:
         // Unknown widget type - render nothing in production

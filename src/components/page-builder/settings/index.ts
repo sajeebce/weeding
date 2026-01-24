@@ -8,3 +8,4 @@ export { DividerWidgetSettingsPanel } from "./divider-widget-settings";
 export { ServiceCardWidgetSettingsPanel } from "./service-card-settings";
 export { ServiceListWidgetSettingsPanel } from "./service-list-settings";
 export { ProcessStepsWidgetSettingsPanel } from "./process-steps-settings";
+export { PricingTableWidgetSettingsPanel } from "./pricing-table-settings";

@@ -18,6 +18,7 @@ import {
   DEFAULT_SERVICE_CARD_SETTINGS,
   DEFAULT_SERVICE_LIST_SETTINGS,
   DEFAULT_PROCESS_STEPS_SETTINGS,
+  DEFAULT_PRICING_TABLE_SETTINGS,
 } from "./defaults";
 
 // Import widget components
@@ -28,7 +29,7 @@ import {
   StatsSectionWidget,
 } from "@/components/page-builder/widgets/social-proof";
 import { DividerWidget } from "@/components/page-builder/widgets/layout";
-import { ServiceCardWidget, ServiceListWidget } from "@/components/page-builder/widgets/commerce";
+import { ServiceCardWidget, ServiceListWidget, PricingTableWidget } from "@/components/page-builder/widgets/commerce";
 
 // Register all widgets
 export function registerAllWidgets() {
@@ -146,6 +147,16 @@ export function registerAllWidgets() {
     category: "commerce",
     defaultSettings: DEFAULT_SERVICE_LIST_SETTINGS,
     component: ServiceListWidget,
+  });
+
+  WidgetRegistry.register({
+    type: "pricing-table",
+    name: "Pricing Table",
+    description: "Interactive pricing comparison table with packages and features",
+    icon: "CreditCard",
+    category: "commerce",
+    defaultSettings: DEFAULT_PRICING_TABLE_SETTINGS,
+    component: PricingTableWidget,
   });
 
   WidgetRegistry.register({
