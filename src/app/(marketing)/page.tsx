@@ -1,19 +1,12 @@
-import prisma from "@/lib/db";
-import { PageRenderer } from "@/components/landing-page/page-renderer";
-import { Hero } from "@/components/sections/hero";
-import { ServicesGrid } from "@/components/sections/services-grid";
-import { HowItWorks } from "@/components/sections/how-it-works";
-import { PricingTable } from "@/components/sections/pricing-table";
-import { Testimonials } from "@/components/sections/testimonials";
-import { BlogSection } from "@/components/sections/blog-section";
-import { FAQSection } from "@/components/sections/faq-section";
-import { CTASection } from "@/components/sections/cta-section";
-import { JsonLd, MultiJsonLd } from "@/components/seo/json-ld";
+import { WidgetSectionsRenderer } from "@/components/landing-page/widget-sections-renderer";
+import { NoTemplateFallback } from "@/components/templates/no-template-fallback";
+import { MultiJsonLd } from "@/components/seo/json-ld";
 import {
   generateOrganizationSchema,
   generateFAQSchema,
   generateProductSchema,
 } from "@/lib/seo";
+import { getHomeTemplate } from "@/lib/templates/get-template";
 
 const homepageFaqs = [
   {
@@ -43,41 +36,9 @@ const homepageFaqs = [
   },
 ];
 
-/**
- * Fetch the default landing page with its blocks
- * Falls back to null if no default page exists
- */
-async function getDefaultLandingPage() {
-  try {
-    const page = await prisma.landingPage.findFirst({
-      where: {
-        isDefault: true,
-        isActive: true,
-      },
-      include: {
-        blocks: {
-          where: { isActive: true },
-          orderBy: { sortOrder: "asc" },
-        },
-      },
-    });
-
-    return page;
-  } catch (error) {
-    console.error("Error fetching landing page:", error);
-    return null;
-  }
-}
-
 export default async function HomePage() {
-  // Fetch dynamic landing page content
-  const landingPage = await getDefaultLandingPage();
-
-  // Use dynamic content if available and has hero blocks, otherwise use static
-  const useDynamicContent =
-    landingPage &&
-    landingPage.blocks.length > 0 &&
-    landingPage.blocks.some((b) => b.type.startsWith("hero"));
+  // Try to get the assigned HOME template
+  const template = await getHomeTemplate();
 
   return (
     <>
@@ -96,31 +57,12 @@ export default async function HomePage() {
         ]}
       />
 
-      {useDynamicContent ? (
-        <>
-          {/* Render hero blocks from database */}
-          <PageRenderer
-            blocks={landingPage.blocks.filter((b) => b.type.startsWith("hero"))}
-          />
-          {/* Static sections (will be converted to blocks in future) */}
-          <ServicesGrid />
-          <HowItWorks />
-          <PricingTable />
-          <Testimonials />
-          <FAQSection />
-          <CTASection />
-        </>
+      {template ? (
+        // Render the assigned template
+        <WidgetSectionsRenderer sections={template.sections} />
       ) : (
-        <>
-          {/* Fallback to static components */}
-          <Hero />
-          <ServicesGrid />
-          <HowItWorks />
-          <PricingTable />
-          <Testimonials />
-          <FAQSection />
-          <CTASection />
-        </>
+        // No template assigned - show setup guide for admins, coming soon for visitors
+        <NoTemplateFallback pageType="home" />
       )}
     </>
   );

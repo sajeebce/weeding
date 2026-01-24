@@ -8,11 +8,11 @@ export default function PublicLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
+    <div className="min-h-screen bg-slate-950">
       <Header />
       <main>{children}</main>
       <Footer />
       <ChatWidget />
-    </>
+    </div>
   );
 }

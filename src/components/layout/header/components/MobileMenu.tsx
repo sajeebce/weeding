@@ -28,6 +28,7 @@ import {
   SheetContent,
   SheetTrigger,
   SheetClose,
+  SheetTitle,
 } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
@@ -106,6 +107,7 @@ export function MobileMenu({
         </Button>
       </SheetTrigger>
       <SheetContent side="right" className="w-80 overflow-y-auto">
+        <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
         <div className="flex flex-col gap-4 py-4">
           {/* Logo */}
           <div className="flex items-center justify-between">

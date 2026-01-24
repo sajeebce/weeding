@@ -40,6 +40,8 @@ interface ChatWindowProps {
   } | null>;
   onLoadMoreMessages: () => void;
   onNewChat: () => void;
+  onTyping?: () => void;
+  onStopTyping?: () => void;
   settings?: WidgetSettings | null;
 }
 
@@ -61,6 +63,8 @@ export function ChatWindow({
   onUploadFile,
   onLoadMoreMessages,
   onNewChat,
+  onTyping,
+  onStopTyping,
   settings,
 }: ChatWindowProps) {
   if (!isOpen) return null;
@@ -161,6 +165,8 @@ export function ChatWindow({
           <ChatInput
             onSend={onSendMessage}
             onUpload={onUploadFile}
+            onTyping={onTyping}
+            onStopTyping={onStopTyping}
             isSending={isSending}
             disabled={!isOnline}
             placeholder={

@@ -17,6 +17,7 @@ import { TrustBadgesEditor } from "../ui/trust-badges-editor";
 import { StatsEditor } from "../ui/stats-editor";
 import { ButtonStyleEditor } from "@/components/admin/button-style-editor";
 import { NumberInput } from "../ui/form-controls";
+import { ImageUpload } from "../ui/image-upload";
 
 interface HeroContentSettingsProps {
   block: LandingPageBlock;
@@ -41,6 +42,19 @@ function migrateFeatureItems(items: unknown): FeatureItem[] {
   }));
 }
 
+// Helper to derive variant from block type
+function getVariantFromBlockType(blockType: string): HeroVariant {
+  const typeMap: Record<string, HeroVariant> = {
+    "hero": "centered",
+    "hero-centered": "centered",
+    "hero-split": "split",
+    "hero-split-dashboard": "split-dashboard",
+    "hero-minimal": "minimal",
+    "hero-video": "video",
+  };
+  return typeMap[blockType] || "centered";
+}
+
 export function HeroContentSettings({
   block,
   settings,
@@ -53,10 +67,14 @@ export function HeroContentSettings({
     items: migrateFeatureItems(settings?.features?.items),
   };
 
+  // Derive variant from block.type if not explicitly set in settings
+  const derivedVariant = settings?.variant || getVariantFromBlockType(block.type);
+
   // Merge with defaults
   const s: HeroSettings = {
     ...defaultHeroSettings,
     ...settings,
+    variant: derivedVariant, // Use derived variant
     badge: { ...defaultHeroSettings.badge, ...settings?.badge },
     headline: { ...defaultHeroSettings.headline, ...settings?.headline },
     subheadline: { ...defaultHeroSettings.subheadline, ...settings?.subheadline },
@@ -242,16 +260,8 @@ export function HeroContentSettings({
         <FeatureListEditor
           enabled={s.features.enabled}
           items={s.features.items}
-          layout={s.features.layout}
-          iconPosition={s.features.iconPosition}
-          iconColor={s.features.iconColor}
-          columns={s.features.columns}
           onEnabledChange={(enabled) => updateNested("features", "enabled", enabled)}
           onItemsChange={(items) => updateNested("features", "items", items)}
-          onLayoutChange={(layout) => updateNested("features", "layout", layout)}
-          onIconPositionChange={(position) => updateNested("features", "iconPosition", position)}
-          onIconColorChange={(color) => updateNested("features", "iconColor", color)}
-          onColumnsChange={(columns) => updateNested("features", "columns", columns)}
         />
       </AccordionSection>
 
@@ -369,6 +379,68 @@ export function HeroContentSettings({
           </>
         )}
       </AccordionSection>
+
+      {/* Visual/Image Section (for split variant) */}
+      {(s.variant === "split" || block.type === "hero-split") && (
+        <AccordionSection title="Hero Image">
+          <ImageUpload
+            label="Upload Image"
+            description="Recommended: 1280×960px (retina). Supports PNG, WebP, JPG, SVG."
+            accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
+            value={s.visual?.url || ""}
+            onChange={(url) => {
+              onUpdateSettings({
+                ...s,
+                visual: {
+                  type: s.visual?.type || "image",
+                  url,
+                  alt: s.visual?.alt || "",
+                  position: s.visual?.position || "right",
+                },
+              });
+            }}
+          />
+          {s.visual?.url && (
+            <>
+              <TextInput
+                label="Alt Text"
+                value={s.visual?.alt || ""}
+                onChange={(v) => {
+                  onUpdateSettings({
+                    ...s,
+                    visual: {
+                      type: s.visual?.type || "image",
+                      url: s.visual?.url || "",
+                      alt: v,
+                      position: s.visual?.position || "right",
+                    },
+                  });
+                }}
+                placeholder="Describe the image for accessibility"
+              />
+              <SelectInput
+                label="Image Position"
+                value={s.visual?.position || "right"}
+                onChange={(v) => {
+                  onUpdateSettings({
+                    ...s,
+                    visual: {
+                      type: s.visual?.type || "image",
+                      url: s.visual?.url || "",
+                      alt: s.visual?.alt || "",
+                      position: v as "left" | "right",
+                    },
+                  });
+                }}
+                options={[
+                  { value: "right", label: "Right Side" },
+                  { value: "left", label: "Left Side" },
+                ]}
+              />
+            </>
+          )}
+        </AccordionSection>
+      )}
 
       {/* Trust Badges Section */}
       <AccordionSection title="Trust Badges">

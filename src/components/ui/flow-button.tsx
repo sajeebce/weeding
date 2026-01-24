@@ -13,11 +13,21 @@ interface FlowButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> 
   children: React.ReactNode
   className?: string
   asChild?: boolean
+  /** Custom ring color for the flow animation border */
+  ringColor?: string
 }
 
-function PrimaryFlowButton({ children, size, asChild = false, className, disabled, ...props }: FlowButtonProps) {
+function PrimaryFlowButton({ children, size, asChild = false, className, disabled, ringColor, style, ...props }: FlowButtonProps) {
+  // Merge wrapper styles - ringColor controls the animated border color
+  const wrapperStyle: React.CSSProperties = {
+    ...(ringColor ? { '--flow-ring-color': ringColor } : {}),
+  } as React.CSSProperties
+
   return (
-    <div className={cn('flow-button-wrapper', disabled && 'flow-button-disabled', className)}>
+    <div
+      className={cn('flow-button-wrapper', disabled && 'flow-button-disabled', className)}
+      style={wrapperStyle}
+    >
       <Button
         size={size}
         asChild={asChild}
@@ -27,6 +37,7 @@ function PrimaryFlowButton({ children, size, asChild = false, className, disable
           size === 'lg' && 'text-base'
         )}
         disabled={disabled}
+        style={style}
         {...props}
       >
         {children}

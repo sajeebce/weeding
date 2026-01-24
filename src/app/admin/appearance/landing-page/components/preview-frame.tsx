@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import type { LandingPageBlock } from "@prisma/client";
 import { HeroBlock } from "@/components/landing-blocks/hero";
@@ -18,10 +18,43 @@ export function PreviewFrame({ blocks, device, className }: PreviewFrameProps) {
     [blocks]
   );
 
+  // Scroll detection for auto-hide scrollbar
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [isScrolling, setIsScrolling] = useState(false);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    if (!scrollContainer) return;
+
+    const handleScroll = () => {
+      setIsScrolling(true);
+
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+
+      scrollTimeoutRef.current = setTimeout(() => {
+        setIsScrolling(false);
+      }, 1000);
+    };
+
+    scrollContainer.addEventListener("scroll", handleScroll);
+
+    return () => {
+      scrollContainer.removeEventListener("scroll", handleScroll);
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
+
   return (
     <div
+      ref={scrollContainerRef}
       className={cn(
-        "flex flex-1 items-start justify-center overflow-auto bg-muted/30 p-8",
+        "flex flex-1 items-start justify-center overflow-auto bg-muted/30 p-8 scrollbar-on-scroll",
+        isScrolling && "is-scrolling",
         className
       )}
     >

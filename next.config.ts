@@ -16,6 +16,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "lh3.googleusercontent.com", // Google OAuth avatars
       },
+      {
+        protocol: "https",
+        hostname: "llcpad.com", // Uploaded images via R2 custom domain
+      },
     ],
   },
 

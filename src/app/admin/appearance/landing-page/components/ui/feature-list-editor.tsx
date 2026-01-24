@@ -23,33 +23,18 @@ import {
   Trash2,
   GripVertical,
   Copy,
-  List,
-  LayoutGrid,
-  AlignLeft,
-  AlignRight,
 } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import type {
-  FeatureItem,
-  FeatureListLayout,
-  FeatureIconPosition,
-} from "@/lib/landing-blocks/types";
-import { FormField, ToggleSwitch } from "./form-controls";
+import type { FeatureItem } from "@/lib/landing-blocks/types";
+import { ToggleSwitch } from "./form-controls";
 
 // Popular icons for quick selection
 const POPULAR_ICONS = [
@@ -239,112 +224,19 @@ function SortableFeatureItem({
   );
 }
 
-// Inline Color Picker Component
-interface InlineColorPickerProps {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-}
-
-function InlineColorPicker({ label, value, onChange }: InlineColorPickerProps) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const presetColors = [
-    "#22c55e", // green
-    "#f97316", // orange
-    "#3b82f6", // blue
-    "#8b5cf6", // purple
-    "#ec4899", // pink
-    "#ef4444", // red
-    "#eab308", // yellow
-    "#14b8a6", // teal
-    "#6366f1", // indigo
-    "#ffffff", // white
-  ];
-
-  return (
-    <FormField label={label}>
-      <Popover open={isOpen} onOpenChange={setIsOpen}>
-        <PopoverTrigger asChild>
-          <button className="flex w-full items-center gap-2 rounded-md border px-3 py-2 hover:bg-muted/50">
-            <div
-              className="h-6 w-6 rounded border shadow-sm"
-              style={{ backgroundColor: value }}
-            />
-            <span className="flex-1 text-left text-sm font-mono">{value}</span>
-          </button>
-        </PopoverTrigger>
-        <PopoverContent className="w-56 p-3" align="start" side="right">
-          <div className="space-y-3">
-            <div className="grid grid-cols-5 gap-2">
-              {presetColors.map((color) => (
-                <button
-                  key={color}
-                  onClick={() => {
-                    onChange(color);
-                    setIsOpen(false);
-                  }}
-                  className={cn(
-                    "h-8 w-8 rounded-md border-2 transition-transform hover:scale-110",
-                    value === color ? "border-primary ring-2 ring-primary/30" : "border-transparent"
-                  )}
-                  style={{ backgroundColor: color }}
-                  title={color}
-                />
-              ))}
-            </div>
-            <div className="border-t pt-2">
-              <label className="text-xs text-muted-foreground">Custom color</label>
-              <div className="mt-1 flex gap-2">
-                <input
-                  type="color"
-                  value={value}
-                  onChange={(e) => onChange(e.target.value)}
-                  className="h-8 w-10 cursor-pointer rounded border"
-                />
-                <Input
-                  value={value}
-                  onChange={(e) => onChange(e.target.value)}
-                  placeholder="#000000"
-                  className="h-8 font-mono text-xs"
-                />
-              </div>
-            </div>
-          </div>
-        </PopoverContent>
-      </Popover>
-    </FormField>
-  );
-}
 
 interface FeatureListEditorProps {
   enabled: boolean;
   items: FeatureItem[];
-  layout: FeatureListLayout;
-  iconPosition: FeatureIconPosition;
-  iconColor: string;
-  columns: 1 | 2 | 3 | 4;
   onEnabledChange: (enabled: boolean) => void;
   onItemsChange: (items: FeatureItem[]) => void;
-  onLayoutChange: (layout: FeatureListLayout) => void;
-  onIconPositionChange: (position: FeatureIconPosition) => void;
-  onIconColorChange: (color: string) => void;
-  onColumnsChange: (columns: 1 | 2 | 3 | 4) => void;
 }
 
 export function FeatureListEditor({
   enabled,
   items,
-  layout,
-  iconPosition,
-  iconColor,
-  columns,
   onEnabledChange,
   onItemsChange,
-  onLayoutChange,
-  onIconPositionChange,
-  onIconColorChange,
-  onColumnsChange,
 }: FeatureListEditorProps) {
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -416,96 +308,6 @@ export function FeatureListEditor({
 
       {enabled && (
         <>
-          {/* Layout Options */}
-          <div className="grid grid-cols-2 gap-3">
-            {/* Layout Style */}
-            <FormField label="Layout Style">
-              <div className="flex gap-1">
-                <button
-                  onClick={() => onLayoutChange("list")}
-                  className={cn(
-                    "flex h-9 flex-1 items-center justify-center gap-1.5 rounded border text-xs transition-colors",
-                    layout === "list"
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "hover:bg-muted"
-                  )}
-                >
-                  <List className="h-3.5 w-3.5" />
-                  List
-                </button>
-                <button
-                  onClick={() => onLayoutChange("grid")}
-                  className={cn(
-                    "flex h-9 flex-1 items-center justify-center gap-1.5 rounded border text-xs transition-colors",
-                    layout === "grid"
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "hover:bg-muted"
-                  )}
-                >
-                  <LayoutGrid className="h-3.5 w-3.5" />
-                  Grid
-                </button>
-              </div>
-            </FormField>
-
-            {/* Icon Position */}
-            <FormField label="Icon Position">
-              <div className="flex gap-1">
-                <button
-                  onClick={() => onIconPositionChange("left")}
-                  className={cn(
-                    "flex h-9 flex-1 items-center justify-center gap-1.5 rounded border text-xs transition-colors",
-                    iconPosition === "left"
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "hover:bg-muted"
-                  )}
-                >
-                  <AlignLeft className="h-3.5 w-3.5" />
-                  Left
-                </button>
-                <button
-                  onClick={() => onIconPositionChange("right")}
-                  className={cn(
-                    "flex h-9 flex-1 items-center justify-center gap-1.5 rounded border text-xs transition-colors",
-                    iconPosition === "right"
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "hover:bg-muted"
-                  )}
-                >
-                  <AlignRight className="h-3.5 w-3.5" />
-                  Right
-                </button>
-              </div>
-            </FormField>
-          </div>
-
-          {/* Grid Columns (only for grid layout) */}
-          {layout === "grid" && (
-            <FormField label="Columns">
-              <Select
-                value={columns.toString()}
-                onValueChange={(v) => onColumnsChange(parseInt(v) as 1 | 2 | 3 | 4)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1">1 Column</SelectItem>
-                  <SelectItem value="2">2 Columns</SelectItem>
-                  <SelectItem value="3">3 Columns</SelectItem>
-                  <SelectItem value="4">4 Columns</SelectItem>
-                </SelectContent>
-              </Select>
-            </FormField>
-          )}
-
-          {/* Icon Color - Inline picker */}
-          <InlineColorPicker
-            label="Icon Color"
-            value={iconColor}
-            onChange={onIconColorChange}
-          />
-
           {/* Feature Items */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">

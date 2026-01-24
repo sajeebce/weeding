@@ -140,9 +140,7 @@ function ButtonPreview({ style, text = "Button" }: { style: ButtonCustomStyle; t
     return (
       <PrimaryFlowButton
         className="text-sm"
-        style={{
-          '--tw-ring-color': `${style.bgColor || ORANGE_PRIMARY}99`,
-        } as React.CSSProperties}
+        ringColor={style.bgColor || ORANGE_PRIMARY}
       >
         {showIcon && style.iconPosition === "left" && icon}
         {text}

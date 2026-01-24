@@ -248,9 +248,7 @@ function FooterButtonPreview({ style }: { style: ButtonCustomStyle }) {
     return (
       <PrimaryFlowButton
         className="text-sm"
-        style={{
-          '--tw-ring-color': `${style.bgColor || '#F97316'}99`,
-        } as React.CSSProperties}
+        ringColor={style.bgColor || '#F97316'}
       >
         {text}
       </PrimaryFlowButton>

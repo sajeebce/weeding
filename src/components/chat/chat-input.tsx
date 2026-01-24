@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { Send, Paperclip, X, Loader2, Image, FileText } from "lucide-react";
+import { useState, useRef, useCallback, useEffect } from "react";
+import { Send, Paperclip, X, Loader2, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -22,6 +22,8 @@ interface ChatInputProps {
     fileType: string;
     fileSize: number;
   } | null>;
+  onTyping?: () => void;
+  onStopTyping?: () => void;
   isSending?: boolean;
   disabled?: boolean;
   placeholder?: string;
@@ -43,6 +45,8 @@ interface PendingAttachment {
 export function ChatInput({
   onSend,
   onUpload,
+  onTyping,
+  onStopTyping,
   isSending = false,
   disabled = false,
   placeholder = "Type a message...",
@@ -51,6 +55,41 @@ export function ChatInput({
   const [attachments, setAttachments] = useState<PendingAttachment[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isTypingRef = useRef(false);
+
+  // Handle typing indicator
+  const handleTyping = useCallback(() => {
+    if (onTyping && !isTypingRef.current) {
+      isTypingRef.current = true;
+      onTyping();
+    }
+
+    // Clear previous timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    // Set timeout to stop typing after 3 seconds of inactivity
+    typingTimeoutRef.current = setTimeout(() => {
+      if (onStopTyping && isTypingRef.current) {
+        isTypingRef.current = false;
+        onStopTyping();
+      }
+    }, 3000);
+  }, [onTyping, onStopTyping]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      if (onStopTyping && isTypingRef.current) {
+        onStopTyping();
+      }
+    };
+  }, [onStopTyping]);
 
   const handleSend = async () => {
     const content = message.trim();
@@ -60,6 +99,15 @@ export function ChatInput({
 
     if (!content && uploadedAttachments.length === 0) return;
 
+    // Stop typing indicator when sending
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    if (onStopTyping && isTypingRef.current) {
+      isTypingRef.current = false;
+      onStopTyping();
+    }
+
     onSend(
       content || "Sent an attachment",
       uploadedAttachments.length > 0 ? uploadedAttachments : undefined
@@ -68,6 +116,11 @@ export function ChatInput({
     setMessage("");
     setAttachments([]);
     textareaRef.current?.focus();
+  };
+
+  const handleMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setMessage(e.target.value);
+    handleTyping();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -215,7 +268,7 @@ export function ChatInput({
         <Textarea
           ref={textareaRef}
           value={message}
-          onChange={(e) => setMessage(e.target.value)}
+          onChange={handleMessageChange}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           disabled={isDisabled}

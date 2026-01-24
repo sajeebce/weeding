@@ -303,10 +303,7 @@ function PreviewCTAButton({ btn }: { btn: CTAButton }) {
       return (
         <PrimaryFlowButton
           className="text-sm"
-          style={{
-            // Override ring color to match button color
-            '--tw-ring-color': `${btn.style.bgColor || '#F97316'}99`,
-          } as React.CSSProperties}
+          ringColor={btn.style.bgColor || '#F97316'}
         >
           {btn.text}
         </PrimaryFlowButton>

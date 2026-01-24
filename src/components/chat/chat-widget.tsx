@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useChat } from "./use-chat";
 import { ChatButton, WidgetSettings } from "./chat-button";
 import { ChatWindow } from "./chat-window";
@@ -28,6 +28,41 @@ export function ChatWidget() {
     fetchSettings();
   }, []);
 
+  // Typing indicator handlers
+  const handleTyping = useCallback(async () => {
+    if (!chat.ticket) return;
+    try {
+      await fetch(`/api/chat/${chat.ticket.id}/typing`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          isTyping: true,
+          userName: chat.guestInfo?.name || "Customer",
+          userType: "CUSTOMER",
+        }),
+      });
+    } catch (error) {
+      console.error("Error sending typing indicator:", error);
+    }
+  }, [chat.ticket, chat.guestInfo]);
+
+  const handleStopTyping = useCallback(async () => {
+    if (!chat.ticket) return;
+    try {
+      await fetch(`/api/chat/${chat.ticket.id}/typing`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          isTyping: false,
+          userName: chat.guestInfo?.name || "Customer",
+          userType: "CUSTOMER",
+        }),
+      });
+    } catch (error) {
+      console.error("Error sending stop typing indicator:", error);
+    }
+  }, [chat.ticket, chat.guestInfo]);
+
   // Don't render if widget is disabled
   if (!isEnabled) {
     return null;
@@ -54,6 +89,8 @@ export function ChatWidget() {
         onUploadFile={chat.uploadFile}
         onLoadMoreMessages={chat.loadMoreMessages}
         onNewChat={chat.clearChat}
+        onTyping={handleTyping}
+        onStopTyping={handleStopTyping}
         settings={settings}
       />
 

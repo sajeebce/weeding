@@ -67,9 +67,7 @@ function CTAButtonItem({ btn, index }: { btn: CTAButton; index: number }) {
         <PrimaryFlowButton
           key={index}
           asChild
-          style={{
-            '--tw-ring-color': `${btn.style.bgColor || ORANGE_PRIMARY}99`,
-          } as React.CSSProperties}
+          ringColor={btn.style.bgColor || ORANGE_PRIMARY}
         >
           <SmartLink href={btn.url} openInNewTab={btn.openInNewTab}>{btn.text}</SmartLink>
         </PrimaryFlowButton>

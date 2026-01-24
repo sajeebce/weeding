@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { toast } from "sonner";
 
 type UserRole = "ADMIN" | "CONTENT_MANAGER" | "SALES_AGENT" | "SUPPORT_AGENT" | "CUSTOMER";
@@ -10,14 +10,10 @@ interface UseLogoutOptions {
 }
 
 export function useLogout(options: UseLogoutOptions = {}) {
-  const router = useRouter();
   const { userRole = "CUSTOMER" } = options;
 
   const logout = async () => {
     try {
-      // TODO: Clear session with NextAuth signOut()
-      // await signOut({ redirect: false });
-
       // Clear any local storage/session data
       if (typeof window !== "undefined") {
         localStorage.removeItem("user");
@@ -33,10 +29,8 @@ export function useLogout(options: UseLogoutOptions = {}) {
       const staffRoles: UserRole[] = ["ADMIN", "CONTENT_MANAGER", "SALES_AGENT", "SUPPORT_AGENT"];
       const redirectUrl = staffRoles.includes(userRole) ? "/login" : "/";
 
-      // Small delay to show toast before redirect
-      setTimeout(() => {
-        router.push(redirectUrl);
-      }, 500);
+      // Sign out and redirect
+      await signOut({ callbackUrl: redirectUrl });
     } catch (error) {
       toast.error("Failed to logout. Please try again.");
       console.error("Logout error:", error);

@@ -1488,13 +1488,30 @@ enum NewsletterSubscriberStatus {
 // LANDING PAGE BUILDER
 // ============================================
 
+// Page template types - which page type this template serves
+enum PageTemplateType {
+  HOME              // Main homepage (/)
+  SERVICE_DETAILS   // Individual service pages (/services/[slug])
+  SERVICES_LIST     // Services listing page (/services)
+  BLOG_POST         // Individual blog posts (/blog/[slug])
+  BLOG_LIST         // Blog listing page (/blog)
+  ABOUT             // About page (/about)
+  CONTACT           // Contact page (/contact)
+  CHECKOUT          // Checkout pages (/checkout/*)
+  CUSTOM            // Custom standalone pages
+}
+
 // Landing page definition
 model LandingPage {
   id              String   @id @default(cuid())
   slug            String   @unique // "homepage", "llc-landing", etc.
   name            String   // "Homepage", "LLC Landing Page"
   isActive        Boolean  @default(true)
-  isDefault       Boolean  @default(false) // Is this the main homepage?
+  isDefault       Boolean  @default(false) // Is this the main homepage? (deprecated, use templateType)
+
+  // Template assignment - NEW
+  templateType    PageTemplateType?  // Which page type this template serves
+  isTemplateActive Boolean @default(false) // Is this the active template for the page type?
 
   // SEO
   metaTitle       String?
@@ -1514,6 +1531,7 @@ model LandingPage {
 
   @@index([slug])
   @@index([isActive, isDefault])
+  @@index([templateType, isTemplateActive])
 }
 
 // Individual block on a landing page

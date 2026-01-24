@@ -114,7 +114,7 @@ const navItems: NavItem[] = [
     title: "Appearance",
     icon: Palette,
     children: [
-      { title: "Landing Page", href: "/admin/appearance/landing-page" },
+      { title: "Page Builder", href: "/admin/appearance/pages" },
       { title: "Header Builder", href: "/admin/appearance/header" },
       { title: "Menu Builder", href: "/admin/appearance/header/menu" },
       { title: "Footer Builder", href: "/admin/appearance/footer" },
@@ -125,6 +125,7 @@ const navItems: NavItem[] = [
     icon: Settings,
     children: [
       { title: "General", href: "/admin/settings" },
+      { title: "Media Storage", href: "/admin/settings/media-storage" },
       { title: "Payments", href: "/admin/settings/payments" },
       { title: "Email", href: "/admin/settings/email" },
       { title: "Newsletter", href: "/admin/settings/newsletter" },
@@ -140,12 +141,13 @@ export function AdminSidebar() {
   const [collapsed, setCollapsed] = useState(false); // Expanded by default
   const [openItems, setOpenItems] = useState<string[]>([]);
 
-  // Landing page always starts collapsed, other pages respect user preference
-  const isLandingPage = pathname === "/admin/appearance/landing-page";
+  // Page builder pages always start collapsed for maximum workspace
+  const isPageBuilder = pathname === "/admin/appearance/landing-page" ||
+                        pathname?.startsWith("/admin/appearance/pages/");
 
   useEffect(() => {
-    if (isLandingPage) {
-      // Landing page: always collapsed
+    if (isPageBuilder) {
+      // Page builder: always collapsed for maximum workspace
       setCollapsed(true);
     } else {
       // Other pages: use localStorage preference (default: expanded/false)
@@ -154,12 +156,12 @@ export function AdminSidebar() {
     }
     // Mark as mounted after state is set to prevent transition flash
     setMounted(true);
-  }, [isLandingPage]);
+  }, [isPageBuilder]);
 
   const handleCollapsedChange = (value: boolean) => {
     setCollapsed(value);
-    // Only save preference for non-landing pages
-    if (!isLandingPage) {
+    // Only save preference for non-page-builder pages
+    if (!isPageBuilder) {
       localStorage.setItem("admin-sidebar-collapsed", String(value));
     }
   };

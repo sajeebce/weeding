@@ -158,9 +158,7 @@ function StyledCTAButton({
       <SmartLink href={href} openInNewTab={openInNewTab} className={cn("group/cta w-full sm:w-auto", className)}>
         <PrimaryFlowButton
           className={cn("text-base", isPreview && "pointer-events-none [&]:hover:after:transform-none")}
-          style={{
-            '--tw-ring-color': `${style.bgColor || ORANGE_PRIMARY}99`,
-          } as React.CSSProperties}
+          ringColor={style.bgColor || ORANGE_PRIMARY}
           disabled={isPreview}
         >
           {hasIcon && iconPosition === "left" && buttonIcon}

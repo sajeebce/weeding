@@ -7,6 +7,7 @@ import type { HeroSettings } from "@/lib/landing-blocks/types";
 import { defaultHeroSettings } from "@/lib/landing-blocks/defaults";
 import { AccordionSection } from "../ui/accordion-section";
 import {
+  TextInput,
   SelectInput,
   ColorPicker,
   SliderInput,

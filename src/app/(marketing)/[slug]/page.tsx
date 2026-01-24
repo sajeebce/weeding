@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import prisma from "@/lib/db";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
+import { WidgetSectionsRenderer } from "@/components/landing-page/widget-sections-renderer";
+import type { Section } from "@/lib/page-builder/types";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -25,6 +27,8 @@ const RESERVED_SLUGS = [
   "register",
   "dashboard",
   "admin",
+  "checkout",
+  "search",
 ];
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -35,20 +39,34 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return {};
   }
 
-  const page = await prisma.legalPage.findUnique({
+  // First check LandingPage (Page Builder pages)
+  const landingPage = await prisma.landingPage.findUnique({
+    where: { slug, isActive: true },
+    select: { metaTitle: true, metaDescription: true, name: true },
+  });
+
+  if (landingPage) {
+    return {
+      title: landingPage.metaTitle || `${landingPage.name} | LLCPad`,
+      description: landingPage.metaDescription || `${landingPage.name} - LLCPad`,
+    };
+  }
+
+  // Fallback to LegalPage
+  const legalPage = await prisma.legalPage.findUnique({
     where: { slug, isActive: true },
     select: { metaTitle: true, metaDescription: true, title: true },
   });
 
-  if (!page) {
+  if (!legalPage) {
     return {
       title: "Page Not Found | LLCPad",
     };
   }
 
   return {
-    title: page.metaTitle || `${page.title} | LLCPad`,
-    description: page.metaDescription || `${page.title} - LLCPad`,
+    title: legalPage.metaTitle || `${legalPage.title} | LLCPad`,
+    description: legalPage.metaDescription || `${legalPage.title} - LLCPad`,
   };
 }
 
@@ -60,11 +78,31 @@ export default async function DynamicPage({ params }: PageProps) {
     notFound();
   }
 
-  const page = await prisma.legalPage.findUnique({
+  // First check LandingPage (Page Builder pages)
+  const landingPage = await prisma.landingPage.findUnique({
+    where: { slug, isActive: true },
+    include: {
+      blocks: {
+        where: { type: "widget-page-sections", isActive: true },
+        select: { settings: true },
+      },
+    },
+  });
+
+  if (landingPage) {
+    // Get sections from the widget-page-sections block
+    const sectionsBlock = landingPage.blocks[0];
+    const sections = (sectionsBlock?.settings as Section[]) || [];
+
+    return <WidgetSectionsRenderer sections={sections} />;
+  }
+
+  // Fallback to LegalPage
+  const legalPage = await prisma.legalPage.findUnique({
     where: { slug, isActive: true },
   });
 
-  if (!page) {
+  if (!legalPage) {
     notFound();
   }
 
@@ -76,17 +114,17 @@ export default async function DynamicPage({ params }: PageProps) {
           <div className="mb-12 text-center">
             <Badge variant="secondary" className="mb-4">Page</Badge>
             <h1 className="text-4xl font-bold tracking-tight text-foreground">
-              {page.title}
+              {legalPage.title}
             </h1>
             <p className="mt-4 text-sm text-muted-foreground">
-              Last updated: {formatDate(page.updatedAt)}
+              Last updated: {formatDate(legalPage.updatedAt)}
             </p>
           </div>
 
           {/* Content */}
           <div
             className="prose prose-gray dark:prose-invert max-w-none"
-            dangerouslySetInnerHTML={{ __html: page.content }}
+            dangerouslySetInnerHTML={{ __html: legalPage.content }}
           />
         </div>
       </div>
@@ -96,12 +134,23 @@ export default async function DynamicPage({ params }: PageProps) {
 
 // Generate static params for existing pages (optional, for build optimization)
 export async function generateStaticParams() {
-  const pages = await prisma.legalPage.findMany({
-    where: { isActive: true },
-    select: { slug: true },
-  });
+  const [landingPages, legalPages] = await Promise.all([
+    prisma.landingPage.findMany({
+      where: { isActive: true },
+      select: { slug: true },
+    }),
+    prisma.legalPage.findMany({
+      where: { isActive: true },
+      select: { slug: true },
+    }),
+  ]);
 
-  return pages
-    .filter((page) => !RESERVED_SLUGS.includes(page.slug))
-    .map((page) => ({ slug: page.slug }));
+  const allSlugs = [
+    ...landingPages.map((p) => p.slug),
+    ...legalPages.map((p) => p.slug),
+  ];
+
+  return [...new Set(allSlugs)]
+    .filter((slug) => !RESERVED_SLUGS.includes(slug))
+    .map((slug) => ({ slug }));
 }

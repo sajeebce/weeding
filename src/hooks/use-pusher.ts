@@ -28,6 +28,29 @@ export function useTicketChannel(
   const channelRef = useRef<Channel | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
+  // Store callbacks in refs to avoid re-subscribing on every render
+  const onMessageNewRef = useRef(options.onMessageNew);
+  const onTypingStartRef = useRef(options.onTypingStart);
+  const onTypingStopRef = useRef(options.onTypingStop);
+  const onTicketUpdatedRef = useRef(options.onTicketUpdated);
+
+  // Update refs when callbacks change
+  useEffect(() => {
+    onMessageNewRef.current = options.onMessageNew;
+  }, [options.onMessageNew]);
+
+  useEffect(() => {
+    onTypingStartRef.current = options.onTypingStart;
+  }, [options.onTypingStart]);
+
+  useEffect(() => {
+    onTypingStopRef.current = options.onTypingStop;
+  }, [options.onTypingStop]);
+
+  useEffect(() => {
+    onTicketUpdatedRef.current = options.onTicketUpdated;
+  }, [options.onTicketUpdated]);
+
   useEffect(() => {
     if (!ticketId || !isPusherClientConfigured()) {
       return;
@@ -47,22 +70,27 @@ export function useTicketChannel(
       setIsConnected(false);
     });
 
-    // Bind event handlers
-    if (options.onMessageNew) {
-      channelRef.current.bind(EVENTS.MESSAGE_NEW, options.onMessageNew);
-    }
+    // Bind event handlers using refs for stable callbacks
+    const handleMessageNew = (event: MessageNewEvent) => {
+      onMessageNewRef.current?.(event);
+    };
 
-    if (options.onTypingStart) {
-      channelRef.current.bind(EVENTS.TYPING_START, options.onTypingStart);
-    }
+    const handleTypingStart = (event: TypingEvent) => {
+      onTypingStartRef.current?.(event);
+    };
 
-    if (options.onTypingStop) {
-      channelRef.current.bind(EVENTS.TYPING_STOP, options.onTypingStop);
-    }
+    const handleTypingStop = (event: TypingEvent) => {
+      onTypingStopRef.current?.(event);
+    };
 
-    if (options.onTicketUpdated) {
-      channelRef.current.bind(EVENTS.TICKET_UPDATED, options.onTicketUpdated);
-    }
+    const handleTicketUpdated = (event: TicketUpdatedEvent) => {
+      onTicketUpdatedRef.current?.(event);
+    };
+
+    channelRef.current.bind(EVENTS.MESSAGE_NEW, handleMessageNew);
+    channelRef.current.bind(EVENTS.TYPING_START, handleTypingStart);
+    channelRef.current.bind(EVENTS.TYPING_STOP, handleTypingStop);
+    channelRef.current.bind(EVENTS.TICKET_UPDATED, handleTicketUpdated);
 
     return () => {
       if (channelRef.current) {
@@ -71,13 +99,7 @@ export function useTicketChannel(
       }
       setIsConnected(false);
     };
-  }, [
-    ticketId,
-    options.onMessageNew,
-    options.onTypingStart,
-    options.onTypingStop,
-    options.onTicketUpdated,
-  ]);
+  }, [ticketId]); // Only re-subscribe when ticketId changes
 
   return { isConnected };
 }
@@ -90,6 +112,24 @@ export function useAdminNotifications(options: {
 } = {}) {
   const channelRef = useRef<Channel | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+
+  // Store callbacks in refs to avoid re-subscribing on every render
+  const onTicketNewRef = useRef(options.onTicketNew);
+  const onTicketUpdatedRef = useRef(options.onTicketUpdated);
+  const onTicketAssignedRef = useRef(options.onTicketAssigned);
+
+  // Update refs when callbacks change
+  useEffect(() => {
+    onTicketNewRef.current = options.onTicketNew;
+  }, [options.onTicketNew]);
+
+  useEffect(() => {
+    onTicketUpdatedRef.current = options.onTicketUpdated;
+  }, [options.onTicketUpdated]);
+
+  useEffect(() => {
+    onTicketAssignedRef.current = options.onTicketAssigned;
+  }, [options.onTicketAssigned]);
 
   useEffect(() => {
     if (!isPusherClientConfigured()) {
@@ -109,18 +149,22 @@ export function useAdminNotifications(options: {
       setIsConnected(false);
     });
 
-    // Bind event handlers
-    if (options.onTicketNew) {
-      channelRef.current.bind(EVENTS.TICKET_NEW, options.onTicketNew);
-    }
+    // Bind event handlers using refs for stable callbacks
+    const handleTicketNew = (event: TicketNewEvent) => {
+      onTicketNewRef.current?.(event);
+    };
 
-    if (options.onTicketUpdated) {
-      channelRef.current.bind(EVENTS.TICKET_UPDATED, options.onTicketUpdated);
-    }
+    const handleTicketUpdated = (event: TicketUpdatedEvent) => {
+      onTicketUpdatedRef.current?.(event);
+    };
 
-    if (options.onTicketAssigned) {
-      channelRef.current.bind(EVENTS.TICKET_ASSIGNED, options.onTicketAssigned);
-    }
+    const handleTicketAssigned = (event: TicketUpdatedEvent) => {
+      onTicketAssignedRef.current?.(event);
+    };
+
+    channelRef.current.bind(EVENTS.TICKET_NEW, handleTicketNew);
+    channelRef.current.bind(EVENTS.TICKET_UPDATED, handleTicketUpdated);
+    channelRef.current.bind(EVENTS.TICKET_ASSIGNED, handleTicketAssigned);
 
     return () => {
       if (channelRef.current) {
@@ -129,7 +173,7 @@ export function useAdminNotifications(options: {
       }
       setIsConnected(false);
     };
-  }, [options.onTicketNew, options.onTicketUpdated, options.onTicketAssigned]);
+  }, []); // Empty deps - only subscribe once
 
   return { isConnected };
 }

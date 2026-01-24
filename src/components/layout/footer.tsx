@@ -95,9 +95,7 @@ function FooterButton({
       <SmartLink href={url} openInNewTab={shouldOpenNewTab}>
         <PrimaryFlowButton
           className="text-sm"
-          style={{
-            '--tw-ring-color': `${style.bgColor || ORANGE_PRIMARY}99`,
-          } as React.CSSProperties}
+          ringColor={style.bgColor || ORANGE_PRIMARY}
         >
           {text}
           {isExternal && <ExternalLink className="ml-1.5 h-3.5 w-3.5" />}

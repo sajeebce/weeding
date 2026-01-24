@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ColorPicker as BaseColorPicker } from "@/components/ui/color-picker";
 import { cn } from "@/lib/utils";
 
 // ============================================
@@ -252,7 +253,7 @@ export function SelectInput({
 }
 
 // ============================================
-// COLOR PICKER
+// COLOR PICKER (with preset colors)
 // ============================================
 
 interface ColorPickerProps {
@@ -264,25 +265,54 @@ interface ColorPickerProps {
 export function ColorPicker({ label, value, onChange }: ColorPickerProps) {
   return (
     <FormField label={label}>
-      <div className="flex gap-2">
-        <div className="relative h-9 w-12 shrink-0">
-          <div
-            className="h-full w-full rounded border cursor-pointer"
-            style={{ backgroundColor: value }}
-          />
-          <input
-            type="color"
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-          />
-        </div>
+      <BaseColorPicker value={value} onChange={onChange} />
+    </FormField>
+  );
+}
+
+// Alias for ColorPicker
+export const ColorInput = ColorPicker;
+
+// ============================================
+// NUMBER INPUT
+// ============================================
+
+interface NumberInputProps {
+  label: string;
+  value: number;
+  onChange: (value: number) => void;
+  min?: number;
+  max?: number;
+  step?: number;
+  unit?: string;
+  description?: string;
+}
+
+export function NumberInput({
+  label,
+  value,
+  onChange,
+  min,
+  max,
+  step = 1,
+  unit = "",
+  description,
+}: NumberInputProps) {
+  return (
+    <FormField label={label} description={description}>
+      <div className="flex items-center gap-2">
         <Input
+          type="number"
           value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder="#000000"
-          className="font-mono text-sm"
+          onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
+          min={min}
+          max={max}
+          step={step}
+          className="flex-1"
         />
+        {unit && (
+          <span className="text-sm text-muted-foreground shrink-0">{unit}</span>
+        )}
       </div>
     </FormField>
   );
