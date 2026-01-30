@@ -22,7 +22,7 @@ import {
 } from "./defaults";
 
 // Import widget components
-import { HeroContentWidget, ProcessStepsWidget } from "@/components/page-builder/widgets/content";
+import { HeroContentWidget, ProcessStepsWidget, HeadingWidget } from "@/components/page-builder/widgets/content";
 import { ImageWidget, ImageSliderWidget } from "@/components/page-builder/widgets/media";
 import {
   TrustBadgesWidget,
@@ -47,11 +47,11 @@ export function registerAllWidgets() {
   WidgetRegistry.register({
     type: "heading",
     name: "Heading",
-    description: "Section heading with customizable size and alignment",
+    description: "Advanced heading with typography, text effects, and animations",
     icon: "Heading",
     category: "content",
     defaultSettings: DEFAULT_HEADING_SETTINGS,
-    component: () => null, // TODO: Implement HeadingWidget
+    component: HeadingWidget,
   });
 
   WidgetRegistry.register({

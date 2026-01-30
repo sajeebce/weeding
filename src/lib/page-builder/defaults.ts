@@ -347,11 +347,148 @@ export const DEFAULT_TESTIMONIAL_SETTINGS: TestimonialWidgetSettings = {
 };
 
 export const DEFAULT_HEADING_SETTINGS: HeadingWidgetSettings = {
-  text: "Section Heading",
-  level: "h2",
-  alignment: "left",
-  color: "#ffffff",
-  size: "lg",
+  // Content Tab
+  content: {
+    text: "Section Heading",
+    htmlTag: "h2",
+    link: undefined,
+    highlight: {
+      enabled: false,
+      words: "",
+      style: "color",
+    },
+    splitHeading: {
+      enabled: false,
+      beforeText: "",
+      mainText: "",
+      afterText: "",
+    },
+  },
+
+  // Style Tab
+  style: {
+    alignment: "left",
+    typography: {
+      fontFamily: undefined,
+      fontSize: 36,
+      fontSizeUnit: "px",
+      fontWeight: 700,
+      fontStyle: "normal",
+      textTransform: "none",
+      textDecoration: "none",
+      lineHeight: 1.2,
+      letterSpacing: 0,
+      letterSpacingUnit: "px",
+      wordSpacing: undefined,
+    },
+    textFill: {
+      type: "solid",
+      color: "#ffffff",
+      gradient: {
+        type: "linear",
+        angle: 90,
+        colors: [
+          { color: "#f97316", position: 0 },
+          { color: "#ef4444", position: 100 },
+        ],
+      },
+      image: undefined,
+    },
+    textStroke: {
+      enabled: false,
+      width: 2,
+      color: "#ffffff",
+      fillColor: undefined,
+    },
+    textShadow: {
+      enabled: false,
+      shadows: [
+        { offsetX: 0, offsetY: 4, blur: 10, color: "rgba(0,0,0,0.3)" },
+      ],
+    },
+    highlightStyle: {
+      color: "#f97316",
+      backgroundColor: "#f9731933",
+      backgroundType: "solid",
+      gradientColors: ["#f97316", "#ef4444"],
+      padding: "0 4px",
+      borderRadius: 4,
+    },
+    splitStyles: undefined,
+  },
+
+  // Animation Tab
+  animation: {
+    entrance: {
+      enabled: false,
+      type: "fade-up",
+      duration: 600,
+      delay: 0,
+      easing: "ease-out",
+    },
+    textAnimation: {
+      enabled: false,
+      type: "fade-in",
+      splitBy: "words",
+      staggerDelay: 50,
+      duration: 400,
+      easing: "ease-out",
+      loop: false,
+      loopDelay: 2000,
+    },
+    continuousAnimation: {
+      enabled: false,
+      type: "none",
+      duration: 3000,
+      gradientColors: ["#f97316", "#ef4444", "#f97316"],
+      gradientAngle: 90,
+    },
+    hoverAnimation: {
+      enabled: false,
+      type: "none",
+      duration: 300,
+    },
+  },
+
+  // Responsive Tab
+  responsive: {
+    desktop: {
+      fontSize: 36,
+      fontSizeUnit: "px",
+      lineHeight: 1.2,
+      letterSpacing: 0,
+      alignment: "left",
+    },
+    tablet: {
+      fontSize: 28,
+      fontSizeUnit: "px",
+      lineHeight: 1.3,
+      letterSpacing: 0,
+      alignment: undefined,
+    },
+    mobile: {
+      fontSize: 24,
+      fontSizeUnit: "px",
+      lineHeight: 1.3,
+      letterSpacing: 0,
+      alignment: undefined,
+    },
+  },
+
+  // Advanced Tab
+  advanced: {
+    customClass: undefined,
+    maxWidth: {
+      enabled: false,
+      value: 800,
+      unit: "px",
+    },
+    hideOnDesktop: false,
+    hideOnTablet: false,
+    hideOnMobile: false,
+    customId: undefined,
+    customAttributes: undefined,
+  },
 };
 
 export const DEFAULT_TEXT_BLOCK_SETTINGS: TextBlockWidgetSettings = {

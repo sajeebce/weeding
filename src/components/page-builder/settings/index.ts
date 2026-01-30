@@ -1,4 +1,5 @@
 export { HeroContentWidgetSettingsPanel } from "./hero-content-settings";
+export { HeadingWidgetSettingsPanel } from "./heading-widget-settings";
 export { ImageWidgetSettingsPanel } from "./image-settings";
 export { ImageSliderSettingsPanel } from "./image-slider-settings";
 export { TrustBadgesWidgetSettingsPanel } from "./trust-badges-settings";

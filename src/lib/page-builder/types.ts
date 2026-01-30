@@ -811,13 +811,238 @@ export interface TestimonialWidgetSettings {
   };
 }
 
-// Heading Widget
-export interface HeadingWidgetSettings {
-  text: string;
-  level: "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
-  alignment: "left" | "center" | "right";
+// ============================================
+// HEADING WIDGET TYPES (v3.2 - 2025 Page Builder Analysis)
+// ============================================
+
+// Typography Settings
+export interface HeadingTypographySettings {
+  fontFamily?: string;
+  fontSize: number;
+  fontSizeUnit: "px" | "em" | "rem" | "vw";
+  fontWeight: 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900;
+  fontStyle: "normal" | "italic";
+  textTransform: "none" | "uppercase" | "lowercase" | "capitalize";
+  textDecoration: "none" | "underline" | "line-through";
+  lineHeight: number;
+  letterSpacing: number;
+  letterSpacingUnit: "px" | "em";
+  wordSpacing?: number;
+}
+
+// Text Fill Settings
+export interface HeadingTextFillSettings {
+  type: "solid" | "gradient" | "image";
   color?: string;
-  size: "sm" | "md" | "lg" | "xl" | "2xl";
+  gradient?: {
+    type: "linear" | "radial";
+    angle: number;
+    colors: Array<{
+      color: string;
+      position: number;
+    }>;
+  };
+  image?: {
+    url: string;
+    size: "cover" | "contain" | "auto";
+    position: "center" | "top" | "bottom";
+    fixed: boolean;
+  };
+}
+
+// Text Stroke (Outline)
+export interface HeadingTextStrokeSettings {
+  enabled: boolean;
+  width: number;
+  color: string;
+  fillColor?: string;
+}
+
+// Text Shadow
+export interface HeadingTextShadowSettings {
+  enabled: boolean;
+  shadows: Array<{
+    offsetX: number;
+    offsetY: number;
+    blur: number;
+    color: string;
+  }>;
+}
+
+// Highlight Styles
+export type HeadingHighlightStyle =
+  | "color"
+  | "background"
+  | "gradient"
+  | "underline"
+  | "marker"
+  | "glow";
+
+// Animation Types
+export type HeadingEntranceAnimationType =
+  | "none"
+  | "fade"
+  | "fade-up"
+  | "fade-down"
+  | "fade-left"
+  | "fade-right"
+  | "zoom-in"
+  | "zoom-out"
+  | "slide-up"
+  | "slide-down"
+  | "flip"
+  | "bounce";
+
+export type HeadingTextAnimationType =
+  | "none"
+  | "fade-in"
+  | "slide-up"
+  | "slide-down"
+  | "scale"
+  | "rotate"
+  | "blur-in"
+  | "typewriter"
+  | "wave"
+  | "bounce"
+  | "elastic"
+  | "glitch"
+  | "scramble";
+
+export type HeadingContinuousAnimationType =
+  | "none"
+  | "gradient-shift"
+  | "pulse"
+  | "glow"
+  | "shimmer"
+  | "float";
+
+export type HeadingHoverAnimationType =
+  | "none"
+  | "color-change"
+  | "underline-grow"
+  | "background-fill"
+  | "scale"
+  | "letter-spacing"
+  | "glow";
+
+export type HeadingEasingType =
+  | "linear"
+  | "ease"
+  | "ease-in"
+  | "ease-out"
+  | "ease-in-out"
+  | "bounce"
+  | "elastic"
+  | "back";
+
+// Responsive Overrides
+export interface HeadingResponsiveOverrides {
+  fontSize?: number;
+  fontSizeUnit?: "px" | "em" | "rem" | "vw";
+  lineHeight?: number;
+  letterSpacing?: number;
+  alignment?: "left" | "center" | "right";
+}
+
+// Main Heading Widget Settings
+export interface HeadingWidgetSettings {
+  // Content Tab
+  content: {
+    text: string;
+    htmlTag: "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "div" | "span" | "p";
+    link?: {
+      url: string;
+      openInNewTab: boolean;
+    };
+    highlight?: {
+      enabled: boolean;
+      words: string;
+      style: HeadingHighlightStyle;
+    };
+    splitHeading?: {
+      enabled: boolean;
+      beforeText: string;
+      mainText: string;
+      afterText: string;
+    };
+  };
+
+  // Style Tab
+  style: {
+    alignment: "left" | "center" | "right";
+    typography: HeadingTypographySettings;
+    textFill: HeadingTextFillSettings;
+    textStroke?: HeadingTextStrokeSettings;
+    textShadow?: HeadingTextShadowSettings;
+    highlightStyle?: {
+      color?: string;
+      backgroundColor?: string;
+      backgroundType?: "solid" | "gradient" | "marker";
+      gradientColors?: string[];
+      padding?: string;
+      borderRadius?: number;
+    };
+    splitStyles?: {
+      before: Partial<HeadingTypographySettings> & { color?: string };
+      main: Partial<HeadingTypographySettings> & { color?: string };
+      after: Partial<HeadingTypographySettings> & { color?: string };
+    };
+  };
+
+  // Animation Tab
+  animation?: {
+    entrance?: {
+      enabled: boolean;
+      type: HeadingEntranceAnimationType;
+      duration: number;
+      delay: number;
+      easing: HeadingEasingType;
+    };
+    textAnimation?: {
+      enabled: boolean;
+      type: HeadingTextAnimationType;
+      splitBy: "characters" | "words" | "lines";
+      staggerDelay: number;
+      duration: number;
+      easing: HeadingEasingType;
+      loop: boolean;
+      loopDelay?: number;
+    };
+    continuousAnimation?: {
+      enabled: boolean;
+      type: HeadingContinuousAnimationType;
+      duration: number;
+      gradientColors?: string[];
+      gradientAngle?: number;
+    };
+    hoverAnimation?: {
+      enabled: boolean;
+      type: HeadingHoverAnimationType;
+      duration: number;
+    };
+  };
+
+  // Responsive Tab
+  responsive?: {
+    desktop: HeadingResponsiveOverrides;
+    tablet?: HeadingResponsiveOverrides;
+    mobile?: HeadingResponsiveOverrides;
+  };
+
+  // Advanced Tab
+  advanced?: {
+    customClass?: string;
+    maxWidth?: {
+      enabled: boolean;
+      value: number;
+      unit: "px" | "ch" | "%" | "vw";
+    };
+    hideOnDesktop?: boolean;
+    hideOnTablet?: boolean;
+    hideOnMobile?: boolean;
+    customId?: string;
+    customAttributes?: Record<string, string>;
+  };
 }
 
 // Text Block Widget
