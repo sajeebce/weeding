@@ -36,6 +36,7 @@ import * as LucideIcons from "lucide-react";
 // Settings panels
 import {
   HeroContentWidgetSettingsPanel,
+  HeadingWidgetSettingsPanel,
   ImageWidgetSettingsPanel,
   ImageSliderSettingsPanel,
   TrustBadgesWidgetSettingsPanel,
@@ -390,6 +391,15 @@ function EditMode({ widget, section, columnId, onBack, onUpdateSettings, onUpdat
             />
           )}
 
+          {/* Heading Widget */}
+          {widget.type === "heading" && (
+            <HeadingWidgetSettingsPanel
+              settings={widget.settings as any}
+              onChange={onUpdateSettings}
+              activeTab={activeTab}
+            />
+          )}
+
           {/* Image Widget */}
           {widget.type === "image" && (
             <ImageWidgetSettingsPanel
@@ -472,7 +482,7 @@ function EditMode({ widget, section, columnId, onBack, onUpdateSettings, onUpdat
           )}
 
           {/* Fallback for unknown widget types */}
-          {!["hero-content", "image", "image-slider", "trust-badges", "stats-section", "divider", "service-card", "service-list", "process-steps", "pricing-table"].includes(widget.type) && (
+          {!["hero-content", "heading", "image", "image-slider", "trust-badges", "stats-section", "divider", "service-card", "service-list", "process-steps", "pricing-table"].includes(widget.type) && (
             <p className="text-center text-sm text-muted-foreground">
               Settings for {widget.type} coming soon.
             </p>
