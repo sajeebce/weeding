@@ -33,6 +33,12 @@ export async function POST(request: NextRequest) {
         rating: body.rating ?? 5,
         isActive: body.isActive ?? true,
         sortOrder: body.sortOrder ?? 0,
+        // Video testimonial fields
+        type: body.type || "PHOTO",
+        videoUrl: body.videoUrl || null,
+        thumbnailUrl: body.thumbnailUrl || null,
+        // Tags for filtering
+        tags: body.tags || [],
       },
     });
 

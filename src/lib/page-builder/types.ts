@@ -794,7 +794,7 @@ export interface VideoWidgetSettings {
   shadow: boolean;
 }
 
-// Testimonial Widget
+// Testimonial Widget (Single)
 export interface TestimonialWidgetSettings {
   quote: string;
   author: {
@@ -808,6 +808,223 @@ export interface TestimonialWidgetSettings {
     backgroundColor?: string;
     quoteColor: string;
     showQuoteIcon: boolean;
+  };
+}
+
+// ============================================
+// TESTIMONIALS WIDGET TYPES (Multiple - Grid/Carousel/Video)
+// ============================================
+
+export type TestimonialsViewMode = "grid" | "carousel" | "masonry" | "video-grid";
+export type TestimonialType = "photo" | "video" | "mixed";
+export type TestimonialCardStyle = "minimal" | "elevated" | "glassmorphism" | "bordered" | "gradient-border";
+export type TestimonialAvatarStyle = "initials" | "photo" | "none";
+export type TestimonialAvatarShape = "circle" | "rounded" | "square";
+export type CarouselLayout = "standard" | "split" | "centered";
+export type CarouselEffect = "slide" | "fade" | "cards" | "coverflow";
+
+// Manual testimonial item for widget settings
+export interface TestimonialItem {
+  id: string;
+  name: string;
+  company?: string;
+  country?: string;
+  avatar?: string;
+  content: string;
+  rating: number;
+  // Video fields
+  type: "photo" | "video";
+  videoUrl?: string;
+  thumbnailUrl?: string;
+}
+
+// Testimonials Widget Settings
+export interface TestimonialsWidgetSettings {
+  // Header Section
+  header: {
+    show: boolean;
+    badge: {
+      show: boolean;
+      text: string;
+      style: BadgeStyle;
+      bgColor?: string;
+      textColor?: string;
+      borderColor?: string;
+    };
+    heading: {
+      text: string;
+      highlightWords?: string;
+      highlightColor?: string;
+      size: "sm" | "md" | "lg" | "xl" | "2xl";
+      color?: string;
+    };
+    description: {
+      show: boolean;
+      text: string;
+      size: "sm" | "md" | "lg";
+      color?: string;
+    };
+    alignment: "left" | "center" | "right";
+    marginBottom: number;
+  };
+
+  // View Mode
+  viewMode: TestimonialsViewMode;
+  testimonialType: TestimonialType;
+
+  // Data Source
+  dataSource: {
+    limit: number;
+    sortBy: "rating" | "recent" | "sort-order";
+    // Filter by type (photo/video)
+    testimonialType?: "all" | "photo" | "video";
+    // Filter by tags
+    filterByTags?: string[];
+  };
+
+  // Grid View Settings
+  gridView: {
+    columns: 2 | 3 | 4;
+    gap: number;
+    showQuoteIcon: boolean;
+    quoteIconPosition: "top-left" | "top-right" | "background";
+    quoteIconColor?: string;
+    quoteIconSize: "sm" | "md" | "lg";
+  };
+
+  // Carousel View Settings
+  carouselView: {
+    layout: CarouselLayout;
+    effect: CarouselEffect;
+    autoplay: boolean;
+    autoplayDelay: number;
+    loop: boolean;
+    slidesPerView: 1 | 2 | 3;
+    spaceBetween: number;
+    // Navigation
+    navigation: {
+      arrows: {
+        enabled: boolean;
+        style: "default" | "minimal" | "rounded" | "outside";
+        size: "sm" | "md" | "lg";
+        color?: string;
+        backgroundColor?: string;
+        position: "sides" | "bottom" | "bottom-right";
+        showOnHover: boolean;
+      };
+      pagination: {
+        enabled: boolean;
+        type: "dots" | "fraction" | "progressbar";
+        activeColor?: string;
+        inactiveColor?: string;
+      };
+    };
+    // Split layout specific
+    splitLayout?: {
+      photoPosition: "left" | "right";
+      photoSize: "40" | "50" | "60"; // percentage
+    };
+  };
+
+  // Video Grid Settings
+  videoView: {
+    columns: 2 | 3 | 4;
+    gap: number;
+    thumbnailAspectRatio: "9:16" | "16:9" | "1:1" | "4:5";
+    playButtonStyle: "default" | "minimal" | "circle" | "rounded";
+    playButtonSize: "sm" | "md" | "lg";
+    playButtonColor?: string;
+    overlayColor?: string;
+    overlayOpacity: number;
+    showCustomerInfo: boolean;
+    darkTheme: boolean;
+    hoverEffect: "none" | "scale" | "brightness" | "overlay-fade";
+  };
+
+  // Card Style
+  cardStyle: {
+    style: TestimonialCardStyle;
+    borderRadius: number;
+    borderWidth: number;
+    borderColor?: string;
+    backgroundColor?: string;
+    shadow: "none" | "sm" | "md" | "lg" | "xl";
+    padding: number;
+    hoverEffect: "none" | "lift" | "glow" | "scale" | "border-color";
+    glassEffect?: {
+      enabled: boolean;
+      blur: number;
+      opacity: number;
+    };
+    gradientBorder?: {
+      enabled: boolean;
+      colors: string[];
+      angle: number;
+    };
+  };
+
+  // Avatar/Photo Style
+  avatar: {
+    style: TestimonialAvatarStyle;
+    shape: TestimonialAvatarShape;
+    size: "sm" | "md" | "lg" | "xl";
+    borderWidth: number;
+    borderColor?: string;
+    backgroundColor?: string;
+    textColor?: string;
+  };
+
+  // Content Display
+  content: {
+    showRating: boolean;
+    ratingStyle: "stars" | "number" | "both";
+    ratingColor?: string;
+    showCompany: boolean;
+    showCountry: boolean;
+    countryFlag: boolean;
+    quoteMaxLines: number; // 0 = no limit
+    quoteFontSize: "sm" | "md" | "lg";
+    quoteColor?: string;
+    quoteStyle: "normal" | "italic";
+    nameFontSize: "sm" | "md" | "lg";
+    nameColor?: string;
+    nameFontWeight: "normal" | "medium" | "semibold" | "bold";
+    infoColor?: string;
+    infoFontSize: "xs" | "sm" | "md";
+  };
+
+  // Trust Footer
+  trustFooter: {
+    show: boolean;
+    showAvatarStack: boolean;
+    avatarStackCount: number;
+    customerCountText: string; // "Join 10,000+ happy customers"
+    showAverageRating: boolean;
+    averageRating: number;
+    totalReviews: string; // "(2,500+ reviews)"
+    alignment: "left" | "center" | "right";
+    marginTop: number;
+  };
+
+  // Animation
+  animation: {
+    enabled: boolean;
+    entrance: "none" | "fade" | "slide-up" | "scale" | "stagger";
+    staggerDelay: number;
+    duration: number;
+  };
+
+  // Responsive
+  responsive: {
+    tablet: {
+      columns: 1 | 2 | 3;
+      slidesPerView?: 1 | 2;
+    };
+    mobile: {
+      columns: 1 | 2;
+      slidesPerView?: 1;
+      layout?: "vertical"; // Force vertical on mobile
+    };
   };
 }
 

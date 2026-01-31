@@ -12,6 +12,7 @@ import type {
   LeadFormWidgetSettings,
   VideoWidgetSettings,
   TestimonialWidgetSettings,
+  TestimonialsWidgetSettings,
   HeadingWidgetSettings,
   TextBlockWidgetSettings,
   SpacerWidgetSettings,
@@ -343,6 +344,195 @@ export const DEFAULT_TESTIMONIAL_SETTINGS: TestimonialWidgetSettings = {
     backgroundColor: "#1e293b",
     quoteColor: "#f8fafc",
     showQuoteIcon: true,
+  },
+};
+
+// ============================================
+// TESTIMONIALS WIDGET DEFAULT SETTINGS (Multiple)
+// ============================================
+
+export const DEFAULT_TESTIMONIALS_SETTINGS: TestimonialsWidgetSettings = {
+  // Header
+  header: {
+    show: true,
+    badge: {
+      show: true,
+      text: "Testimonials",
+      style: "pill",
+      bgColor: "#3b82f620",
+      textColor: "#3b82f6",
+      borderColor: "#3b82f640",
+    },
+    heading: {
+      text: "Trusted by 10,000+ Entrepreneurs Worldwide",
+      highlightWords: "10,000+",
+      highlightColor: "#f97316",
+      size: "xl",
+      color: "#ffffff",
+    },
+    description: {
+      show: true,
+      text: "See what our customers from around the world have to say about their experience with LLCPad.",
+      size: "md",
+      color: "#94a3b8",
+    },
+    alignment: "center",
+    marginBottom: 48,
+  },
+
+  // View Mode
+  viewMode: "grid",
+  testimonialType: "photo",
+
+  // Data Source (from database)
+  dataSource: {
+    limit: 6,
+    sortBy: "sort-order",
+    testimonialType: "all",
+    filterByTags: undefined,
+  },
+
+  // Grid View Settings
+  gridView: {
+    columns: 3,
+    gap: 24,
+    showQuoteIcon: true,
+    quoteIconPosition: "top-right",
+    quoteIconColor: "#f9731620",
+    quoteIconSize: "lg",
+  },
+
+  // Carousel View Settings
+  carouselView: {
+    layout: "standard",
+    effect: "slide",
+    autoplay: true,
+    autoplayDelay: 5000,
+    loop: true,
+    slidesPerView: 1,
+    spaceBetween: 24,
+    navigation: {
+      arrows: {
+        enabled: true,
+        style: "rounded",
+        size: "md",
+        color: "#ffffff",
+        backgroundColor: "#ffffff20",
+        position: "bottom-right",
+        showOnHover: false,
+      },
+      pagination: {
+        enabled: true,
+        type: "dots",
+        activeColor: "#3b82f6",
+        inactiveColor: "#64748b",
+      },
+    },
+    splitLayout: {
+      photoPosition: "left",
+      photoSize: "50",
+    },
+  },
+
+  // Video View Settings
+  videoView: {
+    columns: 4,
+    gap: 16,
+    thumbnailAspectRatio: "9:16",
+    playButtonStyle: "circle",
+    playButtonSize: "lg",
+    playButtonColor: "#ffffff",
+    overlayColor: "#000000",
+    overlayOpacity: 0.3,
+    showCustomerInfo: true,
+    darkTheme: true,
+    hoverEffect: "scale",
+  },
+
+  // Card Style
+  cardStyle: {
+    style: "elevated",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#334155",
+    backgroundColor: "#1e293b",
+    shadow: "md",
+    padding: 24,
+    hoverEffect: "lift",
+    glassEffect: {
+      enabled: false,
+      blur: 10,
+      opacity: 0.1,
+    },
+    gradientBorder: {
+      enabled: false,
+      colors: ["#f97316", "#3b82f6"],
+      angle: 135,
+    },
+  },
+
+  // Avatar Style
+  avatar: {
+    style: "initials",
+    shape: "circle",
+    size: "md",
+    borderWidth: 0,
+    borderColor: "#f97316",
+    backgroundColor: "#f9731620",
+    textColor: "#f97316",
+  },
+
+  // Content Display
+  content: {
+    showRating: true,
+    ratingStyle: "stars",
+    ratingColor: "#facc15",
+    showCompany: true,
+    showCountry: true,
+    countryFlag: false,
+    quoteMaxLines: 0,
+    quoteFontSize: "sm",
+    quoteColor: "#94a3b8",
+    quoteStyle: "normal",
+    nameFontSize: "md",
+    nameColor: "#f8fafc",
+    nameFontWeight: "medium",
+    infoColor: "#64748b",
+    infoFontSize: "xs",
+  },
+
+  // Trust Footer
+  trustFooter: {
+    show: true,
+    showAvatarStack: true,
+    avatarStackCount: 4,
+    customerCountText: "Join 10,000+ happy customers",
+    showAverageRating: true,
+    averageRating: 4.9,
+    totalReviews: "(2,500+ reviews)",
+    alignment: "center",
+    marginTop: 48,
+  },
+
+  // Animation
+  animation: {
+    enabled: true,
+    entrance: "fade",
+    staggerDelay: 100,
+    duration: 500,
+  },
+
+  // Responsive
+  responsive: {
+    tablet: {
+      columns: 2,
+      slidesPerView: 1,
+    },
+    mobile: {
+      columns: 1,
+      slidesPerView: 1,
+      layout: "vertical",
+    },
   },
 };
 
@@ -1301,6 +1491,7 @@ export const WIDGET_DEFAULTS: Record<string, unknown> = {
   "lead-form": DEFAULT_LEAD_FORM_SETTINGS,
   "video": DEFAULT_VIDEO_SETTINGS,
   "testimonial": DEFAULT_TESTIMONIAL_SETTINGS,
+  "testimonials-carousel": DEFAULT_TESTIMONIALS_SETTINGS,
   "heading": DEFAULT_HEADING_SETTINGS,
   "text-block": DEFAULT_TEXT_BLOCK_SETTINGS,
   "spacer": DEFAULT_SPACER_SETTINGS,

@@ -49,6 +49,12 @@ export async function PUT(
         rating: body.rating,
         isActive: body.isActive,
         sortOrder: body.sortOrder,
+        // Video testimonial fields
+        type: body.type || "PHOTO",
+        videoUrl: body.videoUrl || null,
+        thumbnailUrl: body.thumbnailUrl || null,
+        // Tags for filtering
+        tags: body.tags || [],
       },
     });
 

@@ -684,6 +684,11 @@ model BlogCategory {
   @@index([parentId])
 }
 
+enum TestimonialType {
+  PHOTO
+  VIDEO
+}
+
 model Testimonial {
   id          String   @id @default(cuid())
   name        String
@@ -695,9 +700,18 @@ model Testimonial {
   isActive    Boolean  @default(true)
   sortOrder   Int      @default(0)
 
+  // Video testimonial support
+  type          TestimonialType @default(PHOTO)
+  videoUrl      String?
+  thumbnailUrl  String?
+
+  // Tags for optional filtering
+  tags          String[]
+
   createdAt   DateTime @default(now())
 
   @@index([isActive])
+  @@index([type])
 }
 
 model FAQ {

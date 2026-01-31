@@ -11,6 +11,7 @@ import {
   DEFAULT_IMAGE_SLIDER_SETTINGS,
   DEFAULT_TRUST_BADGES_SETTINGS,
   DEFAULT_STATS_SECTION_SETTINGS,
+  DEFAULT_TESTIMONIALS_SETTINGS,
   DEFAULT_LEAD_FORM_SETTINGS,
   DEFAULT_HEADING_SETTINGS,
   DEFAULT_TEXT_BLOCK_SETTINGS,
@@ -27,6 +28,7 @@ import { ImageWidget, ImageSliderWidget } from "@/components/page-builder/widget
 import {
   TrustBadgesWidget,
   StatsSectionWidget,
+  TestimonialsWidget,
 } from "@/components/page-builder/widgets/social-proof";
 import { DividerWidget } from "@/components/page-builder/widgets/layout";
 import { ServiceCardWidget, ServiceListWidget, PricingTableWidget } from "@/components/page-builder/widgets/commerce";
@@ -104,6 +106,16 @@ export function registerAllWidgets() {
     category: "social-proof",
     defaultSettings: DEFAULT_STATS_SECTION_SETTINGS,
     component: StatsSectionWidget,
+  });
+
+  WidgetRegistry.register({
+    type: "testimonials-carousel",
+    name: "Testimonials",
+    description: "Customer testimonials with grid, carousel, and video views",
+    icon: "Quote",
+    category: "social-proof",
+    defaultSettings: DEFAULT_TESTIMONIALS_SETTINGS,
+    component: TestimonialsWidget,
   });
 
   // Form Widgets
