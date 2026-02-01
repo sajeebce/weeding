@@ -89,15 +89,15 @@ export default function LegalPagesAdmin() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Pages</h1>
+          <h1 className="text-2xl font-bold">Legal Pages</h1>
           <p className="text-muted-foreground">
-            Manage website pages and content
+            Manage legal & policy pages (Terms, Privacy, Refund)
           </p>
         </div>
         <Link href="/admin/content/legal/new">
           <Button>
             <Plus className="mr-2 h-4 w-4" />
-            Add Page
+            Add Legal Page
           </Button>
         </Link>
       </div>
@@ -129,20 +129,20 @@ export default function LegalPagesAdmin() {
       {/* Pages Table */}
       <Card>
         <CardHeader>
-          <CardTitle>All Pages</CardTitle>
+          <CardTitle>All Legal Pages</CardTitle>
         </CardHeader>
         <CardContent>
           {pages.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <FileText className="h-12 w-12 text-muted-foreground/50" />
-              <h3 className="mt-4 text-lg font-medium">No pages yet</h3>
+              <h3 className="mt-4 text-lg font-medium">No legal pages yet</h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                Create your first page to get started
+                Create your first legal page to get started
               </p>
               <Link href="/admin/content/legal/new" className="mt-4">
                 <Button>
                   <Plus className="mr-2 h-4 w-4" />
-                  Create Page
+                  Create Legal Page
                 </Button>
               </Link>
             </div>
