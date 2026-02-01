@@ -20,8 +20,8 @@ interface Shortcut {
 const shortcuts: Shortcut[] = [
   // Navigation
   {
-    keys: ["G", "then", "T"],
-    description: "Go to Tickets list",
+    keys: ["G", "then", "D"],
+    description: "Go to Dashboard",
     category: "Navigation",
   },
   {
@@ -29,59 +29,31 @@ const shortcuts: Shortcut[] = [
     description: "Go to Settings",
     category: "Navigation",
   },
+  {
+    keys: ["G", "then", "O"],
+    description: "Go to Orders",
+    category: "Navigation",
+  },
   { keys: ["Esc"], description: "Close dialog/modal", category: "Navigation" },
-
-  // Ticket Actions
-  { keys: ["R"], description: "Reply to ticket", category: "Ticket Actions" },
-  {
-    keys: ["E"],
-    description: "Export conversation",
-    category: "Ticket Actions",
-  },
-  {
-    keys: ["Ctrl", "Enter"],
-    description: "Send message",
-    category: "Ticket Actions",
-  },
-  {
-    keys: ["Ctrl", "E"],
-    description: "Open emoji picker",
-    category: "Ticket Actions",
-  },
-  {
-    keys: ["Ctrl", "U"],
-    description: "Upload file",
-    category: "Ticket Actions",
-  },
 
   // Search
   { keys: ["Ctrl", "K"], description: "Focus search", category: "Search" },
   { keys: ["/"], description: "Quick search", category: "Search" },
 
-  // Status Changes
+  // Editing
   {
-    keys: ["Shift", "O"],
-    description: "Mark as Open",
-    category: "Status",
+    keys: ["Ctrl", "S"],
+    description: "Save changes",
+    category: "Editing",
   },
-  {
-    keys: ["Shift", "P"],
-    description: "Mark as In Progress",
-    category: "Status",
-  },
-  {
-    keys: ["Shift", "R"],
-    description: "Mark as Resolved",
-    category: "Status",
-  },
-
-  // Other
-  { keys: ["?"], description: "Show shortcuts", category: "Help" },
   {
     keys: ["Ctrl", "Z"],
     description: "Undo last action",
     category: "Editing",
   },
+
+  // Other
+  { keys: ["?"], description: "Show shortcuts", category: "Help" },
 ];
 
 export function KeyboardShortcutsDialog() {

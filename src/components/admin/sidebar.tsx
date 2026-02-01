@@ -20,6 +20,7 @@ import {
   Percent,
   UserCog,
   Palette,
+  Puzzle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useBusinessConfig } from "@/hooks/use-business-config";
@@ -82,15 +83,6 @@ const navItems: NavItem[] = [
     ],
   },
   {
-    title: "Tickets",
-    icon: MessageSquare,
-    badge: 3,
-    children: [
-      { title: "All Tickets", href: "/admin/tickets" },
-      { title: "Settings", href: "/admin/tickets/settings" },
-    ],
-  },
-  {
     title: "Invoices",
     href: "/admin/invoices",
     icon: Receipt,
@@ -129,10 +121,48 @@ const navItems: NavItem[] = [
       { title: "Payments", href: "/admin/settings/payments" },
       { title: "Email", href: "/admin/settings/email" },
       { title: "Newsletter", href: "/admin/settings/newsletter" },
+      { title: "Plugins", href: "/admin/settings/plugins" },
       { title: "Profile", href: "/admin/profile" },
     ],
   },
 ];
+
+// Plugin menu item interface
+interface PluginMenuItem {
+  id: string;
+  label: string;
+  path: string;
+  icon: string | null;
+  parentLabel: string | null;
+  sortOrder: number;
+}
+
+interface PluginWithMenuItems {
+  id: string;
+  slug: string;
+  name: string;
+  adminMenuLabel: string | null;
+  adminMenuIcon: string | null;
+  adminMenuPosition: number | null;
+  menuItems: PluginMenuItem[];
+}
+
+// Icon mapping for dynamic plugin icons
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  LayoutDashboard,
+  Package,
+  Users,
+  Settings,
+  FileText,
+  MessageSquare,
+  Tag,
+  MapPin,
+  Receipt,
+  Percent,
+  UserCog,
+  Palette,
+  Puzzle,
+};
 
 export function AdminSidebar() {
   const pathname = usePathname();
@@ -140,10 +170,48 @@ export function AdminSidebar() {
   const [mounted, setMounted] = useState(false); // Prevent transition flash on initial load
   const [collapsed, setCollapsed] = useState(false); // Expanded by default
   const [openItems, setOpenItems] = useState<string[]>([]);
+  const [pluginMenuItems, setPluginMenuItems] = useState<NavItem[]>([]);
 
   // Page builder pages always start collapsed for maximum workspace
   const isPageBuilder = pathname === "/admin/appearance/landing-page" ||
                         pathname?.startsWith("/admin/appearance/pages/");
+
+  // Fetch active plugins with menu items
+  useEffect(() => {
+    async function fetchPlugins() {
+      try {
+        const res = await fetch("/api/admin/plugins?status=ACTIVE&includeMenuItems=true");
+        if (res.ok) {
+          const data = await res.json();
+          const plugins: PluginWithMenuItems[] = data.plugins || [];
+
+          // Convert plugins to NavItems
+          const items: NavItem[] = plugins
+            .filter((plugin) => plugin.menuItems.length > 0)
+            .map((plugin) => {
+              const IconComponent = plugin.adminMenuIcon
+                ? iconMap[plugin.adminMenuIcon] || Puzzle
+                : Puzzle;
+
+              return {
+                title: plugin.adminMenuLabel || plugin.name,
+                icon: IconComponent,
+                children: plugin.menuItems.map((item) => ({
+                  title: item.label,
+                  href: item.path,
+                })),
+              };
+            });
+
+          setPluginMenuItems(items);
+        }
+      } catch (error) {
+        console.error("Error fetching plugin menu items:", error);
+      }
+    }
+
+    fetchPlugins();
+  }, []);
 
   useEffect(() => {
     if (isPageBuilder) {
@@ -157,6 +225,9 @@ export function AdminSidebar() {
     // Mark as mounted after state is set to prevent transition flash
     setMounted(true);
   }, [isPageBuilder]);
+
+  // Combine static nav items with plugin menu items
+  const allNavItems = [...navItems.slice(0, -1), ...pluginMenuItems, navItems[navItems.length - 1]];
 
   const handleCollapsedChange = (value: boolean) => {
     setCollapsed(value);
@@ -230,7 +301,7 @@ export function AdminSidebar() {
 
         {/* Navigation */}
         <nav className="flex-1 space-y-1 overflow-y-auto p-2">
-          {navItems.map((item) => {
+          {allNavItems.map((item) => {
             const Icon = item.icon;
 
             if (item.children) {

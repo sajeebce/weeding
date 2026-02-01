@@ -1,0 +1,31 @@
+{
+  "name": "@livesupport/standalone",
+  "version": "1.0.0",
+  "private": true,
+  "description": "LiveSupport Pro - Standalone Support System",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@livesupport/ai": "workspace:*",
+    "@livesupport/core": "workspace:*",
+    "@livesupport/database": "workspace:*",
+    "@livesupport/ui": "workspace:*",
+    "next": "^15.1.0",
+    "next-auth": "^5.0.0-beta.25",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "socket.io": "^4.8.0",
+    "socket.io-client": "^4.8.0",
+    "tailwindcss": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.7.0"
+  }
+}

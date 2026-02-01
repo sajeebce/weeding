@@ -1593,3 +1593,91 @@ model BlockTemplate {
   @@index([category])
   @@index([type])
 }
+
+// ============================================
+// PLUGIN SYSTEM
+// ============================================
+
+// Plugin status enum
+enum PluginStatus {
+  INSTALLED    // Plugin is installed but not active
+  ACTIVE       // Plugin is installed and active
+  DISABLED     // Plugin is temporarily disabled
+  ERROR        // Plugin has an error
+}
+
+// Installed plugins
+model Plugin {
+  id              String       @id @default(cuid())
+  slug            String       @unique // "livesupport-pro", "seo-tools"
+  name            String       // "LiveSupport Pro"
+  description     String?      @db.Text
+  version         String       // "1.0.0"
+  author          String?
+  authorUrl       String?
+  icon            String?      // Icon URL or emoji
+  status          PluginStatus @default(INSTALLED)
+
+  // Plugin manifest data (from plugin.json)
+  manifest        Json?        // Full plugin.json content
+
+  // Menu configuration
+  adminMenuLabel  String?      // "Support"
+  adminMenuIcon   String?      // "MessageSquare"
+  adminMenuPosition Int?       // Position in sidebar
+
+  // Feature flags
+  hasAdminPages   Boolean      @default(false)
+  hasPublicPages  Boolean      @default(false)
+  hasWidgets      Boolean      @default(false)
+  hasApiRoutes    Boolean      @default(false)
+
+  // Installation info
+  installedAt     DateTime     @default(now())
+  installedBy     String?      // User ID who installed
+  lastActivatedAt DateTime?
+  lastError       String?      @db.Text
+  errorAt         DateTime?
+
+  // Relations
+  settings        PluginSetting[]
+  menuItems       PluginMenuItem[]
+
+  updatedAt       DateTime     @updatedAt
+
+  @@index([slug])
+  @@index([status])
+}
+
+// Plugin-specific settings
+model PluginSetting {
+  id        String   @id @default(cuid())
+  pluginId  String
+  plugin    Plugin   @relation(fields: [pluginId], references: [id], onDelete: Cascade)
+
+  key       String   // "chat.enabled", "widget.position"
+  value     String   @db.Text
+  type      String   @default("string") // string, boolean, number, json
+
+  updatedAt DateTime @updatedAt
+
+  @@unique([pluginId, key])
+  @@index([pluginId])
+}
+
+// Plugin admin menu items (dynamic sidebar entries)
+model PluginMenuItem {
+  id          String   @id @default(cuid())
+  pluginId    String
+  plugin      Plugin   @relation(fields: [pluginId], references: [id], onDelete: Cascade)
+
+  label       String   // "All Tickets"
+  path        String   // "/admin/plugins/livesupport-pro/tickets"
+  icon        String?  // "Ticket"
+  parentLabel String?  // For nested items: "Support"
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+
+  @@index([pluginId])
+  @@index([isActive])
+}

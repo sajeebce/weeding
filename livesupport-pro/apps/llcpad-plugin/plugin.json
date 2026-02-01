@@ -1,0 +1,120 @@
+{
+  "slug": "livesupport-pro",
+  "name": "LiveSupport Pro",
+  "description": "Professional customer support system with live chat, ticketing, and AI assistance. Includes real-time messaging, ticket management, canned responses, and comprehensive admin dashboard.",
+  "version": "1.0.0",
+  "author": "LLCPad",
+  "authorUrl": "https://llcpad.com",
+  "icon": "MessageSquare",
+  "adminMenu": {
+    "label": "Support",
+    "icon": "MessageSquare",
+    "position": 5,
+    "items": [
+      {
+        "label": "All Tickets",
+        "path": "/admin/tickets",
+        "icon": "MessageSquare"
+      },
+      {
+        "label": "Live Chat",
+        "path": "/admin/tickets/chat",
+        "icon": "Headphones"
+      },
+      {
+        "label": "Analytics",
+        "path": "/admin/tickets/analytics",
+        "icon": "BarChart3"
+      },
+      {
+        "label": "Canned Responses",
+        "path": "/admin/tickets/canned-responses",
+        "icon": "MessageCircle"
+      },
+      {
+        "label": "Settings",
+        "path": "/admin/tickets/settings",
+        "icon": "Settings"
+      }
+    ]
+  },
+  "features": {
+    "adminPages": true,
+    "publicPages": true,
+    "widgets": true,
+    "apiRoutes": true
+  },
+  "settings": [
+    {
+      "key": "chat.enabled",
+      "value": "true",
+      "type": "boolean"
+    },
+    {
+      "key": "chat.widget.position",
+      "value": "bottom-right",
+      "type": "string"
+    },
+    {
+      "key": "chat.widget.primaryColor",
+      "value": "#2563eb",
+      "type": "string"
+    },
+    {
+      "key": "chat.widget.welcomeMessage",
+      "value": "Hi! How can we help you today?",
+      "type": "string"
+    },
+    {
+      "key": "chat.requireEmail",
+      "value": "true",
+      "type": "boolean"
+    },
+    {
+      "key": "notifications.sound.enabled",
+      "value": "true",
+      "type": "boolean"
+    },
+    {
+      "key": "notifications.desktop.enabled",
+      "value": "true",
+      "type": "boolean"
+    },
+    {
+      "key": "email.sendOnReply",
+      "value": "true",
+      "type": "boolean"
+    },
+    {
+      "key": "ai.enabled",
+      "value": "false",
+      "type": "boolean"
+    },
+    {
+      "key": "ai.model",
+      "value": "gpt-4o-mini",
+      "type": "string"
+    }
+  ],
+  "manifest": {
+    "requires": {
+      "llcpad": ">=1.0.0"
+    },
+    "permissions": [
+      "database:read",
+      "database:write",
+      "socket:connect",
+      "email:send"
+    ],
+    "widgets": [
+      {
+        "name": "ChatWidget",
+        "position": "body-end",
+        "config": {
+          "enabled": true,
+          "position": "bottom-right"
+        }
+      }
+    ]
+  }
+}
