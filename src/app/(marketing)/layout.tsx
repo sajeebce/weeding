@@ -1,8 +1,8 @@
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
-import { ChatWidget } from "@/components/chat";
+import { PluginWidgetLoader } from "@/components/plugins/plugin-widget-loader";
 
-export default function PublicLayout({
+export default async function PublicLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -12,7 +12,8 @@ export default function PublicLayout({
       <Header />
       <main>{children}</main>
       <Footer />
-      <ChatWidget />
+      {/* Plugin widgets are loaded dynamically based on active plugins */}
+      <PluginWidgetLoader position="body-end" />
     </div>
   );
 }

@@ -7,13 +7,13 @@ import {
   Save,
   CheckCircle,
   XCircle,
-  ExternalLink,
   Eye,
   EyeOff,
   Key,
   AlertTriangle,
   Bell,
   Send,
+  Server,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -31,9 +31,14 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 
 interface EmailSettings {
-  // Provider settings
+  // SMTP Settings
   "email.provider": string;
-  "email.resend.apiKey": string;
+  "email.smtp.host": string;
+  "email.smtp.port": string;
+  "email.smtp.secure": boolean;
+  "email.smtp.user": string;
+  "email.smtp.password": string;
+  // From settings
   "email.from.email": string;
   "email.from.name": string;
   "email.replyTo": string;
@@ -50,8 +55,12 @@ interface EmailSettings {
 }
 
 const defaultSettings: EmailSettings = {
-  "email.provider": "resend",
-  "email.resend.apiKey": "",
+  "email.provider": "smtp",
+  "email.smtp.host": "smtp.gmail.com",
+  "email.smtp.port": "587",
+  "email.smtp.secure": false,
+  "email.smtp.user": "",
+  "email.smtp.password": "",
   "email.from.email": "",
   "email.from.name": "LLCPad",
   "email.replyTo": "",
@@ -65,7 +74,7 @@ const defaultSettings: EmailSettings = {
   "email.notify.paymentFailed": true,
 };
 
-const SECRET_KEYS = ["email.resend.apiKey"];
+const SECRET_KEYS = ["email.smtp.password"];
 
 export default function EmailSettingsPage() {
   const [settings, setSettings] = useState<EmailSettings>(defaultSettings);
@@ -246,7 +255,7 @@ export default function EmailSettingsPage() {
         <div>
           <h1 className="text-2xl font-bold">Email Settings</h1>
           <p className="text-muted-foreground">
-            Configure email notifications for orders and payments
+            Configure SMTP email settings for notifications
           </p>
         </div>
         <Button onClick={saveSettings} disabled={saving}>
@@ -267,28 +276,35 @@ export default function EmailSettingsPage() {
             <div className="space-y-1">
               <p className="font-medium text-yellow-900">Security Notice</p>
               <p className="text-sm text-yellow-700">
-                API keys are encrypted before storing in the database. Make sure
-                you have set the{" "}
-                <code className="bg-yellow-100 px-1 rounded">ENCRYPTION_KEY</code>{" "}
-                environment variable for secure key storage.
+                SMTP password is encrypted before storing in the database. For Gmail,
+                use an{" "}
+                <a
+                  href="https://myaccount.google.com/apppasswords"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline font-medium"
+                >
+                  App Password
+                </a>{" "}
+                instead of your regular password.
               </p>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Email Provider Settings */}
+      {/* SMTP Settings */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-blue-100 rounded-lg">
-                <Mail className="h-6 w-6 text-blue-600" />
+                <Server className="h-6 w-6 text-blue-600" />
               </div>
               <div>
-                <CardTitle>Email Provider</CardTitle>
+                <CardTitle>SMTP Configuration</CardTitle>
                 <CardDescription>
-                  Configure Resend for sending transactional emails
+                  Configure your SMTP server for sending emails
                 </CardDescription>
               </div>
             </div>
@@ -297,59 +313,126 @@ export default function EmailSettingsPage() {
         <CardContent className="space-y-6">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label>Provider</Label>
-              <Input value="Resend" disabled className="bg-muted" />
+              <Label>SMTP Host</Label>
+              <Input
+                value={settings["email.smtp.host"]}
+                onChange={(e) =>
+                  updateSetting("email.smtp.host", e.target.value)
+                }
+                placeholder="smtp.gmail.com"
+              />
               <p className="text-xs text-muted-foreground">
-                Resend is the recommended email provider for transactional
-                emails
+                Gmail: smtp.gmail.com | Outlook: smtp.office365.com
               </p>
             </div>
             <div className="space-y-2">
-              <Label>Connection Status</Label>
-              <div className="flex items-center gap-2">
-                {emailConnected === null ? (
-                  <Badge variant="outline">Not Tested</Badge>
-                ) : emailConnected ? (
-                  <Badge className="bg-green-100 text-green-700">
-                    <CheckCircle className="h-3 w-3 mr-1" />
-                    Connected
-                  </Badge>
-                ) : (
-                  <Badge variant="destructive">
-                    <XCircle className="h-3 w-3 mr-1" />
-                    Not Connected
-                  </Badge>
-                )}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={testEmailConnection}
-                  disabled={testingEmail}
-                >
-                  {testingEmail ? (
-                    <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                  ) : (
-                    <Send className="h-3 w-3 mr-1" />
-                  )}
-                  Send Test Email
-                </Button>
-              </div>
+              <Label>SMTP Port</Label>
+              <Input
+                value={settings["email.smtp.port"]}
+                onChange={(e) =>
+                  updateSetting("email.smtp.port", e.target.value)
+                }
+                placeholder="587"
+              />
+              <p className="text-xs text-muted-foreground">
+                Use 587 for TLS or 465 for SSL
+              </p>
             </div>
+          </div>
+
+          <div className="flex items-center justify-between py-3 px-4 bg-muted/50 rounded-lg">
+            <div className="space-y-0.5">
+              <Label className="text-sm font-medium">Use SSL/TLS</Label>
+              <p className="text-xs text-muted-foreground">
+                Enable for port 465, disable for port 587 (STARTTLS)
+              </p>
+            </div>
+            <Switch
+              checked={settings["email.smtp.secure"]}
+              onCheckedChange={(checked) =>
+                updateSetting("email.smtp.secure", checked)
+              }
+            />
           </div>
 
           <Separator />
 
-          {/* API Key */}
-          <SecretInput
-            settingKey="email.resend.apiKey"
-            label="Resend API Key"
-            placeholder="re_..."
-          />
-
-          {/* From Settings */}
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label>From Email</Label>
+              <Label>SMTP Username</Label>
+              <Input
+                value={settings["email.smtp.user"]}
+                onChange={(e) =>
+                  updateSetting("email.smtp.user", e.target.value)
+                }
+                placeholder="your-email@gmail.com"
+              />
+              <p className="text-xs text-muted-foreground">
+                Your full email address
+              </p>
+            </div>
+            <SecretInput
+              settingKey="email.smtp.password"
+              label="SMTP Password"
+              placeholder="App password or SMTP password"
+            />
+          </div>
+
+          <Separator />
+
+          <div className="space-y-2">
+            <Label>Connection Status</Label>
+            <div className="flex items-center gap-2">
+              {emailConnected === null ? (
+                <Badge variant="outline">Not Tested</Badge>
+              ) : emailConnected ? (
+                <Badge className="bg-green-100 text-green-700">
+                  <CheckCircle className="h-3 w-3 mr-1" />
+                  Connected
+                </Badge>
+              ) : (
+                <Badge variant="destructive">
+                  <XCircle className="h-3 w-3 mr-1" />
+                  Not Connected
+                </Badge>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={testEmailConnection}
+                disabled={testingEmail}
+              >
+                {testingEmail ? (
+                  <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                ) : (
+                  <Send className="h-3 w-3 mr-1" />
+                )}
+                Send Test Email
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* From Settings */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-indigo-100 rounded-lg">
+              <Mail className="h-6 w-6 text-indigo-600" />
+            </div>
+            <div>
+              <CardTitle>Sender Information</CardTitle>
+              <CardDescription>
+                Configure the From address for outgoing emails
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label>From Email (Optional)</Label>
               <Input
                 type="email"
                 value={settings["email.from.email"]}
@@ -359,7 +442,7 @@ export default function EmailSettingsPage() {
                 placeholder="noreply@yourdomain.com"
               />
               <p className="text-xs text-muted-foreground">
-                Must be a verified domain in Resend
+                Leave empty to use SMTP username
               </p>
             </div>
             <div className="space-y-2">
@@ -385,17 +468,6 @@ export default function EmailSettingsPage() {
             <p className="text-xs text-muted-foreground">
               Where customer replies will be sent
             </p>
-          </div>
-
-          <div className="flex items-center gap-2 text-sm">
-            <a
-              href="https://resend.com/api-keys"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline inline-flex items-center gap-1"
-            >
-              Get API Key from Resend Dashboard <ExternalLink className="h-3 w-3" />
-            </a>
           </div>
         </CardContent>
       </Card>
@@ -513,22 +585,31 @@ export default function EmailSettingsPage() {
         </CardContent>
       </Card>
 
-      {/* Info Card */}
+      {/* Gmail Info Card */}
       <Card className="bg-blue-50 border-blue-200">
         <CardContent className="pt-6">
           <div className="flex gap-4">
             <div className="p-2 bg-blue-100 rounded-lg h-fit">
               <Mail className="h-5 w-5 text-blue-600" />
             </div>
-            <div className="space-y-1">
-              <p className="font-medium text-blue-900">
-                Beautiful HTML Email Templates
-              </p>
-              <p className="text-sm text-blue-700">
-                All notification emails use professionally designed HTML
-                templates with your brand colors. They are mobile-responsive and
-                look great on all email clients.
-              </p>
+            <div className="space-y-2">
+              <p className="font-medium text-blue-900">Gmail Setup Guide</p>
+              <ol className="text-sm text-blue-700 list-decimal list-inside space-y-1">
+                <li>Enable 2-Factor Authentication on your Google Account</li>
+                <li>
+                  Go to{" "}
+                  <a
+                    href="https://myaccount.google.com/apppasswords"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline font-medium"
+                  >
+                    App Passwords
+                  </a>
+                </li>
+                <li>Create a new app password for "Mail"</li>
+                <li>Use that password in the SMTP Password field above</li>
+              </ol>
             </div>
           </div>
         </CardContent>

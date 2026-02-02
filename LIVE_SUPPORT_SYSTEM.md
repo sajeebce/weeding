@@ -3951,6 +3951,130 @@ Authorization: Bearer {admin_api_key}
 }
 ```
 
+### 📊 Implementation Status (CMS Plugin System)
+
+> **Last Updated:** February 2026
+
+#### ✅ Completed Components
+
+| Component | Location | Status |
+|-----------|----------|--------|
+| **License Server** | `/license-server/` | ✅ Fully implemented |
+| License Server - Database Schema | `/license-server/prisma/schema.prisma` | ✅ Complete |
+| License Server - API Endpoints | `/license-server/src/app/api/` | ✅ `/verify`, `/refresh`, `/deactivate` |
+| License Server - Admin Dashboard | `/license-server/src/app/admin/` | ✅ CRUD for licenses |
+| License Server - JWT Token Service | `/license-server/src/services/token.service.ts` | ✅ RSA-256 signing |
+| **CMS Plugin Table** | `/prisma/schema.prisma` | ✅ `Plugin`, `PluginSetting`, `PluginMenuItem` |
+| **Server-side Plugin Check** | `/src/lib/plugins.ts` | ✅ `isPluginActive()`, `getActivePlugins()` |
+| **Conditional Widget Render** | `/src/app/(marketing)/layout.tsx` | ✅ Server-side check |
+
+#### ❌ Missing Components (CMS Side)
+
+| Component | Description | Priority |
+|-----------|-------------|----------|
+| **Plugin ZIP Upload UI** | Admin → Settings → Plugins → Upload ZIP | HIGH |
+| **Plugin Extraction Service** | Extract ZIP, validate manifest, copy files | HIGH |
+| **License Activation UI** | Dialog to enter license key after upload | HIGH |
+| **License Verification Integration** | CMS → License Server API call | HIGH |
+| **Plugin Activation API** | `POST /api/admin/plugins/{slug}/activate` | HIGH |
+| **Plugin Deactivation API** | `POST /api/admin/plugins/{slug}/deactivate` | MEDIUM |
+| **Plugin Settings Storage** | Store plugin-specific settings in PluginSetting | MEDIUM |
+| **Plugin Migration Runner** | Run SQL migrations from plugin ZIP | MEDIUM |
+| **License Status Periodic Check** | Cron job to verify license validity | LOW |
+| **Plugin Update System** | Check for updates, download new version | LOW |
+
+#### 🔄 Plugin Activation Flow (To Implement)
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    CMS Plugin Activation Journey                         │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  STEP 1: Upload                        STEP 2: Extract & Validate        │
+│  ┌─────────────────────┐              ┌─────────────────────┐            │
+│  │ Admin uploads       │     →        │ • Unzip to temp     │            │
+│  │ plugin.zip          │              │ • Read plugin.json  │            │
+│  │                     │              │ • Validate schema   │            │
+│  │ ❌ NOT IMPLEMENTED  │              │ • Check compat      │            │
+│  └─────────────────────┘              │ ❌ NOT IMPLEMENTED  │            │
+│                                        └──────────┬──────────┘            │
+│                                                   │                       │
+│  STEP 3: License Key                              ▼                       │
+│  ┌─────────────────────┐              ┌─────────────────────┐            │
+│  │ Show dialog:        │     ←        │ requiresActivation  │            │
+│  │ "Enter License Key" │              │ = true in manifest  │            │
+│  │                     │              └─────────────────────┘            │
+│  │ ❌ NOT IMPLEMENTED  │                                                 │
+│  └──────────┬──────────┘                                                 │
+│             │                                                            │
+│             ▼                                                            │
+│  STEP 4: Verify License                                                  │
+│  ┌─────────────────────────────────────────────────────────────────┐    │
+│  │                                                                  │    │
+│  │  CMS                          License Server                     │    │
+│  │  ────                         ──────────────                     │    │
+│  │                                                                  │    │
+│  │  POST /api/admin/plugins/     POST license.llcpad.com/          │    │
+│  │       activate                     api/licenses/verify           │    │
+│  │       {licenseKey: "..."}          {licenseKey, domain, ...}    │    │
+│  │                                                                  │    │
+│  │  ❌ NOT IMPLEMENTED               ✅ IMPLEMENTED                 │    │
+│  │                                                                  │    │
+│  └─────────────────────────────────────────────────────────────────┘    │
+│                                                                          │
+│  STEP 5: Install & Activate                                              │
+│  ┌─────────────────────────────────────────────────────────────────┐    │
+│  │                                                                  │    │
+│  │  If license valid:                                               │    │
+│  │  • Copy plugin files to /plugins/{slug}/                        │    │
+│  │  • Run database migrations                                       │    │
+│  │  • Store Plugin record (status: ACTIVE)                         │    │
+│  │  • Store license key in Plugin.licenseKey                       │    │
+│  │  • Register admin menu items                                     │    │
+│  │                                                                  │    │
+│  │  ❌ NOT IMPLEMENTED                                              │    │
+│  │                                                                  │    │
+│  └─────────────────────────────────────────────────────────────────┘    │
+│                                                                          │
+│  STEP 6: Plugin Active                                                   │
+│  ┌─────────────────────────────────────────────────────────────────┐    │
+│  │                                                                  │    │
+│  │  • Plugin.status = ACTIVE                                        │    │
+│  │  • isPluginActive('livesupport-pro') returns true               │    │
+│  │  • ChatWidget renders on frontend                                │    │
+│  │  • Admin menu shows plugin pages                                 │    │
+│  │                                                                  │    │
+│  │  ✅ Server-side check implemented                                │    │
+│  │  ❌ Full activation flow NOT implemented                         │    │
+│  │                                                                  │    │
+│  └─────────────────────────────────────────────────────────────────┘    │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+#### 🎯 Next Implementation Steps
+
+1. **Create Plugin Upload UI** (`/admin/settings/plugins`)
+   - Drag & drop ZIP file upload
+   - Progress indicator
+   - Error handling
+
+2. **Create Plugin Installation Service** (`/src/services/plugin-installer.ts`)
+   - ZIP extraction
+   - Manifest validation
+   - File copying
+   - Migration running
+
+3. **Create License Verification API** (`/api/admin/plugins/[slug]/activate`)
+   - Accept license key
+   - Call License Server
+   - Update Plugin record
+
+4. **Create License Activation Dialog Component**
+   - Modal with license key input
+   - Domain display
+   - Terms agreement checkbox
+
 ---
 
 ## 🎉 Conclusion
@@ -3981,6 +4105,1954 @@ This specification covers a complete, production-ready support system that can b
 **Complexity**: Medium-High
 **Market Value**: $59-299 (Standalone), $69-149 (Full CMS)
 **Potential Revenue**: High (two separate products)
+
+---
+
+## 🔧 Implementation Details (Code Level)
+
+> এই section এ actual implementation code এবং configuration details আছে।
+
+---
+
+### 📡 Socket.io Server Implementation
+
+#### File Structure
+
+```
+src/lib/support/socket/
+├── server.ts           # Socket.io server setup & initialization
+├── events.ts           # Event type definitions
+├── handlers.ts         # Event handlers
+├── middleware.ts       # Authentication middleware
+└── rooms.ts            # Room management utilities
+```
+
+#### server.ts - Socket.io Server Setup
+
+```typescript
+// src/lib/support/socket/server.ts
+import { Server as HTTPServer } from "http";
+import { Server as SocketIOServer, Socket } from "socket.io";
+import { auth } from "@/lib/auth";
+import {
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData
+} from "./events";
+import { setupHandlers } from "./handlers";
+import { authMiddleware } from "./middleware";
+
+let io: SocketIOServer<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData
+> | null = null;
+
+export function initializeSocketServer(httpServer: HTTPServer) {
+  if (io) return io;
+
+  io = new SocketIOServer(httpServer, {
+    path: "/api/socket",
+    cors: {
+      origin: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+      methods: ["GET", "POST"],
+      credentials: true,
+    },
+    // Connection settings
+    pingTimeout: 60000,
+    pingInterval: 25000,
+    // Transport settings
+    transports: ["websocket", "polling"],
+    // Upgrade settings
+    allowUpgrades: true,
+    upgradeTimeout: 10000,
+  });
+
+  // Apply authentication middleware
+  io.use(authMiddleware);
+
+  // Setup event handlers
+  io.on("connection", (socket) => {
+    console.log(`[Socket.io] Client connected: ${socket.id}`);
+    setupHandlers(io!, socket);
+
+    socket.on("disconnect", (reason) => {
+      console.log(`[Socket.io] Client disconnected: ${socket.id} - ${reason}`);
+    });
+  });
+
+  console.log("[Socket.io] Server initialized");
+  return io;
+}
+
+export function getIO() {
+  if (!io) {
+    throw new Error("Socket.io not initialized. Call initializeSocketServer first.");
+  }
+  return io;
+}
+
+// Utility functions for emitting events
+export const socketEmitter = {
+  // Emit to specific ticket room
+  toTicket(ticketId: string, event: keyof ServerToClientEvents, data: any) {
+    getIO().to(`ticket:${ticketId}`).emit(event, data);
+  },
+
+  // Emit to all admins
+  toAdmins(event: keyof ServerToClientEvents, data: any) {
+    getIO().to("admin:notifications").emit(event, data);
+  },
+
+  // Emit to specific user
+  toUser(userId: string, event: keyof ServerToClientEvents, data: any) {
+    getIO().to(`user:${userId}`).emit(event, data);
+  },
+
+  // Broadcast new ticket to admins
+  newTicket(ticket: any) {
+    this.toAdmins("ticket:created", ticket);
+  },
+
+  // Broadcast new message
+  newMessage(ticketId: string, message: any) {
+    this.toTicket(ticketId, "message:new", message);
+  },
+
+  // Typing indicator
+  typing(ticketId: string, data: { userId: string; isTyping: boolean }) {
+    this.toTicket(ticketId, "typing:update", data);
+  },
+
+  // Ticket status change
+  ticketStatusChanged(ticketId: string, status: string, updatedBy: string) {
+    this.toTicket(ticketId, "ticket:statusChanged", { ticketId, status, updatedBy });
+    this.toAdmins("ticket:statusChanged", { ticketId, status, updatedBy });
+  },
+};
+```
+
+#### events.ts - Type Definitions
+
+```typescript
+// src/lib/support/socket/events.ts
+
+// Message types
+export interface ChatMessage {
+  id: string;
+  ticketId: string;
+  content: string;
+  senderType: "CUSTOMER" | "AGENT" | "SYSTEM";
+  senderName: string;
+  senderId?: string;
+  attachments?: Attachment[];
+  createdAt: Date;
+}
+
+export interface Attachment {
+  id: string;
+  filename: string;
+  url: string;
+  mimeType: string;
+  size: number;
+}
+
+export interface TypingData {
+  ticketId: string;
+  userId: string;
+  userName: string;
+  isTyping: boolean;
+}
+
+export interface TicketData {
+  id: string;
+  ticketNumber: string;
+  subject: string;
+  status: string;
+  priority: string;
+  customerName: string;
+  customerEmail: string;
+}
+
+// Client → Server events
+export interface ClientToServerEvents {
+  // Room management
+  "ticket:join": (ticketId: string) => void;
+  "ticket:leave": (ticketId: string) => void;
+  "admin:join": () => void;
+
+  // Messaging
+  "message:send": (data: {
+    ticketId: string;
+    content: string;
+    attachments?: string[];
+  }) => void;
+
+  // Typing
+  "typing:start": (ticketId: string) => void;
+  "typing:stop": (ticketId: string) => void;
+
+  // Ticket actions
+  "ticket:updateStatus": (data: { ticketId: string; status: string }) => void;
+  "ticket:assign": (data: { ticketId: string; agentId: string }) => void;
+
+  // Presence
+  "presence:online": () => void;
+  "presence:away": () => void;
+}
+
+// Server → Client events
+export interface ServerToClientEvents {
+  // Messages
+  "message:new": (message: ChatMessage) => void;
+  "message:updated": (message: ChatMessage) => void;
+  "message:deleted": (messageId: string) => void;
+
+  // Typing
+  "typing:update": (data: TypingData) => void;
+
+  // Tickets
+  "ticket:created": (ticket: TicketData) => void;
+  "ticket:updated": (ticket: TicketData) => void;
+  "ticket:statusChanged": (data: { ticketId: string; status: string; updatedBy: string }) => void;
+  "ticket:assigned": (data: { ticketId: string; agentId: string; agentName: string }) => void;
+
+  // Presence
+  "agent:online": (data: { agentId: string; agentName: string }) => void;
+  "agent:offline": (data: { agentId: string }) => void;
+
+  // Errors
+  "error": (data: { code: string; message: string }) => void;
+}
+
+// Inter-server events (for scaling with Redis later)
+export interface InterServerEvents {
+  ping: () => void;
+}
+
+// Socket data attached to each connection
+export interface SocketData {
+  userId: string;
+  userName: string;
+  userRole: "CUSTOMER" | "ADMIN" | "SUPPORT_AGENT" | "SALES_AGENT";
+  isAuthenticated: boolean;
+  ticketId?: string; // For guest chat sessions
+}
+```
+
+#### handlers.ts - Event Handlers
+
+```typescript
+// src/lib/support/socket/handlers.ts
+import { Server, Socket } from "socket.io";
+import prisma from "@/lib/db";
+import {
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData,
+  ChatMessage
+} from "./events";
+
+type IOServer = Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>;
+type IOSocket = Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>;
+
+export function setupHandlers(io: IOServer, socket: IOSocket) {
+  const { userId, userName, userRole } = socket.data;
+
+  // ============================================
+  // ROOM MANAGEMENT
+  // ============================================
+
+  // Join ticket room
+  socket.on("ticket:join", async (ticketId) => {
+    // Verify access to ticket
+    const ticket = await prisma.supportTicket.findUnique({
+      where: { id: ticketId },
+      select: { customerId: true, assignedToId: true },
+    });
+
+    if (!ticket) {
+      socket.emit("error", { code: "TICKET_NOT_FOUND", message: "Ticket not found" });
+      return;
+    }
+
+    // Check authorization
+    const isAdmin = ["ADMIN", "SUPPORT_AGENT", "SALES_AGENT"].includes(userRole);
+    const isOwner = ticket.customerId === userId;
+    const isAssigned = ticket.assignedToId === userId;
+
+    if (!isAdmin && !isOwner && !isAssigned) {
+      socket.emit("error", { code: "UNAUTHORIZED", message: "Not authorized for this ticket" });
+      return;
+    }
+
+    socket.join(`ticket:${ticketId}`);
+    console.log(`[Socket.io] ${userName} joined ticket:${ticketId}`);
+  });
+
+  // Leave ticket room
+  socket.on("ticket:leave", (ticketId) => {
+    socket.leave(`ticket:${ticketId}`);
+    console.log(`[Socket.io] ${userName} left ticket:${ticketId}`);
+  });
+
+  // Admin joins notification room
+  socket.on("admin:join", () => {
+    if (!["ADMIN", "SUPPORT_AGENT", "SALES_AGENT"].includes(userRole)) {
+      socket.emit("error", { code: "UNAUTHORIZED", message: "Not an admin" });
+      return;
+    }
+    socket.join("admin:notifications");
+    console.log(`[Socket.io] Admin ${userName} joined notifications`);
+  });
+
+  // ============================================
+  // MESSAGING
+  // ============================================
+
+  socket.on("message:send", async (data) => {
+    const { ticketId, content, attachments } = data;
+
+    try {
+      // Create message in database
+      const message = await prisma.supportMessage.create({
+        data: {
+          ticketId,
+          content,
+          senderType: userRole === "CUSTOMER" ? "CUSTOMER" : "AGENT",
+          senderName: userName,
+          senderId: userId,
+          type: attachments?.length ? "ATTACHMENT" : "TEXT",
+        },
+        include: {
+          attachments: true,
+        },
+      });
+
+      // Update ticket's updatedAt
+      await prisma.supportTicket.update({
+        where: { id: ticketId },
+        data: { updatedAt: new Date() },
+      });
+
+      // Broadcast to ticket room
+      const chatMessage: ChatMessage = {
+        id: message.id,
+        ticketId: message.ticketId,
+        content: message.content,
+        senderType: message.senderType as "CUSTOMER" | "AGENT" | "SYSTEM",
+        senderName: message.senderName,
+        senderId: message.senderId || undefined,
+        createdAt: message.createdAt,
+      };
+
+      io.to(`ticket:${ticketId}`).emit("message:new", chatMessage);
+
+      // Notify admins if customer message
+      if (message.senderType === "CUSTOMER") {
+        io.to("admin:notifications").emit("message:new", chatMessage);
+      }
+
+    } catch (error) {
+      console.error("[Socket.io] Error sending message:", error);
+      socket.emit("error", { code: "MESSAGE_FAILED", message: "Failed to send message" });
+    }
+  });
+
+  // ============================================
+  // TYPING INDICATORS
+  // ============================================
+
+  socket.on("typing:start", (ticketId) => {
+    socket.to(`ticket:${ticketId}`).emit("typing:update", {
+      ticketId,
+      userId,
+      userName,
+      isTyping: true,
+    });
+  });
+
+  socket.on("typing:stop", (ticketId) => {
+    socket.to(`ticket:${ticketId}`).emit("typing:update", {
+      ticketId,
+      userId,
+      userName,
+      isTyping: false,
+    });
+  });
+
+  // ============================================
+  // TICKET ACTIONS
+  // ============================================
+
+  socket.on("ticket:updateStatus", async (data) => {
+    const { ticketId, status } = data;
+
+    if (!["ADMIN", "SUPPORT_AGENT"].includes(userRole)) {
+      socket.emit("error", { code: "UNAUTHORIZED", message: "Not authorized" });
+      return;
+    }
+
+    try {
+      await prisma.supportTicket.update({
+        where: { id: ticketId },
+        data: { status: status as any },
+      });
+
+      io.to(`ticket:${ticketId}`).emit("ticket:statusChanged", {
+        ticketId,
+        status,
+        updatedBy: userName,
+      });
+
+      io.to("admin:notifications").emit("ticket:statusChanged", {
+        ticketId,
+        status,
+        updatedBy: userName,
+      });
+
+    } catch (error) {
+      socket.emit("error", { code: "UPDATE_FAILED", message: "Failed to update status" });
+    }
+  });
+
+  socket.on("ticket:assign", async (data) => {
+    const { ticketId, agentId } = data;
+
+    if (!["ADMIN", "SUPPORT_AGENT"].includes(userRole)) {
+      socket.emit("error", { code: "UNAUTHORIZED", message: "Not authorized" });
+      return;
+    }
+
+    try {
+      const agent = await prisma.user.findUnique({
+        where: { id: agentId },
+        select: { name: true },
+      });
+
+      await prisma.supportTicket.update({
+        where: { id: ticketId },
+        data: { assignedToId: agentId },
+      });
+
+      io.to(`ticket:${ticketId}`).emit("ticket:assigned", {
+        ticketId,
+        agentId,
+        agentName: agent?.name || "Unknown",
+      });
+
+    } catch (error) {
+      socket.emit("error", { code: "ASSIGN_FAILED", message: "Failed to assign ticket" });
+    }
+  });
+
+  // ============================================
+  // PRESENCE
+  // ============================================
+
+  socket.on("presence:online", () => {
+    if (["ADMIN", "SUPPORT_AGENT", "SALES_AGENT"].includes(userRole)) {
+      io.to("admin:notifications").emit("agent:online", {
+        agentId: userId,
+        agentName: userName,
+      });
+    }
+  });
+
+  socket.on("presence:away", () => {
+    if (["ADMIN", "SUPPORT_AGENT", "SALES_AGENT"].includes(userRole)) {
+      io.to("admin:notifications").emit("agent:offline", {
+        agentId: userId,
+      });
+    }
+  });
+}
+```
+
+#### middleware.ts - Authentication
+
+```typescript
+// src/lib/support/socket/middleware.ts
+import { Socket } from "socket.io";
+import { getToken } from "next-auth/jwt";
+import { parse } from "cookie";
+import prisma from "@/lib/db";
+
+export async function authMiddleware(socket: Socket, next: (err?: Error) => void) {
+  try {
+    const cookies = socket.handshake.headers.cookie;
+
+    if (cookies) {
+      // Try to authenticate via session cookie
+      const parsedCookies = parse(cookies);
+      const sessionToken = parsedCookies["next-auth.session-token"]
+        || parsedCookies["__Secure-next-auth.session-token"];
+
+      if (sessionToken) {
+        // Verify session
+        const session = await prisma.session.findUnique({
+          where: { sessionToken },
+          include: { user: true },
+        });
+
+        if (session && session.expires > new Date()) {
+          socket.data.userId = session.user.id;
+          socket.data.userName = session.user.name || "User";
+          socket.data.userRole = session.user.role as any;
+          socket.data.isAuthenticated = true;
+          return next();
+        }
+      }
+    }
+
+    // Check for guest token (for live chat widget)
+    const guestToken = socket.handshake.auth?.guestToken;
+    const ticketId = socket.handshake.auth?.ticketId;
+
+    if (guestToken && ticketId) {
+      // Verify guest has access to this ticket
+      const ticket = await prisma.supportTicket.findFirst({
+        where: {
+          id: ticketId,
+          guestEmail: { not: null },
+        },
+      });
+
+      if (ticket) {
+        socket.data.userId = `guest:${guestToken}`;
+        socket.data.userName = ticket.guestName || "Guest";
+        socket.data.userRole = "CUSTOMER";
+        socket.data.isAuthenticated = true;
+        socket.data.ticketId = ticketId;
+        return next();
+      }
+    }
+
+    // Allow connection but mark as unauthenticated
+    socket.data.isAuthenticated = false;
+    socket.data.userId = `anon:${socket.id}`;
+    socket.data.userName = "Anonymous";
+    socket.data.userRole = "CUSTOMER";
+    next();
+
+  } catch (error) {
+    console.error("[Socket.io] Auth middleware error:", error);
+    next(new Error("Authentication failed"));
+  }
+}
+```
+
+#### Next.js Integration (Custom Server)
+
+```typescript
+// server.ts (project root)
+import { createServer } from "http";
+import { parse } from "url";
+import next from "next";
+import { initializeSocketServer } from "./src/lib/support/socket/server";
+
+const dev = process.env.NODE_ENV !== "production";
+const hostname = "localhost";
+const port = parseInt(process.env.PORT || "3000", 10);
+
+const app = next({ dev, hostname, port });
+const handle = app.getRequestHandler();
+
+app.prepare().then(() => {
+  const httpServer = createServer((req, res) => {
+    const parsedUrl = parse(req.url!, true);
+    handle(req, res, parsedUrl);
+  });
+
+  // Initialize Socket.io
+  initializeSocketServer(httpServer);
+
+  httpServer.listen(port, () => {
+    console.log(`> Ready on http://${hostname}:${port}`);
+    console.log(`> Socket.io ready on ws://${hostname}:${port}/api/socket`);
+  });
+});
+```
+
+#### Client-Side Hook
+
+```typescript
+// src/hooks/use-socket.ts
+"use client";
+
+import { useEffect, useRef, useCallback } from "react";
+import { io, Socket } from "socket.io-client";
+import { useSession } from "next-auth/react";
+import type { ClientToServerEvents, ServerToClientEvents } from "@/lib/support/socket/events";
+
+type SocketClient = Socket<ServerToClientEvents, ClientToServerEvents>;
+
+export function useSocket() {
+  const { data: session } = useSession();
+  const socketRef = useRef<SocketClient | null>(null);
+
+  useEffect(() => {
+    if (!socketRef.current) {
+      socketRef.current = io({
+        path: "/api/socket",
+        autoConnect: true,
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+      });
+
+      socketRef.current.on("connect", () => {
+        console.log("[Socket] Connected:", socketRef.current?.id);
+
+        // Join admin room if admin
+        if (session?.user?.role &&
+            ["ADMIN", "SUPPORT_AGENT", "SALES_AGENT"].includes(session.user.role)) {
+          socketRef.current?.emit("admin:join");
+        }
+      });
+
+      socketRef.current.on("disconnect", (reason) => {
+        console.log("[Socket] Disconnected:", reason);
+      });
+
+      socketRef.current.on("error", (error) => {
+        console.error("[Socket] Error:", error);
+      });
+    }
+
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+    };
+  }, [session]);
+
+  const joinTicket = useCallback((ticketId: string) => {
+    socketRef.current?.emit("ticket:join", ticketId);
+  }, []);
+
+  const leaveTicket = useCallback((ticketId: string) => {
+    socketRef.current?.emit("ticket:leave", ticketId);
+  }, []);
+
+  const sendMessage = useCallback((ticketId: string, content: string, attachments?: string[]) => {
+    socketRef.current?.emit("message:send", { ticketId, content, attachments });
+  }, []);
+
+  const startTyping = useCallback((ticketId: string) => {
+    socketRef.current?.emit("typing:start", ticketId);
+  }, []);
+
+  const stopTyping = useCallback((ticketId: string) => {
+    socketRef.current?.emit("typing:stop", ticketId);
+  }, []);
+
+  const onNewMessage = useCallback((callback: (message: any) => void) => {
+    socketRef.current?.on("message:new", callback);
+    return () => socketRef.current?.off("message:new", callback);
+  }, []);
+
+  const onTyping = useCallback((callback: (data: any) => void) => {
+    socketRef.current?.on("typing:update", callback);
+    return () => socketRef.current?.off("typing:update", callback);
+  }, []);
+
+  return {
+    socket: socketRef.current,
+    isConnected: socketRef.current?.connected ?? false,
+    joinTicket,
+    leaveTicket,
+    sendMessage,
+    startTyping,
+    stopTyping,
+    onNewMessage,
+    onTyping,
+  };
+}
+```
+
+---
+
+### 📧 Gmail SMTP Integration (Nodemailer)
+
+#### File Structure
+
+```
+src/lib/email/
+├── smtp-client.ts      # Nodemailer SMTP client
+├── templates/          # Email templates
+│   ├── ticket-created.tsx
+│   ├── ticket-reply.tsx
+│   ├── ticket-resolved.tsx
+│   └── chat-transcript.tsx
+└── send-email.ts       # Email sending utility
+```
+
+#### Environment Variables
+
+```env
+# .env.local
+
+# Gmail SMTP Configuration
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your-email@gmail.com
+SMTP_PASSWORD=your-app-password    # Generate from Google Account > Security > App passwords
+SMTP_FROM_NAME=LLCPad Support
+SMTP_FROM_EMAIL=support@llcpad.com
+
+# Alternative: Other SMTP providers
+# SMTP_HOST=smtp.mailgun.org
+# SMTP_HOST=smtp.sendgrid.net
+# SMTP_HOST=email-smtp.us-east-1.amazonaws.com (SES)
+```
+
+#### smtp-client.ts - Nodemailer Setup
+
+```typescript
+// src/lib/email/smtp-client.ts
+import nodemailer from "nodemailer";
+import type { Transporter } from "nodemailer";
+
+let transporter: Transporter | null = null;
+
+export function getTransporter(): Transporter {
+  if (transporter) return transporter;
+
+  // Validate required env vars
+  const requiredVars = ["SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_PASSWORD"];
+  for (const varName of requiredVars) {
+    if (!process.env[varName]) {
+      throw new Error(`Missing required environment variable: ${varName}`);
+    }
+  }
+
+  transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: parseInt(process.env.SMTP_PORT || "587"),
+    secure: process.env.SMTP_SECURE === "true", // true for 465, false for other ports
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASSWORD,
+    },
+    // Gmail specific settings
+    ...(process.env.SMTP_HOST === "smtp.gmail.com" && {
+      tls: {
+        rejectUnauthorized: false,
+      },
+    }),
+  });
+
+  // Verify connection
+  transporter.verify((error) => {
+    if (error) {
+      console.error("[SMTP] Connection failed:", error);
+    } else {
+      console.log("[SMTP] Server is ready to send emails");
+    }
+  });
+
+  return transporter;
+}
+
+export interface EmailOptions {
+  to: string | string[];
+  subject: string;
+  html: string;
+  text?: string;
+  replyTo?: string;
+  attachments?: Array<{
+    filename: string;
+    content: Buffer | string;
+    contentType?: string;
+  }>;
+}
+
+export async function sendEmail(options: EmailOptions): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  try {
+    const transport = getTransporter();
+
+    const fromName = process.env.SMTP_FROM_NAME || "Support";
+    const fromEmail = process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER;
+
+    const result = await transport.sendMail({
+      from: `"${fromName}" <${fromEmail}>`,
+      to: Array.isArray(options.to) ? options.to.join(", ") : options.to,
+      subject: options.subject,
+      html: options.html,
+      text: options.text || stripHtml(options.html),
+      replyTo: options.replyTo,
+      attachments: options.attachments,
+    });
+
+    console.log("[SMTP] Email sent:", result.messageId);
+    return { success: true, messageId: result.messageId };
+
+  } catch (error) {
+    console.error("[SMTP] Failed to send email:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error"
+    };
+  }
+}
+
+// Simple HTML to text conversion
+function stripHtml(html: string): string {
+  return html
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>/gi, "\n\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .trim();
+}
+```
+
+#### send-email.ts - Email Service
+
+```typescript
+// src/lib/email/send-email.ts
+import { sendEmail } from "./smtp-client";
+import { render } from "@react-email/render";
+import TicketCreatedEmail from "./templates/ticket-created";
+import TicketReplyEmail from "./templates/ticket-reply";
+import TicketResolvedEmail from "./templates/ticket-resolved";
+import ChatTranscriptEmail from "./templates/chat-transcript";
+
+interface TicketEmailData {
+  ticketNumber: string;
+  subject: string;
+  customerName: string;
+  customerEmail: string;
+  message?: string;
+  ticketUrl?: string;
+}
+
+interface ChatTranscriptData {
+  ticketNumber: string;
+  customerName: string;
+  customerEmail: string;
+  messages: Array<{
+    senderName: string;
+    senderType: string;
+    content: string;
+    createdAt: Date;
+  }>;
+  chatDuration: string;
+}
+
+export const emailService = {
+  // Send ticket created notification to customer
+  async ticketCreated(data: TicketEmailData) {
+    const html = await render(TicketCreatedEmail(data));
+
+    return sendEmail({
+      to: data.customerEmail,
+      subject: `[Ticket #${data.ticketNumber}] ${data.subject}`,
+      html,
+    });
+  },
+
+  // Send reply notification to customer
+  async ticketReply(data: TicketEmailData & { agentName: string }) {
+    const html = await render(TicketReplyEmail(data));
+
+    return sendEmail({
+      to: data.customerEmail,
+      subject: `Re: [Ticket #${data.ticketNumber}] ${data.subject}`,
+      html,
+    });
+  },
+
+  // Send ticket resolved notification
+  async ticketResolved(data: TicketEmailData) {
+    const html = await render(TicketResolvedEmail(data));
+
+    return sendEmail({
+      to: data.customerEmail,
+      subject: `[Resolved] Ticket #${data.ticketNumber}: ${data.subject}`,
+      html,
+    });
+  },
+
+  // Send chat transcript
+  async chatTranscript(data: ChatTranscriptData) {
+    const html = await render(ChatTranscriptEmail(data));
+
+    return sendEmail({
+      to: data.customerEmail,
+      subject: `Chat Transcript - Ticket #${data.ticketNumber}`,
+      html,
+    });
+  },
+
+  // Send notification to admin/agent
+  async notifyAgent(agentEmail: string, data: TicketEmailData) {
+    const html = `
+      <h2>New Support Ticket</h2>
+      <p><strong>Ticket:</strong> #${data.ticketNumber}</p>
+      <p><strong>Subject:</strong> ${data.subject}</p>
+      <p><strong>Customer:</strong> ${data.customerName} (${data.customerEmail})</p>
+      <p><strong>Message:</strong></p>
+      <blockquote>${data.message}</blockquote>
+      <p><a href="${data.ticketUrl}">View Ticket</a></p>
+    `;
+
+    return sendEmail({
+      to: agentEmail,
+      subject: `[New Ticket #${data.ticketNumber}] ${data.subject}`,
+      html,
+    });
+  },
+};
+```
+
+#### Email Template Example
+
+```typescript
+// src/lib/email/templates/ticket-created.tsx
+import {
+  Body,
+  Container,
+  Head,
+  Heading,
+  Html,
+  Link,
+  Preview,
+  Section,
+  Text,
+} from "@react-email/components";
+
+interface TicketCreatedEmailProps {
+  ticketNumber: string;
+  subject: string;
+  customerName: string;
+  message?: string;
+  ticketUrl?: string;
+}
+
+export default function TicketCreatedEmail({
+  ticketNumber,
+  subject,
+  customerName,
+  message,
+  ticketUrl,
+}: TicketCreatedEmailProps) {
+  return (
+    <Html>
+      <Head />
+      <Preview>Your support ticket #{ticketNumber} has been created</Preview>
+      <Body style={main}>
+        <Container style={container}>
+          <Heading style={h1}>Support Ticket Created</Heading>
+
+          <Text style={text}>Hi {customerName},</Text>
+
+          <Text style={text}>
+            Your support ticket has been created successfully. Our team will review
+            your request and get back to you as soon as possible.
+          </Text>
+
+          <Section style={ticketBox}>
+            <Text style={ticketLabel}>Ticket Number</Text>
+            <Text style={ticketValue}>#{ticketNumber}</Text>
+
+            <Text style={ticketLabel}>Subject</Text>
+            <Text style={ticketValue}>{subject}</Text>
+          </Section>
+
+          {message && (
+            <Section>
+              <Text style={ticketLabel}>Your Message</Text>
+              <Text style={messageText}>{message}</Text>
+            </Section>
+          )}
+
+          {ticketUrl && (
+            <Section style={buttonSection}>
+              <Link href={ticketUrl} style={button}>
+                View Ticket Status
+              </Link>
+            </Section>
+          )}
+
+          <Text style={footer}>
+            This is an automated message. Please do not reply directly to this email.
+            If you have any questions, use the link above to access your ticket.
+          </Text>
+        </Container>
+      </Body>
+    </Html>
+  );
+}
+
+// Styles
+const main = {
+  backgroundColor: "#f6f9fc",
+  fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif',
+};
+
+const container = {
+  backgroundColor: "#ffffff",
+  margin: "0 auto",
+  padding: "40px 20px",
+  maxWidth: "560px",
+};
+
+const h1 = {
+  color: "#1a1a1a",
+  fontSize: "24px",
+  fontWeight: "600",
+  margin: "0 0 20px",
+};
+
+const text = {
+  color: "#4a4a4a",
+  fontSize: "16px",
+  lineHeight: "24px",
+  margin: "0 0 16px",
+};
+
+const ticketBox = {
+  backgroundColor: "#f8f9fa",
+  borderRadius: "8px",
+  padding: "20px",
+  margin: "24px 0",
+};
+
+const ticketLabel = {
+  color: "#6b7280",
+  fontSize: "12px",
+  fontWeight: "600",
+  textTransform: "uppercase" as const,
+  margin: "0 0 4px",
+};
+
+const ticketValue = {
+  color: "#1a1a1a",
+  fontSize: "16px",
+  fontWeight: "500",
+  margin: "0 0 16px",
+};
+
+const messageText = {
+  color: "#4a4a4a",
+  fontSize: "14px",
+  backgroundColor: "#f8f9fa",
+  padding: "16px",
+  borderRadius: "8px",
+  margin: "8px 0 0",
+};
+
+const buttonSection = {
+  textAlign: "center" as const,
+  margin: "32px 0",
+};
+
+const button = {
+  backgroundColor: "#f97316",
+  borderRadius: "8px",
+  color: "#ffffff",
+  display: "inline-block",
+  fontSize: "16px",
+  fontWeight: "600",
+  padding: "12px 24px",
+  textDecoration: "none",
+};
+
+const footer = {
+  color: "#9ca3af",
+  fontSize: "12px",
+  marginTop: "32px",
+};
+```
+
+---
+
+### 📦 Plugin Build & Package Scripts
+
+#### File Structure
+
+```
+scripts/
+├── build-plugin.ts         # Main build script
+├── package-plugin.ts       # ZIP packaging script
+├── obfuscate.ts           # Code obfuscation
+├── generate-manifest.ts    # Generate plugin.json
+└── utils/
+    ├── file-utils.ts
+    └── version-utils.ts
+```
+
+#### build-plugin.ts - Main Build Script
+
+```typescript
+// scripts/build-plugin.ts
+import { build } from "esbuild";
+import { execSync } from "child_process";
+import fs from "fs-extra";
+import path from "path";
+import { obfuscateCode } from "./obfuscate";
+import { generateManifest } from "./generate-manifest";
+import { createPluginZip } from "./package-plugin";
+
+interface BuildOptions {
+  version: string;
+  outputDir: string;
+  minify: boolean;
+  obfuscate: boolean;
+  sourceMaps: boolean;
+}
+
+const defaultOptions: BuildOptions = {
+  version: "1.0.0",
+  outputDir: "dist/plugin",
+  minify: true,
+  obfuscate: true,
+  sourceMaps: false,
+};
+
+async function buildPlugin(options: Partial<BuildOptions> = {}) {
+  const opts = { ...defaultOptions, ...options };
+  const startTime = Date.now();
+
+  console.log("🔨 Building LiveSupport Pro Plugin...");
+  console.log(`   Version: ${opts.version}`);
+  console.log(`   Output: ${opts.outputDir}`);
+
+  try {
+    // 1. Clean output directory
+    console.log("\n📁 Cleaning output directory...");
+    await fs.remove(opts.outputDir);
+    await fs.ensureDir(opts.outputDir);
+
+    // 2. Compile TypeScript
+    console.log("📝 Compiling TypeScript...");
+    execSync("npx tsc --project tsconfig.plugin.json", { stdio: "inherit" });
+
+    // 3. Bundle with esbuild
+    console.log("📦 Bundling with esbuild...");
+    const entryPoints = [
+      "src/lib/support/index.ts",
+      "src/components/support/index.ts",
+    ];
+
+    await build({
+      entryPoints,
+      bundle: true,
+      minify: opts.minify,
+      sourcemap: opts.sourceMaps,
+      target: ["es2020"],
+      format: "esm",
+      outdir: path.join(opts.outputDir, "dist"),
+      external: [
+        "react",
+        "react-dom",
+        "next",
+        "next-auth",
+        "@prisma/client",
+      ],
+      define: {
+        "process.env.NODE_ENV": '"production"',
+        "process.env.PLUGIN_VERSION": `"${opts.version}"`,
+      },
+      loader: {
+        ".tsx": "tsx",
+        ".ts": "ts",
+      },
+    });
+
+    // 4. Obfuscate if enabled
+    if (opts.obfuscate) {
+      console.log("🔒 Obfuscating code...");
+      await obfuscateCode(path.join(opts.outputDir, "dist"));
+    }
+
+    // 5. Copy static files
+    console.log("📄 Copying static files...");
+    await copyStaticFiles(opts.outputDir);
+
+    // 6. Copy Prisma migrations
+    console.log("🗃️ Copying database migrations...");
+    await copyMigrations(opts.outputDir);
+
+    // 7. Generate manifest
+    console.log("📋 Generating plugin manifest...");
+    await generateManifest(opts.outputDir, opts.version);
+
+    // 8. Create ZIP package
+    console.log("🗜️ Creating ZIP package...");
+    const zipPath = await createPluginZip(opts.outputDir, opts.version);
+
+    const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+    console.log(`\n✅ Build complete in ${duration}s`);
+    console.log(`   Output: ${zipPath}`);
+
+    return zipPath;
+
+  } catch (error) {
+    console.error("\n❌ Build failed:", error);
+    process.exit(1);
+  }
+}
+
+async function copyStaticFiles(outputDir: string) {
+  const filesToCopy = [
+    { src: "LICENSE.txt", dest: "LICENSE.txt" },
+    { src: "README.plugin.md", dest: "README.md" },
+    { src: "CHANGELOG.md", dest: "CHANGELOG.md" },
+  ];
+
+  for (const file of filesToCopy) {
+    if (await fs.pathExists(file.src)) {
+      await fs.copy(file.src, path.join(outputDir, file.dest));
+    }
+  }
+
+  // Copy components
+  await fs.copy(
+    "src/components/support",
+    path.join(outputDir, "components"),
+    { filter: (src) => !src.endsWith(".test.tsx") }
+  );
+
+  // Copy API routes
+  await fs.copy(
+    "src/app/api/support",
+    path.join(outputDir, "api"),
+    { filter: (src) => !src.endsWith(".test.ts") }
+  );
+
+  // Copy admin pages
+  await fs.copy(
+    "src/app/admin/support",
+    path.join(outputDir, "admin-pages"),
+    { filter: (src) => !src.endsWith(".test.tsx") }
+  );
+}
+
+async function copyMigrations(outputDir: string) {
+  const migrationsDir = "prisma/migrations";
+
+  if (await fs.pathExists(migrationsDir)) {
+    // Filter only support-related migrations
+    const migrations = await fs.readdir(migrationsDir);
+    const supportMigrations = migrations.filter(m =>
+      m.includes("support") || m.includes("ticket") || m.includes("chat")
+    );
+
+    await fs.ensureDir(path.join(outputDir, "migrations"));
+
+    for (const migration of supportMigrations) {
+      await fs.copy(
+        path.join(migrationsDir, migration),
+        path.join(outputDir, "migrations", migration)
+      );
+    }
+  }
+
+  // Copy schema additions
+  await fs.copy(
+    "prisma/schema.support.prisma",
+    path.join(outputDir, "schema.prisma")
+  );
+}
+
+// CLI entry point
+const args = process.argv.slice(2);
+const version = args.find(a => a.startsWith("--version="))?.split("=")[1] || "1.0.0";
+const noMinify = args.includes("--no-minify");
+const noObfuscate = args.includes("--no-obfuscate");
+
+buildPlugin({
+  version,
+  minify: !noMinify,
+  obfuscate: !noObfuscate,
+});
+```
+
+#### obfuscate.ts - Code Obfuscation
+
+```typescript
+// scripts/obfuscate.ts
+import JavaScriptObfuscator from "javascript-obfuscator";
+import fs from "fs-extra";
+import path from "path";
+import glob from "glob";
+
+// Obfuscation configuration
+const obfuscatorConfig = {
+  // Basic settings
+  compact: true,
+  simplify: true,
+
+  // String transformation
+  stringArray: true,
+  stringArrayThreshold: 0.75,
+  stringArrayEncoding: ["base64"] as const,
+  stringArrayRotate: true,
+  stringArrayShuffle: true,
+  stringArrayWrappersCount: 2,
+  stringArrayWrappersType: "function" as const,
+
+  // Control flow
+  controlFlowFlattening: true,
+  controlFlowFlatteningThreshold: 0.5,
+
+  // Dead code injection
+  deadCodeInjection: true,
+  deadCodeInjectionThreshold: 0.2,
+
+  // Identifiers
+  identifierNamesGenerator: "hexadecimal" as const,
+  renameGlobals: false, // Keep exports intact
+  renameProperties: false, // Keep React props intact
+
+  // Protection
+  selfDefending: true,
+  debugProtection: false, // Can cause issues in some environments
+  disableConsoleOutput: false, // Keep console for debugging
+
+  // Performance
+  transformObjectKeys: true,
+  unicodeEscapeSequence: false, // Avoid for smaller bundle size
+
+  // Split strings (helps avoid detection)
+  splitStrings: true,
+  splitStringsChunkLength: 10,
+
+  // Target
+  target: "browser" as const,
+};
+
+export async function obfuscateCode(distDir: string): Promise<void> {
+  const jsFiles = glob.sync(path.join(distDir, "**/*.js"));
+
+  console.log(`   Found ${jsFiles.length} JavaScript files to obfuscate`);
+
+  for (const filePath of jsFiles) {
+    const code = await fs.readFile(filePath, "utf-8");
+
+    // Skip if file is too small (likely just exports)
+    if (code.length < 100) {
+      continue;
+    }
+
+    try {
+      const obfuscated = JavaScriptObfuscator.obfuscate(code, {
+        ...obfuscatorConfig,
+        sourceMap: false,
+        sourceMapMode: "inline" as const,
+      });
+
+      await fs.writeFile(filePath, obfuscated.getObfuscatedCode());
+
+      const reduction = ((1 - obfuscated.getObfuscatedCode().length / code.length) * 100).toFixed(1);
+      console.log(`   ✓ ${path.basename(filePath)} (${reduction}% size change)`);
+
+    } catch (error) {
+      console.warn(`   ⚠ Could not obfuscate ${path.basename(filePath)}:`, error);
+    }
+  }
+}
+
+// License watermark injection
+export function injectWatermark(code: string, licenseKey?: string): string {
+  const watermark = `
+/*
+ * LiveSupport Pro v${process.env.PLUGIN_VERSION || "1.0.0"}
+ * Licensed to: ${licenseKey || "UNLICENSED"}
+ * Generated: ${new Date().toISOString()}
+ *
+ * This software is protected by copyright law.
+ * Unauthorized distribution is prohibited.
+ */
+`;
+
+  return watermark + code;
+}
+
+// Selective obfuscation - only critical files
+export const criticalFilesPatterns = [
+  "**/license-*.js",
+  "**/auth-*.js",
+  "**/verify-*.js",
+  "**/security-*.js",
+];
+```
+
+#### package-plugin.ts - ZIP Creation
+
+```typescript
+// scripts/package-plugin.ts
+import archiver from "archiver";
+import fs from "fs-extra";
+import path from "path";
+
+export async function createPluginZip(
+  sourceDir: string,
+  version: string
+): Promise<string> {
+  const zipName = `livesupport-pro-v${version}.zip`;
+  const zipPath = path.join("dist", zipName);
+
+  // Ensure dist directory exists
+  await fs.ensureDir("dist");
+
+  return new Promise((resolve, reject) => {
+    const output = fs.createWriteStream(zipPath);
+    const archive = archiver("zip", {
+      zlib: { level: 9 }, // Maximum compression
+    });
+
+    output.on("close", () => {
+      const sizeMB = (archive.pointer() / 1024 / 1024).toFixed(2);
+      console.log(`   Archive size: ${sizeMB} MB`);
+      resolve(zipPath);
+    });
+
+    archive.on("error", reject);
+    archive.on("warning", (err) => {
+      if (err.code === "ENOENT") {
+        console.warn("   Warning:", err.message);
+      } else {
+        reject(err);
+      }
+    });
+
+    archive.pipe(output);
+
+    // Add plugin directory contents
+    archive.directory(sourceDir, false);
+
+    archive.finalize();
+  });
+}
+
+// Verify ZIP contents
+export async function verifyPluginZip(zipPath: string): Promise<boolean> {
+  const AdmZip = require("adm-zip");
+  const zip = new AdmZip(zipPath);
+  const entries = zip.getEntries();
+
+  const requiredFiles = [
+    "plugin.json",
+    "README.md",
+    "dist/index.js",
+  ];
+
+  const foundFiles = entries.map((e: any) => e.entryName);
+
+  for (const required of requiredFiles) {
+    if (!foundFiles.some((f: string) => f.includes(required))) {
+      console.error(`   ❌ Missing required file: ${required}`);
+      return false;
+    }
+  }
+
+  console.log("   ✓ ZIP verification passed");
+  return true;
+}
+```
+
+#### generate-manifest.ts - Plugin Manifest
+
+```typescript
+// scripts/generate-manifest.ts
+import fs from "fs-extra";
+import path from "path";
+
+interface PluginManifest {
+  name: string;
+  slug: string;
+  version: string;
+  description: string;
+  author: {
+    name: string;
+    email: string;
+    url: string;
+  };
+  license: string;
+  homepage: string;
+  repository: string;
+  compatibility: {
+    cmsVersion: string;
+    nodeVersion: string;
+    database: string[];
+  };
+  dependencies: {
+    npm: string[];
+    peer: string[];
+  };
+  features: string[];
+  permissions: string[];
+  hooks: {
+    onInstall: string;
+    onUninstall: string;
+    onActivate: string;
+    onDeactivate: string;
+  };
+  adminMenu: Array<{
+    label: string;
+    icon: string;
+    path: string;
+    permission: string;
+  }>;
+  settings: {
+    configurable: boolean;
+    schema: string;
+  };
+  assets: {
+    icon: string;
+    banner: string;
+    screenshots: string[];
+  };
+}
+
+export async function generateManifest(
+  outputDir: string,
+  version: string
+): Promise<void> {
+  const manifest: PluginManifest = {
+    name: "LiveSupport Pro",
+    slug: "livesupport-pro",
+    version,
+    description: "Professional live chat and ticket support system with real-time messaging, AI assistance, and comprehensive admin dashboard.",
+    author: {
+      name: "LLCPad",
+      email: "plugins@llcpad.com",
+      url: "https://llcpad.com",
+    },
+    license: "proprietary",
+    homepage: "https://llcpad.com/plugins/livesupport-pro",
+    repository: "https://github.com/llcpad/livesupport-pro",
+    compatibility: {
+      cmsVersion: ">=1.0.0",
+      nodeVersion: ">=20.0.0",
+      database: ["postgresql"],
+    },
+    dependencies: {
+      npm: [
+        "socket.io@^4.7.0",
+        "socket.io-client@^4.7.0",
+        "nodemailer@^6.9.0",
+        "@react-email/components@^0.0.20",
+      ],
+      peer: [
+        "react@^19.0.0",
+        "next@^15.0.0",
+        "@prisma/client@^6.0.0",
+      ],
+    },
+    features: [
+      "live-chat-widget",
+      "ticket-management",
+      "real-time-messaging",
+      "file-attachments",
+      "canned-responses",
+      "internal-notes",
+      "email-notifications",
+      "agent-assignment",
+      "customer-portal",
+      "analytics-dashboard",
+    ],
+    permissions: [
+      "support:tickets:read",
+      "support:tickets:write",
+      "support:tickets:delete",
+      "support:chat:access",
+      "support:settings:manage",
+      "support:agents:manage",
+    ],
+    hooks: {
+      onInstall: "hooks/install.js",
+      onUninstall: "hooks/uninstall.js",
+      onActivate: "hooks/activate.js",
+      onDeactivate: "hooks/deactivate.js",
+    },
+    adminMenu: [
+      {
+        label: "Support",
+        icon: "MessageSquare",
+        path: "/admin/support",
+        permission: "support:tickets:read",
+      },
+      {
+        label: "Tickets",
+        icon: "Ticket",
+        path: "/admin/support/tickets",
+        permission: "support:tickets:read",
+      },
+      {
+        label: "Live Chat",
+        icon: "MessagesSquare",
+        path: "/admin/support/chat",
+        permission: "support:chat:access",
+      },
+      {
+        label: "Settings",
+        icon: "Settings",
+        path: "/admin/support/settings",
+        permission: "support:settings:manage",
+      },
+    ],
+    settings: {
+      configurable: true,
+      schema: "settings-schema.json",
+    },
+    assets: {
+      icon: "assets/icon.png",
+      banner: "assets/banner.png",
+      screenshots: [
+        "assets/screenshots/dashboard.png",
+        "assets/screenshots/chat-widget.png",
+        "assets/screenshots/ticket-detail.png",
+      ],
+    },
+  };
+
+  await fs.writeJson(
+    path.join(outputDir, "plugin.json"),
+    manifest,
+    { spaces: 2 }
+  );
+
+  console.log("   ✓ Generated plugin.json");
+}
+```
+
+#### package.json Scripts
+
+```json
+{
+  "scripts": {
+    "plugin:build": "tsx scripts/build-plugin.ts",
+    "plugin:build:dev": "tsx scripts/build-plugin.ts --no-minify --no-obfuscate",
+    "plugin:package": "tsx scripts/package-plugin.ts",
+    "plugin:release": "npm run plugin:build && npm run plugin:verify",
+    "plugin:verify": "tsx scripts/verify-plugin.ts"
+  }
+}
+```
+
+---
+
+### 🔐 Security Implementation (License Client)
+
+#### License Verification Client
+
+```typescript
+// src/lib/support/license/client.ts
+import { SignJWT, jwtVerify, importSPKI } from "jose";
+import prisma from "@/lib/db";
+
+// RSA Public Key (embedded in plugin - get from license server)
+const PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA...
+-----END PUBLIC KEY-----`;
+
+interface LicenseToken {
+  licenseKey: string;
+  domains: string[];
+  features: string[];
+  tier: "STANDARD" | "PROFESSIONAL" | "ENTERPRISE";
+  expiresAt: string;
+  issuedAt: string;
+}
+
+interface LicenseStatus {
+  isValid: boolean;
+  isExpired: boolean;
+  tier: string;
+  features: string[];
+  domains: string[];
+  expiresAt: Date | null;
+  error?: string;
+}
+
+class LicenseClient {
+  private cachedToken: LicenseToken | null = null;
+  private cacheExpiry: Date | null = null;
+  private readonly CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+  async verifyLicense(): Promise<LicenseStatus> {
+    try {
+      // 1. Check cache first
+      if (this.cachedToken && this.cacheExpiry && new Date() < this.cacheExpiry) {
+        return this.tokenToStatus(this.cachedToken);
+      }
+
+      // 2. Get stored token from database
+      const settings = await prisma.pluginSetting.findFirst({
+        where: {
+          pluginId: "livesupport-pro",
+          key: "license_token",
+        },
+      });
+
+      if (!settings?.value) {
+        return {
+          isValid: false,
+          isExpired: false,
+          tier: "NONE",
+          features: [],
+          domains: [],
+          expiresAt: null,
+          error: "No license found"
+        };
+      }
+
+      // 3. Verify JWT signature with public key
+      const token = await this.verifyJWT(settings.value as string);
+
+      if (!token) {
+        return {
+          isValid: false,
+          isExpired: false,
+          tier: "NONE",
+          features: [],
+          domains: [],
+          expiresAt: null,
+          error: "Invalid license signature",
+        };
+      }
+
+      // 4. Check domain
+      const currentDomain = this.getCurrentDomain();
+      if (!token.domains.includes(currentDomain) && !token.domains.includes("*")) {
+        return {
+          isValid: false,
+          isExpired: false,
+          tier: token.tier,
+          features: [],
+          domains: token.domains,
+          expiresAt: new Date(token.expiresAt),
+          error: `Domain not licensed: ${currentDomain}`,
+        };
+      }
+
+      // 5. Check expiry
+      const expiresAt = new Date(token.expiresAt);
+      if (expiresAt < new Date()) {
+        return {
+          isValid: false,
+          isExpired: true,
+          tier: token.tier,
+          features: token.features,
+          domains: token.domains,
+          expiresAt,
+          error: "License expired",
+        };
+      }
+
+      // 6. Cache and return
+      this.cachedToken = token;
+      this.cacheExpiry = new Date(Date.now() + this.CACHE_DURATION);
+
+      return this.tokenToStatus(token);
+
+    } catch (error) {
+      console.error("[License] Verification error:", error);
+      return {
+        isValid: false,
+        isExpired: false,
+        tier: "NONE",
+        features: [],
+        domains: [],
+        expiresAt: null,
+        error: error instanceof Error ? error.message : "Verification failed",
+      };
+    }
+  }
+
+  async activateLicense(licenseKey: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      const domain = this.getCurrentDomain();
+
+      // Call license server
+      const response = await fetch(`${process.env.LICENSE_SERVER_URL}/api/licenses/activate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ licenseKey, domain }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return { success: false, error: data.error || "Activation failed" };
+      }
+
+      // Store token
+      await prisma.pluginSetting.upsert({
+        where: {
+          pluginId_key: {
+            pluginId: "livesupport-pro",
+            key: "license_token",
+          },
+        },
+        update: { value: data.token },
+        create: {
+          pluginId: "livesupport-pro",
+          key: "license_token",
+          value: data.token,
+        },
+      });
+
+      // Clear cache
+      this.cachedToken = null;
+      this.cacheExpiry = null;
+
+      return { success: true };
+
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Activation failed"
+      };
+    }
+  }
+
+  async refreshToken(): Promise<boolean> {
+    try {
+      const settings = await prisma.pluginSetting.findFirst({
+        where: {
+          pluginId: "livesupport-pro",
+          key: "license_key",
+        },
+      });
+
+      if (!settings?.value) return false;
+
+      const result = await this.activateLicense(settings.value as string);
+      return result.success;
+
+    } catch {
+      return false;
+    }
+  }
+
+  private async verifyJWT(token: string): Promise<LicenseToken | null> {
+    try {
+      const publicKey = await importSPKI(PUBLIC_KEY, "RS256");
+      const { payload } = await jwtVerify(token, publicKey);
+      return payload as unknown as LicenseToken;
+    } catch {
+      return null;
+    }
+  }
+
+  private getCurrentDomain(): string {
+    if (typeof window !== "undefined") {
+      return window.location.hostname;
+    }
+    return process.env.NEXT_PUBLIC_APP_URL
+      ? new URL(process.env.NEXT_PUBLIC_APP_URL).hostname
+      : "localhost";
+  }
+
+  private tokenToStatus(token: LicenseToken): LicenseStatus {
+    const expiresAt = new Date(token.expiresAt);
+    return {
+      isValid: true,
+      isExpired: expiresAt < new Date(),
+      tier: token.tier,
+      features: token.features,
+      domains: token.domains,
+      expiresAt,
+    };
+  }
+
+  // Feature check
+  hasFeature(feature: string): boolean {
+    if (!this.cachedToken) return false;
+    return this.cachedToken.features.includes(feature);
+  }
+
+  // Tier check
+  getTier(): string {
+    return this.cachedToken?.tier || "NONE";
+  }
+}
+
+export const licenseClient = new LicenseClient();
+```
+
+---
+
+### ✅ Implementation Checklist
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                 LIVESUPPORT PRO - IMPLEMENTATION CHECKLIST               │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  PHASE 1-4: Core System (COMPLETE ✅)                                    │
+│  ─────────────────────────────────────                                   │
+│  [✅] Database Schema (Prisma)                                           │
+│  [✅] Ticket CRUD API                                                    │
+│  [✅] Admin Dashboard UI                                                 │
+│  [✅] Live Chat Widget                                                   │
+│  [✅] File Attachments                                                   │
+│  [✅] Canned Responses                                                   │
+│  [✅] Internal Notes                                                     │
+│                                                                          │
+│  PHASE 5: Real-time & Email (IN PROGRESS 🔄)                            │
+│  ────────────────────────────────────────────                            │
+│  [⬜] Socket.io Server Setup                                             │
+│      └── src/lib/support/socket/server.ts                               │
+│      └── src/lib/support/socket/events.ts                               │
+│      └── src/lib/support/socket/handlers.ts                             │
+│      └── src/lib/support/socket/middleware.ts                           │
+│  [⬜] Socket.io Client Hook                                              │
+│      └── src/hooks/use-socket.ts                                        │
+│  [⬜] Custom Server (server.ts)                                          │
+│  [⬜] Gmail SMTP Integration                                             │
+│      └── src/lib/email/smtp-client.ts                                   │
+│      └── src/lib/email/send-email.ts                                    │
+│  [⬜] Email Templates                                                    │
+│      └── src/lib/email/templates/*.tsx                                  │
+│                                                                          │
+│  PHASE 6: Plugin Packaging (PENDING ⏳)                                  │
+│  ──────────────────────────────────────                                  │
+│  [⬜] Build Script                                                       │
+│      └── scripts/build-plugin.ts                                        │
+│  [⬜] Obfuscation Config                                                 │
+│      └── scripts/obfuscate.ts                                           │
+│  [⬜] ZIP Packager                                                       │
+│      └── scripts/package-plugin.ts                                      │
+│  [⬜] Manifest Generator                                                 │
+│      └── scripts/generate-manifest.ts                                   │
+│  [⬜] License Client                                                     │
+│      └── src/lib/support/license/client.ts                              │
+│                                                                          │
+│  PHASE 7: AI Integration (OPTIONAL - Extended License)                  │
+│  ─────────────────────────────────────────────────────                   │
+│  [⬜] Knowledge Base Upload                                              │
+│  [⬜] OpenAI Integration                                                 │
+│  [⬜] AI Auto-responses                                                  │
+│  [⬜] Agent Suggestions                                                  │
+│                                                                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  NPM DEPENDENCIES TO ADD:                                                │
+│  ────────────────────────                                                │
+│  npm install socket.io socket.io-client                                 │
+│  npm install nodemailer @types/nodemailer                               │
+│  npm install @react-email/components                                    │
+│  npm install javascript-obfuscator (devDependency)                      │
+│  npm install archiver @types/archiver (devDependency)                   │
+│  npm install esbuild (devDependency)                                    │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+```
 
 ---
 

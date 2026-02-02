@@ -40,6 +40,10 @@ export default function DashboardLayout({
             </svg>
             Live Chat
           </Link>
+          {/* AI & Knowledge Section */}
+          <div className="mt-6 px-4 mb-2">
+            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">AI & Knowledge</span>
+          </div>
           <Link
             href="/knowledge"
             className="flex items-center gap-3 px-4 py-2 text-gray-300 hover:bg-gray-800 hover:text-white"
@@ -49,6 +53,10 @@ export default function DashboardLayout({
             </svg>
             Knowledge Base
           </Link>
+          {/* Settings Section */}
+          <div className="mt-6 px-4 mb-2">
+            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Configuration</span>
+          </div>
           <Link
             href="/settings"
             className="flex items-center gap-3 px-4 py-2 text-gray-300 hover:bg-gray-800 hover:text-white"

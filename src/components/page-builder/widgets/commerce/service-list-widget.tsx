@@ -443,10 +443,11 @@ function ServiceItem({
   settings: ServiceListWidgetSettings;
   isLast: boolean;
 }) {
-  const hoverEffectClasses = {
+  const hoverEffectClasses: Record<"none" | "highlight" | "underline" | "scale", string> = {
     none: "",
     highlight: "hover:bg-muted",
-    slide: "hover:translate-x-1",
+    underline: "hover:underline",
+    scale: "hover:scale-[1.02]",
   };
 
   return (
@@ -507,7 +508,10 @@ function CategoryCard({
         return b.startingPrice - a.startingPrice;
       case "name":
         return a.name.localeCompare(b.name);
-      case "order":
+      case "popular":
+        // Sort by popularity - for now, use default order as proxy
+        return 0;
+      case "sort-order":
       default:
         return 0; // Already sorted by API
     }

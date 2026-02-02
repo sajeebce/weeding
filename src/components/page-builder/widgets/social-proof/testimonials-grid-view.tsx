@@ -181,8 +181,8 @@ export function TestimonialsGridView({
   };
 
   // Check if gradient border should be enabled
-  const isGradientBorderEnabled = () => {
-    return cardStyle.style === "gradient-border" || cardStyle.gradientBorder?.enabled;
+  const isGradientBorderEnabled = (): boolean => {
+    return cardStyle.style === "gradient-border" || cardStyle.gradientBorder?.enabled || false;
   };
 
   // Gradient border wrapper

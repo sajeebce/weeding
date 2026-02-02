@@ -15,6 +15,8 @@ import { MultiJsonLd } from "@/components/seo/json-ld";
 import { generateFAQSchema, generateBreadcrumbSchema } from "@/lib/seo";
 import prisma from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "FAQ - Frequently Asked Questions",
   description:

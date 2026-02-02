@@ -6,6 +6,9 @@ import { formatDate } from "@/lib/utils";
 import { WidgetSectionsRenderer } from "@/components/landing-page/widget-sections-renderer";
 import type { Section } from "@/lib/page-builder/types";
 
+// Force dynamic rendering - these pages depend on database content
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
@@ -132,25 +135,3 @@ export default async function DynamicPage({ params }: PageProps) {
   );
 }
 
-// Generate static params for existing pages (optional, for build optimization)
-export async function generateStaticParams() {
-  const [landingPages, legalPages] = await Promise.all([
-    prisma.landingPage.findMany({
-      where: { isActive: true },
-      select: { slug: true },
-    }),
-    prisma.legalPage.findMany({
-      where: { isActive: true },
-      select: { slug: true },
-    }),
-  ]);
-
-  const allSlugs = [
-    ...landingPages.map((p) => p.slug),
-    ...legalPages.map((p) => p.slug),
-  ];
-
-  return [...new Set(allSlugs)]
-    .filter((slug) => !RESERVED_SLUGS.includes(slug))
-    .map((slug) => ({ slug }));
-}

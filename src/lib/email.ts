@@ -1,15 +1,22 @@
 /**
- * Email Utility using Resend
+ * Email Utility using Nodemailer (SMTP)
+ * Supports Gmail and other SMTP providers
  */
 
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 import prisma from "@/lib/db";
 import { decrypt, isEncrypted } from "@/lib/encryption";
 
 // Email settings keys
 export const EMAIL_SETTINGS = {
   PROVIDER: "email.provider",
-  RESEND_API_KEY: "email.resend.apiKey",
+  // SMTP Settings
+  SMTP_HOST: "email.smtp.host",
+  SMTP_PORT: "email.smtp.port",
+  SMTP_SECURE: "email.smtp.secure",
+  SMTP_USER: "email.smtp.user",
+  SMTP_PASS: "email.smtp.password",
+  // From settings
   FROM_EMAIL: "email.from.email",
   FROM_NAME: "email.from.name",
   REPLY_TO: "email.replyTo",
@@ -32,7 +39,13 @@ const CONFIG_CACHE_TTL = 60000; // 1 minute
 
 interface EmailConfig {
   provider: string;
-  apiKey: string;
+  smtp: {
+    host: string;
+    port: number;
+    secure: boolean;
+    user: string;
+    password: string;
+  };
   fromEmail: string;
   fromName: string;
   replyTo: string;
@@ -65,16 +78,22 @@ export async function getEmailConfig(): Promise<EmailConfig> {
     settingsMap[s.key] = s.value;
   });
 
-  // Decrypt API key
-  let apiKey = settingsMap[EMAIL_SETTINGS.RESEND_API_KEY] || "";
-  if (apiKey && isEncrypted(apiKey)) {
-    apiKey = decrypt(apiKey);
+  // Decrypt password if encrypted
+  let smtpPassword = settingsMap[EMAIL_SETTINGS.SMTP_PASS] || "";
+  if (smtpPassword && isEncrypted(smtpPassword)) {
+    smtpPassword = decrypt(smtpPassword);
   }
 
   emailConfigCache = {
-    provider: settingsMap[EMAIL_SETTINGS.PROVIDER] || "resend",
-    apiKey,
-    fromEmail: settingsMap[EMAIL_SETTINGS.FROM_EMAIL] || "noreply@llcpad.com",
+    provider: settingsMap[EMAIL_SETTINGS.PROVIDER] || "smtp",
+    smtp: {
+      host: settingsMap[EMAIL_SETTINGS.SMTP_HOST] || "smtp.gmail.com",
+      port: parseInt(settingsMap[EMAIL_SETTINGS.SMTP_PORT] || "587", 10),
+      secure: settingsMap[EMAIL_SETTINGS.SMTP_SECURE] === "true",
+      user: settingsMap[EMAIL_SETTINGS.SMTP_USER] || "",
+      password: smtpPassword,
+    },
+    fromEmail: settingsMap[EMAIL_SETTINGS.FROM_EMAIL] || "",
     fromName: settingsMap[EMAIL_SETTINGS.FROM_NAME] || "LLCPad",
     replyTo: settingsMap[EMAIL_SETTINGS.REPLY_TO] || "",
     adminEmail: settingsMap[EMAIL_SETTINGS.ADMIN_EMAIL] || "",
@@ -102,14 +121,24 @@ export function clearEmailConfigCache() {
 }
 
 /**
- * Get Resend instance
+ * Create nodemailer transporter
  */
-async function getResend(): Promise<Resend> {
+async function getTransporter(): Promise<nodemailer.Transporter> {
   const config = await getEmailConfig();
-  if (!config.apiKey) {
-    throw new Error("Email API key not configured. Please configure in Admin Settings.");
+
+  if (!config.smtp.user || !config.smtp.password) {
+    throw new Error("SMTP credentials not configured. Please configure in Admin Settings.");
   }
-  return new Resend(config.apiKey);
+
+  return nodemailer.createTransport({
+    host: config.smtp.host,
+    port: config.smtp.port,
+    secure: config.smtp.secure, // true for 465, false for other ports
+    auth: {
+      user: config.smtp.user,
+      pass: config.smtp.password,
+    },
+  });
 }
 
 interface SendEmailOptions {
@@ -126,23 +155,18 @@ interface SendEmailOptions {
 export async function sendEmail(options: SendEmailOptions): Promise<{ success: boolean; id?: string; error?: string }> {
   try {
     const config = await getEmailConfig();
-    const resend = await getResend();
+    const transporter = await getTransporter();
 
-    const { data, error } = await resend.emails.send({
-      from: `${config.fromName} <${config.fromEmail}>`,
-      to: options.to,
+    const info = await transporter.sendMail({
+      from: `"${config.fromName}" <${config.fromEmail || config.smtp.user}>`,
+      to: Array.isArray(options.to) ? options.to.join(", ") : options.to,
       subject: options.subject,
       html: options.html,
       text: options.text,
       replyTo: options.replyTo || config.replyTo || undefined,
     });
 
-    if (error) {
-      console.error("Email send error:", error);
-      return { success: false, error: error.message };
-    }
-
-    return { success: true, id: data?.id };
+    return { success: true, id: info.messageId };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to send email";
     console.error("Email error:", message);
@@ -156,15 +180,20 @@ export async function sendEmail(options: SendEmailOptions): Promise<{ success: b
 export async function testEmailConnection(): Promise<{ success: boolean; message: string }> {
   try {
     const config = await getEmailConfig();
-    if (!config.apiKey) {
-      return { success: false, message: "API key not configured" };
+
+    if (!config.smtp.user || !config.smtp.password) {
+      return { success: false, message: "SMTP credentials not configured" };
     }
 
-    const resend = new Resend(config.apiKey);
+    const transporter = await getTransporter();
 
-    await resend.emails.send({
-      from: `${config.fromName} <${config.fromEmail}>`,
-      to: config.adminEmail || config.fromEmail,
+    // Verify connection
+    await transporter.verify();
+
+    // Send test email
+    await transporter.sendMail({
+      from: `"${config.fromName}" <${config.fromEmail || config.smtp.user}>`,
+      to: config.adminEmail || config.smtp.user,
       subject: "LLCPad Email Test",
       html: "<p>This is a test email from LLCPad. If you received this, your email configuration is working correctly!</p>",
     });

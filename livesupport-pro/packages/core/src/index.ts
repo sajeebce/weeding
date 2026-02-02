@@ -9,3 +9,6 @@ export * from './types';
 
 // Utils
 export * from './utils';
+
+// Email Templates
+export * from './email';

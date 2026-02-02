@@ -129,7 +129,7 @@ export const DEFAULT_HERO_CONTENT_SETTINGS: HeroContentWidgetSettings = {
     columns: 3,
     iconColor: "#22c55e",
     iconPosition: "left",
-    layout: "inline",
+    layout: "list",
   },
   primaryButton: {
     show: true,
@@ -839,7 +839,7 @@ export const DEFAULT_SERVICE_LIST_SETTINGS: ServiceListWidgetSettings = {
     showAllCategories: true,
     categories: [],
     limitServicesPerCategory: 0, // 0 = no limit
-    sortServicesBy: "order",
+    sortServicesBy: "sort-order",
     activeOnly: true,
   },
 

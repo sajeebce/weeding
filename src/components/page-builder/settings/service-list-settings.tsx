@@ -189,10 +189,11 @@ export function ServiceListWidgetSettingsPanel({
           value={s.filters.sortServicesBy}
           onChange={(v) => updateNested("filters", "sortServicesBy", v)}
           options={[
-            { value: "order", label: "Default Order" },
+            { value: "sort-order", label: "Default Order" },
             { value: "name", label: "Name (A-Z)" },
             { value: "price-asc", label: "Price (Low to High)" },
             { value: "price-desc", label: "Price (High to Low)" },
+            { value: "popular", label: "Most Popular" },
           ]}
         />
       </AccordionSection>
@@ -637,13 +638,14 @@ export function ServiceListWidgetSettingsPanel({
             updateNested(
               "serviceItem",
               "hoverEffect",
-              v as "none" | "highlight" | "slide"
+              v as "none" | "highlight" | "underline" | "scale"
             )
           }
           options={[
             { value: "none", label: "None" },
             { value: "highlight", label: "Highlight" },
-            { value: "slide", label: "Slide" },
+            { value: "underline", label: "Underline" },
+            { value: "scale", label: "Scale" },
           ]}
         />
         {s.serviceItem.divider && (

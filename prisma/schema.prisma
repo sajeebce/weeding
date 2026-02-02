@@ -498,6 +498,7 @@ model SupportTicket {
   // Relations
   messages        SupportMessage[]
   internalNotes   InternalNote[]
+  aiResponses     AIResponse[]
 
   @@index([customerId])
   @@index([assignedToId])
@@ -1639,6 +1640,18 @@ model Plugin {
   lastError       String?      @db.Text
   errorAt         DateTime?
 
+  // License info
+  requiresLicense   Boolean    @default(true)
+  licenseKey        String?    // Encrypted license key
+  licensedDomain    String?    // Domain this license is bound to
+  licenseType       String?    // "regular" | "extended"
+  licenseVerifiedAt DateTime?  // Last successful verification
+  licenseExpiresAt  DateTime?  // Support expiry date
+  licenseToken      String?    @db.Text // JWT token from license server
+
+  // Plugin files location
+  pluginPath        String?    // Path to extracted plugin files
+
   // Relations
   settings        PluginSetting[]
   menuItems       PluginMenuItem[]
@@ -1680,4 +1693,44 @@ model PluginMenuItem {
 
   @@index([pluginId])
   @@index([isActive])
+}
+
+// ============ AI SUPPORT SYSTEM ============
+
+// Knowledge Base Documents
+model KnowledgeDocument {
+  id        String   @id @default(cuid())
+  title     String
+  content   String   @db.Text
+  category  String   // "faq", "service", "policy", etc.
+  tags      String[] // For keyword matching
+  embedding Float[]  // Vector embedding for semantic search
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+  @@index([isActive])
+}
+
+// AI Generated Responses (for review/tracking)
+model AIResponse {
+  id         String   @id @default(cuid())
+  ticketId   String
+  ticket     SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  content    String   @db.Text
+  confidence Float    @default(0)
+  sources    String[] // Knowledge base document titles used
+
+  wasUsed    Boolean  @default(false)
+  wasEdited  Boolean  @default(false)
+  usedAt     DateTime?
+
+  createdAt  DateTime @default(now())
+
+  @@index([ticketId])
+  @@index([wasUsed])
+  @@index([createdAt])
 }

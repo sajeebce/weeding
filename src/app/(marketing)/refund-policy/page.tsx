@@ -3,6 +3,8 @@ import prisma from "@/lib/db";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata(): Promise<Metadata> {
   const page = await prisma.legalPage.findUnique({
     where: { slug: "refund-policy", isActive: true },

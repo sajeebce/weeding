@@ -1,6 +1,8 @@
 import { MetadataRoute } from "next";
 import prisma from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://llcpad.com";
 
 // State pages for LLC formation
