@@ -11,7 +11,7 @@ const installPluginSchema = z.object({
   author: z.string().optional(),
   authorUrl: z.string().url().optional().or(z.literal("")),
   icon: z.string().optional(),
-  manifest: z.record(z.unknown()).optional(),
+  manifest: z.record(z.string(), z.unknown()).optional(),
   adminMenuLabel: z.string().optional(),
   adminMenuIcon: z.string().optional(),
   adminMenuPosition: z.number().optional(),

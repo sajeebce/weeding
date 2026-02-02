@@ -92,7 +92,7 @@ export default async function DynamicPage({ params }: PageProps) {
   if (landingPage) {
     // Get sections from the widget-page-sections block
     const sectionsBlock = landingPage.blocks[0];
-    const sections = (sectionsBlock?.settings as Section[]) || [];
+    const sections = (sectionsBlock?.settings as unknown as Section[]) || [];
 
     return <WidgetSectionsRenderer sections={sections} />;
   }

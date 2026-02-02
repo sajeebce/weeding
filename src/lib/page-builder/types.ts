@@ -1322,8 +1322,10 @@ export type ServiceCardHoverEffect =
   | "none"
   | "lift"
   | "glow"
+  | "border-glow"
   | "border-color"
-  | "scale";
+  | "scale"
+  | "spotlight";
 
 export type ServiceCardIconAnimation =
   | "none"
@@ -1558,11 +1560,14 @@ export interface ServiceListWidgetSettings {
       style: BadgeStyle;
       bgColor?: string;
       textColor?: string;
+      borderColor?: string;
     };
     heading: {
       text: string;
       size: "sm" | "md" | "lg" | "xl" | "2xl";
       color?: string;
+      highlightWords?: string;
+      highlightColor?: string;
     };
     description: {
       show: boolean;

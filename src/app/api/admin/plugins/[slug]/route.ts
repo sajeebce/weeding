@@ -7,7 +7,7 @@ const updatePluginSchema = z.object({
   status: z.enum(["INSTALLED", "ACTIVE", "DISABLED", "ERROR"]).optional(),
   version: z.string().optional(),
   lastError: z.string().optional(),
-  manifest: z.record(z.unknown()).optional(),
+  manifest: z.record(z.string(), z.unknown()).optional(),
   adminMenuLabel: z.string().optional(),
   adminMenuIcon: z.string().optional(),
   adminMenuPosition: z.number().optional(),

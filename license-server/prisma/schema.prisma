@@ -1,0 +1,314 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// ADMIN USERS
+// ═══════════════════════════════════════════════════════════════════════
+
+model Admin {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  name            String?
+  password        String    // bcrypt hashed
+  role            AdminRole @default(STAFF)
+
+  // Activity tracking
+  lastLoginAt     DateTime?
+  lastLoginIp     String?
+
+  // Status
+  isActive        Boolean   @default(true)
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  createdLicenses License[] @relation("CreatedBy")
+  auditLogs       AuditLog[]
+
+  @@index([email])
+}
+
+enum AdminRole {
+  SUPER_ADMIN   // Full access
+  ADMIN         // Manage licenses, products
+  STAFF         // View only, generate licenses
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// PRODUCTS (Plugins)
+// ═══════════════════════════════════════════════════════════════════════
+
+model Product {
+  id              String    @id @default(cuid())
+  slug            String    @unique    // e.g., "livesupport-pro"
+  name            String               // e.g., "LiveSupport Pro"
+  description     String?   @db.Text
+
+  // Versioning
+  currentVersion  String    @default("1.0.0")
+
+  // Pricing tiers
+  tiers           ProductTier[]
+
+  // License key prefix
+  keyPrefix       String    @unique    // e.g., "LSP"
+
+  // Status
+  isActive        Boolean   @default(true)
+
+  // External IDs
+  envatoItemId    String?   // CodeCanyon item ID
+  gumroadProductId String?  // Gumroad product ID
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  licenses        License[]
+
+  @@index([slug])
+  @@index([keyPrefix])
+}
+
+model ProductTier {
+  id              String    @id @default(cuid())
+  productId       String
+  product         Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  tier            LicenseTier
+  name            String               // e.g., "Professional"
+  price           Decimal   @db.Decimal(10, 2)
+  currency        String    @default("USD")
+
+  // Limits
+  maxDomains      Int       @default(1)
+
+  // Features included in this tier
+  features        String[]             // e.g., ["chat", "ai", "analytics"]
+
+  // Support period (months)
+  supportMonths   Int       @default(6)
+
+  isActive        Boolean   @default(true)
+
+  @@unique([productId, tier])
+  @@index([productId])
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// LICENSES
+// ═══════════════════════════════════════════════════════════════════════
+
+model License {
+  id              String          @id @default(cuid())
+  licenseKey      String          @unique
+
+  // Product reference
+  productId       String
+  product         Product         @relation(fields: [productId], references: [id])
+
+  // Tier
+  tier            LicenseTier     @default(STANDARD)
+
+  // Customer info
+  customerEmail   String
+  customerName    String?
+
+  // Purchase info
+  orderId         String?         // External order ID
+  orderSource     OrderSource?    // Where the purchase came from
+  purchasedAt     DateTime        @default(now())
+  purchasePrice   Decimal?        @db.Decimal(10, 2)
+  purchaseCurrency String?
+
+  // Domain restrictions
+  domainLockMode  DomainLockMode  @default(LOCKED)
+  maxDomains      Int             @default(1)
+
+  // Validity
+  status          LicenseStatus   @default(ACTIVE)
+  expiresAt       DateTime?       // null = lifetime
+  supportExpiresAt DateTime?
+
+  // Features (can override tier defaults)
+  features        String[]
+
+  // Admin notes
+  notes           String?         @db.Text
+
+  // Created by
+  createdById     String?
+  createdBy       Admin?          @relation("CreatedBy", fields: [createdById], references: [id])
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  // Relations
+  activations     LicenseActivation[]
+
+  @@index([licenseKey])
+  @@index([customerEmail])
+  @@index([productId])
+  @@index([status])
+  @@index([orderId])
+  @@index([productId, status])
+  @@index([customerEmail, status])
+  @@index([createdAt(sort: Desc)])
+}
+
+model LicenseActivation {
+  id              String    @id @default(cuid())
+  licenseId       String
+  license         License   @relation(fields: [licenseId], references: [id], onDelete: Cascade)
+
+  // Domain info
+  domain          String
+  domainHash      String    // SHA256 for quick lookup
+
+  // Environment info
+  ipAddress       String?
+  serverInfo      Json?     // OS, Node version, etc.
+  cmsVersion      String?
+  pluginVersion   String?
+
+  // Status
+  isActive        Boolean   @default(true)
+  activatedAt     DateTime  @default(now())
+  lastVerifiedAt  DateTime  @default(now())
+  lastTokenIssuedAt DateTime?
+  deactivatedAt   DateTime?
+
+  @@unique([licenseId, domain])
+  @@index([domain])
+  @@index([domainHash])
+  @@index([licenseId])
+  @@index([domain, isActive])
+  @@index([lastVerifiedAt])
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// ENUMS
+// ═══════════════════════════════════════════════════════════════════════
+
+enum LicenseTier {
+  STANDARD      // 1 domain, basic features
+  PROFESSIONAL  // 3 domains, all features
+  ENTERPRISE    // Unlimited domains, priority support
+  DEVELOPER     // Unlimited, resale rights, source code
+}
+
+enum LicenseStatus {
+  ACTIVE
+  EXPIRED
+  SUSPENDED
+  REVOKED
+  REFUNDED
+}
+
+enum DomainLockMode {
+  LOCKED        // Must match registered domains
+  UNLOCKED      // Any domain allowed
+}
+
+enum OrderSource {
+  MANUAL        // Created manually by admin
+  ENVATO        // CodeCanyon purchase
+  GUMROAD       // Gumroad purchase
+  STRIPE        // Direct Stripe payment
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// WEBHOOK LOGS
+// ═══════════════════════════════════════════════════════════════════════
+
+model WebhookLog {
+  id              String    @id @default(cuid())
+
+  source          OrderSource
+  eventType       String              // e.g., "purchase", "refund"
+
+  // Request data
+  headers         Json?
+  payload         Json
+
+  // Response
+  status          WebhookStatus       @default(PENDING)
+  responseCode    Int?
+  responseBody    String?   @db.Text
+  errorMessage    String?   @db.Text
+
+  // Related license (if created)
+  licenseId       String?
+
+  // Processing
+  processedAt     DateTime?
+  retryCount      Int       @default(0)
+
+  createdAt       DateTime  @default(now())
+
+  @@index([source])
+  @@index([status])
+  @@index([createdAt])
+}
+
+enum WebhookStatus {
+  PENDING
+  PROCESSING
+  SUCCESS
+  FAILED
+  IGNORED       // Duplicate or irrelevant event
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// AUDIT LOGS
+// ═══════════════════════════════════════════════════════════════════════
+
+model AuditLog {
+  id              String    @id @default(cuid())
+
+  adminId         String?
+  admin           Admin?    @relation(fields: [adminId], references: [id])
+
+  action          String              // e.g., "license.create", "license.revoke"
+  entityType      String              // e.g., "License", "Product"
+  entityId        String?
+
+  // Change details
+  previousValue   Json?
+  newValue        Json?
+
+  ipAddress       String?
+  userAgent       String?
+
+  createdAt       DateTime  @default(now())
+
+  @@index([adminId])
+  @@index([action])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════════════════════════════════════
+
+model Setting {
+  id              String    @id @default(cuid())
+  key             String    @unique
+  value           String    @db.Text
+  type            String    @default("string")  // string, number, boolean, json
+  description     String?
+
+  updatedAt       DateTime  @updatedAt
+
+  @@index([key])
+}

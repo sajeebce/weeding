@@ -131,7 +131,7 @@ export function ServiceListWidgetSettingsPanel({
             />
             <TextInput
               label="Highlight Words"
-              value={s.header.heading.highlightWords}
+              value={s.header.heading.highlightWords || ""}
               onChange={(v) =>
                 updateDeepNested("header", "heading", "highlightWords", v)
               }
@@ -387,7 +387,7 @@ export function ServiceListWidgetSettingsPanel({
           onChange={(v) => updateNested("layout", "gap", v)}
           min={0}
           max={64}
-          suffix="px"
+          unit="px"
         />
         <SelectInput
           label="Card Style"
@@ -423,7 +423,7 @@ export function ServiceListWidgetSettingsPanel({
             onChange={(v) => updateNested("header", "marginBottom", v)}
             min={0}
             max={96}
-            suffix="px"
+            unit="px"
           />
           <SelectInput
             label="Heading Size"
@@ -439,12 +439,12 @@ export function ServiceListWidgetSettingsPanel({
           />
           <ColorInput
             label="Heading Color"
-            value={s.header.heading.color}
+            value={s.header.heading.color || ""}
             onChange={(v) => updateDeepNested("header", "heading", "color", v)}
           />
           <ColorInput
             label="Highlight Color"
-            value={s.header.heading.highlightColor}
+            value={s.header.heading.highlightColor || ""}
             onChange={(v) =>
               updateDeepNested("header", "heading", "highlightColor", v)
             }
@@ -465,7 +465,7 @@ export function ServiceListWidgetSettingsPanel({
               />
               <ColorInput
                 label="Description Color"
-                value={s.header.description.color}
+                value={s.header.description.color || ""}
                 onChange={(v) =>
                   updateDeepNested("header", "description", "color", v)
                 }
@@ -518,7 +518,7 @@ export function ServiceListWidgetSettingsPanel({
           onChange={(v) => updateNested("categoryCard", "borderRadius", v)}
           min={0}
           max={32}
-          suffix="px"
+          unit="px"
         />
         <NumberInput
           label="Border Width"
@@ -526,16 +526,16 @@ export function ServiceListWidgetSettingsPanel({
           onChange={(v) => updateNested("categoryCard", "borderWidth", v)}
           min={0}
           max={4}
-          suffix="px"
+          unit="px"
         />
         <ColorInput
           label="Border Color"
-          value={s.categoryCard.borderColor}
+          value={s.categoryCard.borderColor || ""}
           onChange={(v) => updateNested("categoryCard", "borderColor", v)}
         />
         <ColorInput
           label="Background Color"
-          value={s.categoryCard.backgroundColor}
+          value={s.categoryCard.backgroundColor || ""}
           onChange={(v) => updateNested("categoryCard", "backgroundColor", v)}
         />
         <NumberInput
@@ -544,7 +544,7 @@ export function ServiceListWidgetSettingsPanel({
           onChange={(v) => updateNested("categoryCard", "padding", v)}
           min={0}
           max={48}
-          suffix="px"
+          unit="px"
         />
         <SelectInput
           label="Title Size"
@@ -593,12 +593,12 @@ export function ServiceListWidgetSettingsPanel({
           />
           <ColorInput
             label="Icon Background"
-            value={s.categoryCard.iconBgColor}
+            value={s.categoryCard.iconBgColor || ""}
             onChange={(v) => updateNested("categoryCard", "iconBgColor", v)}
           />
           <ColorInput
             label="Icon Color"
-            value={s.categoryCard.iconColor}
+            value={s.categoryCard.iconColor || ""}
             onChange={(v) => updateNested("categoryCard", "iconColor", v)}
           />
         </AccordionSection>
@@ -620,13 +620,13 @@ export function ServiceListWidgetSettingsPanel({
         />
         <ColorInput
           label="Name Color"
-          value={s.serviceItem.nameColor}
+          value={s.serviceItem.nameColor || ""}
           onChange={(v) => updateNested("serviceItem", "nameColor", v)}
         />
         {s.serviceItem.showPrice && (
           <ColorInput
             label="Price Color"
-            value={s.serviceItem.priceColor}
+            value={s.serviceItem.priceColor || ""}
             onChange={(v) => updateNested("serviceItem", "priceColor", v)}
           />
         )}
@@ -649,7 +649,7 @@ export function ServiceListWidgetSettingsPanel({
         {s.serviceItem.divider && (
           <ColorInput
             label="Divider Color"
-            value={s.serviceItem.dividerColor}
+            value={s.serviceItem.dividerColor || ""}
             onChange={(v) => updateNested("serviceItem", "dividerColor", v)}
           />
         )}
@@ -659,7 +659,7 @@ export function ServiceListWidgetSettingsPanel({
           onChange={(v) => updateNested("serviceItem", "padding", v)}
           min={0}
           max={24}
-          suffix="px"
+          unit="px"
         />
       </AccordionSection>
 
@@ -684,11 +684,11 @@ export function ServiceListWidgetSettingsPanel({
             onChange={(v) => updateNested("cta", "marginTop", v)}
             min={0}
             max={96}
-            suffix="px"
+            unit="px"
           />
           <ColorInput
             label="Text Color"
-            value={s.cta.textColor}
+            value={s.cta.textColor || ""}
             onChange={(v) => updateNested("cta", "textColor", v)}
           />
         </AccordionSection>
