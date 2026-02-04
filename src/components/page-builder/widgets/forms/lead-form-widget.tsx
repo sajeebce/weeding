@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import type { LeadFormWidgetSettings } from "@/lib/page-builder/types";
 import { DEFAULT_LEAD_FORM_SETTINGS } from "@/lib/page-builder/defaults";
@@ -15,6 +16,25 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 
+// Helper function to darken a hex color
+function darkenColor(hex: string, percent: number): string {
+  // Remove # if present
+  hex = hex.replace("#", "");
+
+  // Parse RGB values
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+
+  // Darken each component
+  const darken = (value: number) => Math.max(0, Math.floor(value * (1 - percent / 100)));
+
+  // Convert back to hex
+  const toHex = (value: number) => value.toString(16).padStart(2, "0");
+
+  return `#${toHex(darken(r))}${toHex(darken(g))}${toHex(darken(b))}`;
+}
+
 interface LeadFormWidgetProps {
   settings: Partial<LeadFormWidgetSettings>;
   isPreview?: boolean;
@@ -24,6 +44,8 @@ export function LeadFormWidget({
   settings: partialSettings,
   isPreview,
 }: LeadFormWidgetProps) {
+  const [isButtonHovered, setIsButtonHovered] = useState(false);
+
   // Merge with defaults
   const settings: LeadFormWidgetSettings = {
     ...DEFAULT_LEAD_FORM_SETTINGS,
@@ -47,6 +69,8 @@ export function LeadFormWidget({
 
   // Get button styles
   const buttonStyle = submitButton.style || {};
+  const buttonBgColor = buttonStyle.bgColor || "#f97316";
+  const buttonHoverBgColor = darkenColor(buttonBgColor, 15);
 
   return (
     <div
@@ -177,16 +201,22 @@ export function LeadFormWidget({
           type="submit"
           disabled={isPreview}
           className={cn(
-            "transition-all duration-200",
+            "transition-all duration-200 cursor-pointer",
             submitButton.fullWidth && "w-full"
           )}
           style={{
-            backgroundColor: buttonStyle.bgColor || "#f97316",
+            backgroundColor: isButtonHovered ? buttonHoverBgColor : buttonBgColor,
             color: buttonStyle.textColor || "#ffffff",
             borderRadius: buttonStyle.borderRadius
               ? `${buttonStyle.borderRadius}px`
               : undefined,
+            transform: isButtonHovered ? "translateY(-2px)" : "translateY(0)",
+            boxShadow: isButtonHovered
+              ? "0 4px 12px rgba(0, 0, 0, 0.15)"
+              : "none",
           }}
+          onMouseEnter={() => setIsButtonHovered(true)}
+          onMouseLeave={() => setIsButtonHovered(false)}
         >
           {submitButton.text}
         </Button>
