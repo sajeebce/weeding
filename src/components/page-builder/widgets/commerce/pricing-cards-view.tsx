@@ -163,7 +163,7 @@ export function PricingCardsView({
   return (
     <div
       className={cn(
-        "grid gap-6 md:grid-cols-2",
+        "grid gap-6 md:grid-cols-2 pt-4 overflow-visible",
         gridColsClass[cardStyle.columns],
         cardStyle.layout === "horizontal-scroll" &&
           "md:flex md:overflow-x-auto md:gap-6 md:pb-4 md:snap-x md:snap-mandatory"
@@ -180,7 +180,7 @@ export function PricingCardsView({
             key={pkg.id}
             onClick={() => onPackageSelect(pkg.id)}
             className={cn(
-              "relative flex flex-col cursor-pointer transition-all duration-300",
+              "relative flex flex-col cursor-pointer transition-all duration-300 overflow-visible",
               shadowClass[cardStyle.cardShadow],
               isSelected && "ring-2 ring-primary",
               pkg.isPopular && getPopularCardClasses(true),
