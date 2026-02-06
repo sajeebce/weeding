@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Puzzle,
   Loader2,
   Power,
   PowerOff,
-  Trash2,
   Settings,
   ExternalLink,
   CheckCircle2,
@@ -14,12 +13,11 @@ import {
   AlertCircle,
   Package,
   RefreshCw,
-  Upload,
-  FileArchive,
   Key,
   Shield,
   Globe,
   MessageSquare,
+  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 
@@ -32,6 +30,7 @@ const iconMap: Record<string, LucideIcon> = {
   Key,
   Shield,
   Globe,
+  Sparkles,
 };
 import { Button } from "@/components/ui/button";
 import {
@@ -54,17 +53,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 
 interface Plugin {
@@ -79,6 +67,7 @@ interface Plugin {
   status: "INSTALLED" | "ACTIVE" | "DISABLED" | "ERROR";
   licenseKey: string | null;
   licenseType: string | null;
+  licenseTier: string | null;
   licenseVerifiedAt: string | null;
   hasAdminPages: boolean;
   hasPublicPages: boolean;
@@ -93,52 +82,6 @@ interface Plugin {
   };
 }
 
-interface PluginManifest {
-  slug: string;
-  name: string;
-  description?: string;
-  version: string;
-  author?: string;
-  authorUrl?: string;
-  icon?: string;
-  adminMenu?: {
-    label: string;
-    icon: string;
-    position?: number;
-    items: Array<{
-      label: string;
-      path: string;
-      icon?: string;
-    }>;
-  };
-  features?: {
-    adminPages?: boolean;
-    publicPages?: boolean;
-    widgets?: boolean;
-    apiRoutes?: boolean;
-  };
-  settings?: Array<{
-    key: string;
-    value: string;
-    type?: string;
-  }>;
-  manifest?: {
-    requiresLicense?: boolean;
-    widgets?: Array<unknown>;
-  };
-}
-
-interface UploadedPlugin {
-  slug: string;
-  name: string;
-  version: string;
-  description?: string;
-  author?: string;
-  icon?: string;
-  requiresLicense: boolean;
-  manifest: PluginManifest;
-}
-
 const statusConfig = {
   ACTIVE: {
     label: "Active",
@@ -146,9 +89,9 @@ const statusConfig = {
     icon: CheckCircle2,
   },
   INSTALLED: {
-    label: "Installed",
-    color: "bg-blue-100 text-blue-800 border-blue-200",
-    icon: Package,
+    label: "Requires License",
+    color: "bg-amber-100 text-amber-800 border-amber-200",
+    icon: Key,
   },
   DISABLED: {
     label: "Disabled",
@@ -167,14 +110,9 @@ export default function PluginsPage() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  // Upload states
-  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [uploadedPlugin, setUploadedPlugin] = useState<UploadedPlugin | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
   // License activation states
   const [licenseDialogOpen, setLicenseDialogOpen] = useState(false);
+  const [selectedPlugin, setSelectedPlugin] = useState<Plugin | null>(null);
   const [licenseKey, setLicenseKey] = useState("");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [activating, setActivating] = useState(false);
@@ -222,138 +160,28 @@ export default function PluginsPage() {
     }
   }
 
-  async function uninstallPlugin(slug: string) {
-    setActionLoading(slug);
-    try {
-      const res = await fetch(`/api/admin/plugins/${slug}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to uninstall plugin");
-
-      toast.success("Plugin uninstalled successfully");
-      fetchPlugins();
-    } catch (error) {
-      console.error("Error uninstalling plugin:", error);
-      toast.error("Failed to uninstall plugin");
-    } finally {
-      setActionLoading(null);
-    }
-  }
-
-  // Handle ZIP file upload
-  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.name.endsWith(".zip")) {
-      toast.error("Please select a ZIP file");
-      return;
-    }
-
-    setUploading(true);
-    setUploadedPlugin(null);
-
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const res = await fetch("/api/admin/plugins/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        toast.error(data.error || "Upload failed");
-        return;
-      }
-
-      setUploadedPlugin({
-        slug: data.plugin.slug,
-        name: data.plugin.name,
-        version: data.plugin.version,
-        description: data.plugin.description,
-        author: data.plugin.author,
-        icon: data.plugin.icon,
-        requiresLicense: data.requiresLicense,
-        manifest: data.manifest,
-      });
-
-      // If requires license, show license dialog
-      if (data.requiresLicense) {
-        setUploadDialogOpen(false);
-        setLicenseDialogOpen(true);
-      } else {
-        // Install directly for free plugins
-        await installFreePlugin(data.manifest);
-      }
-    } catch (error) {
-      console.error("Upload error:", error);
-      toast.error("Failed to upload plugin");
-    } finally {
-      setUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    }
-  }
-
-  // Install free plugin (no license required)
-  async function installFreePlugin(manifest: PluginManifest) {
-    try {
-      const res = await fetch("/api/admin/plugins", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          slug: manifest.slug,
-          name: manifest.name,
-          description: manifest.description,
-          version: manifest.version,
-          author: manifest.author,
-          authorUrl: manifest.authorUrl,
-          icon: manifest.icon,
-          manifest,
-          adminMenuLabel: manifest.adminMenu?.label,
-          adminMenuIcon: manifest.adminMenu?.icon,
-          adminMenuPosition: manifest.adminMenu?.position,
-          hasAdminPages: manifest.features?.adminPages ?? false,
-          hasPublicPages: manifest.features?.publicPages ?? false,
-          hasWidgets: manifest.features?.widgets ?? false,
-          hasApiRoutes: manifest.features?.apiRoutes ?? false,
-          menuItems: manifest.adminMenu?.items,
-          settings: manifest.settings,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        toast.error(data.error || "Installation failed");
-        return;
-      }
-
-      toast.success(`${manifest.name} installed successfully!`);
-      setUploadDialogOpen(false);
-      fetchPlugins();
-    } catch (error) {
-      console.error("Installation error:", error);
-      toast.error("Failed to install plugin");
-    }
+  // Open license activation dialog
+  function openLicenseDialog(plugin: Plugin) {
+    setSelectedPlugin(plugin);
+    setLicenseKey("");
+    setAgreedToTerms(false);
+    setActivationError(null);
+    setLicenseDialogOpen(true);
   }
 
   // Activate plugin with license
   async function activateWithLicense() {
-    if (!uploadedPlugin || !licenseKey.trim()) return;
+    if (!selectedPlugin || !licenseKey.trim()) return;
 
     setActivating(true);
     setActivationError(null);
 
     try {
-      const res = await fetch(`/api/admin/plugins/${uploadedPlugin.slug}/activate`, {
+      const res = await fetch(`/api/admin/plugins/${selectedPlugin.slug}/activate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           licenseKey: licenseKey.trim(),
-          manifest: uploadedPlugin.manifest,
           agreedToTerms,
         }),
       });
@@ -365,9 +193,11 @@ export default function PluginsPage() {
         return;
       }
 
-      toast.success(data.message || `${uploadedPlugin.name} activated successfully!`);
+      toast.success(data.message || `${selectedPlugin.name} activated successfully!`);
       setLicenseDialogOpen(false);
-      resetUploadState();
+      setSelectedPlugin(null);
+      setLicenseKey("");
+      setAgreedToTerms(false);
       fetchPlugins();
     } catch (error) {
       console.error("Activation error:", error);
@@ -375,13 +205,6 @@ export default function PluginsPage() {
     } finally {
       setActivating(false);
     }
-  }
-
-  function resetUploadState() {
-    setUploadedPlugin(null);
-    setLicenseKey("");
-    setAgreedToTerms(false);
-    setActivationError(null);
   }
 
   function formatDate(dateString: string) {
@@ -410,63 +233,13 @@ export default function PluginsPage() {
             Plugins
           </h1>
           <p className="text-muted-foreground">
-            Manage installed plugins and extensions
+            Manage and activate premium plugins
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
-            <Button onClick={() => setUploadDialogOpen(true)}>
-              <Upload className="h-4 w-4 mr-2" />
-              Install Plugin
-            </Button>
-            <DialogContent className="max-w-lg">
-              <DialogHeader>
-                <DialogTitle>Install Plugin</DialogTitle>
-                <DialogDescription>
-                  Upload a plugin ZIP file to install. Premium plugins require a valid license key.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div
-                  className="border-2 border-dashed rounded-lg p-8 text-center hover:border-primary/50 transition-colors cursor-pointer"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".zip"
-                    onChange={handleFileUpload}
-                    className="hidden"
-                  />
-                  {uploading ? (
-                    <div className="flex flex-col items-center gap-2">
-                      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                      <p className="text-sm text-muted-foreground">Uploading...</p>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center gap-2">
-                      <FileArchive className="h-10 w-10 text-muted-foreground" />
-                      <p className="font-medium">Click to upload plugin ZIP</p>
-                      <p className="text-sm text-muted-foreground">
-                        or drag and drop (max 50MB)
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setUploadDialogOpen(false)}>
-                  Cancel
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-
-          <Button variant="outline" onClick={fetchPlugins}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
-          </Button>
-        </div>
+        <Button variant="outline" onClick={fetchPlugins}>
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Refresh
+        </Button>
       </div>
 
       <Separator />
@@ -474,7 +247,12 @@ export default function PluginsPage() {
       {/* License Activation Dialog */}
       <Dialog open={licenseDialogOpen} onOpenChange={(open) => {
         setLicenseDialogOpen(open);
-        if (!open) resetUploadState();
+        if (!open) {
+          setSelectedPlugin(null);
+          setLicenseKey("");
+          setAgreedToTerms(false);
+          setActivationError(null);
+        }
       }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
@@ -483,24 +261,33 @@ export default function PluginsPage() {
               Activate License
             </DialogTitle>
             <DialogDescription>
-              Enter your license key to activate {uploadedPlugin?.name}
+              Enter your license key to activate {selectedPlugin?.name}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             {/* Plugin Info */}
-            {uploadedPlugin && (
+            {selectedPlugin && (
               <Card className="bg-muted/50">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
                     <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center shrink-0">
-                      <Puzzle className="h-6 w-6 text-primary" />
+                      {(() => {
+                        const IconComponent = selectedPlugin.icon && iconMap[selectedPlugin.icon];
+                        if (IconComponent) {
+                          return <IconComponent className="h-6 w-6 text-primary" />;
+                        }
+                        if (selectedPlugin.icon && !/^[a-zA-Z]+$/.test(selectedPlugin.icon)) {
+                          return <span className="text-xl">{selectedPlugin.icon}</span>;
+                        }
+                        return <Puzzle className="h-6 w-6 text-primary" />;
+                      })()}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-base truncate">{uploadedPlugin.name}</p>
+                      <p className="font-semibold text-base truncate">{selectedPlugin.name}</p>
                       <p className="text-sm text-muted-foreground truncate">
-                        v{uploadedPlugin.version}
-                        {uploadedPlugin.author && ` by ${uploadedPlugin.author}`}
+                        v{selectedPlugin.version}
+                        {selectedPlugin.author && ` by ${selectedPlugin.author}`}
                       </p>
                     </div>
                   </div>
@@ -563,7 +350,10 @@ export default function PluginsPage() {
               variant="outline"
               onClick={() => {
                 setLicenseDialogOpen(false);
-                resetUploadState();
+                setSelectedPlugin(null);
+                setLicenseKey("");
+                setAgreedToTerms(false);
+                setActivationError(null);
               }}
             >
               Cancel
@@ -588,9 +378,9 @@ export default function PluginsPage() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Package className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No plugins installed</h3>
-            <p className="text-muted-foreground text-center max-w-md mb-4">
-              Plugins extend your CMS with additional features. Click &quot;Install Plugin&quot; to upload a plugin ZIP file.
+            <h3 className="text-lg font-semibold mb-2">No plugins available</h3>
+            <p className="text-muted-foreground text-center max-w-md">
+              Premium plugins will appear here. Contact support if you purchased a plugin but don&apos;t see it listed.
             </p>
           </CardContent>
         </Card>
@@ -601,6 +391,7 @@ export default function PluginsPage() {
         {plugins.map((plugin) => {
           const StatusIcon = statusConfig[plugin.status].icon;
           const isLoading = actionLoading === plugin.slug;
+          const needsActivation = plugin.status === "INSTALLED";
 
           return (
             <Card key={plugin.id} className="relative overflow-hidden">
@@ -613,7 +404,7 @@ export default function PluginsPage() {
                     ? "bg-red-500"
                     : plugin.status === "DISABLED"
                     ? "bg-gray-400"
-                    : "bg-blue-500"
+                    : "bg-amber-500"
                 }`}
               />
 
@@ -622,16 +413,13 @@ export default function PluginsPage() {
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
                       {(() => {
-                        // Check if icon is a known lucide icon name
                         const IconComponent = plugin.icon && iconMap[plugin.icon];
                         if (IconComponent) {
                           return <IconComponent className="h-5 w-5 text-primary" />;
                         }
-                        // Check if icon is an emoji (not alphanumeric)
                         if (plugin.icon && !/^[a-zA-Z]+$/.test(plugin.icon)) {
                           return <span className="text-xl">{plugin.icon}</span>;
                         }
-                        // Default to Puzzle icon
                         return <Puzzle className="h-5 w-5 text-primary" />;
                       })()}
                     </div>
@@ -674,11 +462,13 @@ export default function PluginsPage() {
                       )}
                     </p>
                   )}
-                  <p>Installed: {formatDate(plugin.installedAt)}</p>
+                  {plugin.lastActivatedAt && (
+                    <p>Last activated: {formatDate(plugin.lastActivatedAt)}</p>
+                  )}
                   {plugin.licenseType && (
                     <p className="flex items-center gap-1">
                       <Key className="h-3 w-3" />
-                      License: {plugin.licenseType}
+                      License: {plugin.licenseTier || plugin.licenseType}
                     </p>
                   )}
                 </div>
@@ -710,27 +500,41 @@ export default function PluginsPage() {
 
                 {/* Actions */}
                 <div className="flex items-center gap-2">
-                  <Button
-                    variant={plugin.status === "ACTIVE" ? "outline" : "default"}
-                    size="sm"
-                    className="flex-1"
-                    disabled={isLoading}
-                    onClick={() => togglePlugin(plugin.slug, plugin.status)}
-                  >
-                    {isLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : plugin.status === "ACTIVE" ? (
-                      <>
-                        <PowerOff className="h-4 w-4 mr-1" />
-                        Disable
-                      </>
-                    ) : (
-                      <>
-                        <Power className="h-4 w-4 mr-1" />
-                        Activate
-                      </>
-                    )}
-                  </Button>
+                  {needsActivation ? (
+                    // Show "Activate with License" button for INSTALLED status
+                    <Button
+                      size="sm"
+                      className="flex-1"
+                      disabled={isLoading}
+                      onClick={() => openLicenseDialog(plugin)}
+                    >
+                      <Key className="h-4 w-4 mr-1" />
+                      Activate with License
+                    </Button>
+                  ) : (
+                    // Show Enable/Disable button for ACTIVE or DISABLED status
+                    <Button
+                      variant={plugin.status === "ACTIVE" ? "outline" : "default"}
+                      size="sm"
+                      className="flex-1"
+                      disabled={isLoading}
+                      onClick={() => togglePlugin(plugin.slug, plugin.status)}
+                    >
+                      {isLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : plugin.status === "ACTIVE" ? (
+                        <>
+                          <PowerOff className="h-4 w-4 mr-1" />
+                          Disable
+                        </>
+                      ) : (
+                        <>
+                          <Power className="h-4 w-4 mr-1" />
+                          Enable
+                        </>
+                      )}
+                    </Button>
+                  )}
 
                   {plugin.status === "ACTIVE" && plugin._count.settings > 0 && (
                     <Button variant="outline" size="sm" asChild>
@@ -739,37 +543,6 @@ export default function PluginsPage() {
                       </a>
                     </Button>
                   )}
-
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        disabled={isLoading}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Uninstall Plugin</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to uninstall <strong>{plugin.name}</strong>?
-                          This will remove the plugin and all its settings. This action cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          className="bg-red-600 hover:bg-red-700"
-                          onClick={() => uninstallPlugin(plugin.slug)}
-                        >
-                          Uninstall
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
                 </div>
               </CardContent>
             </Card>
@@ -777,32 +550,32 @@ export default function PluginsPage() {
         })}
       </div>
 
-      {/* How to Install Info */}
+      {/* How It Works Info */}
       <Card className="bg-muted/50">
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
-            <FileArchive className="h-5 w-5" />
-            How to Install Plugins
+            <Sparkles className="h-5 w-5" />
+            How Plugin Activation Works
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-3">
             <div className="space-y-2">
-              <h4 className="font-medium text-sm">1. Get the Plugin ZIP</h4>
+              <h4 className="font-medium text-sm">1. Purchase License</h4>
               <p className="text-sm text-muted-foreground">
-                Download the plugin ZIP file from CodeCanyon or the plugin provider.
+                Buy a license key from CodeCanyon or our website. You&apos;ll receive the key via email.
               </p>
             </div>
             <div className="space-y-2">
-              <h4 className="font-medium text-sm">2. Upload & Enter License</h4>
+              <h4 className="font-medium text-sm">2. Enter License Key</h4>
               <p className="text-sm text-muted-foreground">
-                Click &quot;Install Plugin&quot;, upload the ZIP, and enter your license key.
+                Click &quot;Activate with License&quot; on the plugin and enter your license key.
               </p>
             </div>
             <div className="space-y-2">
-              <h4 className="font-medium text-sm">3. Activate & Configure</h4>
+              <h4 className="font-medium text-sm">3. Start Using</h4>
               <p className="text-sm text-muted-foreground">
-                Once verified, the plugin will be activated. Configure settings as needed.
+                Once activated, the plugin menu appears in the sidebar. Configure settings as needed.
               </p>
             </div>
           </div>

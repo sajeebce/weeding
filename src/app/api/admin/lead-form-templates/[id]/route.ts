@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 
 // Helper to check admin access
 async function checkAdminAccess() {
@@ -86,7 +87,7 @@ const updateTemplateSchema = z.object({
   defaultSuccessMessage: z.string().optional().nullable(),
   defaultSuccessRedirect: z.string().optional().nullable(),
   defaultAutoAssignTo: z.string().optional().nullable(),
-  defaultStyling: z.record(z.unknown()).optional().nullable(),
+  defaultStyling: z.record(z.string(), z.unknown()).optional().nullable(),
   isActive: z.boolean().optional(),
 });
 
@@ -126,11 +127,13 @@ export async function PATCH(
       data: {
         ...(data.name !== undefined && { name: data.name }),
         ...(data.description !== undefined && { description: data.description }),
-        ...(data.fields !== undefined && { fields: data.fields }),
+        ...(data.fields !== undefined && { fields: data.fields as Prisma.InputJsonValue }),
         ...(data.defaultSuccessMessage !== undefined && { defaultSuccessMessage: data.defaultSuccessMessage }),
         ...(data.defaultSuccessRedirect !== undefined && { defaultSuccessRedirect: data.defaultSuccessRedirect }),
         ...(data.defaultAutoAssignTo !== undefined && { defaultAutoAssignTo: data.defaultAutoAssignTo }),
-        ...(data.defaultStyling !== undefined && { defaultStyling: data.defaultStyling }),
+        ...(data.defaultStyling !== undefined && {
+          defaultStyling: data.defaultStyling === null ? Prisma.JsonNull : data.defaultStyling as Prisma.InputJsonValue
+        }),
         ...(data.isActive !== undefined && { isActive: data.isActive }),
       },
     });

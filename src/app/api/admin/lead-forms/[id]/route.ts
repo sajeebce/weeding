@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 
 // Helper to check admin access
 async function checkAdminAccess() {
@@ -60,14 +61,14 @@ export async function GET(
 const updateInstanceSchema = z.object({
   name: z.string().min(1).optional(),
   slug: z.string().min(1).regex(/^[a-z0-9-]+$/, "Slug must be lowercase with dashes only").optional(),
-  fieldOverrides: z.record(z.unknown()).optional().nullable(),
-  stylingOverrides: z.record(z.unknown()).optional().nullable(),
+  fieldOverrides: z.record(z.string(), z.unknown()).optional().nullable(),
+  stylingOverrides: z.record(z.string(), z.unknown()).optional().nullable(),
   successMessage: z.string().optional().nullable(),
   successRedirect: z.string().optional().nullable(),
   autoAssignToId: z.string().optional().nullable(),
   roundRobinAssign: z.boolean().optional(),
   trackingEventName: z.string().optional().nullable(),
-  trackingParams: z.record(z.unknown()).optional().nullable(),
+  trackingParams: z.record(z.string(), z.unknown()).optional().nullable(),
   isActive: z.boolean().optional(),
 });
 
@@ -120,14 +121,20 @@ export async function PATCH(
       data: {
         ...(data.name !== undefined && { name: data.name }),
         ...(data.slug !== undefined && { slug: data.slug }),
-        ...(data.fieldOverrides !== undefined && { fieldOverrides: data.fieldOverrides }),
-        ...(data.stylingOverrides !== undefined && { stylingOverrides: data.stylingOverrides }),
+        ...(data.fieldOverrides !== undefined && {
+          fieldOverrides: data.fieldOverrides === null ? Prisma.JsonNull : data.fieldOverrides as Prisma.InputJsonValue
+        }),
+        ...(data.stylingOverrides !== undefined && {
+          stylingOverrides: data.stylingOverrides === null ? Prisma.JsonNull : data.stylingOverrides as Prisma.InputJsonValue
+        }),
         ...(data.successMessage !== undefined && { successMessage: data.successMessage }),
         ...(data.successRedirect !== undefined && { successRedirect: data.successRedirect }),
         ...(data.autoAssignToId !== undefined && { autoAssignToId: data.autoAssignToId }),
         ...(data.roundRobinAssign !== undefined && { roundRobinAssign: data.roundRobinAssign }),
         ...(data.trackingEventName !== undefined && { trackingEventName: data.trackingEventName }),
-        ...(data.trackingParams !== undefined && { trackingParams: data.trackingParams }),
+        ...(data.trackingParams !== undefined && {
+          trackingParams: data.trackingParams === null ? Prisma.JsonNull : data.trackingParams as Prisma.InputJsonValue
+        }),
         ...(data.isActive !== undefined && { isActive: data.isActive }),
       },
       include: {

@@ -74,7 +74,7 @@ export async function getActiveTemplateForType(
 
     // Get sections from the block settings (stored as JSON array)
     const sections: Section[] = Array.isArray(widgetSectionsBlock?.settings)
-      ? (widgetSectionsBlock.settings as Section[])
+      ? (widgetSectionsBlock.settings as unknown as Section[])
       : [];
 
     console.log("[Templates] Sections extracted:", sections.length);

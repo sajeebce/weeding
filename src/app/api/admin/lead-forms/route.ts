@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 
 // Helper to check admin access
 async function checkAdminAccess() {
@@ -63,14 +64,14 @@ const createInstanceSchema = z.object({
   name: z.string().min(1, "Name is required"),
   slug: z.string().min(1, "Slug is required").regex(/^[a-z0-9-]+$/, "Slug must be lowercase with dashes only"),
   templateId: z.string().min(1, "Template is required"),
-  fieldOverrides: z.record(z.unknown()).optional(),
-  stylingOverrides: z.record(z.unknown()).optional(),
+  fieldOverrides: z.record(z.string(), z.unknown()).optional(),
+  stylingOverrides: z.record(z.string(), z.unknown()).optional(),
   successMessage: z.string().optional(),
   successRedirect: z.string().optional(),
   autoAssignToId: z.string().optional(),
   roundRobinAssign: z.boolean().default(false),
   trackingEventName: z.string().optional(),
-  trackingParams: z.record(z.unknown()).optional(),
+  trackingParams: z.record(z.string(), z.unknown()).optional(),
 });
 
 // POST - Create new form instance
@@ -116,14 +117,14 @@ export async function POST(request: NextRequest) {
         name: data.name,
         slug: data.slug,
         templateId: data.templateId,
-        fieldOverrides: data.fieldOverrides,
-        stylingOverrides: data.stylingOverrides,
+        fieldOverrides: data.fieldOverrides as Prisma.InputJsonValue | undefined,
+        stylingOverrides: data.stylingOverrides as Prisma.InputJsonValue | undefined,
         successMessage: data.successMessage,
         successRedirect: data.successRedirect,
         autoAssignToId: data.autoAssignToId,
         roundRobinAssign: data.roundRobinAssign,
         trackingEventName: data.trackingEventName,
-        trackingParams: data.trackingParams,
+        trackingParams: data.trackingParams as Prisma.InputJsonValue | undefined,
       },
       include: {
         template: { select: { id: true, name: true } },

@@ -88,8 +88,7 @@ export async function POST(
         data: {
           convertedAt: new Date(),
           convertedToId: existingUser.id,
-          convertedById: session.user.id,
-        },
+                  },
       });
 
       // Create activity
@@ -146,8 +145,7 @@ export async function POST(
       data: {
         convertedAt: new Date(),
         convertedToId: newUser.id,
-        convertedById: session.user.id,
-      },
+              },
     });
 
     // Create activity

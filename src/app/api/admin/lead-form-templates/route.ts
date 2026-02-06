@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 
 // Helper to check admin access
 async function checkAdminAccess() {
@@ -72,7 +73,7 @@ const createTemplateSchema = z.object({
   defaultSuccessMessage: z.string().optional(),
   defaultSuccessRedirect: z.string().optional(),
   defaultAutoAssignTo: z.string().optional(),
-  defaultStyling: z.record(z.unknown()).optional(),
+  defaultStyling: z.record(z.string(), z.unknown()).optional(),
 });
 
 // POST - Create new form template
@@ -93,11 +94,11 @@ export async function POST(request: NextRequest) {
       data: {
         name: data.name,
         description: data.description,
-        fields: data.fields,
+        fields: data.fields as Prisma.InputJsonValue,
         defaultSuccessMessage: data.defaultSuccessMessage,
         defaultSuccessRedirect: data.defaultSuccessRedirect,
         defaultAutoAssignTo: data.defaultAutoAssignTo,
-        defaultStyling: data.defaultStyling,
+        defaultStyling: data.defaultStyling as Prisma.InputJsonValue | undefined,
       },
     });
 
