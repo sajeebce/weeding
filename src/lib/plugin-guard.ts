@@ -36,6 +36,7 @@ export interface PluginAccessResult {
     | "PLUGIN_NOT_FOUND"
     | "PLUGIN_INACTIVE"
     | "NO_LICENSE_TOKEN"
+    | "NO_PUBLIC_KEY"
     | "TOKEN_INVALID"
     | "TOKEN_EXPIRED"
     | "DOMAIN_MISMATCH"
@@ -69,6 +70,7 @@ export const verifyPluginAccess = cache(
           status: true,
           licenseKey: true,
           licenseToken: true,
+          licensePublicKey: true, // RSA public key for token verification
           licenseTier: true,
           licenseExpiresAt: true,
           requiresLicense: true,
@@ -115,7 +117,19 @@ export const verifyPluginAccess = cache(
         };
       }
 
-      const tokenResult = await verifyLicenseToken(plugin.licenseToken);
+      if (!plugin.licensePublicKey) {
+        return {
+          allowed: false,
+          pluginName: plugin.name,
+          features: [],
+          reason: "NO_PUBLIC_KEY",
+          message: "License public key not found. Please re-activate the plugin.",
+        };
+      }
+
+      const tokenResult = await verifyLicenseToken(plugin.licenseToken, {
+        publicKey: plugin.licensePublicKey,
+      });
 
       if (!tokenResult.valid) {
         // Map JWT error to access error
@@ -148,7 +162,7 @@ export const verifyPluginAccess = cache(
       }
 
       // Check if token needs refresh soon
-      const needsRefresh = await shouldRefreshToken(plugin.licenseToken);
+      const needsRefresh = await shouldRefreshToken(plugin.licenseToken, plugin.licensePublicKey);
 
       // All checks passed - return access with features
       return {

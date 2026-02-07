@@ -4,26 +4,11 @@
  *
  * Security: This uses RSA-256 asymmetric encryption.
  * - License server signs tokens with PRIVATE key (secret)
- * - CMS verifies tokens with PUBLIC key (safe to embed)
+ * - CMS verifies tokens with PUBLIC key (stored in database per-plugin)
  * - Tokens cannot be forged without the private key
  */
 
 import { jwtVerify, importSPKI, JWTPayload } from "jose";
-
-// RSA Public Key for license verification
-// This key is safe to embed - it can only VERIFY, not CREATE tokens
-// The private key stays on the license server
-const LICENSE_PUBLIC_KEY =
-  process.env.LICENSE_PUBLIC_KEY ||
-  `-----BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAu1SU1LfVLPHCozMxH2Mo
-4lgOEePzNm0tRgeLezV6ffAt0gunVTLw7onLRnrq0/IzW7yWR7QkrmBL7jTKEn5u
-+qKhbwKfBstIs+bMY2Zkp18gnTxKLxoS2tFczGkPLPgizskuemMghRniWaoLcyeh
-kd3qqGElvW/VDL5AaWTg0nLVkjRo9z+40RQzuVaE8AkAFmxZzow3x+VJYKdjykkJ
-0iT9wCS0DRTXu269V264Vf/3jvredZiKRkgwlL9xNAwxXFg0x/XFw005UWVRIkdg
-cKWTjpBP2dPwVZ4WWC+9aGVd+Gyn1o0CLelf4rEjGoXbAAEgAqeGUxrcIlbjXfbc
-mwIDAQAB
------END PUBLIC KEY-----`;
 
 export interface LicenseTokenPayload extends JWTPayload {
   licenseKey: string;
@@ -45,7 +30,8 @@ export interface JWTVerifyResult {
     | "TOKEN_EXPIRED"
     | "DOMAIN_MISMATCH"
     | "PARSE_ERROR"
-    | "NO_TOKEN";
+    | "NO_TOKEN"
+    | "NO_PUBLIC_KEY";
 }
 
 /**
@@ -77,12 +63,13 @@ function getCurrentDomain(): string {
  * 3. Validates domain lock (if enabled)
  *
  * @param token - The JWT token to verify
- * @param options - Optional verification options
+ * @param options - Verification options including publicKey (required)
  * @returns Verification result with decoded payload if valid
  */
 export async function verifyLicenseToken(
   token: string | null | undefined,
   options?: {
+    publicKey?: string; // RSA public key (PEM format) from database
     skipDomainCheck?: boolean;
     currentDomain?: string;
   }
@@ -95,9 +82,17 @@ export async function verifyLicenseToken(
     };
   }
 
+  if (!options?.publicKey) {
+    return {
+      valid: false,
+      error: "No public key provided for verification",
+      reason: "NO_PUBLIC_KEY",
+    };
+  }
+
   try {
-    // Import the public key
-    const publicKey = await importSPKI(LICENSE_PUBLIC_KEY, "RS256");
+    // Import the public key from database (stored per-plugin)
+    const publicKey = await importSPKI(options.publicKey, "RS256");
 
     // Verify the token
     const { payload } = await jwtVerify(token, publicKey, {
@@ -181,17 +176,19 @@ export async function verifyLicenseToken(
  * Check if a token is close to expiring (needs refresh)
  *
  * @param token - The JWT token to check
+ * @param publicKey - RSA public key for verification
  * @param thresholdDays - Days before expiry to consider "close" (default: 2)
  * @returns true if token should be refreshed soon
  */
 export async function shouldRefreshToken(
   token: string | null | undefined,
+  publicKey: string | null | undefined,
   thresholdDays: number = 2
 ): Promise<boolean> {
-  if (!token) return true;
+  if (!token || !publicKey) return true;
 
   try {
-    const result = await verifyLicenseToken(token, { skipDomainCheck: true });
+    const result = await verifyLicenseToken(token, { publicKey, skipDomainCheck: true });
 
     if (!result.valid) return true;
 
@@ -214,15 +211,17 @@ export async function shouldRefreshToken(
  * Get token age in days
  *
  * @param token - The JWT token
+ * @param publicKey - RSA public key for verification
  * @returns Number of days since token was issued, or null if invalid
  */
 export async function getTokenAgeDays(
-  token: string | null | undefined
+  token: string | null | undefined,
+  publicKey: string | null | undefined
 ): Promise<number | null> {
-  if (!token) return null;
+  if (!token || !publicKey) return null;
 
   try {
-    const result = await verifyLicenseToken(token, { skipDomainCheck: true });
+    const result = await verifyLicenseToken(token, { publicKey, skipDomainCheck: true });
 
     if (!result.valid || !result.data?.iat) return null;
 
@@ -240,17 +239,19 @@ export async function getTokenAgeDays(
  * Check if a feature is enabled in the license
  *
  * @param token - The JWT token
+ * @param publicKey - RSA public key for verification
  * @param feature - The feature to check (e.g., "ai", "analytics")
  * @returns true if feature is enabled
  */
 export async function hasFeature(
   token: string | null | undefined,
+  publicKey: string | null | undefined,
   feature: string
 ): Promise<boolean> {
-  if (!token) return false;
+  if (!token || !publicKey) return false;
 
   try {
-    const result = await verifyLicenseToken(token, { skipDomainCheck: true });
+    const result = await verifyLicenseToken(token, { publicKey, skipDomainCheck: true });
 
     if (!result.valid || !result.data?.features) return false;
 
@@ -264,15 +265,17 @@ export async function hasFeature(
  * Get license tier from token
  *
  * @param token - The JWT token
+ * @param publicKey - RSA public key for verification
  * @returns License tier or null if invalid
  */
 export async function getLicenseTier(
-  token: string | null | undefined
+  token: string | null | undefined,
+  publicKey: string | null | undefined
 ): Promise<string | null> {
-  if (!token) return null;
+  if (!token || !publicKey) return null;
 
   try {
-    const result = await verifyLicenseToken(token, { skipDomainCheck: true });
+    const result = await verifyLicenseToken(token, { publicKey, skipDomainCheck: true });
     return result.data?.tier || null;
   } catch {
     return null;

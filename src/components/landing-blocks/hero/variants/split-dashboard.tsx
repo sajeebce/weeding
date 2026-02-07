@@ -17,6 +17,7 @@ import {
   AnimatedWords,
   DashboardVisual,
 } from "@/components/landing-blocks/shared";
+import { StyledCTAButton } from "@/components/landing-blocks/hero/styled-cta-button";
 
 interface HeroSplitDashboardProps {
   settings: HeroSettings;
@@ -160,16 +161,16 @@ export function HeroSplitDashboard({ settings }: HeroSplitDashboardProps) {
               </Button>
 
               {settings.secondaryCTA.enabled && (
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="border-white/20 bg-transparent text-white hover:bg-white/10"
-                  asChild
-                >
-                  <Link href={settings.secondaryCTA.link}>
-                    {settings.secondaryCTA.text}
-                  </Link>
-                </Button>
+                <StyledCTAButton
+                  href={settings.secondaryCTA.link}
+                  text={settings.secondaryCTA.text}
+                  style={settings.secondaryCTA.style}
+                  showPrice={settings.secondaryCTA.showPrice}
+                  priceText={settings.secondaryCTA.priceText}
+                  showArrow={false}
+                  variant={settings.secondaryCTA.variant || "outline"}
+                  openInNewTab={settings.secondaryCTA.openInNewTab}
+                />
               )}
             </div>
 

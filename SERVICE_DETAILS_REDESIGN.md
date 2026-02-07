@@ -1,6 +1,6 @@
 # Service Details Page Redesign Plan
 
-## LLCPad - Fully Customizable CMS-Style Service Page Builder
+## LLCPad - Dynamic Template System for Service Pages
 
 ---
 
@@ -10,26 +10,48 @@
 2. [Current State Analysis](#current-state-analysis)
 3. [2025 Design Trends & Best Practices](#2025-design-trends--best-practices)
 4. [Competitor Analysis](#competitor-analysis)
-5. [Block-Based CMS Architecture](#block-based-cms-architecture)
-6. [Proposed Section Blocks](#proposed-section-blocks)
-7. [Admin Panel Design](#admin-panel-design)
-8. [Database Schema Changes](#database-schema-changes)
-9. [Implementation Phases](#implementation-phases)
-10. [Technical Specifications](#technical-specifications)
+5. [Architecture: Smart Context Widgets](#architecture-smart-context-widgets)
+6. [Existing Infrastructure](#existing-infrastructure)
+7. [Service Widget Catalog](#service-widget-catalog)
+8. [Enhanced Existing Widgets](#enhanced-existing-widgets)
+9. [Admin UX: Template Preview](#admin-ux-template-preview)
+10. [Default Template Structure](#default-template-structure)
+11. [Implementation Phases](#implementation-phases)
+12. [File Structure](#file-structure)
+13. [Data Flow](#data-flow)
 
 ---
 
 ## Executive Summary
 
-Transform the current static service details page into a **fully customizable, block-based page builder** inspired by WordPress/Elementor. Each service page can have unique layouts with drag-and-drop section management, inline editing, and real-time preview.
+Transform the current static service details page into a **dynamic template system** using the existing Page Builder. Instead of building a separate block system per service, we extend the Page Builder with **"Smart Context Widgets"** -- widgets that automatically pull data from the current service's context, like WordPress/Elementor's Theme Builder.
+
+### Key Insight
+
+**80% of the infrastructure already exists.** The Page Builder already has `PageTemplateType.SERVICE_DETAILS`, `ServiceProvider` context, placeholder resolution (`{{service.name}}`), and template rendering. What's missing are the **service-specific widget components** and **admin preview UX**.
+
+### Architecture Decision
+
+**Template-based approach** (ONE template for ALL services) vs the old per-service block approach:
+
+| Aspect | Old Plan (Per-Service Blocks) | New Plan (Template System) |
+|--------|-------------------------------|---------------------------|
+| Database | New `ServicePageBlock` model per service | No new models needed |
+| Admin UX | Separate builder per service | Reuse existing Page Builder |
+| Layout | Unique layout per service | ONE template, dynamic data |
+| Maintenance | N layouts to maintain | 1 template to maintain |
+| Consistency | Risk of inconsistency | Guaranteed consistency |
+| Code | New registry, new renderer | Reuse existing widget system |
 
 ### Goals
 
-- **Flexibility**: Admin can add/remove/reorder sections per service
-- **Consistency**: Pre-built blocks ensure brand consistency
-- **Performance**: Server-side rendering with minimal client JS
-- **Conversion**: Optimized for 2025 best practices (social proof, trust signals, clear CTAs)
-- **SEO**: Proper semantic HTML, JSON-LD schemas, meta control
+- **Template Reuse**: ONE layout template applies to ALL service pages
+- **Dynamic Data**: Service data (title, price, features, packages, FAQs) fills in automatically per slug
+- **Zero New Models**: Reuse existing `LandingPage` + `LandingPageBlock` tables
+- **Backward Compatible**: Existing static pages and widgets work unchanged
+- **Per-Service Customization**: `displayOptions` JSON field controls section visibility per service
+- **Admin Preview**: Select a sample service to preview real data while editing template
+- **Conversion Optimized**: 2025 best practices built into widget designs
 
 ---
 
@@ -55,13 +77,20 @@ Transform the current static service details page into a **fully customizable, b
 4. **No Per-Service Customization** - All services use identical layout
 5. **No Visual Editor** - Text-only editing in admin panel
 
-### Current Admin Panel Tabs
+### What Already Works
 
-- Basic Info (name, slug, descriptions, pricing)
-- Features (master feature list for comparison)
-- Packages (pricing tiers with feature mapping)
-- FAQs (service-specific Q&A)
-- SEO (meta title, description)
+The service details page (`services/[slug]/page.tsx`) already has **two rendering modes**:
+
+```
+Mode A: Template Mode (if SERVICE_DETAILS template exists)
+  ├── Fetches active template via getActiveTemplateForType("SERVICE_DETAILS")
+  ├── Wraps in ServiceProvider context
+  ├── Filters sections by displayOptions
+  └── Renders via PageBuilderRenderer
+
+Mode B: Fallback Mode (no template)
+  └── Hardcoded JSX layout (current default)
+```
 
 ---
 
@@ -84,28 +113,12 @@ Based on research from [Unbounce](https://unbounce.com/conversion-rate-optimizat
 
 ### Trust Signal Placement Strategy
 
-Based on [Attention Insight](https://attentioninsight.com/the-psychology-of-trust-in-ux-what-encourages-customer-loyalty/) and [LogRocket](https://blog.logrocket.com/ux-design/trust-driven-ux-examples/):
-
 ```
-┌─────────────────────────────────────────────────────────────┐
-│  F-PATTERN SCAN PATH                                        │
-│  ════════════════════════════════════════════               │
-│                                                             │
-│  ████████████████████████████                              │
-│  ████████████████████████████  ← Users scan here first     │
-│  ██████████████████                                        │
-│  ████████████                                              │
-│  ██████████████████████████                                │
-│  ████████████████                                          │
-│  ████████                                                  │
-│                                                             │
-│  TRUST SIGNALS should be placed:                           │
-│  ├── Hero section (above fold)                             │
-│  ├── Near pricing (reduce purchase anxiety)                │
-│  ├── Above CTA buttons                                     │
-│  └── Footer (reinforcement)                                │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+TRUST SIGNALS should be placed:
+├── Hero section (above fold)
+├── Near pricing (reduce purchase anxiety)
+├── Above CTA buttons
+└── Footer (reinforcement)
 ```
 
 ### Color Psychology (Midnight Orange Theme)
@@ -119,44 +132,7 @@ Based on [Attention Insight](https://attentioninsight.com/the-psychology-of-trus
 
 ## Competitor Analysis
 
-### Bizee (LLC Formation Leader)
-
-**Page Structure:**
-1. Hero with trust badge (Trustpilot 4.7/5)
-2. Six-step process accordion
-3. Benefits grid (4 key advantages)
-4. Compliance information
-5. Large CTA with social proof
-6. Rich footer
-
-**Key Features:**
-- "Bootstrapped, Founder Led Since 2004" - authenticity
-- "Over 1,000,000 Entrepreneurs Served" - scale proof
-- Accordion steps reduce overwhelm
-- Free basic tier + upsells
-- One-time fee messaging
-
-**Pricing Tiers:**
-- Basic: $0 (just state fees)
-- Standard: $199 + state fees
-- Premium: $299 + state fees
-
-### ZenBusiness
-
-- Clean, minimal design
-- State selector prominent
-- Package comparison table
-- Money-back guarantee badge
-- Live chat integration
-
-### LegalZoom
-
-- Premium pricing positioning
-- "Attorney-drafted" messaging
-- FAQ-heavy pages
-- Corporate trust design
-
-### Common Patterns Across Competitors
+### Common Page Structure Across Competitors (Bizee, ZenBusiness, LegalZoom)
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -164,13 +140,13 @@ Based on [Attention Insight](https://attentioninsight.com/the-psychology-of-trus
 ├─────────────────────────────────────────────────────────────┤
 │  2. HERO (Title, subtitle, main CTA, trust text)           │
 ├─────────────────────────────────────────────────────────────┤
-│  3. STATE/ENTITY SELECTOR                                  │
+│  3. FEATURES GRID (What's Included)                        │
 ├─────────────────────────────────────────────────────────────┤
 │  4. PRICING TABLE (comparison, sticky sidebar)             │
 ├─────────────────────────────────────────────────────────────┤
 │  5. PROCESS STEPS (what happens after purchase)            │
 ├─────────────────────────────────────────────────────────────┤
-│  6. BENEFITS GRID                                          │
+│  6. DESCRIPTION (detailed rich text)                       │
 ├─────────────────────────────────────────────────────────────┤
 │  7. TESTIMONIALS / REVIEWS                                 │
 ├─────────────────────────────────────────────────────────────┤
@@ -184,979 +160,541 @@ Based on [Attention Insight](https://attentioninsight.com/the-psychology-of-trus
 
 ---
 
-## Block-Based CMS Architecture
+## Architecture: Smart Context Widgets
 
-### Inspiration from WordPress/Elementor
+### Core Concept
 
-Based on research from [Kinsta](https://kinsta.com/blog/gutenberg-vs-elementor/) and [WordPress Block Editor](https://wordpress.org/plugins/essential-blocks/):
+Service widgets use `useOptionalServiceContext()` to detect if they're inside a service page:
+- **Context available** (live page): Pull real data from the current service
+- **No context** (admin preview without selection): Show placeholder UI
+- **Context from preview selector** (admin with service selected): Show real sample data
 
-**Gutenberg Approach:**
-- Blocks are native, reusable components
-- Each block has settings panel
-- Drag-and-drop reordering
-- JSON-based storage
-- Server-side rendering for performance
+This matches the existing `service-hero` widget pattern.
 
-**Elementor Approach:**
-- Widget-based with extensive options
-- Live preview editing
-- Template library
-- Global styles
-- Responsive controls per breakpoint
-
-### LLCPad Block Architecture
+### How It Works
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                       PAGE STRUCTURE                        │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  ServicePage                                                │
-│  └── Blocks[] (ordered array)                              │
-│       ├── Block 1: Hero                                    │
-│       │   └── settings: { variant, title, showTrust... }  │
-│       ├── Block 2: PricingTable                           │
-│       │   └── settings: { layout, showStateFees... }      │
-│       ├── Block 3: ProcessSteps                           │
-│       │   └── settings: { steps[], icons, layout... }     │
-│       └── Block N: ...                                     │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+Admin creates SERVICE_DETAILS template in Page Builder
+         ↓
+Adds service widgets: Hero, Features, Pricing, FAQ, etc.
+         ↓
+Each widget reads data from ServiceContext (auto mode)
+         ↓
+Template saved to LandingPage table (templateType = SERVICE_DETAILS)
+         ↓
+User visits /services/llc-formation
+         ↓
+Server fetches:
+  1. Service data (LLC Formation) from Service table
+  2. Active SERVICE_DETAILS template from LandingPage table
+         ↓
+Wraps template in <ServiceProvider service={llcFormationData}>
+         ↓
+PageBuilderRenderer renders sections/widgets
+         ↓
+Each service widget reads from context → displays LLC Formation data
+         ↓
+User visits /services/ein-number → SAME template, DIFFERENT data
 ```
 
----
-
-## Proposed Section Blocks
-
-### Block Categories
+### Widget Categories
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│  BLOCK CATEGORIES                                           │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  📦 CORE BLOCKS (Essential)                                │
-│  ├── hero              - Service hero section              │
-│  ├── pricing-table     - Package comparison               │
-│  ├── features-grid     - What's included                  │
-│  ├── faq-accordion     - FAQs                             │
-│  └── description       - Rich text content                │
-│                                                             │
-│  🏆 TRUST BLOCKS                                           │
-│  ├── trust-bar         - Badges, ratings, security        │
-│  ├── testimonials      - Customer reviews carousel        │
-│  ├── stats-counter     - "1M+ served" counters            │
-│  ├── partner-logos     - "Featured in" logos             │
-│  └── guarantee-badge   - Money-back guarantee             │
-│                                                             │
-│  📋 PROCESS BLOCKS                                         │
-│  ├── process-steps     - Numbered steps                   │
-│  ├── timeline          - Vertical timeline                │
-│  ├── checklist         - What you'll get list             │
-│  └── requirements      - What you need to provide         │
-│                                                             │
-│  🎯 CONVERSION BLOCKS                                      │
-│  ├── cta-section       - Call-to-action banner            │
-│  ├── comparison        - vs competitors                   │
-│  ├── urgency-banner    - Limited offer, countdown         │
-│  └── sticky-cta        - Fixed bottom CTA bar             │
-│                                                             │
-│  📊 DATA BLOCKS                                            │
-│  ├── state-fees        - State fee table                  │
-│  ├── entity-types      - LLC vs Corp comparison           │
-│  └── documents-list    - What documents included          │
-│                                                             │
-│  🎨 CONTENT BLOCKS                                         │
-│  ├── rich-text         - WYSIWYG content                  │
-│  ├── video             - YouTube/Vimeo embed              │
-│  ├── image-text        - Image + text side by side        │
-│  ├── icon-grid         - Benefits with icons              │
-│  └── tabs              - Tabbed content                   │
-│                                                             │
-│  🔗 NAVIGATION BLOCKS                                      │
-│  ├── breadcrumb        - Navigation breadcrumb            │
-│  ├── related-services  - Service cards                    │
-│  └── jump-links        - In-page navigation               │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
-```
+SERVICE WIDGETS (Dynamic - pull from ServiceContext)
+├── service-hero          - Title, description, icon, CTAs [EXISTS]
+├── service-features      - What's Included grid [NEW]
+├── service-description   - Rich HTML description [NEW]
+├── service-breadcrumb    - Dynamic breadcrumb nav [NEW]
+└── related-services      - Related service cards [NEW]
 
-### Detailed Block Specifications
+ENHANCED EXISTING WIDGETS (Support both static + dynamic modes)
+├── pricing-table         - Add "auto" mode (slug from context) [ENHANCE]
+└── faq                   - Add "service" source (FAQs from context) [ENHANCE]
 
-#### 1. Hero Block
-
-```typescript
-interface HeroBlock {
-  type: "hero";
-  settings: {
-    // Layout
-    variant: "centered" | "split" | "minimal" | "with-form";
-    backgroundType: "solid" | "gradient" | "image";
-    backgroundColor: string;
-    backgroundImage?: string;
-
-    // Content
-    showIcon: boolean;
-    showBadge: boolean;
-    badgeText?: string;
-    highlightWord?: string; // Word to highlight in title
-
-    // CTA
-    primaryCTA: {
-      text: string;
-      showPrice: boolean;
-      variant: "solid" | "outline";
-    };
-    secondaryCTA?: {
-      text: string;
-      link: string;
-    };
-
-    // Trust
-    showTrustBar: boolean;
-    trustText?: string; // "1,000,000+ Served"
-  };
-}
-```
-
-**Variants:**
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│  HERO VARIANT: CENTERED (Default)                          │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│                        [Icon]                               │
-│                                                             │
-│              Start Your LLC Today                           │
-│              ═══════════════════                            │
-│    Professional formation service for entrepreneurs        │
-│                                                             │
-│    [Get Started - From $0]  [Ask a Question]               │
-│                                                             │
-│         🏆 1,000,000+ Businesses Formed                    │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────┐
-│  HERO VARIANT: WITH-FORM (Bizee Style)                     │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│   Form Your LLC           ┌────────────────────────────┐   │
-│   ════════════════        │  START YOUR BUSINESS       │   │
-│   Join 1M+ entrepreneurs  │  ────────────────────────  │   │
-│   who trust us.           │  Select your state:        │   │
-│                           │  [Wyoming          ▼]      │   │
-│   ✓ Free formation        │                            │   │
-│   ✓ Expert support        │  [START MY LLC →]          │   │
-│   ✓ Fast processing       │                            │   │
-│                           └────────────────────────────┘   │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
-```
-
-#### 2. Pricing Table Block
-
-```typescript
-interface PricingTableBlock {
-  type: "pricing-table";
-  settings: {
-    // Layout
-    layout: "comparison" | "cards" | "horizontal";
-    showStateFees: boolean;
-    showOrderSummary: boolean; // Sticky sidebar
-
-    // Display
-    showProcessingTime: boolean;
-    showAddons: boolean;
-    highlightPopular: boolean;
-
-    // State selector
-    stateSelector: {
-      position: "above" | "inline" | "hidden";
-      defaultState?: string;
-    };
-
-    // CTA
-    ctaText: string;
-    ctaStyle: "per-package" | "single-bottom";
-  };
-}
-```
-
-#### 3. Process Steps Block
-
-```typescript
-interface ProcessStepsBlock {
-  type: "process-steps";
-  settings: {
-    layout: "horizontal" | "vertical" | "accordion" | "timeline";
-    showNumbers: boolean;
-    showIcons: boolean;
-
-    steps: Array<{
-      icon: string;
-      title: string;
-      description: string;
-      duration?: string; // "Day 1", "3-5 days"
-    }>;
-  };
-}
-```
-
-**Layouts:**
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│  PROCESS STEPS: HORIZONTAL                                  │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│    ①──────────②──────────③──────────④                     │
-│   Submit     Review    File with    Receive               │
-│   Info       Order     State        Documents             │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────┐
-│  PROCESS STEPS: ACCORDION (Bizee Style)                    │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│   [▼] Step 1: Choose Your Business Name                    │
-│       Select a unique name for your LLC...                 │
-│   ─────────────────────────────────────────                │
-│   [▶] Step 2: Provide Your Address                         │
-│   ─────────────────────────────────────────                │
-│   [▶] Step 3: Assign Registered Agent                      │
-│   ─────────────────────────────────────────                │
-│   [▶] Step 4: Submit Member Information                    │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
-```
-
-#### 4. Testimonials Block
-
-```typescript
-interface TestimonialsBlock {
-  type: "testimonials";
-  settings: {
-    layout: "carousel" | "grid" | "featured" | "wall";
-    showRating: boolean;
-    showAvatar: boolean;
-    showCompany: boolean;
-
-    // Data source
-    source: "manual" | "trustpilot" | "google";
-
-    testimonials?: Array<{
-      quote: string;
-      author: string;
-      company?: string;
-      avatar?: string;
-      rating: number;
-    }>;
-  };
-}
-```
-
-#### 5. Trust Bar Block
-
-```typescript
-interface TrustBarBlock {
-  type: "trust-bar";
-  settings: {
-    position: "top" | "floating" | "inline";
-
-    items: Array<{
-      type: "rating" | "badge" | "stat" | "logo";
-      // For rating
-      platform?: "trustpilot" | "google" | "bbb";
-      rating?: number;
-      reviews?: number;
-      // For badge
-      icon?: string;
-      text?: string;
-      // For stat
-      value?: string;
-      label?: string;
-    }>;
-  };
-}
-```
-
-#### 6. CTA Section Block
-
-```typescript
-interface CTASectionBlock {
-  type: "cta-section";
-  settings: {
-    variant: "banner" | "card" | "full-width";
-    background: "dark" | "gradient" | "light" | "brand";
-
-    headline: string;
-    subheadline?: string;
-
-    cta: {
-      text: string;
-      link: string;
-      variant: "solid" | "outline";
-    };
-
-    showGuarantee: boolean;
-    guaranteeText?: string;
-  };
-}
+STATIC WIDGETS (Already work in templates - no changes needed)
+├── trust-badges          - Trust badges display
+├── stats-section         - Statistics with animated counters
+├── testimonials-carousel - Customer testimonials
+├── process-steps         - How It Works section
+├── heading               - Advanced heading
+├── text-block            - Rich text editor
+├── image                 - Image with effects
+├── image-slider          - Hero slider
+├── lead-form             - Contact form
+├── divider               - Section divider
+└── ... (all existing widgets)
 ```
 
 ---
 
-## Admin Panel Design
+## Existing Infrastructure
 
-### Page Builder Interface
+### Already Built (No Changes Needed)
+
+| Component | Location | Purpose |
+|-----------|----------|---------|
+| `PageTemplateType.SERVICE_DETAILS` | `prisma/schema.prisma` | Template type enum |
+| `LandingPage.templateType` | `prisma/schema.prisma` | Template assignment field |
+| `LandingPage.isTemplateActive` | `prisma/schema.prisma` | Active template flag |
+| `ServiceProvider` | `src/lib/page-builder/contexts/service-context.tsx` | React context for service data |
+| `useServiceContext()` | Same file | Required context hook |
+| `useOptionalServiceContext()` | Same file | Optional context hook (for preview) |
+| `resolvePlaceholders()` | Same file | `{{service.xxx}}` template strings |
+| `filterSectionsByDisplayOptions()` | Same file | Per-service section visibility |
+| `ServiceData` type | Same file | Full service data interface |
+| Template rendering | `src/app/(marketing)/services/[slug]/page.tsx` | Already checks for template |
+| `getActiveTemplateForType()` | `src/lib/data/templates.ts` | Fetches active template |
+| `PageBuilderRenderer` | `src/components/page-builder/renderer/` | Renders sections/widgets |
+| `WidgetRegistry` | `src/lib/page-builder/widget-registry.ts` | Widget registration system |
+| `service-hero` widget | `src/components/page-builder/widgets/service/service-hero.tsx` | Dynamic hero (working example) |
+| Widget type declarations | `src/lib/page-builder/types.ts` | `service-features`, `service-faq`, etc. already in union |
+
+### ServiceContext Data Shape
+
+```typescript
+interface ServiceData {
+  id: string;
+  name: string;
+  slug: string;
+  shortDesc: string;
+  description: string;        // Rich HTML
+  icon?: string | null;
+  image?: string | null;
+  startingPrice: number;
+  processingTime?: string | null;
+  isPopular: boolean;
+  category?: { id, name, slug } | null;
+  packages: PackageData[];     // Pricing tiers
+  features: ServiceFeatureData[];  // What's Included items
+  faqs: ServiceFAQData[];     // Service-specific FAQs
+  displayOptions: Partial<ServiceDisplayOptions>;
+}
+```
+
+### Per-Service Display Options
+
+Each service has a `displayOptions` JSON field that controls which template sections are visible:
+
+```typescript
+interface ServiceDisplayOptions {
+  showHero: boolean;          // service-hero widget
+  showFeatures: boolean;      // service-features widget
+  showPricing: boolean;       // pricing-table (auto mode)
+  showProcessSteps: boolean;  // process-steps widget
+  showFaq: boolean;           // faq widget (service source)
+  showRequirements: boolean;
+  showDeliverables: boolean;
+  showTimeline: boolean;
+  showRelatedServices: boolean;
+  showTestimonials: boolean;
+  showCtaBanner: boolean;
+}
+```
+
+This means: ONE template, but each service can hide/show specific sections. For example, a simple service might hide the pricing table, while LLC Formation shows everything.
+
+---
+
+## Service Widget Catalog
+
+### 1. Service Hero (EXISTS)
+
+**File:** `src/components/page-builder/widgets/service/service-hero.tsx`
+
+Already built and working. Pulls title, description, icon, price from `ServiceContext`.
+
+Settings:
+- Title source: auto (from service) | custom
+- Subtitle source: auto | custom
+- Price badge: show/hide, custom text with `{{service.startingPrice}}`
+- Primary CTA: text, link (supports `{{service.slug}}`), show price
+- Secondary CTA: show/hide, text, link
+- Background: none | solid | gradient | image
+- Text alignment, title size, spacing
+
+### 2. Service Features (NEW)
+
+**File:** `src/components/page-builder/widgets/service/service-features.tsx`
+
+Reads `service.features[]` from context. Renders "What's Included" section.
+
+```typescript
+interface ServiceFeaturesWidgetSettings {
+  titleSource: "auto" | "custom";
+  customTitle?: string;           // Default: "What's Included"
+  layout: "grid" | "list" | "cards";
+  columns: 1 | 2 | 3 | 4;
+  showIcons: boolean;
+  iconStyle: "check" | "circle-check" | "badge-check" | "custom";
+  iconColor: string;              // Default: "#22C55E" (green)
+}
+```
+
+**Data source:** `useServiceContext().service.features` (no API call needed)
+
+**Preview placeholder:** Shows 6 sample feature items with checkmark icons.
+
+### 3. Service Description (NEW)
+
+**File:** `src/components/page-builder/widgets/service/service-description.tsx`
+
+Reads `service.description` (HTML) from context. Renders rich text with prose styling.
+
+```typescript
+interface ServiceDescriptionWidgetSettings {
+  titleSource: "auto" | "custom";
+  customTitle?: string;           // Default: "About {{service.name}}"
+  showTitle: boolean;
+  maxWidth: "sm" | "md" | "lg" | "xl" | "full";
+  fontSize: "sm" | "md" | "lg";
+  textColor?: string;
+  backgroundColor?: string;
+  padding: number;
+  borderRadius: number;
+}
+```
+
+**Data source:** `useServiceContext().service.description` (no API call needed)
+
+**Preview placeholder:** Shows lorem ipsum with prose typography.
+
+### 4. Service Breadcrumb (NEW)
+
+**File:** `src/components/page-builder/widgets/service/service-breadcrumb.tsx`
+
+Renders dynamic breadcrumb: Home > Services > {Category?} > {Service Name}
+
+```typescript
+interface ServiceBreadcrumbWidgetSettings {
+  separator: "chevron" | "slash" | "arrow" | "dot";
+  showHome: boolean;
+  homeLabel: string;              // Default: "Home"
+  showCategory: boolean;
+  fontSize: "xs" | "sm" | "md";
+  textColor?: string;
+  activeColor?: string;
+  linkColor?: string;
+  alignment: "left" | "center";
+}
+```
+
+**Data source:** `useServiceContext().service.{name, slug, category}` (no API call)
+
+### 5. Related Services (NEW)
+
+**File:** `src/components/page-builder/widgets/service/related-services.tsx`
+
+Fetches related services via API, excluding current service.
+
+```typescript
+interface RelatedServicesWidgetSettings {
+  titleSource: "auto" | "custom";
+  customTitle?: string;           // Default: "Related Services"
+  subtitleSource: "auto" | "custom";
+  customSubtitle?: string;
+  maxItems: number;               // Default: 4
+  layout: "grid" | "carousel";
+  columns: 2 | 3 | 4;
+  showPrice: boolean;
+  showDescription: boolean;
+  cardStyle: "minimal" | "elevated" | "bordered";
+}
+```
+
+**Data source:** Hybrid. Gets current slug from `useServiceContext()`, then fetches `GET /api/services/related?slug={slug}&limit={n}` via API.
+
+**API Route (NEW):** `src/app/api/services/related/route.ts`
+
+---
+
+## Enhanced Existing Widgets
+
+### Pricing Table - Auto Mode
+
+**File:** `src/components/page-builder/widgets/commerce/pricing-table-widget.tsx`
+
+Current behavior: Requires hardcoded `serviceSlug` in `dataSource` settings.
+
+Enhancement: Add `dataSource.mode: "manual" | "auto"`:
+- **"manual"** (default): Uses `dataSource.serviceSlug` -- current behavior, unchanged
+- **"auto"**: Reads slug from `useOptionalServiceContext()`, fetches same API
+
+```typescript
+// Enhanced dataSource settings
+dataSource: {
+  type: "service" | "manual";
+  mode: "manual" | "auto";     // NEW
+  serviceSlug?: string;         // Used when mode === "manual"
+}
+```
+
+**Backward compatible:** Default `mode: "manual"` means all existing pricing-table widgets work unchanged.
+
+### FAQ Widget - Service Source
+
+**File:** `src/components/page-builder/widgets/layout/faq-accordion-widget.tsx`
+
+Current behavior: `source: "all" | "category"` -- fetches global FAQs via API.
+
+Enhancement: Add `source: "service"`:
+- **"all"** / **"category"**: Unchanged API fetch behavior
+- **"service"** (NEW): Reads `service.faqs` from `useServiceContext()` directly (no API call)
+
+```typescript
+source: "all" | "category" | "service";  // "service" is NEW
+```
+
+**Backward compatible:** Default `source: "all"` means all existing FAQ widgets work unchanged.
+
+---
+
+## Admin UX: Template Preview
+
+### "Preview as Service" Dropdown
+
+When editing a page with `templateType === "SERVICE_DETAILS"`, the admin toolbar shows a service selector dropdown.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  Admin > Services > LLC Formation > Page Builder           │
-├─────────────────────────────────────────────────────────────┤
+│  Page Builder: Service Details Template                      │
+│  ═══════════════════════════════════════════════════════    │
 │                                                             │
-│  [← Back]  LLC Formation                    [Preview] [Save]│
-│  ═══════════════════════════════════════════════════════   │
+│  [Desktop] [Mobile]  Preview as: [LLC Formation ▼]  [Save] │
 │                                                             │
 │  ┌─────────────┐  ┌────────────────────────────────────┐   │
-│  │ ADD BLOCK   │  │                                    │   │
-│  │             │  │  HERO BLOCK                   [≡]  │   │
-│  │ Core        │  │  ────────────────────────────────  │   │
-│  │ ├ Hero      │  │  Variant: Centered                 │   │
-│  │ ├ Pricing   │  │  Background: Dark                  │   │
-│  │ ├ Features  │  │  Show Trust: Yes                   │   │
-│  │ └ FAQ       │  │  [Edit Block Settings]             │   │
+│  │ WIDGETS     │  │                                    │   │
+│  │             │  │  [service-breadcrumb]              │   │
+│  │ Service     │  │  Home > Services > LLC Formation   │   │
+│  │ ├ Hero      │  │                                    │   │
+│  │ ├ Features  │  ├────────────────────────────────────┤   │
+│  │ ├ Pricing   │  │                                    │   │
+│  │ ├ FAQ       │  │  [service-hero]                    │   │
+│  │ ├ Descript  │  │  LLC Formation                     │   │
+│  │ ├ Breadcr   │  │  Get Started - From $0             │   │
+│  │ └ Related   │  │                                    │   │
+│  │             │  ├────────────────────────────────────┤   │
+│  │ Content     │  │                                    │   │
+│  │ ├ Heading   │  │  [service-features]                │   │
+│  │ ├ Text      │  │  ✓ Free Formation  ✓ EIN Setup    │   │
+│  │ └ Process   │  │  ✓ Operating Agreement  ...       │   │
 │  │             │  │                                    │   │
-│  │ Trust       │  ├────────────────────────────────────┤   │
-│  │ ├ Trust Bar │  │                                    │   │
-│  │ ├ Testimony │  │  PRICING TABLE BLOCK          [≡]  │   │
-│  │ └ Stats     │  │  ────────────────────────────────  │   │
-│  │             │  │  Layout: Comparison                │   │
-│  │ Process     │  │  Show State Fees: Yes              │   │
-│  │ ├ Steps     │  │  Show Sidebar: Yes                 │   │
-│  │ └ Timeline  │  │  [Edit Block Settings]             │   │
+│  │ Commerce    │  ├────────────────────────────────────┤   │
+│  │ ├ Pricing   │  │  [pricing-table mode:auto]         │   │
+│  │ └ Services  │  │  Basic $0 | Standard $199 | ...   │   │
 │  │             │  │                                    │   │
-│  │ Content     │  ├────────────────────────────────────┤   │
-│  │ ├ Rich Text │  │                                    │   │
-│  │ ├ Video     │  │  PROCESS STEPS BLOCK          [≡]  │   │
-│  │ └ Icon Grid │  │  ────────────────────────────────  │   │
-│  │             │  │  Layout: Accordion                 │   │
-│  │ [+ More]    │  │  Steps: 6                          │   │
-│  │             │  │  [Edit Block Settings]             │   │
-│  └─────────────┘  │                                    │   │
-│                   │  [+ Add Block]                     │   │
-│                   │                                    │   │
-│                   └────────────────────────────────────┘   │
-│                                                             │
+│  └─────────────┘  └────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### Block Settings Panel
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│  Edit: Hero Block                              [×]         │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  LAYOUT                                                     │
-│  ─────────────────────────────────────────────────────────  │
-│  Variant:       [Centered     ▼]                           │
-│                 ○ Centered                                 │
-│                 ○ Split (Image Left)                       │
-│                 ○ With Form                                │
-│                 ○ Minimal                                  │
-│                                                             │
-│  BACKGROUND                                                 │
-│  ─────────────────────────────────────────────────────────  │
-│  Type:          [Solid        ▼]                           │
-│  Color:         [#0A0F1E      ] 🎨                         │
-│                                                             │
-│  CONTENT                                                    │
-│  ─────────────────────────────────────────────────────────  │
-│  Show Icon:     [✓]                                        │
-│  Show Badge:    [✓]                                        │
-│  Badge Text:    [Most Popular Service    ]                 │
-│  Highlight:     [Today       ] ← Word to highlight orange  │
-│                                                             │
-│  PRIMARY CTA                                                │
-│  ─────────────────────────────────────────────────────────  │
-│  Text:          [Get Started                ]              │
-│  Show Price:    [✓] "From $X"                              │
-│  Variant:       [Solid        ▼]                           │
-│                                                             │
-│  SECONDARY CTA                                              │
-│  ─────────────────────────────────────────────────────────  │
-│  Text:          [Ask a Question            ]               │
-│  Link:          [/contact                  ]               │
-│                                                             │
-│  TRUST SECTION                                              │
-│  ─────────────────────────────────────────────────────────  │
-│  Show Trust:    [✓]                                        │
-│  Trust Text:    [Join 1,000,000+ entrepreneurs]            │
-│                                                             │
-│                              [Cancel]  [Save Block]        │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Visual Preview Mode
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│  Preview Mode                    [Desktop] [Tablet] [Mobile]│
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  ┌───────────────────────────────────────────────────────┐ │
-│  │                                                       │ │
-│  │                    [LLC Icon]                         │ │
-│  │                                                       │ │
-│  │         Start Your LLC ████████                       │ │
-│  │                   Today                               │ │
-│  │    Professional formation service for entrepreneurs  │ │
-│  │                                                       │ │
-│  │       [Get Started - From $0]  [Ask a Question]      │ │
-│  │                                                       │ │
-│  │            🏆 1,000,000+ Businesses Formed           │ │
-│  │                                                       │ │
-│  └───────────────────────────────────────────────────────┘ │
-│                                                             │
-│        [Click block to edit]                               │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
-```
+**Implementation:**
+1. New component: `src/components/admin/ui/service-preview-selector.tsx`
+2. Fetches service list from `GET /api/services/public`
+3. When selected, fetches full service data and wraps canvas with `<ServiceProvider>`
+4. All service widgets receive real data in builder preview
 
 ---
 
-## Database Schema Changes
+## Default Template Structure
 
-### New Models
+When creating a new SERVICE_DETAILS template, pre-populate with this structure:
 
-```prisma
-// Page block definition
-model ServicePageBlock {
-  id          String   @id @default(cuid())
-  serviceId   String
-  service     Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+```
+Section 1: Full-width, layout "1"
+  └── service-breadcrumb (Home > Services > {name})
 
-  // Block identity
-  type        String   // "hero", "pricing-table", "process-steps", etc.
-  sortOrder   Int      @default(0)
-  isActive    Boolean  @default(true)
+Section 2: Full-width, layout "1", py-16
+  └── service-hero (center aligned, auto title/subtitle)
 
-  // Block settings (JSON)
-  settings    Json     // Type-specific settings
+Section 3: Layout "1", py-12, light background
+  └── service-features (grid, 3 columns, green checkmarks)
 
-  // Responsive visibility
-  hideOnMobile  Boolean @default(false)
-  hideOnDesktop Boolean @default(false)
+Section 4: Layout "1", py-16
+  └── pricing-table (mode: "auto", view: table comparison)
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+Section 5: Layout "1", py-12
+  └── service-description (with title "About {{service.name}}")
 
-  @@index([serviceId, sortOrder])
-}
+Section 6: Layout "1", py-12, light background
+  └── faq (source: "service", style: cards)
 
-// Block templates (reusable presets)
-model BlockTemplate {
-  id          String   @id @default(cuid())
-  name        String   // "Bizee-style Hero"
-  type        String   // Block type this template is for
-  settings    Json     // Pre-configured settings
-  thumbnail   String?  // Preview image
-  isBuiltIn   Boolean  @default(false)
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-// Testimonials (for testimonials block)
-model Testimonial {
-  id          String   @id @default(cuid())
-  quote       String   @db.Text
-  author      String
-  company     String?
-  avatar      String?
-  rating      Int      @default(5)
-  serviceId   String?  // Optional: specific to a service
-  isActive    Boolean  @default(true)
-  sortOrder   Int      @default(0)
-
-  service     Service? @relation(fields: [serviceId], references: [id])
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-// Process steps (for process-steps block)
-model ProcessStep {
-  id          String   @id @default(cuid())
-  serviceId   String
-  service     Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
-
-  icon        String?
-  title       String
-  description String   @db.Text
-  duration    String?  // "Day 1", "3-5 days"
-  sortOrder   Int      @default(0)
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([serviceId, sortOrder])
-}
-
-// Trust badges/items
-model TrustItem {
-  id          String   @id @default(cuid())
-  type        String   // "rating", "badge", "stat", "logo"
-
-  // For rating type
-  platform    String?  // "trustpilot", "google", "bbb"
-  rating      Decimal? @db.Decimal(2, 1)
-  reviewCount Int?
-
-  // For badge/stat type
-  icon        String?
-  text        String?
-  value       String?
-  label       String?
-
-  // For logo type
-  imageUrl    String?
-  altText     String?
-  link        String?
-
-  isActive    Boolean  @default(true)
-  sortOrder   Int      @default(0)
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
+Section 7: Layout "1", py-12
+  └── related-services (4 items, grid layout)
 ```
 
-### Update Service Model
-
-```prisma
-model Service {
-  // ... existing fields ...
-
-  // New relations
-  pageBlocks    ServicePageBlock[]
-  testimonials  Testimonial[]
-  processSteps  ProcessStep[]
-
-  // Page layout settings
-  useCustomLayout Boolean @default(false) // If false, use default layout
-}
-```
+This is generated via `createDefaultServiceDetailsTemplate()` in `src/lib/page-builder/template-defaults.ts`, using existing `createSection()` and `createWidget()` helpers from the widget registry.
 
 ---
 
 ## Implementation Phases
 
-### Phase 1: Foundation (Week 1-2)
+### Phase 1: Types & Defaults
 
-1. **Database Schema**
-   - Add new models (ServicePageBlock, BlockTemplate, etc.)
-   - Migrate existing data
-   - Create seed data for block templates
+**Files:**
+- `src/lib/page-builder/types.ts` -- Add `"service-description"`, `"service-breadcrumb"` to WidgetType union; add new widget settings interfaces; enhance pricing-table dataSource with `mode` field; enhance FAQ source with `"service"` option
+- `src/lib/page-builder/defaults.ts` -- Add defaults for 4 new widgets, update pricing-table defaults
 
-2. **Block Type System**
-   - Define TypeScript interfaces for all blocks
-   - Create block registry
-   - Build block validation
+**No breaking changes.** All additions are backward compatible.
 
-3. **Basic API Routes**
-   - CRUD for page blocks
-   - Block reordering endpoint
-   - Template management
+### Phase 2: Context-Only Widgets
 
-### Phase 2: Admin UI (Week 3-4)
+Build widgets that read directly from ServiceContext (no API calls):
 
-1. **Page Builder Interface**
-   - Block list with drag-and-drop (use dnd-kit)
-   - Add block sidebar
-   - Block settings panel
+- `service-features` -- Grid of service features with checkmarks
+- `service-description` -- Rich HTML description with prose styling
+- `service-breadcrumb` -- Dynamic breadcrumb navigation
 
-2. **Block Settings Forms**
-   - Dynamic form generation based on block type
-   - Color pickers, icon selectors
-   - Rich text integration
+Each follows the `service-hero` pattern: `useOptionalServiceContext()` + placeholder when no context.
 
-3. **Preview System**
-   - Real-time preview
-   - Responsive preview modes
+**Files:** Widget components + settings panels in `src/components/page-builder/widgets/service/` and `src/components/page-builder/settings/`
 
-### Phase 3: Block Components (Week 5-6)
+### Phase 3: Enhance Existing Widgets
 
-1. **Core Blocks**
-   - Hero (all variants)
-   - Pricing Table (with existing comparison logic)
-   - Features Grid
-   - FAQ Accordion
-   - Rich Text
+Add dynamic modes to existing widgets:
 
-2. **Trust Blocks**
-   - Trust Bar
-   - Testimonials
-   - Stats Counter
+- `pricing-table` -- Add `dataSource.mode: "auto"` that reads slug from ServiceContext
+- `faq` -- Add `source: "service"` that reads `service.faqs` from context
 
-3. **Process Blocks**
-   - Process Steps (all layouts)
-   - Timeline
-   - Checklist
+**Backward compatible.** Defaults preserve current behavior.
 
-### Phase 4: Advanced Features (Week 7-8)
+### Phase 4: Related Services Widget + API
 
-1. **Conversion Blocks**
-   - CTA Section
-   - Comparison Table
-   - Sticky CTA Bar
+Build `related-services` widget and its API route (`GET /api/services/related`).
 
-2. **Data Blocks**
-   - State Fees Table
-   - Entity Types Comparison
-   - Documents List
+### Phase 5: Admin UX - Template Preview
 
-3. **Polish**
-   - Animations and transitions
-   - Performance optimization
-   - Mobile responsiveness
+Add "Preview as Service" dropdown to page editor when editing SERVICE_DETAILS template. Wraps canvas with `ServiceProvider` using selected service's data.
 
-### Phase 5: Template System (Week 9)
+### Phase 6: Registration & Wiring
 
-1. **Block Templates**
-   - Pre-built block configurations
-   - Template library UI
-   - Quick-start templates
+Register all new widgets, add to renderer map, add settings panels to builder panel, update barrel exports.
 
-2. **Page Templates**
-   - Full page layouts
-   - Industry-specific templates
-   - Import/export
+### Phase 7: Default Template (Optional)
 
----
-
-## Technical Specifications
-
-### Block Registry Pattern
-
-```typescript
-// src/lib/blocks/registry.ts
-
-export interface BlockDefinition<T = unknown> {
-  type: string;
-  name: string;
-  icon: string;
-  category: BlockCategory;
-  defaultSettings: T;
-  settingsSchema: ZodSchema<T>;
-  component: React.ComponentType<{ settings: T; service: Service }>;
-  settingsPanel: React.ComponentType<{ settings: T; onChange: (s: T) => void }>;
-}
-
-export const blockRegistry = new Map<string, BlockDefinition>();
-
-// Register a block
-export function registerBlock<T>(definition: BlockDefinition<T>) {
-  blockRegistry.set(definition.type, definition);
-}
-
-// Get block component
-export function getBlockComponent(type: string) {
-  return blockRegistry.get(type)?.component;
-}
-```
-
-### Block Component Pattern
-
-```typescript
-// src/components/blocks/hero-block.tsx
-
-import { BlockDefinition } from "@/lib/blocks/registry";
-
-interface HeroBlockSettings {
-  variant: "centered" | "split" | "with-form" | "minimal";
-  backgroundColor: string;
-  showIcon: boolean;
-  showBadge: boolean;
-  badgeText: string;
-  primaryCTA: { text: string; showPrice: boolean };
-  secondaryCTA?: { text: string; link: string };
-  showTrust: boolean;
-  trustText: string;
-}
-
-export const heroBlockDefinition: BlockDefinition<HeroBlockSettings> = {
-  type: "hero",
-  name: "Hero Section",
-  icon: "Layout",
-  category: "core",
-  defaultSettings: {
-    variant: "centered",
-    backgroundColor: "#0A0F1E",
-    showIcon: true,
-    showBadge: false,
-    badgeText: "",
-    primaryCTA: { text: "Get Started", showPrice: true },
-    showTrust: true,
-    trustText: "Join 1,000,000+ entrepreneurs",
-  },
-  settingsSchema: heroSettingsSchema,
-  component: HeroBlock,
-  settingsPanel: HeroBlockSettings,
-};
-
-function HeroBlock({ settings, service }: BlockProps<HeroBlockSettings>) {
-  const { variant, backgroundColor, showIcon, ... } = settings;
-
-  return (
-    <section
-      className={cn("py-20", variants[variant])}
-      style={{ backgroundColor }}
-    >
-      {/* Render based on variant */}
-    </section>
-  );
-}
-```
-
-### Page Renderer
-
-```typescript
-// src/components/service-page/page-renderer.tsx
-
-interface PageRendererProps {
-  service: ServiceWithBlocks;
-}
-
-export function ServicePageRenderer({ service }: PageRendererProps) {
-  // If no custom layout, use default blocks
-  const blocks = service.useCustomLayout
-    ? service.pageBlocks
-    : getDefaultBlocks(service);
-
-  return (
-    <div className="service-page">
-      {blocks
-        .filter(b => b.isActive)
-        .sort((a, b) => a.sortOrder - b.sortOrder)
-        .map(block => {
-          const BlockComponent = getBlockComponent(block.type);
-          if (!BlockComponent) return null;
-
-          return (
-            <BlockComponent
-              key={block.id}
-              settings={block.settings}
-              service={service}
-            />
-          );
-        })}
-    </div>
-  );
-}
-```
-
-### Admin Block Editor
-
-```typescript
-// src/app/admin/services/[id]/page-builder/page.tsx
-
-"use client";
-
-import { DndContext, closestCenter } from "@dnd-kit/core";
-import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-
-export default function PageBuilderPage() {
-  const [blocks, setBlocks] = useState<ServicePageBlock[]>([]);
-  const [selectedBlock, setSelectedBlock] = useState<string | null>(null);
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (active.id !== over?.id) {
-      // Reorder blocks
-      reorderBlocks(active.id, over?.id);
-    }
-  };
-
-  return (
-    <div className="flex h-screen">
-      {/* Block Library Sidebar */}
-      <BlockLibrary onAddBlock={addBlock} />
-
-      {/* Main Canvas */}
-      <div className="flex-1 overflow-y-auto">
-        <DndContext
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext
-            items={blocks.map(b => b.id)}
-            strategy={verticalListSortingStrategy}
-          >
-            {blocks.map(block => (
-              <SortableBlock
-                key={block.id}
-                block={block}
-                isSelected={selectedBlock === block.id}
-                onSelect={() => setSelectedBlock(block.id)}
-              />
-            ))}
-          </SortableContext>
-        </DndContext>
-      </div>
-
-      {/* Settings Panel */}
-      {selectedBlock && (
-        <BlockSettingsPanel
-          block={blocks.find(b => b.id === selectedBlock)!}
-          onUpdate={updateBlock}
-          onClose={() => setSelectedBlock(null)}
-        />
-      )}
-    </div>
-  );
-}
-```
-
----
-
-## Default Block Configuration
-
-For services without custom layouts, provide sensible defaults:
-
-```typescript
-// src/lib/blocks/defaults.ts
-
-export function getDefaultBlocks(service: Service): ServicePageBlock[] {
-  return [
-    {
-      type: "hero",
-      sortOrder: 0,
-      settings: {
-        variant: "centered",
-        backgroundColor: "#0A0F1E",
-        showIcon: true,
-        showTrust: true,
-      },
-    },
-    {
-      type: "features-grid",
-      sortOrder: 1,
-      settings: {
-        layout: "grid",
-        columns: 3,
-      },
-    },
-    {
-      type: "pricing-table",
-      sortOrder: 2,
-      settings: {
-        layout: "comparison",
-        showStateFees: service.slug === "llc-formation",
-        showOrderSummary: true,
-      },
-    },
-    {
-      type: "description",
-      sortOrder: 3,
-      settings: {},
-    },
-    {
-      type: "faq-accordion",
-      sortOrder: 4,
-      settings: {
-        expandFirst: true,
-      },
-    },
-    {
-      type: "related-services",
-      sortOrder: 5,
-      settings: {
-        limit: 4,
-      },
-    },
-  ];
-}
-```
+Create `createDefaultServiceDetailsTemplate()` factory function for pre-populating new SERVICE_DETAILS templates.
 
 ---
 
 ## File Structure
 
+### New Files
+
 ```
-src/
-├── lib/
-│   └── blocks/
-│       ├── registry.ts           # Block registration system
-│       ├── defaults.ts           # Default block configurations
-│       ├── types.ts              # TypeScript interfaces
-│       └── schemas/              # Zod validation schemas
-│           ├── hero.ts
-│           ├── pricing-table.ts
-│           └── ...
-│
-├── components/
-│   └── blocks/
-│       ├── hero-block/
-│       │   ├── index.tsx         # Block component
-│       │   ├── variants/         # Different layouts
-│       │   │   ├── centered.tsx
-│       │   │   ├── split.tsx
-│       │   │   └── with-form.tsx
-│       │   └── settings.tsx      # Settings panel
-│       ├── pricing-table-block/
-│       ├── features-grid-block/
-│       ├── process-steps-block/
-│       ├── testimonials-block/
-│       ├── trust-bar-block/
-│       ├── cta-section-block/
-│       └── ...
-│
-├── app/
-│   └── admin/
-│       └── services/
-│           └── [id]/
-│               └── page-builder/
-│                   ├── page.tsx          # Main builder UI
-│                   ├── block-library.tsx # Available blocks
-│                   ├── block-canvas.tsx  # Drag-drop area
-│                   └── settings-panel.tsx # Block settings
+src/components/page-builder/widgets/service/
+  service-features.tsx            # Features grid from context
+  service-description.tsx         # Rich HTML description from context
+  service-breadcrumb.tsx          # Dynamic breadcrumb
+  related-services.tsx            # Related services cards via API
+
+src/components/page-builder/settings/
+  service-features-settings.tsx   # Settings panel
+  service-description-settings.tsx
+  service-breadcrumb-settings.tsx
+  related-services-settings.tsx
+
+src/components/admin/ui/
+  service-preview-selector.tsx    # "Preview as Service" dropdown
+
+src/app/api/services/related/
+  route.ts                        # GET /api/services/related
+
+src/lib/page-builder/
+  template-defaults.ts            # Default template factory
+```
+
+### Modified Files
+
+```
+src/lib/page-builder/types.ts                    # New types + enhanced types
+src/lib/page-builder/defaults.ts                 # New defaults
+src/lib/page-builder/register-widgets.ts         # Register 4 new widgets
+src/components/page-builder/widgets/service/index.ts  # Barrel exports
+src/components/page-builder/renderer/widget-renderer.tsx  # Widget map
+src/components/page-builder/widgets/commerce/pricing-table-widget.tsx  # Auto mode
+src/components/page-builder/widgets/layout/faq-accordion-widget.tsx    # Service source
+src/app/admin/appearance/pages/[id]/page.tsx      # Preview selector
+src/app/admin/appearance/landing-page/components/widget-builder-panel.tsx  # Settings panels
+```
+
+---
+
+## Data Flow
+
+### Live Page Rendering
+
+```
+User visits /services/llc-formation
+         ↓
+Server: getService("llc-formation") → ServiceData from DB
+Server: getActiveTemplateForType("SERVICE_DETAILS") → Template sections
+         ↓
+<ServiceProvider service={llcFormationData}>
+  <PageBuilderRenderer sections={visibleSections} />
+</ServiceProvider>
+         ↓
+Each widget reads from ServiceContext:
+  service-hero      → service.name, service.shortDesc, service.icon
+  service-features  → service.features[]
+  pricing-table     → fetches /api/services/llc-formation (auto mode)
+  service-description → service.description (HTML)
+  faq               → service.faqs[] (service source)
+  related-services  → fetches /api/services/related?slug=llc-formation
+```
+
+### Admin Template Editing
+
+```
+Admin opens Page Builder for SERVICE_DETAILS template
+         ↓
+Selects "LLC Formation" from "Preview as Service" dropdown
+         ↓
+Fetches full service data → wraps canvas with <ServiceProvider>
+         ↓
+All service widgets show real LLC Formation data
+Admin adjusts layout, styling, widget settings
+         ↓
+Saves template → applies to ALL service detail pages
+```
+
+### Per-Service Visibility Control
+
+```
+Admin edits "EIN Number" service in Admin > Services > Edit
+  → displayOptions: { showPricing: false, showFaq: true, ... }
+         ↓
+User visits /services/ein-number
+  → Template loaded, but pricing section filtered out
+  → FAQ section still visible
 ```
 
 ---
 
 ## Migration Strategy
 
-### Data Migration
+### No Database Migration Needed
 
-1. Create new tables without affecting existing functionality
-2. Run migration script to populate default blocks for existing services
-3. Add feature flag for new page builder
-4. Gradually enable per-service
+The new architecture reuses existing tables:
+- `LandingPage` with `templateType = SERVICE_DETAILS`
+- `LandingPageBlock` for storing widget sections
+- `Service.displayOptions` JSON field for per-service visibility
 
 ### Rollback Plan
 
-- Keep original page component as fallback
-- Feature flag controls which version renders
-- Database changes are additive (no destructive changes)
+- Original hardcoded layout remains as fallback (Mode B in service page)
+- If no SERVICE_DETAILS template exists or has no sections, fallback renders automatically
+- Template can be deactivated at any time via `isTemplateActive = false`
 
 ---
 
 ## Summary
 
-This redesign transforms LLCPad's service pages into a fully customizable, block-based system inspired by modern page builders. Key benefits:
+This redesign transforms LLCPad's service pages into a dynamic template system by extending the existing Page Builder:
 
-- **Admin Flexibility**: Drag-and-drop block management per service
-- **Design Consistency**: Pre-built blocks with brand styling
-- **Conversion Optimized**: 2025 best practices built into block designs
-- **Maintainable**: Modular architecture, easy to add new blocks
-- **Performance**: Server-rendered blocks, minimal client JS
-
-The phased implementation approach allows incremental delivery while maintaining stability.
+- **Zero new DB models** -- reuses `LandingPage` + `LandingPageBlock`
+- **5 new service widgets** -- pull data from ServiceContext automatically
+- **2 enhanced widgets** -- pricing-table and FAQ gain dynamic modes
+- **Admin preview** -- "Preview as Service" dropdown for real data in builder
+- **Backward compatible** -- all existing pages and widgets work unchanged
+- **Per-service control** -- `displayOptions` controls section visibility per service
 
 ---
 

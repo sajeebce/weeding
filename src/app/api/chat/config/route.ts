@@ -56,9 +56,20 @@ export async function GET() {
       config[key] = value;
     }
 
-    // Add socket URL
-    config.socketUrl = process.env.NEXT_PUBLIC_SITE_URL || "";
-    config.socketPath = "/api/socket";
+    // Add socket URL (standalone chat server)
+    config.socketUrl =
+      process.env.NEXT_PUBLIC_SOCKET_URL || "";
+
+    // Set defaults for chat flow fields if not in DB
+    if (!("connectingMessage" in config)) config.connectingMessage = "Connecting you with a team member...";
+    if (!("agentTimeoutSeconds" in config)) config.agentTimeoutSeconds = 15;
+    if (!("replyTimeMessage" in config)) config.replyTimeMessage = "We typically reply within a few minutes";
+    if (!("offlineReplyTimeMessage" in config)) config.offlineReplyTimeMessage = "We typically respond within a few hours";
+    if (!("offlineMessage" in config)) config.offlineMessage = "Our team is currently away";
+
+    // Offline form settings
+    if (!("offlineFormEnabled" in config)) config.offlineFormEnabled = true;
+    if (!("offlineFormMessage" in config)) config.offlineFormMessage = "Our team is offline. We'll get back to you soon.";
 
     return NextResponse.json(config, {
       headers: {

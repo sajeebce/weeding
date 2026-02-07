@@ -65,6 +65,12 @@ interface SettingsData {
   chatPrimaryColor: string;
   chatShowAgentPhoto: boolean;
   chatSoundEnabled: boolean;
+  chatEmailCollectionMode: string;
+  chatConnectingMessage: string;
+  chatEmailPromptMessage: string;
+  chatAgentTimeoutSeconds: number;
+  chatReplyTimeMessage: string;
+  chatOfflineReplyTimeMessage: string;
 
   // Notification Settings
   notificationSound: boolean;
@@ -83,6 +89,9 @@ interface SettingsData {
   aiApiKey: string;
   aiModel: string;
   aiMaxTokens: number;
+  aiChatEnabled: boolean;
+  aiHandoffMessage: string;
+  aiEmailPromptMessage: string;
 
   // Email Settings
   emailFromName: string;
@@ -105,11 +114,17 @@ const defaultSettings: SettingsData = {
   chatEnabled: true,
   chatRequireEmail: true,
   chatWelcomeMessage: "Hi! How can we help you today?",
-  chatOfflineMessage: "We are currently offline. Please leave a message and we will get back to you.",
+  chatOfflineMessage: "Our team is currently away",
   chatPosition: "bottom-right",
   chatPrimaryColor: "#2563eb",
   chatShowAgentPhoto: true,
   chatSoundEnabled: true,
+  chatEmailCollectionMode: "always",
+  chatConnectingMessage: "Connecting you with a team member...",
+  chatEmailPromptMessage: "To make sure we can follow up, share your email",
+  chatAgentTimeoutSeconds: 15,
+  chatReplyTimeMessage: "We typically reply within a few minutes",
+  chatOfflineReplyTimeMessage: "We typically respond within a few hours",
 
   notificationSound: true,
   notificationDesktop: true,
@@ -126,6 +141,9 @@ const defaultSettings: SettingsData = {
   aiApiKey: "",
   aiModel: "gpt-4o-mini",
   aiMaxTokens: 500,
+  aiChatEnabled: false,
+  aiHandoffMessage: "Let me connect you with a team member who can help better.",
+  aiEmailPromptMessage: "Share your email so we can follow up if needed",
 
   emailFromName: "Support Team",
   emailFromAddress: "support@example.com",
@@ -194,7 +212,7 @@ export function SupportSettingsClient({
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-100">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
@@ -352,18 +370,6 @@ export function SupportSettingsClient({
 
               <div className="flex items-center justify-between">
                 <div>
-                  <Label>Require Email</Label>
-                  <p className="text-sm text-muted-foreground">Require visitors to enter email before chatting</p>
-                </div>
-                <Switch
-                  checked={settings.chatRequireEmail}
-                  onCheckedChange={(v) => updateSetting("chatRequireEmail", v)}
-                  disabled={!hasChatFeature}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div>
                   <Label>Sound Notifications</Label>
                   <p className="text-sm text-muted-foreground">Play sound for new messages</p>
                 </div>
@@ -372,6 +378,86 @@ export function SupportSettingsClient({
                   onCheckedChange={(v) => updateSetting("chatSoundEnabled", v)}
                   disabled={!hasChatFeature}
                 />
+              </div>
+
+              <Separator />
+
+              <div className="space-y-4">
+                <h4 className="text-sm font-semibold">Chat Flow Settings</h4>
+
+                <div className="space-y-2">
+                  <Label>Email Collection Mode</Label>
+                  <Select
+                    value={settings.chatEmailCollectionMode}
+                    onValueChange={(v) => updateSetting("chatEmailCollectionMode", v)}
+                    disabled={!hasChatFeature}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="always">Always (connecting + offline)</SelectItem>
+                      <SelectItem value="connecting">Only while connecting to agent</SelectItem>
+                      <SelectItem value="offline_only">Only when offline</SelectItem>
+                      <SelectItem value="never">Never</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">When to ask visitors for their email in the chat</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Connecting Message</Label>
+                  <Input
+                    value={settings.chatConnectingMessage}
+                    onChange={(e) => updateSetting("chatConnectingMessage", e.target.value)}
+                    placeholder="Connecting you with a team member..."
+                    disabled={!hasChatFeature}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Email Prompt Message</Label>
+                  <Input
+                    value={settings.chatEmailPromptMessage}
+                    onChange={(e) => updateSetting("chatEmailPromptMessage", e.target.value)}
+                    placeholder="To make sure we can follow up, share your email"
+                    disabled={!hasChatFeature}
+                  />
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label>Reply Time Message</Label>
+                    <Input
+                      value={settings.chatReplyTimeMessage}
+                      onChange={(e) => updateSetting("chatReplyTimeMessage", e.target.value)}
+                      placeholder="We typically reply within a few minutes"
+                      disabled={!hasChatFeature}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Offline Reply Time Message</Label>
+                    <Input
+                      value={settings.chatOfflineReplyTimeMessage}
+                      onChange={(e) => updateSetting("chatOfflineReplyTimeMessage", e.target.value)}
+                      placeholder="We typically respond within a few hours"
+                      disabled={!hasChatFeature}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Agent Timeout (seconds)</Label>
+                  <Input
+                    type="number"
+                    value={settings.chatAgentTimeoutSeconds}
+                    onChange={(e) => updateSetting("chatAgentTimeoutSeconds", parseInt(e.target.value) || 15)}
+                    min={5}
+                    max={60}
+                    disabled={!hasChatFeature}
+                  />
+                  <p className="text-xs text-muted-foreground">How long to wait for an agent before showing offline message</p>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -565,6 +651,45 @@ export function SupportSettingsClient({
                       onCheckedChange={(v) => updateSetting("aiAutoResponse", v)}
                     />
                   </div>
+
+                  <Separator />
+
+                  <h4 className="text-sm font-semibold">AI in Live Chat</h4>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Enable AI in Live Chat</Label>
+                      <p className="text-sm text-muted-foreground">AI responds to visitors before connecting to an agent</p>
+                    </div>
+                    <Switch
+                      checked={settings.aiChatEnabled}
+                      onCheckedChange={(v) => updateSetting("aiChatEnabled", v)}
+                    />
+                  </div>
+
+                  {settings.aiChatEnabled && (
+                    <>
+                      <div className="space-y-2">
+                        <Label>AI Handoff Message</Label>
+                        <Input
+                          value={settings.aiHandoffMessage}
+                          onChange={(e) => updateSetting("aiHandoffMessage", e.target.value)}
+                          placeholder="Let me connect you with a team member..."
+                        />
+                        <p className="text-xs text-muted-foreground">Message shown when AI transfers to a human agent</p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>AI Email Prompt</Label>
+                        <Input
+                          value={settings.aiEmailPromptMessage}
+                          onChange={(e) => updateSetting("aiEmailPromptMessage", e.target.value)}
+                          placeholder="Share your email so we can follow up if needed"
+                        />
+                        <p className="text-xs text-muted-foreground">Email collection message during AI conversation</p>
+                      </div>
+                    </>
+                  )}
                 </>
               )}
             </CardContent>

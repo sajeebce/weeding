@@ -270,7 +270,8 @@ export interface HeroContentWidgetSettings {
     show: boolean;
     text: string;
     link: string;
-    style: "link" | "outline" | "ghost";
+    badge?: string;
+    style?: ButtonCustomStyle;
     openInNewTab?: boolean;
   };
 
@@ -2305,6 +2306,27 @@ export interface ServiceProcessWidgetSettings {
   layout: "horizontal" | "vertical" | "alternating";
   showStepNumbers: boolean;
   showConnectors: boolean;
+}
+
+/**
+ * FAQ Accordion Widget Settings (Global)
+ * Pulls FAQs from the global FAQ model and displays as an accordion
+ */
+export interface FaqAccordionWidgetSettings {
+  header: {
+    show: boolean;
+    heading: string;
+    description: string;
+    alignment: "left" | "center";
+  };
+  source: "all" | "category";
+  categories: string[];
+  maxItems: number;
+  expandFirst: boolean;
+  allowMultipleOpen: boolean;
+  style: "minimal" | "cards" | "bordered";
+  accentColor: string;
+  showCategoryFilter: boolean;
 }
 
 /**

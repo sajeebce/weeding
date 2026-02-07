@@ -21,14 +21,48 @@ export interface AuthenticatedSocket extends Socket {
   user?: SocketUser;
 }
 
+// In-memory agent tracking for agents:status broadcasts
+const connectedAgents = new Map<string, { socketId: string; name: string; status: string }>();
+
+// In-memory session timeout timers
+const sessionTimeouts = new Map<string, ReturnType<typeof setTimeout>>();
+
+// Reference to io for broadcasting
+let ioRef: Server | null = null;
+
+/**
+ * Broadcast agent availability status to ALL connected sockets (including visitors)
+ */
+function broadcastAgentsStatus() {
+  if (!ioRef) return;
+  const onlineCount = Array.from(connectedAgents.values()).filter(
+    (a) => a.status === 'online'
+  ).length;
+  ioRef.emit(CHAT_EVENTS.AGENTS_STATUS, {
+    online: onlineCount > 0,
+    count: onlineCount,
+  });
+}
+
+/**
+ * Get connected agents map (for use in server.ts)
+ */
+export function getConnectedAgents() {
+  return connectedAgents;
+}
+
 /**
  * Register authentication handlers
  */
 export function registerAuthHandlers(
-  _io: Server,
+  io: Server,
   socket: AuthenticatedSocket,
-  verifyToken: (token: string) => Promise<SocketUser | null>
+  verifyToken: (token: string) => Promise<SocketUser | null>,
+  onAgentAuth?: (socket: AuthenticatedSocket, user: SocketUser) => Promise<void>
 ) {
+  // Store io reference for broadcasting
+  ioRef = io;
+
   socket.on(AUTH_EVENTS.AUTHENTICATE, async (data: { token: string }) => {
     try {
       const user = await verifyToken(data.token);
@@ -46,6 +80,21 @@ export function registerAuthHandlers(
       // Join agent room if applicable
       if (user.isAgent || user.isAdmin) {
         socket.join(`${ROOM_PREFIXES.AGENT}all`);
+
+        // Track connected agent
+        connectedAgents.set(user.id, {
+          socketId: socket.id,
+          name: user.name,
+          status: 'online',
+        });
+
+        // Let host app rejoin agent to their active chat rooms
+        if (onAgentAuth) {
+          await onAgentAuth(socket, user);
+        }
+
+        // Broadcast updated agent availability to ALL sockets
+        broadcastAgentsStatus();
       }
 
       socket.emit(AUTH_EVENTS.AUTHENTICATED, { user });
@@ -55,6 +104,12 @@ export function registerAuthHandlers(
   });
 
   socket.on(AUTH_EVENTS.LOGOUT, () => {
+    // Clean up agent tracking
+    if (socket.user && (socket.user.isAgent || socket.user.isAdmin)) {
+      connectedAgents.delete(socket.user.id);
+      broadcastAgentsStatus();
+    }
+
     socket.user = undefined;
     socket.rooms.forEach((room) => {
       if (room !== socket.id) {
@@ -159,6 +214,10 @@ export function registerChatHandlers(
     onChatAccept: (data: any) => Promise<any>;
     onChatEnd: (data: any) => Promise<any>;
     onChatMessage: (data: any) => Promise<any>;
+    onEmailUpdate?: (data: { sessionId: string; email: string }) => Promise<any>;
+    onChatRejoin?: (data: { sessionId: string; visitorId: string }) => Promise<any>;
+    onCollectInfo?: (data: { sessionId: string; agentId: string }) => Promise<{ visitorSocketId?: string } | null>;
+    onLeadUpdate?: (data: { sessionId: string; name?: string; email?: string; phone?: string; source: string }) => Promise<any>;
   }
 ) {
   // Customer requests chat
@@ -175,7 +234,24 @@ export function registerChatHandlers(
         session,
       });
 
-      socket.emit(CHAT_EVENTS.REQUEST, { success: true, session });
+      // Return agentsOnline status so widget knows what to show
+      const onlineCount = Array.from(connectedAgents.values()).filter(
+        (a) => a.status === 'online'
+      ).length;
+
+      socket.emit(CHAT_EVENTS.REQUEST, {
+        success: true,
+        session,
+        agentsOnline: onlineCount > 0,
+        agentCount: onlineCount,
+      });
+
+      // Start agent timeout - if no agent accepts within configured seconds, notify visitor
+      const timeoutSeconds = 15; // Could be made configurable
+      const timer = setTimeout(() => {
+        socket.emit(CHAT_EVENTS.AGENT_TIMEOUT, { sessionId: session.id });
+      }, timeoutSeconds * 1000);
+      sessionTimeouts.set(session.id, timer);
     } catch (error) {
       socket.emit(CHAT_EVENTS.REQUEST, { success: false, error: 'Failed to start chat' });
     }
@@ -189,6 +265,13 @@ export function registerChatHandlers(
     }
 
     try {
+      // Clear agent timeout timer
+      const timer = sessionTimeouts.get(data.sessionId);
+      if (timer) {
+        clearTimeout(timer);
+        sessionTimeouts.delete(data.sessionId);
+      }
+
       const session = await callbacks.onChatAccept({
         sessionId: data.sessionId,
         agentId: socket.user.id,
@@ -231,7 +314,7 @@ export function registerChatHandlers(
 
         io.to(`${ROOM_PREFIXES.CHAT}${data.sessionId}`).emit(
           CHAT_EVENTS.MESSAGE,
-          message
+          { ...message, sessionId: data.sessionId }
         );
       } catch (error) {
         socket.emit('error', { message: 'Failed to send message' });
@@ -248,9 +331,43 @@ export function registerChatHandlers(
     });
   });
 
+  // Email update from visitor
+  socket.on(
+    CHAT_EVENTS.EMAIL_UPDATE,
+    async (data: { sessionId: string; email: string }) => {
+      if (!data.email?.trim()) return;
+
+      // Call callback to persist email (e.g. update ticket in DB)
+      if (callbacks.onEmailUpdate) {
+        try {
+          await callbacks.onEmailUpdate({
+            sessionId: data.sessionId,
+            email: data.email.trim(),
+          });
+        } catch (error) {
+          // Log but don't fail - email update is non-critical
+        }
+      }
+
+      // Notify agents about email update
+      io.to(`${ROOM_PREFIXES.AGENT}all`).emit(CHAT_EVENTS.QUEUE_UPDATE, {
+        type: 'email_updated',
+        sessionId: data.sessionId,
+        email: data.email.trim(),
+      });
+    }
+  );
+
   // End chat
   socket.on(CHAT_EVENTS.END, async (data: { sessionId: string }) => {
     try {
+      // Clear timeout timer
+      const timer = sessionTimeouts.get(data.sessionId);
+      if (timer) {
+        clearTimeout(timer);
+        sessionTimeouts.delete(data.sessionId);
+      }
+
       await callbacks.onChatEnd({ sessionId: data.sessionId });
 
       io.to(`${ROOM_PREFIXES.CHAT}${data.sessionId}`).emit(CHAT_EVENTS.END, {
@@ -263,6 +380,112 @@ export function registerChatHandlers(
       socket.emit('error', { message: 'Failed to end chat' });
     }
   });
+
+  // Agent triggers lead collection form on visitor's widget
+  socket.on(
+    CHAT_EVENTS.COLLECT_INFO,
+    async (data: { sessionId: string }) => {
+      if (!socket.user?.isAgent && !socket.user?.isAdmin) return;
+
+      if (callbacks.onCollectInfo) {
+        try {
+          await callbacks.onCollectInfo({
+            sessionId: data.sessionId,
+            agentId: socket.user!.id,
+          });
+        } catch (error) {
+          // Non-critical, don't fail
+        }
+      }
+
+      // Emit to the chat room (visitor is in it)
+      io.to(`${ROOM_PREFIXES.CHAT}${data.sessionId}`).emit(CHAT_EVENTS.COLLECT_INFO, {
+        sessionId: data.sessionId,
+      });
+    }
+  );
+
+  // Visitor submits lead info
+  socket.on(
+    CHAT_EVENTS.LEAD_UPDATE,
+    async (data: {
+      sessionId: string;
+      name?: string;
+      email?: string;
+      phone?: string;
+      source: 'form' | 'ai' | 'agent_request';
+    }) => {
+      // Validate email format
+      if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) return;
+
+      if (callbacks.onLeadUpdate) {
+        try {
+          await callbacks.onLeadUpdate(data);
+        } catch (error) {
+          // Non-critical
+        }
+      }
+
+      // Notify agents about collected info
+      io.to(`${ROOM_PREFIXES.AGENT}all`).emit(CHAT_EVENTS.INFO_COLLECTED, {
+        sessionId: data.sessionId,
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+      });
+
+      // Update queue sidebar
+      io.to(`${ROOM_PREFIXES.AGENT}all`).emit(CHAT_EVENTS.QUEUE_UPDATE, {
+        type: 'lead_updated',
+        sessionId: data.sessionId,
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+      });
+    }
+  );
+
+  // Visitor rejoins an existing chat after page reload
+  socket.on(
+    CHAT_EVENTS.REJOIN,
+    async (data: { sessionId: string; visitorId: string }) => {
+      if (!callbacks.onChatRejoin) {
+        socket.emit(CHAT_EVENTS.REJOIN, {
+          success: false,
+          error: 'Rejoin not supported',
+        });
+        return;
+      }
+
+      try {
+        const result = await callbacks.onChatRejoin({
+          sessionId: data.sessionId,
+          visitorId: data.visitorId,
+        });
+
+        if (result) {
+          // Rejoin the chat room
+          socket.join(`${ROOM_PREFIXES.CHAT}${data.sessionId}`);
+
+          socket.emit(CHAT_EVENTS.REJOIN, {
+            success: true,
+            session: result.session,
+            messages: result.messages || [],
+          });
+        } else {
+          socket.emit(CHAT_EVENTS.REJOIN, {
+            success: false,
+            error: 'Session not found or ended',
+          });
+        }
+      } catch (error) {
+        socket.emit(CHAT_EVENTS.REJOIN, {
+          success: false,
+          error: 'Failed to rejoin',
+        });
+      }
+    }
+  );
 }
 
 /**
@@ -278,6 +501,12 @@ export function registerPresenceHandlers(
     async (data: { status: 'online' | 'away' | 'offline' }) => {
       if (!socket.user) return;
 
+      // Update in-memory agent tracking
+      const agent = connectedAgents.get(socket.user.id);
+      if (agent) {
+        agent.status = data.status;
+      }
+
       await onStatusUpdate(socket.user.id, data.status);
 
       // Broadcast to all agents
@@ -286,6 +515,9 @@ export function registerPresenceHandlers(
           userId: socket.user.id,
           status: data.status,
         });
+
+        // Broadcast updated agent availability to ALL sockets
+        broadcastAgentsStatus();
       }
     }
   );
@@ -301,11 +533,16 @@ export function handleDisconnect(
 ) {
   socket.on('disconnect', async () => {
     if (socket.user) {
-      // Notify agents about offline status
+      // Clean up agent tracking and broadcast status
       if (socket.user.isAgent || socket.user.isAdmin) {
+        connectedAgents.delete(socket.user.id);
+
         io.to(`${ROOM_PREFIXES.AGENT}all`).emit(PRESENCE_EVENTS.OFFLINE, {
           userId: socket.user.id,
         });
+
+        // Broadcast updated agent availability to ALL sockets (including visitors)
+        broadcastAgentsStatus();
       }
 
       if (onDisconnect) {

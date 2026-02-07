@@ -64,7 +64,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 
-type TicketStatus = "OPEN" | "IN_PROGRESS" | "WAITING_CUSTOMER" | "WAITING_AGENT" | "RESOLVED" | "CLOSED";
+type TicketStatus = "OPEN" | "IN_PROGRESS" | "WAITING_FOR_CUSTOMER" | "WAITING_FOR_AGENT" | "RESOLVED" | "CLOSED";
 type TicketPriority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
 
 interface Ticket {
@@ -103,6 +103,33 @@ interface TicketStats {
   closed: number;
 }
 
+interface CustomerSearchResult {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  avatar?: string;
+  totalOrders: number;
+  lastOrder?: {
+    id: string;
+    orderNumber: string;
+    serviceName: string;
+    amount: number;
+    createdAt: string;
+  };
+  totalTickets: number;
+  lastTicketAt?: string;
+}
+
+interface CustomerOrder {
+  id: string;
+  orderNumber: string;
+  serviceName: string;
+  status: string;
+  amount: number;
+  createdAt: string;
+}
+
 interface TicketsPageClientProps {
   pluginName?: string;
   tier?: string | null;
@@ -113,8 +140,8 @@ interface TicketsPageClientProps {
 const statusConfig: Record<TicketStatus, { label: string; color: string; icon: typeof AlertCircle }> = {
   OPEN: { label: "Open", color: "bg-blue-100 text-blue-700 border-blue-200", icon: AlertCircle },
   IN_PROGRESS: { label: "In Progress", color: "bg-purple-100 text-purple-700 border-purple-200", icon: Clock },
-  WAITING_CUSTOMER: { label: "Awaiting Customer", color: "bg-amber-100 text-amber-700 border-amber-200", icon: Clock },
-  WAITING_AGENT: { label: "Awaiting Agent", color: "bg-orange-100 text-orange-700 border-orange-200", icon: Clock },
+  WAITING_FOR_CUSTOMER: { label: "Awaiting Customer", color: "bg-amber-100 text-amber-700 border-amber-200", icon: Clock },
+  WAITING_FOR_AGENT: { label: "Awaiting Agent", color: "bg-orange-100 text-orange-700 border-orange-200", icon: Clock },
   RESOLVED: { label: "Resolved", color: "bg-green-100 text-green-700 border-green-200", icon: CheckCircle },
   CLOSED: { label: "Closed", color: "bg-gray-100 text-gray-700 border-gray-200", icon: CheckCircle },
 };
@@ -149,6 +176,13 @@ export function TicketsPageClient({
   // New Ticket Modal
   const [newTicketOpen, setNewTicketOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [customerType, setCustomerType] = useState<"existing" | "guest">("guest");
+  const [customerSearch, setCustomerSearch] = useState("");
+  const [customerResults, setCustomerResults] = useState<CustomerSearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState<CustomerSearchResult | null>(null);
+  const [customerOrders, setCustomerOrders] = useState<CustomerOrder[]>([]);
+  const [selectedOrderId, setSelectedOrderId] = useState<string>("");
   const [formData, setFormData] = useState({
     subject: "",
     category: "",
@@ -156,6 +190,7 @@ export function TicketsPageClient({
     message: "",
     guestName: "",
     guestEmail: "",
+    guestPhone: "",
   });
 
   const fetchTickets = useCallback(async () => {
@@ -187,8 +222,8 @@ export function TicketsPageClient({
         total: data.total || ticketList.length,
         open: ticketList.filter((t: Ticket) => t.status === "OPEN").length,
         inProgress: ticketList.filter((t: Ticket) => t.status === "IN_PROGRESS").length,
-        waitingCustomer: ticketList.filter((t: Ticket) => t.status === "WAITING_CUSTOMER").length,
-        waitingAgent: ticketList.filter((t: Ticket) => t.status === "WAITING_AGENT").length,
+        waitingCustomer: ticketList.filter((t: Ticket) => t.status === "WAITING_FOR_CUSTOMER").length,
+        waitingAgent: ticketList.filter((t: Ticket) => t.status === "WAITING_FOR_AGENT").length,
         resolved: ticketList.filter((t: Ticket) => t.status === "RESOLVED").length,
         closed: ticketList.filter((t: Ticket) => t.status === "CLOSED").length,
       });
@@ -212,30 +247,124 @@ export function TicketsPageClient({
     }
   }, [needsRefresh]);
 
+  // Customer search with debounce
+  useEffect(() => {
+    if (customerType !== "existing" || !customerSearch.trim() || customerSearch.length < 2) {
+      setCustomerResults([]);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        setIsSearching(true);
+        const response = await fetch(`/api/admin/customers/search?q=${encodeURIComponent(customerSearch)}`);
+        if (response.ok) {
+          const data = await response.json();
+          setCustomerResults(data.customers || []);
+        }
+      } catch (error) {
+        console.error("Customer search error:", error);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(timer);
+  }, [customerSearch, customerType]);
+
+  // Fetch customer orders when customer is selected
+  useEffect(() => {
+    if (!selectedCustomer) {
+      setCustomerOrders([]);
+      setSelectedOrderId("");
+      return;
+    }
+
+    const fetchOrders = async () => {
+      try {
+        const response = await fetch(`/api/admin/customers/${selectedCustomer.id}/orders`);
+        if (response.ok) {
+          const data = await response.json();
+          setCustomerOrders(data.orders || []);
+        }
+      } catch (error) {
+        console.error("Fetch orders error:", error);
+      }
+    };
+
+    fetchOrders();
+  }, [selectedCustomer]);
+
+  // Reset form when modal closes
+  const resetForm = () => {
+    setCustomerType("guest");
+    setCustomerSearch("");
+    setCustomerResults([]);
+    setSelectedCustomer(null);
+    setCustomerOrders([]);
+    setSelectedOrderId("");
+    setFormData({
+      subject: "",
+      category: "",
+      priority: "MEDIUM",
+      message: "",
+      guestName: "",
+      guestEmail: "",
+      guestPhone: "",
+    });
+  };
+
+  const handleSelectCustomer = (customer: CustomerSearchResult) => {
+    setSelectedCustomer(customer);
+    setCustomerSearch("");
+    setCustomerResults([]);
+  };
+
   const handleCreateTicket = async () => {
     if (!formData.subject.trim() || !formData.message.trim()) {
       toast.error("Subject and message are required");
       return;
     }
 
-    if (!formData.guestEmail.trim()) {
-      toast.error("Customer email is required");
-      return;
+    // Validate based on customer type
+    if (customerType === "existing") {
+      if (!selectedCustomer) {
+        toast.error("Please select a customer");
+        return;
+      }
+    } else {
+      if (!formData.guestEmail.trim()) {
+        toast.error("Customer email is required");
+        return;
+      }
     }
 
     try {
       setIsSubmitting(true);
+
+      // Build request body based on customer type
+      const requestBody: Record<string, unknown> = {
+        subject: formData.subject,
+        category: formData.category || null,
+        priority: formData.priority,
+        initialMessage: formData.message,
+      };
+
+      if (customerType === "existing" && selectedCustomer) {
+        requestBody.customerId = selectedCustomer.id;
+        if (selectedOrderId) {
+          requestBody.orderId = selectedOrderId;
+        }
+      } else {
+        requestBody.guestName = formData.guestName || null;
+        requestBody.guestEmail = formData.guestEmail;
+        requestBody.guestPhone = formData.guestPhone || null;
+      }
+
       const response = await fetch("/api/admin/tickets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          subject: formData.subject,
-          category: formData.category || null,
-          priority: formData.priority,
-          initialMessage: formData.message,
-          guestName: formData.guestName || null,
-          guestEmail: formData.guestEmail,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
@@ -245,14 +374,7 @@ export function TicketsPageClient({
 
       toast.success("Ticket created successfully");
       setNewTicketOpen(false);
-      setFormData({
-        subject: "",
-        category: "",
-        priority: "MEDIUM",
-        message: "",
-        guestName: "",
-        guestEmail: "",
-      });
+      resetForm();
       fetchTickets();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to create ticket");
@@ -453,8 +575,8 @@ export function TicketsPageClient({
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="OPEN">Open</SelectItem>
                 <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-                <SelectItem value="WAITING_CUSTOMER">Awaiting Customer</SelectItem>
-                <SelectItem value="WAITING_AGENT">Awaiting Agent</SelectItem>
+                <SelectItem value="WAITING_FOR_CUSTOMER">Awaiting Customer</SelectItem>
+                <SelectItem value="WAITING_FOR_AGENT">Awaiting Agent</SelectItem>
                 <SelectItem value="RESOLVED">Resolved</SelectItem>
                 <SelectItem value="CLOSED">Closed</SelectItem>
               </SelectContent>
@@ -721,8 +843,11 @@ export function TicketsPageClient({
       </Card>
 
       {/* New Ticket Modal */}
-      <Dialog open={newTicketOpen} onOpenChange={setNewTicketOpen}>
-        <DialogContent className="sm:max-w-lg">
+      <Dialog open={newTicketOpen} onOpenChange={(open) => {
+        setNewTicketOpen(open);
+        if (!open) resetForm();
+      }}>
+        <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Create Support Ticket</DialogTitle>
             <DialogDescription>
@@ -731,28 +856,172 @@ export function TicketsPageClient({
           </DialogHeader>
 
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="guestName">Customer Name</Label>
-                <Input
-                  id="guestName"
-                  placeholder="John Doe"
-                  value={formData.guestName}
-                  onChange={(e) => setFormData({ ...formData, guestName: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="guestEmail">Customer Email *</Label>
-                <Input
-                  id="guestEmail"
-                  type="email"
-                  placeholder="john@example.com"
-                  value={formData.guestEmail}
-                  onChange={(e) => setFormData({ ...formData, guestEmail: e.target.value })}
-                />
+            {/* Customer Type Toggle */}
+            <div className="flex items-center gap-4 p-3 bg-muted/50 rounded-lg">
+              <Label className="text-sm font-medium">Customer Type:</Label>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant={customerType === "existing" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => {
+                    setCustomerType("existing");
+                    setSelectedCustomer(null);
+                  }}
+                >
+                  <User className="h-4 w-4 mr-1" />
+                  Existing Customer
+                </Button>
+                <Button
+                  type="button"
+                  variant={customerType === "guest" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => {
+                    setCustomerType("guest");
+                    setSelectedCustomer(null);
+                  }}
+                >
+                  New/Guest
+                </Button>
               </div>
             </div>
 
+            {/* Existing Customer Search */}
+            {customerType === "existing" && (
+              <div className="space-y-2">
+                <Label>Search Customer</Label>
+                {selectedCustomer ? (
+                  <div className="flex items-center justify-between p-3 border rounded-lg bg-blue-50">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center">
+                        <User className="h-5 w-5 text-blue-700" />
+                      </div>
+                      <div>
+                        <p className="font-medium">{selectedCustomer.name}</p>
+                        <p className="text-sm text-muted-foreground">{selectedCustomer.email}</p>
+                        {selectedCustomer.phone && (
+                          <p className="text-xs text-muted-foreground">{selectedCustomer.phone}</p>
+                        )}
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSelectedCustomer(null)}
+                    >
+                      Change
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search by name, email, or phone..."
+                        value={customerSearch}
+                        onChange={(e) => setCustomerSearch(e.target.value)}
+                        className="pl-9"
+                      />
+                      {isSearching && (
+                        <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 animate-spin" />
+                      )}
+                    </div>
+                    {customerResults.length > 0 && (
+                      <div className="absolute z-10 w-full mt-1 bg-background border rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                        {customerResults.map((customer) => (
+                          <button
+                            key={customer.id}
+                            type="button"
+                            className="w-full p-3 text-left hover:bg-muted transition-colors border-b last:border-b-0"
+                            onClick={() => handleSelectCustomer(customer)}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                                <User className="h-4 w-4" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium truncate">{customer.name}</p>
+                                <p className="text-sm text-muted-foreground truncate">{customer.email}</p>
+                                {customer.lastOrder && (
+                                  <p className="text-xs text-muted-foreground">
+                                    Last order: {customer.lastOrder.serviceName} ({new Date(customer.lastOrder.createdAt).toLocaleDateString()})
+                                  </p>
+                                )}
+                              </div>
+                              <div className="text-right text-xs text-muted-foreground">
+                                <p>{customer.totalOrders} orders</p>
+                                <p>{customer.totalTickets} tickets</p>
+                              </div>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Order Link (only for existing customers) */}
+                {selectedCustomer && customerOrders.length > 0 && (
+                  <div className="mt-3">
+                    <Label>Link to Order (Optional)</Label>
+                    <Select value={selectedOrderId} onValueChange={setSelectedOrderId}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select related order..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">No order link</SelectItem>
+                        {customerOrders.map((order) => (
+                          <SelectItem key={order.id} value={order.id}>
+                            {order.orderNumber} - {order.serviceName} (${order.amount})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Guest Customer Fields */}
+            {customerType === "guest" && (
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="guestName">Customer Name</Label>
+                    <Input
+                      id="guestName"
+                      placeholder="John Doe"
+                      value={formData.guestName}
+                      onChange={(e) => setFormData({ ...formData, guestName: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="guestEmail">Customer Email *</Label>
+                    <Input
+                      id="guestEmail"
+                      type="email"
+                      placeholder="john@example.com"
+                      value={formData.guestEmail}
+                      onChange={(e) => setFormData({ ...formData, guestEmail: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="guestPhone">Phone (Optional)</Label>
+                  <Input
+                    id="guestPhone"
+                    placeholder="+1-555-0123"
+                    value={formData.guestPhone}
+                    onChange={(e) => setFormData({ ...formData, guestPhone: e.target.value })}
+                  />
+                </div>
+              </div>
+            )}
+
+            <hr className="my-2" />
+
+            {/* Ticket Details */}
             <div>
               <Label htmlFor="subject">Subject *</Label>
               <Input

@@ -6,6 +6,7 @@ import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { HeroSettings } from "@/lib/landing-blocks/types";
 import { HeroBackground } from "@/components/landing-blocks/shared";
+import { StyledCTAButton } from "@/components/landing-blocks/hero/styled-cta-button";
 
 interface HeroMinimalProps {
   settings: HeroSettings;
@@ -101,20 +102,16 @@ export function HeroMinimal({ settings }: HeroMinimalProps) {
             </Button>
 
             {settings.secondaryCTA.enabled && (
-              <Button
-                variant="ghost"
-                size="lg"
-                className={cn(
-                  isDarkBg
-                    ? "text-white hover:bg-white/10"
-                    : "text-slate-900 hover:bg-slate-100"
-                )}
-                asChild
-              >
-                <Link href={settings.secondaryCTA.link}>
-                  {settings.secondaryCTA.text}
-                </Link>
-              </Button>
+              <StyledCTAButton
+                href={settings.secondaryCTA.link}
+                text={settings.secondaryCTA.text}
+                style={settings.secondaryCTA.style}
+                showPrice={settings.secondaryCTA.showPrice}
+                priceText={settings.secondaryCTA.priceText}
+                showArrow={false}
+                variant={settings.secondaryCTA.variant || "ghost"}
+                openInNewTab={settings.secondaryCTA.openInNewTab}
+              />
             )}
           </div>
         </div>

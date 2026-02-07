@@ -31,9 +31,9 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
+import { FaqRichEditor } from "@/components/admin/ui/faq-rich-editor";
 
 interface FAQ {
   id: string;
@@ -47,12 +47,9 @@ interface FAQ {
 
 const categories = [
   { value: "general", label: "General" },
-  { value: "llc-formation", label: "LLC Formation" },
-  { value: "ein", label: "EIN & Taxes" },
-  { value: "banking", label: "Business Banking" },
-  { value: "amazon", label: "Amazon Seller" },
   { value: "pricing", label: "Pricing & Payments" },
   { value: "international", label: "International" },
+  { value: "account", label: "Account & Support" },
 ];
 
 const defaultFormData = {
@@ -72,6 +69,7 @@ export default function FAQPage() {
   const [formData, setFormData] = useState(defaultFormData);
   const [saving, setSaving] = useState(false);
   const [filterCategory, setFilterCategory] = useState<string>("all");
+  const [previewMode, setPreviewMode] = useState(false);
 
   useEffect(() => {
     fetchFaqs();
@@ -93,6 +91,7 @@ export default function FAQPage() {
   function openCreateDialog() {
     setSelectedFaq(null);
     setFormData(defaultFormData);
+    setPreviewMode(false);
     setDialogOpen(true);
   }
 
@@ -105,6 +104,7 @@ export default function FAQPage() {
       isActive: faq.isActive,
       sortOrder: faq.sortOrder,
     });
+    setPreviewMode(false);
     setDialogOpen(true);
   }
 
@@ -266,11 +266,12 @@ export default function FAQPage() {
                     }`}
                   >
                     <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1 space-y-1">
+                      <div className="min-w-0 flex-1 space-y-1">
                         <p className="font-medium">{faq.question}</p>
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          {faq.answer}
-                        </p>
+                        <div
+                          className="prose prose-sm max-w-none text-muted-foreground line-clamp-2 *:my-0"
+                          dangerouslySetInnerHTML={{ __html: faq.answer }}
+                        />
                       </div>
                       <div className="flex items-center gap-2">
                         <Badge variant={faq.isActive ? "default" : "secondary"}>
@@ -313,10 +314,35 @@ export default function FAQPage() {
       )}
 
       {/* Create/Edit Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg">
+      <Dialog open={dialogOpen} onOpenChange={(open) => {
+        setDialogOpen(open);
+        if (!open) setPreviewMode(false);
+      }}>
+        <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>{selectedFaq ? "Edit FAQ" : "Add FAQ"}</DialogTitle>
+            <div className="flex items-center justify-between">
+              <DialogTitle>{selectedFaq ? "Edit FAQ" : "Add FAQ"}</DialogTitle>
+              {formData.answer && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setPreviewMode(!previewMode)}
+                  className="gap-1.5"
+                >
+                  {previewMode ? (
+                    <>
+                      <EyeOff className="h-4 w-4" />
+                      Edit
+                    </>
+                  ) : (
+                    <>
+                      <Eye className="h-4 w-4" />
+                      Preview
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
@@ -347,14 +373,20 @@ export default function FAQPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="answer">Answer *</Label>
-              <Textarea
-                id="answer"
-                value={formData.answer}
-                onChange={(e) => setFormData({ ...formData, answer: e.target.value })}
-                placeholder="Provide a detailed answer..."
-                rows={5}
-              />
+              <Label>Answer *</Label>
+              {previewMode ? (
+                <div
+                  className="prose prose-sm max-w-none rounded-lg border bg-muted/30 p-4 min-h-50"
+                  dangerouslySetInnerHTML={{ __html: formData.answer }}
+                />
+              ) : (
+                <FaqRichEditor
+                  content={formData.answer}
+                  onChange={(html) => setFormData({ ...formData, answer: html })}
+                  placeholder="Write your FAQ answer with rich formatting..."
+                  minHeight={200}
+                />
+              )}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -381,7 +413,10 @@ export default function FAQPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+            <Button variant="outline" onClick={() => {
+              setDialogOpen(false);
+              setPreviewMode(false);
+            }}>
               Cancel
             </Button>
             <Button onClick={handleSave} disabled={saving}>

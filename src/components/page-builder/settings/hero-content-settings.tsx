@@ -248,16 +248,24 @@ export function HeroContentWidgetSettingsPanel({
               openInNewTab={s.secondaryButton.openInNewTab}
               onOpenInNewTabChange={(v) => updateNested("secondaryButton", "openInNewTab", v)}
             />
-            <SelectInput
-              label="Button Style"
-              value={s.secondaryButton.style}
-              onChange={(v) => updateNested("secondaryButton", "style", v)}
-              options={[
-                { value: "outline", label: "Outline" },
-                { value: "ghost", label: "Ghost" },
-                { value: "link", label: "Link" },
-              ]}
+            <TextInput
+              label="Badge Text (optional)"
+              value={s.secondaryButton.badge || ""}
+              onChange={(v) => updateNested("secondaryButton", "badge", v)}
+              placeholder="From $199"
             />
+
+            {/* Button Style Editor */}
+            <div className="mt-4 pt-4 border-t">
+              <ButtonStyleEditor
+                style={(s.secondaryButton.style as ButtonCustomStyle) || {}}
+                onChange={(style: ButtonCustomStyle) => updateNested("secondaryButton", "style", style)}
+                buttonText={s.secondaryButton.text || "Button"}
+                showPreview={true}
+                showPresets={true}
+                compact={true}
+              />
+            </div>
           </>
         )}
       </AccordionSection>

@@ -419,6 +419,181 @@ Ctrl+` = Code
 └──────────────────────────────────────────────────────────────┘
 ```
 
+### Create Ticket Modal (Admin):
+
+When admin clicks **[+ New Ticket]**, a modal opens with intelligent customer selection:
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  Create Support Ticket                                    ✕  │
+├──────────────────────────────────────────────────────────────┤
+│                                                               │
+│  Customer Type:                                               │
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │ ○ Existing Customer    ● New/Guest Customer             │ │
+│  └─────────────────────────────────────────────────────────┘ │
+│                                                               │
+│  ═══════════════════════════════════════════════════════════ │
+│  WHEN "Existing Customer" IS SELECTED:                       │
+│  ═══════════════════════════════════════════════════════════ │
+│                                                               │
+│  Search Customer:                                             │
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │ 🔍 Search by name, email, or phone...                   │ │
+│  └─────────────────────────────────────────────────────────┘ │
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │ 👤 John Doe                                              │ │
+│  │    john@example.com · +1-555-0123                        │ │
+│  │    Last order: ORD-2024-001 (LLC Formation) - Jan 15     │ │
+│  ├─────────────────────────────────────────────────────────┤ │
+│  │ 👤 Jane Smith                                            │ │
+│  │    jane@company.com · +1-555-0456                        │ │
+│  │    Last order: ORD-2024-015 (EIN Application) - Feb 3    │ │
+│  ├─────────────────────────────────────────────────────────┤ │
+│  │ 👤 Ahmed Khan                                            │ │
+│  │    ahmed@business.com · +880-1700-000000                 │ │
+│  │    Last order: ORD-2024-022 (Virtual Address) - Feb 10   │ │
+│  └─────────────────────────────────────────────────────────┘ │
+│                                                               │
+│  [Selected: John Doe - john@example.com]                      │
+│                                                               │
+│  Link to Order (Optional):                                    │
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │ [Select related order ▼]                                 │ │
+│  │ ┌─────────────────────────────────────────────────────┐ │ │
+│  │ │ ORD-2024-001 - LLC Formation ($299) - Jan 15        │ │ │
+│  │ │ ORD-2024-008 - Registered Agent ($99) - Jan 28      │ │ │
+│  │ └─────────────────────────────────────────────────────┘ │ │
+│  └─────────────────────────────────────────────────────────┘ │
+│                                                               │
+│  ═══════════════════════════════════════════════════════════ │
+│  WHEN "New/Guest Customer" IS SELECTED:                      │
+│  ═══════════════════════════════════════════════════════════ │
+│                                                               │
+│  ┌──────────────────────┐ ┌──────────────────────────────┐  │
+│  │ Name                 │ │ Email *                      │  │
+│  │ [________________]   │ │ [________________________]   │  │
+│  └──────────────────────┘ └──────────────────────────────┘  │
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │ Phone (Optional)                                        │ │
+│  │ [________________________________________________]      │ │
+│  └─────────────────────────────────────────────────────────┘ │
+│                                                               │
+│  ═══════════════════════════════════════════════════════════ │
+│  TICKET DETAILS (Both modes):                                │
+│  ═══════════════════════════════════════════════════════════ │
+│                                                               │
+│  Subject *:                                                   │
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │ [Brief description of the issue]                        │ │
+│  └─────────────────────────────────────────────────────────┘ │
+│                                                               │
+│  ┌──────────────────────┐ ┌──────────────────────────────┐  │
+│  │ Category             │ │ Priority                     │  │
+│  │ [General ▼]          │ │ [Medium ▼]                   │  │
+│  └──────────────────────┘ └──────────────────────────────┘  │
+│                                                               │
+│  Initial Message *:                                           │
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │                                                          │ │
+│  │ Describe the issue in detail...                          │ │
+│  │                                                          │ │
+│  │                                                          │ │
+│  └─────────────────────────────────────────────────────────┘ │
+│  📎 Attach files                                              │
+│                                                               │
+├──────────────────────────────────────────────────────────────┤
+│                              [Cancel]  [Create Ticket]        │
+└──────────────────────────────────────────────────────────────┘
+```
+
+#### Create Ticket Form Data:
+
+```typescript
+interface CreateTicketFormData {
+  // Customer type toggle
+  customerType: "existing" | "guest";
+
+  // Existing customer (when customerType === "existing")
+  customerId?: string;           // Selected customer ID
+
+  // Guest fields (when customerType === "guest")
+  guestName?: string;
+  guestEmail?: string;
+  guestPhone?: string;
+
+  // Optional order link (for existing customers)
+  orderId?: string;
+
+  // Ticket details (required for both)
+  subject: string;               // Required
+  category?: string;             // Optional: general, technical, billing, other
+  priority: TicketPriority;      // LOW, MEDIUM, HIGH, URGENT
+  message: string;               // Required: initial message content
+  attachments?: File[];          // Optional: file attachments
+}
+```
+
+#### Customer Search API:
+
+```typescript
+// GET /api/admin/customers/search?q=john
+// Searchable by: name, email, phone
+// Returns: top 10 matching customers with recent order info
+
+interface CustomerSearchResult {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  avatar?: string;
+  totalOrders: number;
+  lastOrder?: {
+    id: string;
+    orderNumber: string;
+    serviceName: string;
+    amount: number;
+    createdAt: string;
+  };
+  totalTickets: number;
+  lastTicketAt?: string;
+}
+
+// GET /api/admin/customers/:id/orders
+// Returns: all orders for a customer (for order linking)
+```
+
+#### Auto-Priority Based on Customer Tier:
+
+```typescript
+// When existing customer is selected, auto-suggest priority
+function suggestPriority(customer: Customer): TicketPriority {
+  // VIP/Enterprise customers get higher priority
+  if (customer.tier === "ENTERPRISE" || customer.totalSpent > 5000) {
+    return "HIGH";
+  }
+  if (customer.tier === "PROFESSIONAL" || customer.totalSpent > 1000) {
+    return "MEDIUM";
+  }
+  return "LOW";
+}
+```
+
+#### Standard Practices Implemented:
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| Customer Type Toggle | Switch between existing/guest | ✅ Required |
+| Searchable Customer Dropdown | Debounced search (300ms) | ✅ Required |
+| Auto-fill from Customer | Name, email, phone auto-populate | ✅ Required |
+| Customer History Preview | Show recent orders & tickets | ✅ Required |
+| Order Association | Link ticket to existing order | ✅ Optional |
+| Auto-Priority Suggestion | Based on customer tier | ✅ Optional |
+| Phone Field | For guest customers | ✅ Optional |
+| File Attachments | In initial message | 🔄 Phase 2 |
+| Tags/Labels | Custom categorization | 🔄 Phase 2 |
+| CC Recipients | Additional email recipients | 🔄 Phase 3 |
+
 ### Chat Interface Features:
 
 1. **Fixed Sidebar (Right - 360px)**:
@@ -1037,10 +1212,73 @@ Query: {
   limit?: number
 }
 
-// 2. Get ticket details
+// 2. Create ticket (admin creates on behalf of customer)
+POST /api/admin/tickets
+Body: {
+  // Customer identification (one of these)
+  customerId?: string,           // For existing customers
+  guestName?: string,            // For new/guest customers
+  guestEmail: string,            // Required for both
+  guestPhone?: string,           // Optional
+
+  // Optional order link
+  orderId?: string,
+
+  // Ticket details
+  subject: string,               // Required
+  category?: string,             // Optional
+  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT',
+  initialMessage: string,        // Required: first message content
+}
+Response: {
+  success: boolean,
+  ticket: SupportTicket,
+  ticketNumber: string           // e.g., "TKT-001"
+}
+
+// 3. Search customers (for create ticket modal)
+GET /api/admin/customers/search
+Query: {
+  q: string,                     // Search term (name, email, phone)
+  limit?: number                 // Default: 10
+}
+Response: {
+  customers: Array<{
+    id: string,
+    name: string,
+    email: string,
+    phone?: string,
+    avatar?: string,
+    totalOrders: number,
+    lastOrder?: {
+      id: string,
+      orderNumber: string,
+      serviceName: string,
+      amount: number,
+      createdAt: string
+    },
+    totalTickets: number,
+    lastTicketAt?: string
+  }>
+}
+
+// 4. Get customer orders (for order linking)
+GET /api/admin/customers/:id/orders
+Response: {
+  orders: Array<{
+    id: string,
+    orderNumber: string,
+    serviceName: string,
+    status: string,
+    amount: number,
+    createdAt: string
+  }>
+}
+
+// 5. Get ticket details
 GET /api/admin/tickets/:id
 
-// 3. Update ticket
+// 6. Update ticket
 PUT /api/admin/tickets/:id
 Body: {
   status?: string,
@@ -1049,25 +1287,25 @@ Body: {
   category?: string
 }
 
-// 4. Send message (admin reply)
+// 7. Send message (admin reply)
 POST /api/admin/tickets/:id/messages
 Body: {
   content: string,
   sendEmailNotification: boolean
 }
 
-// 5. Add internal note
+// 8. Add internal note
 POST /api/admin/tickets/:id/notes
 Body: {
   content: string,
   mentions?: string[]
 }
 
-// 6. Get canned responses
+// 9. Get canned responses
 GET /api/admin/canned-responses
 Query: { category?: string, search?: string }
 
-// 7. Create canned response
+// 10. Create canned response
 POST /api/admin/canned-responses
 Body: {
   title: string,
@@ -1076,12 +1314,12 @@ Body: {
   isPublic: boolean
 }
 
-// 8. Get/Update settings
+// 11. Get/Update settings
 GET /api/admin/settings/support
 PUT /api/admin/settings/support
 Body: { [key: string]: any }
 
-// 9. Get analytics
+// 12. Get analytics
 GET /api/admin/tickets/analytics
 Query: {
   startDate: string,
@@ -1096,7 +1334,7 @@ Response: {
   topCategories: Array
 }
 
-// 10. Bulk actions
+// 13. Bulk actions
 POST /api/admin/tickets/bulk
 Body: {
   ticketIds: string[],

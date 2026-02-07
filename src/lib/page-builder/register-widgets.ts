@@ -21,6 +21,7 @@ import {
   DEFAULT_PROCESS_STEPS_SETTINGS,
   DEFAULT_PRICING_TABLE_SETTINGS,
   DEFAULT_SERVICE_HERO_SETTINGS,
+  DEFAULT_FAQ_ACCORDION_SETTINGS,
 } from "./defaults";
 
 // Import widget components
@@ -31,7 +32,7 @@ import {
   StatsSectionWidget,
   TestimonialsWidget,
 } from "@/components/page-builder/widgets/social-proof";
-import { DividerWidget } from "@/components/page-builder/widgets/layout";
+import { DividerWidget, FaqAccordionWidget } from "@/components/page-builder/widgets/layout";
 import { ServiceCardWidget, ServiceListWidget, PricingTableWidget } from "@/components/page-builder/widgets/commerce";
 import { LeadFormWidget } from "@/components/page-builder/widgets/forms";
 import { ServiceHeroWidget } from "@/components/page-builder/widgets/service";
@@ -182,6 +183,17 @@ export function registerAllWidgets() {
     category: "content",
     defaultSettings: DEFAULT_PROCESS_STEPS_SETTINGS,
     component: ProcessStepsWidget,
+  });
+
+  // FAQ Widget
+  WidgetRegistry.register({
+    type: "faq",
+    name: "FAQ Accordion",
+    description: "Display FAQs from the admin panel in beautiful accordion styles",
+    icon: "HelpCircle",
+    category: "content",
+    defaultSettings: DEFAULT_FAQ_ACCORDION_SETTINGS,
+    component: FaqAccordionWidget,
   });
 
   // Service Widgets (for Service Details template)

@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "dev:chat": "tsx watch chat-server.ts",
     "dev:socket": "tsx watch server.ts",
     "build": "cross-env NODE_ENV=production next build",
     "start": "next start",

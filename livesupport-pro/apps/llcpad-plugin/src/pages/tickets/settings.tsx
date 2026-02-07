@@ -31,6 +31,12 @@ interface SupportSettings {
     offlineMessage: string;
     requireEmail: boolean;
     showAgentPhoto: boolean;
+    emailCollectionMode: "always" | "connecting" | "offline_only" | "never";
+    connectingMessage: string;
+    emailPromptMessage: string;
+    agentTimeoutSeconds: number;
+    replyTimeMessage: string;
+    offlineReplyTimeMessage: string;
   };
   notifications: {
     soundEnabled: boolean;
@@ -48,6 +54,9 @@ interface SupportSettings {
     model: string;
     maxTokens: number;
     autoSuggest: boolean;
+    chatEnabled: boolean;
+    handoffMessage: string;
+    emailPromptMessage: string;
   };
 }
 
@@ -63,9 +72,15 @@ const defaultSettings: SupportSettings = {
     position: "bottom-right",
     primaryColor: "#2563eb",
     welcomeMessage: "Hi! How can we help you today?",
-    offlineMessage: "We're currently offline. Please leave a message and we'll get back to you.",
+    offlineMessage: "Our team is currently away",
     requireEmail: true,
     showAgentPhoto: true,
+    emailCollectionMode: "always",
+    connectingMessage: "Connecting you with a team member...",
+    emailPromptMessage: "To make sure we can follow up, share your email",
+    agentTimeoutSeconds: 15,
+    replyTimeMessage: "We typically reply within a few minutes",
+    offlineReplyTimeMessage: "We typically respond within a few hours",
   },
   notifications: {
     soundEnabled: true,
@@ -83,6 +98,9 @@ const defaultSettings: SupportSettings = {
     model: "gpt-4o-mini",
     maxTokens: 500,
     autoSuggest: true,
+    chatEnabled: false,
+    handoffMessage: "Let me connect you with a team member who can help further.",
+    emailPromptMessage: "Before I connect you, could you share your email so we can follow up?",
   },
 };
 
@@ -324,6 +342,102 @@ export default function SupportSettingsPage() {
                       />
                     </button>
                   </div>
+
+                  <div>
+                    <label className="text-sm font-medium">Email Collection Mode</label>
+                    <p className="text-xs text-muted-foreground mb-1">When to ask visitors for their email</p>
+                    <select
+                      value={settings.chat.emailCollectionMode}
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          chat: { ...settings.chat, emailCollectionMode: e.target.value as any },
+                        })
+                      }
+                      className="w-full mt-1 rounded-md border bg-background px-3 py-2 text-sm"
+                    >
+                      <option value="always">Always (during connecting + offline)</option>
+                      <option value="connecting">Only while connecting to agent</option>
+                      <option value="offline_only">Only when offline</option>
+                      <option value="never">Never</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium">Connecting Message</label>
+                    <input
+                      type="text"
+                      value={settings.chat.connectingMessage}
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          chat: { ...settings.chat, connectingMessage: e.target.value },
+                        })
+                      }
+                      className="w-full mt-1 rounded-md border bg-background px-3 py-2 text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium">Email Prompt Message</label>
+                    <input
+                      type="text"
+                      value={settings.chat.emailPromptMessage}
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          chat: { ...settings.chat, emailPromptMessage: e.target.value },
+                        })
+                      }
+                      className="w-full mt-1 rounded-md border bg-background px-3 py-2 text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium">Agent Timeout (seconds)</label>
+                    <p className="text-xs text-muted-foreground mb-1">Time to wait for an agent before showing offline mode</p>
+                    <input
+                      type="number"
+                      value={settings.chat.agentTimeoutSeconds}
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          chat: { ...settings.chat, agentTimeoutSeconds: parseInt(e.target.value) || 15 },
+                        })
+                      }
+                      className="w-full mt-1 rounded-md border bg-background px-3 py-2 text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium">Reply Time Message</label>
+                    <input
+                      type="text"
+                      value={settings.chat.replyTimeMessage}
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          chat: { ...settings.chat, replyTimeMessage: e.target.value },
+                        })
+                      }
+                      className="w-full mt-1 rounded-md border bg-background px-3 py-2 text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium">Offline Reply Time Message</label>
+                    <input
+                      type="text"
+                      value={settings.chat.offlineReplyTimeMessage}
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          chat: { ...settings.chat, offlineReplyTimeMessage: e.target.value },
+                        })
+                      }
+                      className="w-full mt-1 rounded-md border bg-background px-3 py-2 text-sm"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -549,6 +663,66 @@ export default function SupportSettingsPage() {
                       }`}
                     />
                   </button>
+                </div>
+
+                <div className="border-t pt-4 mt-4">
+                  <h4 className="text-sm font-semibold mb-3">AI Live Chat</h4>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium">Enable AI Chat</p>
+                        <p className="text-sm text-muted-foreground">AI handles initial chat before agent handoff</p>
+                      </div>
+                      <button
+                        onClick={() =>
+                          setSettings({
+                            ...settings,
+                            ai: { ...settings.ai, chatEnabled: !settings.ai.chatEnabled },
+                          })
+                        }
+                        className={`relative h-6 w-11 rounded-full transition-colors ${
+                          settings.ai.chatEnabled ? "bg-primary" : "bg-muted"
+                        }`}
+                      >
+                        <span
+                          className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white transition-transform ${
+                            settings.ai.chatEnabled ? "translate-x-5" : ""
+                          }`}
+                        />
+                      </button>
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium">Handoff Message</label>
+                      <input
+                        type="text"
+                        value={settings.ai.handoffMessage}
+                        onChange={(e) =>
+                          setSettings({
+                            ...settings,
+                            ai: { ...settings.ai, handoffMessage: e.target.value },
+                          })
+                        }
+                        className="w-full mt-1 rounded-md border bg-background px-3 py-2 text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium">AI Email Prompt</label>
+                      <input
+                        type="text"
+                        value={settings.ai.emailPromptMessage}
+                        onChange={(e) =>
+                          setSettings({
+                            ...settings,
+                            ai: { ...settings.ai, emailPromptMessage: e.target.value },
+                          })
+                        }
+                        className="w-full mt-1 rounded-md border bg-background px-3 py-2 text-sm"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

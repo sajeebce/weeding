@@ -111,6 +111,7 @@ async function refreshPluginToken(plugin: {
   slug: string;
   name: string;
   licenseToken: string | null;
+  licensePublicKey: string | null;
   licensedDomain: string | null;
 }): Promise<TokenRefreshResult> {
   // No token to refresh
@@ -123,8 +124,18 @@ async function refreshPluginToken(plugin: {
     };
   }
 
+  // No public key for verification
+  if (!plugin.licensePublicKey) {
+    return {
+      pluginSlug: plugin.slug,
+      pluginName: plugin.name,
+      status: "FAILED",
+      message: "Plugin has no public key for verification",
+    };
+  }
+
   // Check if token needs refresh
-  const needsRefresh = await shouldRefreshToken(plugin.licenseToken, 2);
+  const needsRefresh = await shouldRefreshToken(plugin.licenseToken, plugin.licensePublicKey, 2);
 
   if (!needsRefresh) {
     return {
@@ -137,6 +148,7 @@ async function refreshPluginToken(plugin: {
 
   // Get current token info for logging
   const currentTokenInfo = await verifyLicenseToken(plugin.licenseToken, {
+    publicKey: plugin.licensePublicKey,
     skipDomainCheck: true,
   });
   const oldExpiresAt = currentTokenInfo.data?.exp
@@ -221,6 +233,7 @@ export async function runTokenRefreshJob(): Promise<TokenRefreshJobResult> {
         slug: true,
         name: true,
         licenseToken: true,
+        licensePublicKey: true,
         licensedDomain: true,
       },
     });
@@ -291,14 +304,19 @@ export async function checkPluginTokenStatus(
   try {
     const plugin = await prisma.plugin.findUnique({
       where: { slug: pluginSlug },
-      select: { licenseToken: true },
+      select: { licenseToken: true, licensePublicKey: true },
     });
 
     if (!plugin?.licenseToken) {
       return { needsRefresh: false, error: "No token found" };
     }
 
+    if (!plugin?.licensePublicKey) {
+      return { needsRefresh: true, error: "No public key found" };
+    }
+
     const result = await verifyLicenseToken(plugin.licenseToken, {
+      publicKey: plugin.licensePublicKey,
       skipDomainCheck: true,
     });
 
@@ -306,7 +324,7 @@ export async function checkPluginTokenStatus(
       return { needsRefresh: true, error: result.error };
     }
 
-    const needsRefresh = await shouldRefreshToken(plugin.licenseToken, 2);
+    const needsRefresh = await shouldRefreshToken(plugin.licenseToken, plugin.licensePublicKey, 2);
     const expiresAt = result.data?.exp
       ? new Date(result.data.exp * 1000)
       : undefined;
@@ -344,6 +362,7 @@ export async function forceRefreshPluginToken(
       slug: true,
       name: true,
       licenseToken: true,
+      licensePublicKey: true,
       licensedDomain: true,
     },
   });

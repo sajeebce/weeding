@@ -2554,6 +2554,116 @@ async function main() {
   }
   console.log("  ✓ Social media settings created");
 
+  // Create Global FAQs (for /faq page and homepage)
+  console.log("\n❓ Creating global FAQs...");
+  await prisma.fAQ.deleteMany();
+  const globalFaqs = [
+    // General — About LLCPad as a platform
+    {
+      question: "What is LLCPad?",
+      answer: "<p>LLCPad is a one-stop platform for international entrepreneurs to form and manage US LLCs. We handle everything from formation paperwork and EIN applications to registered agent services, business banking assistance, and Amazon seller account setup.</p>",
+      category: "general",
+      sortOrder: 0,
+    },
+    {
+      question: "Who can use LLCPad's services?",
+      answer: "<p>Our services are designed for <strong>international entrepreneurs</strong> — especially from Bangladesh, India, Pakistan, UAE, and other countries — who want to start a US-based business. Whether you're an e-commerce seller, freelancer, or startup founder, we can help you establish a legal US presence.</p>",
+      category: "general",
+      sortOrder: 1,
+    },
+    {
+      question: "Do I need to be a US citizen to use LLCPad?",
+      answer: "<p>No. <strong>US citizenship or residency is not required.</strong> Non-residents from any country can legally form and own a US LLC. You don't even need to visit the US — we handle everything remotely on your behalf.</p>",
+      category: "general",
+      sortOrder: 2,
+    },
+    {
+      question: "How long does the entire process take?",
+      answer: "<p>Timelines vary by service, but most formations are completed within <strong>1–5 business days</strong>. After placing your order, you can track real-time progress from your dashboard. We keep you updated at every step via email and notifications.</p>",
+      category: "general",
+      sortOrder: 3,
+    },
+    {
+      question: "Is LLCPad a law firm?",
+      answer: "<p><strong>No, LLCPad is not a law firm</strong> and does not provide legal advice. We are a business formation service that helps you file the necessary documents. For legal questions specific to your situation, we recommend consulting with a licensed attorney.</p>",
+      category: "general",
+      sortOrder: 4,
+    },
+
+    // Pricing & Payments
+    {
+      question: "What payment methods do you accept?",
+      answer: "<p>We accept multiple payment methods for your convenience:</p><ul><li><strong>International:</strong> Visa, Mastercard, American Express via Stripe</li><li><strong>Bangladesh:</strong> bKash, Nagad, local bank cards via SSLCommerz</li><li><strong>Bank Transfer:</strong> Available for larger orders</li></ul><p>All payments are processed securely with 256-bit SSL encryption.</p>",
+      category: "pricing",
+      sortOrder: 0,
+    },
+    {
+      question: "Do you offer refunds?",
+      answer: "<p>Our refund policy depends on the stage of service:</p><ul><li><strong>Before filing:</strong> Full refund available</li><li><strong>After filing:</strong> Service fee may be non-refundable as government filings cannot be reversed, but state fees are not refundable</li><li><strong>Registered Agent:</strong> Pro-rated refund for unused months</li></ul><p>Please review our full refund policy or contact support for specific cases.</p>",
+      category: "pricing",
+      sortOrder: 1,
+    },
+    {
+      question: "Can I pay in Bangladeshi Taka (BDT)?",
+      answer: "<p><strong>Yes!</strong> We display prices in both USD and BDT. When you select SSLCommerz as your payment method, you'll be charged in BDT at the current exchange rate. This makes it convenient for our Bangladeshi customers.</p>",
+      category: "pricing",
+      sortOrder: 2,
+    },
+
+    // International
+    {
+      question: "I'm from Bangladesh. Can I form a US LLC?",
+      answer: "<p><strong>Absolutely!</strong> Many of our clients are from Bangladesh. We specialize in helping Bangladeshi entrepreneurs form US LLCs. We offer:</p><ul><li>Support in Bangla via live chat and email</li><li>Payment via bKash, Nagad, and local banks through SSLCommerz</li><li>Pricing in BDT alongside USD</li><li>Step-by-step guidance tailored for BD entrepreneurs</li></ul>",
+      category: "international",
+      sortOrder: 0,
+    },
+    {
+      question: "Do I need to travel to the US for any part of the process?",
+      answer: "<p><strong>No.</strong> The entire process is handled remotely. You do not need to travel to the US to form your LLC, get an EIN, open a business bank account, or set up an Amazon seller account. Everything is managed online through your LLCPad dashboard.</p>",
+      category: "international",
+      sortOrder: 1,
+    },
+    {
+      question: "Can I manage my US LLC from abroad?",
+      answer: "<p><strong>Yes.</strong> A US LLC can be fully managed from anywhere in the world. You can manage your business remotely, access your US bank account online, file taxes electronically, and use our registered agent to receive official mail. Our virtual address and registered agent services ensure your LLC maintains a legitimate US presence.</p>",
+      category: "international",
+      sortOrder: 2,
+    },
+
+    // Account & Support
+    {
+      question: "How do I track my order progress?",
+      answer: "<p>After placing an order, log in to your <strong>LLCPad dashboard</strong> to track progress in real-time. You'll see status updates for each step of the process. We also send email notifications whenever there's an important update on your order.</p>",
+      category: "account",
+      sortOrder: 0,
+    },
+    {
+      question: "How can I contact support?",
+      answer: "<p>You can reach us through multiple channels:</p><ul><li><strong>Live Chat:</strong> Available on every page for instant help</li><li><strong>Email:</strong> support@llcpad.com — we respond within 24 hours</li><li><strong>Support Tickets:</strong> Create a ticket from your dashboard for detailed inquiries</li></ul>",
+      category: "account",
+      sortOrder: 1,
+    },
+    {
+      question: "Can I upgrade or add services to an existing order?",
+      answer: "<p><strong>Yes.</strong> You can add additional services at any time from your dashboard. For example, if you initially ordered LLC formation only, you can later add EIN application, registered agent, or business banking assistance as separate orders.</p>",
+      category: "account",
+      sortOrder: 2,
+    },
+  ];
+
+  for (const faq of globalFaqs) {
+    await prisma.fAQ.create({
+      data: {
+        question: faq.question,
+        answer: faq.answer,
+        category: faq.category,
+        isActive: true,
+        sortOrder: faq.sortOrder,
+      },
+    });
+  }
+  console.log(`  ✓ ${globalFaqs.length} global FAQs created`);
+
   console.log("\n✅ Seeding completed!");
 }
 

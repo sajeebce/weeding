@@ -28,6 +28,11 @@ export interface LiveSupportSocketCallbacks {
   onChatAccept: (data: any) => Promise<any>;
   onChatEnd: (data: any) => Promise<any>;
   onChatMessage: (data: any) => Promise<any>;
+  onEmailUpdate?: (data: { sessionId: string; email: string }) => Promise<any>;
+  onChatRejoin?: (data: { sessionId: string; visitorId: string }) => Promise<any>;
+  onCollectInfo?: (data: { sessionId: string; agentId: string }) => Promise<{ visitorSocketId?: string } | null>;
+  onLeadUpdate?: (data: { sessionId: string; name?: string; email?: string; phone?: string; source: string }) => Promise<any>;
+  onAgentAuth?: (socket: AuthenticatedSocket, user: SocketUser) => Promise<void>;
   onStatusUpdate: (userId: string, status: string) => Promise<void>;
   onDisconnect?: (userId: string) => Promise<void>;
 }
@@ -65,7 +70,7 @@ export class LiveSupportSocketServer {
       const authSocket = socket as AuthenticatedSocket;
 
       // Register all handlers
-      registerAuthHandlers(this.io, authSocket, this.callbacks.verifyToken);
+      registerAuthHandlers(this.io, authSocket, this.callbacks.verifyToken, this.callbacks.onAgentAuth);
       registerTicketHandlers(this.io, authSocket);
       registerMessageHandlers(
         this.io,
@@ -77,6 +82,10 @@ export class LiveSupportSocketServer {
         onChatAccept: this.callbacks.onChatAccept,
         onChatEnd: this.callbacks.onChatEnd,
         onChatMessage: this.callbacks.onChatMessage,
+        onEmailUpdate: this.callbacks.onEmailUpdate,
+        onChatRejoin: this.callbacks.onChatRejoin,
+        onCollectInfo: this.callbacks.onCollectInfo,
+        onLeadUpdate: this.callbacks.onLeadUpdate,
       });
       registerPresenceHandlers(
         this.io,

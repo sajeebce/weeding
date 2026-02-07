@@ -385,9 +385,13 @@ class LicenseService {
 
     const tokenExpiry = tokenService.getTokenExpiry();
 
+    // Get public key for client-side verification
+    const publicKey = await tokenService.getPublicKey();
+
     return {
       valid: true,
       token,
+      publicKey, // RSA public key for token verification
       tokenExpiresAt: tokenExpiry.toISOString(),
       license: {
         tier: license.tier,

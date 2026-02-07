@@ -15,6 +15,8 @@ import {
   Check,
   Pencil,
   Info,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,6 +48,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { RichTextEditor } from "@/components/admin/ui/rich-text-editor";
+import { FaqRichEditor } from "@/components/admin/ui/faq-rich-editor";
 import {
   Tooltip,
   TooltipContent,
@@ -193,6 +196,7 @@ export default function ServiceEditorPage() {
   const [faqDialogOpen, setFaqDialogOpen] = useState(false);
   const [editingFaq, setEditingFaq] = useState<FAQ | null>(null);
   const [editingFaqIndex, setEditingFaqIndex] = useState<number | null>(null);
+  const [faqPreviewMode, setFaqPreviewMode] = useState(false);
 
   // Master feature list state (for comparison table)
   const [masterFeatures, setMasterFeatures] = useState<ServiceFeature[]>([]);
@@ -1423,18 +1427,20 @@ export default function ServiceEditorPage() {
                       key={index}
                       className="flex items-start justify-between rounded-lg border p-4"
                     >
-                      <div className="space-y-1">
+                      <div className="min-w-0 flex-1 space-y-1">
                         <p className="font-medium">{faq.question}</p>
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          {faq.answer.replace(/<[^>]+>/g, '')}
-                        </p>
+                        <div
+                          className="prose prose-sm max-w-none text-muted-foreground line-clamp-2 *:my-0"
+                          dangerouslySetInnerHTML={{ __html: faq.answer }}
+                        />
                       </div>
-                      <div className="flex gap-2">
+                      <div className="ml-4 flex shrink-0 gap-2">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => openFaqDialog(faq, index)}
                         >
+                          <Pencil className="mr-1.5 h-3.5 w-3.5" />
                           Edit
                         </Button>
                         <Button
@@ -1608,12 +1614,37 @@ export default function ServiceEditorPage() {
       </Dialog>
 
       {/* FAQ Dialog */}
-      <Dialog open={faqDialogOpen} onOpenChange={setFaqDialogOpen}>
-        <DialogContent>
+      <Dialog open={faqDialogOpen} onOpenChange={(open) => {
+        setFaqDialogOpen(open);
+        if (!open) setFaqPreviewMode(false);
+      }}>
+        <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>
-              {editingFaqIndex !== null ? "Edit FAQ" : "Add FAQ"}
-            </DialogTitle>
+            <div className="flex items-center justify-between">
+              <DialogTitle>
+                {editingFaqIndex !== null ? "Edit FAQ" : "Add FAQ"}
+              </DialogTitle>
+              {editingFaq?.answer && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setFaqPreviewMode(!faqPreviewMode)}
+                  className="gap-1.5"
+                >
+                  {faqPreviewMode ? (
+                    <>
+                      <EyeOff className="h-4 w-4" />
+                      Edit
+                    </>
+                  ) : (
+                    <>
+                      <Eye className="h-4 w-4" />
+                      Preview
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
           </DialogHeader>
           {editingFaq && (
             <div className="space-y-4">
@@ -1629,19 +1660,29 @@ export default function ServiceEditorPage() {
               </div>
               <div className="space-y-2">
                 <Label>Answer *</Label>
-                <Textarea
-                  value={editingFaq.answer}
-                  onChange={(e) =>
-                    setEditingFaq({ ...editingFaq, answer: e.target.value })
-                  }
-                  placeholder="Answer text..."
-                  rows={4}
-                />
+                {faqPreviewMode ? (
+                  <div
+                    className="prose prose-sm max-w-none rounded-lg border bg-muted/30 p-4 min-h-50"
+                    dangerouslySetInnerHTML={{ __html: editingFaq.answer }}
+                  />
+                ) : (
+                  <FaqRichEditor
+                    content={editingFaq.answer}
+                    onChange={(html) =>
+                      setEditingFaq({ ...editingFaq, answer: html })
+                    }
+                    placeholder="Write your FAQ answer with rich formatting..."
+                    minHeight={200}
+                  />
+                )}
               </div>
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setFaqDialogOpen(false)}>
+            <Button variant="outline" onClick={() => {
+              setFaqDialogOpen(false);
+              setFaqPreviewMode(false);
+            }}>
               Cancel
             </Button>
             <Button onClick={saveFaq}>Save FAQ</Button>

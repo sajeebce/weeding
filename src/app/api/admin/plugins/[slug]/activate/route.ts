@@ -2,45 +2,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import prisma from "@/lib/db";
-import { pluginInstaller, PluginManifest } from "@/services/plugin-installer";
+import { verifyPluginLicense } from "@/lib/license-verification";
 
-const activateSchema = z.object({
+// Schema for pre-installed plugin activation (Option A)
+const activatePreinstalledSchema = z.object({
   licenseKey: z.string().min(10).max(50),
-  manifest: z.object({
-    slug: z.string(),
-    name: z.string(),
-    version: z.string(),
-    description: z.string().optional(),
-    author: z.string().optional(),
-    authorUrl: z.string().optional(),
-    icon: z.string().optional(),
-    adminMenu: z.object({
-      label: z.string(),
-      icon: z.string(),
-      position: z.number().optional(),
-      items: z.array(z.object({
-        label: z.string(),
-        path: z.string(),
-        icon: z.string().optional(),
-      })),
-    }).optional(),
-    features: z.object({
-      adminPages: z.boolean().optional(),
-      publicPages: z.boolean().optional(),
-      widgets: z.boolean().optional(),
-      apiRoutes: z.boolean().optional(),
-    }).optional(),
-    settings: z.array(z.object({
-      key: z.string(),
-      value: z.string(),
-      type: z.string().optional(),
-    })).optional(),
-    manifest: z.any().optional(),
-  }),
   agreedToTerms: z.boolean(),
 });
 
-// POST /api/admin/plugins/[slug]/activate - Activate plugin with license
+// POST /api/admin/plugins/[slug]/activate - Activate pre-installed plugin with license
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
@@ -48,78 +18,88 @@ export async function POST(
   try {
     const { slug } = await params;
     const body = await request.json();
-    const validatedData = activateSchema.parse(body);
 
-    // Verify the slug matches manifest
-    if (validatedData.manifest.slug !== slug) {
-      return NextResponse.json(
-        { success: false, error: "Plugin slug mismatch" },
-        { status: 400 }
-      );
-    }
+    console.log("[Plugin Activate] Request:", { slug, body });
+
+    const validatedData = activatePreinstalledSchema.parse(body);
+
+    console.log("[Plugin Activate] Validated data:", validatedData);
 
     // Check terms agreement
     if (!validatedData.agreedToTerms) {
       return NextResponse.json(
-        { success: false, error: "You must agree to the terms and conditions" },
+        { success: false, message: "You must agree to the terms and conditions" },
         { status: 400 }
       );
     }
 
-    // Check if plugin already exists
-    const existing = await prisma.plugin.findUnique({
+    // Check if plugin exists and is in INSTALLED status
+    const plugin = await prisma.plugin.findUnique({
       where: { slug },
+      include: {
+        menuItems: true,
+        settings: true,
+      },
     });
 
-    if (existing) {
+    if (!plugin) {
       return NextResponse.json(
-        { success: false, error: "Plugin is already installed" },
-        { status: 409 }
+        { success: false, message: "Plugin not found" },
+        { status: 404 }
       );
     }
 
+    if (plugin.status === "ACTIVE") {
+      return NextResponse.json(
+        { success: false, message: "Plugin is already active" },
+        { status: 400 }
+      );
+    }
+
+    // Get domain for license verification
+    const domain = request.headers.get("host")?.split(":")[0] || "localhost";
+
     // Verify license with license server
-    const licenseResult = await pluginInstaller.verifyLicense(
-      validatedData.licenseKey,
-      slug,
-      validatedData.manifest.version
-    );
+    console.log("[Plugin Activate] Verifying license:", {
+      licenseKey: validatedData.licenseKey.substring(0, 10) + "...",
+      productSlug: slug,
+      productVersion: plugin.version,
+      domain,
+    });
+
+    const licenseResult = await verifyPluginLicense({
+      licenseKey: validatedData.licenseKey,
+      productSlug: slug,
+      productVersion: plugin.version,
+      domain,
+    });
+
+    console.log("[Plugin Activate] License result:", licenseResult);
 
     if (!licenseResult.valid) {
       return NextResponse.json(
         {
           success: false,
-          error: licenseResult.error,
-          message: licenseResult.message,
+          message: licenseResult.error || "Invalid license key",
         },
         { status: 400 }
       );
     }
 
-    // Install plugin
-    const installResult = await pluginInstaller.install(
-      validatedData.manifest as PluginManifest,
-      {
-        licenseKey: validatedData.licenseKey.toUpperCase().trim(),
-        token: licenseResult.token!,
-        tier: licenseResult.tier,
-        expiresAt: licenseResult.expiresAt,
-      }
-    );
-
-    if (!installResult.success) {
-      return NextResponse.json(
-        { success: false, error: installResult.error },
-        { status: 500 }
-      );
-    }
-
-    // Activate the plugin
-    const plugin = await prisma.plugin.update({
+    // Update plugin with license info and activate
+    const updatedPlugin = await prisma.plugin.update({
       where: { slug },
       data: {
         status: "ACTIVE",
+        licenseKey: validatedData.licenseKey.toUpperCase().trim(),
+        licenseToken: licenseResult.token,
+        licensePublicKey: licenseResult.publicKey, // Store RSA public key for verification
+        licenseType: licenseResult.licenseType || "standard",
+        licenseTier: licenseResult.tier,
+        licenseVerifiedAt: new Date(),
+        licenseExpiresAt: licenseResult.expiresAt ? new Date(licenseResult.expiresAt) : null,
         lastActivatedAt: new Date(),
+        lastError: null,
       },
       include: {
         menuItems: true,
@@ -129,77 +109,78 @@ export async function POST(
 
     return NextResponse.json({
       success: true,
-      message: `${validatedData.manifest.name} has been activated successfully!`,
+      message: `${plugin.name} has been activated successfully!`,
       plugin: {
-        id: plugin.id,
-        slug: plugin.slug,
-        name: plugin.name,
-        version: plugin.version,
-        status: plugin.status,
-        licenseType: plugin.licenseType,
+        id: updatedPlugin.id,
+        slug: updatedPlugin.slug,
+        name: updatedPlugin.name,
+        version: updatedPlugin.version,
+        status: updatedPlugin.status,
+        licenseType: updatedPlugin.licenseType,
+        licenseTier: updatedPlugin.licenseTier,
       },
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { success: false, error: "Validation error", details: error.issues },
+        { success: false, message: "Validation error", details: error.issues },
         { status: 400 }
       );
     }
     console.error("Plugin activation error:", error);
     return NextResponse.json(
-      { success: false, error: "Failed to activate plugin" },
+      { success: false, message: "Failed to activate plugin" },
       { status: 500 }
     );
   }
 }
 
-// For plugins without license (free plugins)
-// POST /api/admin/plugins/[slug]/activate?free=true
+// PUT - Toggle plugin status (enable/disable already activated plugin)
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     const { slug } = await params;
-    const body = await request.json();
 
-    // This is for activating a free plugin or plugin without license requirement
     const existing = await prisma.plugin.findUnique({
       where: { slug },
     });
 
     if (!existing) {
       return NextResponse.json(
-        { success: false, error: "Plugin not found" },
+        { success: false, message: "Plugin not found" },
         { status: 404 }
       );
     }
 
-    if (existing.requiresLicense && !existing.licenseKey) {
+    // Only allow toggle if plugin has been activated with license
+    if (!existing.licenseKey && existing.requiresLicense) {
       return NextResponse.json(
-        { success: false, error: "This plugin requires a license key" },
+        { success: false, message: "This plugin requires license activation first" },
         { status: 400 }
       );
     }
 
+    const newStatus = existing.status === "ACTIVE" ? "DISABLED" : "ACTIVE";
+
     const plugin = await prisma.plugin.update({
       where: { slug },
       data: {
-        status: "ACTIVE",
-        lastActivatedAt: new Date(),
+        status: newStatus,
+        ...(newStatus === "ACTIVE" && { lastActivatedAt: new Date() }),
       },
     });
 
     return NextResponse.json({
       success: true,
-      message: `${plugin.name} has been activated!`,
+      message: `${plugin.name} has been ${newStatus === "ACTIVE" ? "enabled" : "disabled"}!`,
       plugin,
     });
   } catch (error) {
-    console.error("Plugin activation error:", error);
+    console.error("Plugin toggle error:", error);
     return NextResponse.json(
-      { success: false, error: "Failed to activate plugin" },
+      { success: false, message: "Failed to update plugin status" },
       { status: 500 }
     );
   }

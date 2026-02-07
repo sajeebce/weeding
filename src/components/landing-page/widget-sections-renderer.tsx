@@ -10,6 +10,7 @@ import {
   TrustBadgesWidget,
   StatsSectionWidget,
   DividerWidget,
+  FaqAccordionWidget,
   ProcessStepsWidget,
   HeadingWidget,
   TextBlockWidget,
@@ -274,6 +275,9 @@ function WidgetRenderer({ widget }: WidgetRendererProps) {
 
       case "service-hero":
         return <ServiceHeroWidget settings={widget.settings as any} />;
+
+      case "faq":
+        return <FaqAccordionWidget settings={widget.settings as any} />;
 
       default:
         // Unknown widget type - render nothing in production

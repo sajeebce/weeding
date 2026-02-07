@@ -1656,6 +1656,7 @@ model Plugin {
   licenseVerifiedAt DateTime?  // Last successful verification
   licenseExpiresAt  DateTime?  // Support expiry date
   licenseToken      String?    @db.Text // JWT token from license server
+  licensePublicKey  String?    @db.Text // RSA public key for token verification
   licenseTier       String?    // "basic" | "pro" | "enterprise"
 
   // Plugin files location

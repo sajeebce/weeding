@@ -141,7 +141,6 @@ export const DEFAULT_HERO_CONTENT_SETTINGS: HeroContentWidgetSettings = {
     show: true,
     text: "View Pricing",
     link: "/pricing",
-    style: "outline",
     openInNewTab: false,
   },
   trustText: {
@@ -1620,6 +1619,27 @@ export const DEFAULT_SERVICE_HERO_SETTINGS: import("./types").ServiceHeroWidgetS
 };
 
 // ============================================
+// FAQ ACCORDION WIDGET DEFAULTS
+// ============================================
+
+export const DEFAULT_FAQ_ACCORDION_SETTINGS = {
+  header: {
+    show: true,
+    heading: "Frequently Asked Questions",
+    description: "Get answers to common questions about our services",
+    alignment: "center" as const,
+  },
+  source: "all" as const,
+  categories: [],
+  maxItems: 10,
+  expandFirst: true,
+  allowMultipleOpen: false,
+  style: "cards" as const,
+  accentColor: "#3b82f6",
+  showCategoryFilter: false,
+};
+
+// ============================================
 // EXPORT ALL DEFAULTS
 // ============================================
 
@@ -1642,4 +1662,5 @@ export const WIDGET_DEFAULTS: Record<string, unknown> = {
   "process-steps": DEFAULT_PROCESS_STEPS_SETTINGS,
   "pricing-table": DEFAULT_PRICING_TABLE_SETTINGS,
   "service-hero": DEFAULT_SERVICE_HERO_SETTINGS,
+  "faq": DEFAULT_FAQ_ACCORDION_SETTINGS,
 };

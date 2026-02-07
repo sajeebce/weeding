@@ -330,6 +330,189 @@ export function HeroContentWidget({ settings, isPreview = false }: HeroContentWi
     );
   };
 
+  // Render secondary button with custom styles
+  const renderSecondaryButton = () => {
+    const btnStyle = settings.secondaryButton.style;
+    const hasCustom = hasCustomStyle(btnStyle);
+
+    // CraftButton effect
+    if (hasCustom && btnStyle && isCraftButtonEffect(btnStyle.hoverEffect)) {
+      const craftIcon = btnStyle.icon && btnStyle.icon !== "none"
+        ? renderButtonIcon(btnStyle, "size-3 stroke-2")
+        : <ArrowUpRight className="size-3 stroke-2" />;
+
+      return (
+        <CraftButton
+          asChild
+          bgColor={btnStyle.bgColor || CRAFT_BG_DARK}
+          textColor={btnStyle.textColor || WHITE}
+          style={{ boxShadow: btnStyle.shadow }}
+        >
+          <SmartLink
+            href={settings.secondaryButton.link}
+            openInNewTab={settings.secondaryButton.openInNewTab}
+          >
+            <CraftButtonLabel>
+              {settings.secondaryButton.text}
+              {settings.secondaryButton.badge && (
+                <span className="ml-2 text-xs opacity-80">{settings.secondaryButton.badge}</span>
+              )}
+            </CraftButtonLabel>
+            <CraftButtonIcon>{craftIcon}</CraftButtonIcon>
+          </SmartLink>
+        </CraftButton>
+      );
+    }
+
+    // FlowButton effect
+    if (hasCustom && btnStyle && isFlowButtonEffect(btnStyle.hoverEffect)) {
+      return (
+        <PrimaryFlowButton
+          asChild
+          size="lg"
+          ringColor={btnStyle.bgColor || ORANGE_PRIMARY}
+        >
+          <SmartLink
+            href={settings.secondaryButton.link}
+            openInNewTab={settings.secondaryButton.openInNewTab}
+          >
+            {settings.secondaryButton.text}
+            {settings.secondaryButton.badge && (
+              <span className="ml-2 text-xs opacity-80">{settings.secondaryButton.badge}</span>
+            )}
+          </SmartLink>
+        </PrimaryFlowButton>
+      );
+    }
+
+    // NeuralButton effect
+    if (hasCustom && btnStyle && isNeuralButtonEffect(btnStyle.hoverEffect)) {
+      return (
+        <NeuralButton asChild>
+          <SmartLink
+            href={settings.secondaryButton.link}
+            openInNewTab={settings.secondaryButton.openInNewTab}
+          >
+            {settings.secondaryButton.text}
+            {settings.secondaryButton.badge && (
+              <span className="ml-2 text-xs opacity-80">{settings.secondaryButton.badge}</span>
+            )}
+          </SmartLink>
+        </NeuralButton>
+      );
+    }
+
+    // Custom styled button (non-special effects)
+    if (hasCustom && btnStyle) {
+      const hoverClass = getHoverEffectClass(btnStyle.hoverEffect);
+      const normalBg = getNormalBackground(btnStyle);
+      const hoverBg = getHoverBackground(btnStyle);
+      const hasComplex = isComplexHoverEffect(btnStyle.hoverEffect);
+      const complexHoverStyles = hasComplex ? getComplexEffectHoverStyles(btnStyle) : {};
+      const complexNormalStyles = hasComplex ? getComplexEffectNormalStyles(btnStyle) : {};
+
+      const getBackground = (hover: boolean) => {
+        if (btnStyle.hoverEffect === "gradient-shift") {
+          return getGradientShiftBackground(btnStyle);
+        }
+        if (btnStyle.hoverEffect === "slide-fill" || btnStyle.hoverEffect === "border-fill") {
+          return normalBg;
+        }
+        return hover ? hoverBg : normalBg;
+      };
+
+      return (
+        <SmartLink
+          href={settings.secondaryButton.link}
+          openInNewTab={settings.secondaryButton.openInNewTab}
+          className={cn(
+            "inline-flex items-center justify-center px-6 py-3 text-base font-medium overflow-hidden",
+            hoverClass,
+            hasComplex ? "transition-all duration-500 ease-out" : "transition-all duration-300"
+          )}
+          style={{
+            background: getBackground(false),
+            color: btnStyle.textColor || "#ffffff",
+            borderWidth: `${btnStyle.borderWidth ?? 1}px`,
+            borderStyle: "solid",
+            borderColor: btnStyle.borderColor || btnStyle.bgColor || ORANGE_PRIMARY,
+            borderRadius: `${btnStyle.borderRadius ?? 6}px`,
+            ...(hasComplex ? complexNormalStyles : { boxShadow: btnStyle.shadow }),
+          }}
+          onMouseEnter={(e) => {
+            if (isPreview) return;
+            if (hasComplex) {
+              if (complexHoverStyles.boxShadow) {
+                e.currentTarget.style.boxShadow = complexHoverStyles.boxShadow;
+              }
+              if (complexHoverStyles.backgroundPosition) {
+                e.currentTarget.style.backgroundPosition = complexHoverStyles.backgroundPosition;
+              }
+              if (!btnStyle.hoverEffect || btnStyle.hoverEffect === "ripple") {
+                e.currentTarget.style.background = hoverBg;
+              }
+            } else {
+              e.currentTarget.style.background = hoverBg;
+              if (btnStyle.hoverShadow) {
+                e.currentTarget.style.boxShadow = btnStyle.hoverShadow;
+              }
+            }
+            if (btnStyle.hoverTextColor) {
+              e.currentTarget.style.color = btnStyle.hoverTextColor;
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (isPreview) return;
+            if (hasComplex) {
+              if (complexNormalStyles.boxShadow !== undefined) {
+                e.currentTarget.style.boxShadow = complexNormalStyles.boxShadow;
+              }
+              if (complexNormalStyles.backgroundPosition) {
+                e.currentTarget.style.backgroundPosition = complexNormalStyles.backgroundPosition;
+              }
+            } else {
+              e.currentTarget.style.background = normalBg;
+              e.currentTarget.style.boxShadow = btnStyle.shadow || "";
+            }
+            e.currentTarget.style.color = btnStyle.textColor || "#ffffff";
+          }}
+        >
+          {btnStyle.iconPosition === "left" && renderButtonIcon(btnStyle)}
+          <span>
+            {settings.secondaryButton.text}
+            {settings.secondaryButton.badge && (
+              <span className="ml-2 text-xs opacity-80">{settings.secondaryButton.badge}</span>
+            )}
+          </span>
+          {btnStyle.iconPosition !== "left" && renderButtonIcon(btnStyle)}
+        </SmartLink>
+      );
+    }
+
+    // Default button (no custom style) - outline style
+    return (
+      <Button
+        size="lg"
+        variant="outline"
+        className={cn(
+          "w-full sm:w-auto border-white/20 text-white",
+          !isPreview && "hover:bg-white/10"
+        )}
+        asChild
+      >
+        <SmartLink
+          href={settings.secondaryButton.link}
+          openInNewTab={settings.secondaryButton.openInNewTab}
+        >
+          {settings.secondaryButton.text}
+          {settings.secondaryButton.badge && (
+            <span className="ml-2 text-xs opacity-80">{settings.secondaryButton.badge}</span>
+          )}
+        </SmartLink>
+      </Button>
+    );
+  };
+
   return (
     <div className={cn("flex flex-col gap-6", getAlignmentClass())}>
       {/* Badge */}
@@ -437,30 +620,7 @@ export function HeroContentWidget({ settings, isPreview = false }: HeroContentWi
       >
         {settings.primaryButton.show && renderPrimaryButton()}
 
-        {settings.secondaryButton.show && (
-          <Button
-            size="lg"
-            variant={
-              settings.secondaryButton.style === "outline"
-                ? "outline"
-                : settings.secondaryButton.style === "ghost"
-                ? "ghost"
-                : "link"
-            }
-            className={cn(
-              "w-full sm:w-auto",
-              settings.secondaryButton.style === "outline" && "border-white/20 text-white hover:bg-white/10"
-            )}
-            asChild
-          >
-            <SmartLink
-              href={settings.secondaryButton.link}
-              openInNewTab={settings.secondaryButton.openInNewTab}
-            >
-              {settings.secondaryButton.text}
-            </SmartLink>
-          </Button>
-        )}
+        {settings.secondaryButton.show && renderSecondaryButton()}
       </div>
 
       {/* Trust Text */}

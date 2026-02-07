@@ -81,6 +81,10 @@ export interface ClientToServerEvents {
   'chat:message': (data: { sessionId: string; content: string }) => void;
   'chat:typing': (data: { sessionId: string }) => void;
   'chat:end': (data: { sessionId: string }) => void;
+  'chat:email_update': (data: { sessionId: string; email: string }) => void;
+  'chat:rejoin': (data: { sessionId: string; visitorId: string }) => void;
+  'chat:collect_info': (data: { sessionId: string }) => void;
+  'chat:lead_update': (data: { sessionId: string; name?: string; email?: string; phone?: string; source: 'form' | 'ai' | 'agent_request' }) => void;
 }
 
 // Server → Client events
@@ -119,12 +123,17 @@ export interface ServerToClientEvents {
   'auth:error': (data: { message: string }) => void;
 
   // Live chat
-  'chat:request': (data: { success: boolean; session?: any; error?: string }) => void;
+  'chat:request': (data: { success: boolean; session?: any; error?: string; agentsOnline?: boolean; agentCount?: number }) => void;
   'chat:accept': (data: { session: any; agent: { id: string; name: string } }) => void;
   'chat:message': (message: any) => void;
   'chat:typing': (data: { sessionId: string; userId: string; userName: string }) => void;
   'chat:end': (data: { sessionId: string }) => void;
-  'chat:queue_update': (data: { type: string; session?: any; sessionId?: string }) => void;
+  'chat:queue_update': (data: { type: string; session?: any; sessionId?: string; email?: string }) => void;
+  'chat:agent_timeout': (data: { sessionId: string }) => void;
+  'agents:status': (data: { online: boolean; count: number }) => void;
+  'chat:rejoin': (data: { success: boolean; session?: any; messages?: any[]; error?: string }) => void;
+  'chat:collect_info': (data: { sessionId: string }) => void;
+  'chat:info_collected': (data: { sessionId: string; name?: string; email?: string; phone?: string }) => void;
 
   // Errors
   'error': (data: { code: string; message: string }) => void;
@@ -194,6 +203,13 @@ export const CHAT_EVENTS = {
   TYPING: 'chat:typing',
   VISITOR_INFO: 'chat:visitor_info',
   QUEUE_UPDATE: 'chat:queue_update',
+  EMAIL_UPDATE: 'chat:email_update',
+  AGENT_TIMEOUT: 'chat:agent_timeout',
+  AGENTS_STATUS: 'agents:status',
+  REJOIN: 'chat:rejoin',
+  COLLECT_INFO: 'chat:collect_info',
+  LEAD_UPDATE: 'chat:lead_update',
+  INFO_COLLECTED: 'chat:info_collected',
 } as const;
 
 // Presence events

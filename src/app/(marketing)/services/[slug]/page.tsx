@@ -9,12 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { getServiceForm } from "@/lib/data/service-forms";
 import { MultiJsonLd } from "@/components/seo/json-ld";
 import {
@@ -24,6 +18,7 @@ import {
 } from "@/lib/seo";
 import { ServiceIcon } from "@/components/ui/service-icon";
 import { PackageComparisonTable } from "@/components/services/package-comparison-table";
+import { ServiceFaqAccordion } from "@/components/services/service-faq-accordion";
 import prisma from "@/lib/db";
 import type { FeatureValueType } from "@prisma/client";
 import {
@@ -557,21 +552,15 @@ export default async function ServicePage({ params }: PageProps) {
         {/* SECTION 5: FAQs */}
         {service.faqs.length > 0 && (
           <section className="mx-auto mt-16 max-w-3xl">
-            <h2 className="mb-8 text-center text-2xl font-bold">
-              Frequently Asked Questions
-            </h2>
-            <Accordion type="single" collapsible defaultValue="faq-0">
-              {service.faqs.map((faq, index) => (
-                <AccordionItem key={faq.id} value={`faq-${index}`}>
-                  <AccordionTrigger className="text-left font-medium">
-                    {faq.question}
-                  </AccordionTrigger>
-                  <AccordionContent className="text-muted-foreground">
-                    <div dangerouslySetInnerHTML={{ __html: faq.answer }} />
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
+            <div className="text-center mb-10">
+              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+                Frequently Asked Questions
+              </h2>
+              <p className="mt-3 text-lg text-muted-foreground">
+                Common questions about {service.name}
+              </p>
+            </div>
+            <ServiceFaqAccordion faqs={service.faqs} />
           </section>
         )}
 

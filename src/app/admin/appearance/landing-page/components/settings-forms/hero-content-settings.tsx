@@ -332,6 +332,22 @@ export function HeroContentSettings({
               openInNewTab={s.secondaryCTA.openInNewTab}
               onOpenInNewTabChange={(v) => updateNested("secondaryCTA", "openInNewTab", v)}
             />
+            <TextInput
+              label="Badge Text (optional)"
+              value={s.secondaryCTA.priceText || ""}
+              onChange={(v) => {
+                onUpdateSettings({
+                  ...s,
+                  secondaryCTA: {
+                    ...s.secondaryCTA,
+                    showPrice: v.length > 0,
+                    priceText: v,
+                  },
+                });
+              }}
+              placeholder="From $199"
+              description="Small text shown next to button text"
+            />
 
             {/* Button Style Editor */}
             <div className="mt-4 pt-4 border-t">

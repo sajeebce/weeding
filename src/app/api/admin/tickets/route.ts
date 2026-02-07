@@ -95,9 +95,13 @@ const createTicketSchema = z.object({
   initialMessage: z.string().min(1, "Message is required"),
   priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).optional().default("MEDIUM"),
   category: z.string().nullable().optional(),
+  // Customer identification (existing or guest)
   customerId: z.string().optional(),
   guestName: z.string().nullable().optional(),
   guestEmail: z.string().email().optional(),
+  guestPhone: z.string().nullable().optional(),
+  // Optional order link
+  orderId: z.string().nullable().optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -113,6 +117,16 @@ export async function POST(request: NextRequest) {
     const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
     const ticketNumber = `SUP-${dateStr}-${String(count + 1).padStart(4, "0")}`;
 
+    // If customerId provided, get customer name for message
+    let senderName = data.guestName || "Customer";
+    if (data.customerId) {
+      const customer = await prisma.user.findUnique({
+        where: { id: data.customerId },
+        select: { name: true },
+      });
+      senderName = customer?.name || "Customer";
+    }
+
     // Create ticket with initial message
     const ticket = await prisma.supportTicket.create({
       data: {
@@ -123,12 +137,14 @@ export async function POST(request: NextRequest) {
         customerId: data.customerId,
         guestName: data.guestName,
         guestEmail: data.guestEmail,
+        guestPhone: data.guestPhone,
+        orderId: data.orderId,
         status: "OPEN",
         messages: {
           create: {
             content: data.initialMessage,
-            senderType: data.customerId ? "CUSTOMER" : "CUSTOMER",
-            senderName: data.guestName || "Customer",
+            senderType: "CUSTOMER",
+            senderName,
             senderId: data.customerId,
             type: "TEXT",
           },
@@ -137,6 +153,9 @@ export async function POST(request: NextRequest) {
       include: {
         customer: {
           select: { id: true, name: true, email: true },
+        },
+        order: {
+          select: { id: true, orderNumber: true },
         },
         messages: true,
       },

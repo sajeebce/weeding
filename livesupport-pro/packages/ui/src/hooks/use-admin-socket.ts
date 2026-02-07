@@ -40,6 +40,7 @@ export interface UseAdminSocketReturn {
   onTicketAssigned: (callback: (data: { ticketId: string; agentId: string; agentName: string }) => void) => () => void;
   onNewMessage: (callback: (message: SocketChatMessage) => void) => () => void;
   onChatRequest: (callback: (data: { session: any }) => void) => () => void;
+  onChatQueueUpdate: (callback: (data: { type: string; session?: any; sessionId?: string; email?: string }) => void) => () => void;
   // Actions
   setStatus: (status: 'online' | 'away' | 'offline') => void;
   assignTicket: (ticketId: string, agentId: string) => void;
@@ -190,15 +191,29 @@ export function useAdminSocket(options: UseAdminSocketOptions): UseAdminSocketRe
     const socket = socketRef.current;
     if (!socket) return () => {};
 
-    socket.on(CHAT_EVENTS.QUEUE_UPDATE, (data: { type: string; session?: any }) => {
+    const handler = (data: { type: string; session?: any }) => {
       if (data.type === 'new' && data.session) {
         callback({ session: data.session });
       }
-    });
+    };
+    socket.on(CHAT_EVENTS.QUEUE_UPDATE, handler);
     return () => {
-      socket.off(CHAT_EVENTS.QUEUE_UPDATE);
+      socket.off(CHAT_EVENTS.QUEUE_UPDATE, handler);
     };
   }, []);
+
+  const onChatQueueUpdate = useCallback(
+    (callback: (data: { type: string; session?: any; sessionId?: string; email?: string }) => void) => {
+      const socket = socketRef.current;
+      if (!socket) return () => {};
+
+      socket.on(CHAT_EVENTS.QUEUE_UPDATE, callback);
+      return () => {
+        socket.off(CHAT_EVENTS.QUEUE_UPDATE, callback);
+      };
+    },
+    []
+  );
 
   // Actions
   const setStatus = useCallback((status: 'online' | 'away' | 'offline') => {
@@ -223,6 +238,7 @@ export function useAdminSocket(options: UseAdminSocketOptions): UseAdminSocketRe
     onTicketAssigned,
     onNewMessage,
     onChatRequest,
+    onChatQueueUpdate,
     setStatus,
     assignTicket,
     error,

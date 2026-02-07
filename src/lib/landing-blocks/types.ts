@@ -188,6 +188,8 @@ export interface HeroSecondaryCTASettings {
   text: string;
   link: string;
   variant: CTAVariant;
+  showPrice?: boolean;
+  priceText?: string;
   icon?: string;
   openInNewTab?: boolean;
   style?: ButtonCustomStyle;
