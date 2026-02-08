@@ -673,7 +673,7 @@ export default function PagesListPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setNewPageMode("TEMPLATE")}
+                  onClick={() => { setNewPageMode("TEMPLATE"); setNewPageSlug(""); }}
                   className={`flex-1 rounded-md border p-3 text-left text-sm transition-colors ${
                     newPageMode === "TEMPLATE"
                       ? "border-primary bg-primary/5"
@@ -699,20 +699,20 @@ export default function PagesListPage() {
                 onChange={(e) => setNewPageName(e.target.value)}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="slug">Slug (optional)</Label>
-              <Input
-                id="slug"
-                placeholder="Auto-generated from name"
-                value={newPageSlug}
-                onChange={(e) => setNewPageSlug(e.target.value)}
-              />
-              <p className="text-xs text-muted-foreground">
-                {newPageMode === "TEMPLATE"
-                  ? "Internal identifier only — templates don't have public URLs"
-                  : "Leave empty to auto-generate from name"}
-              </p>
-            </div>
+            {newPageMode === "PAGE" && (
+              <div className="space-y-2">
+                <Label htmlFor="slug">Slug (optional)</Label>
+                <Input
+                  id="slug"
+                  placeholder="Auto-generated from name"
+                  value={newPageSlug}
+                  onChange={(e) => setNewPageSlug(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Leave empty to auto-generate from name
+                </p>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
