@@ -66,15 +66,12 @@ interface PageData {
   slug: string;
   name: string;
   isActive: boolean;
-  pageMode: "PAGE" | "TEMPLATE";
   templateType: string | null;
   isTemplateActive: boolean;
   sectionsCount: number;
   createdAt: string;
   updatedAt: string;
 }
-
-type TabMode = "pages" | "templates";
 
 interface TemplateInfo {
   type: string;
@@ -107,8 +104,7 @@ export default function PagesListPage() {
   const [templates, setTemplates] = useState<TemplateInfo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterTemplate, setFilterTemplate] = useState<string>("all");
-  const [activeTab, setActiveTab] = useState<TabMode>("pages");
+  const [filterType, setFilterType] = useState<string>("all");
 
   // Dialog states
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -121,7 +117,6 @@ export default function PagesListPage() {
   // Create form state
   const [newPageName, setNewPageName] = useState("");
   const [newPageSlug, setNewPageSlug] = useState("");
-  const [newPageMode, setNewPageMode] = useState<"PAGE" | "TEMPLATE">("PAGE");
 
   // Rename form state
   const [editPageName, setEditPageName] = useState("");
@@ -158,26 +153,23 @@ export default function PagesListPage() {
     fetchData();
   }, []);
 
-  // Filter pages by tab + search + template
+  // Filter pages by search + type filter
   const filteredPages = pages.filter((page) => {
-    const matchesTab =
-      activeTab === "pages" ? page.pageMode === "PAGE" : page.pageMode === "TEMPLATE";
-
     const matchesSearch =
       page.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       page.slug.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesTemplate =
-      filterTemplate === "all" ||
-      (filterTemplate === "assigned" && page.isTemplateActive) ||
-      (filterTemplate === "unassigned" && !page.templateType) ||
-      page.templateType === filterTemplate;
+    const matchesFilter =
+      filterType === "all" ||
+      (filterType === "pages" && !page.templateType) ||
+      (filterType === "templates" && !!page.templateType) ||
+      page.templateType === filterType;
 
-    return matchesTab && matchesSearch && matchesTemplate;
+    return matchesSearch && matchesFilter;
   });
 
-  const pageCount = pages.filter((p) => p.pageMode === "PAGE").length;
-  const templateCount = pages.filter((p) => p.pageMode === "TEMPLATE").length;
+  const pageCount = pages.filter((p) => !p.templateType).length;
+  const templateCount = pages.filter((p) => !!p.templateType).length;
 
   // Create page handler
   const handleCreatePage = async () => {
@@ -194,7 +186,6 @@ export default function PagesListPage() {
         body: JSON.stringify({
           name: newPageName,
           slug: newPageSlug || undefined,
-          pageMode: newPageMode,
         }),
       });
 
@@ -208,8 +199,7 @@ export default function PagesListPage() {
       setShowCreateDialog(false);
       setNewPageName("");
       setNewPageSlug("");
-      setNewPageMode("PAGE");
-      toast.success(`${newPageMode === "TEMPLATE" ? "Template" : "Page"} created successfully`);
+      toast.success("Page created successfully");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to create page");
     } finally {
@@ -389,45 +379,14 @@ export default function PagesListPage() {
             Create and manage pages and templates for your website
           </p>
         </div>
-        <Button onClick={() => {
-          setNewPageMode(activeTab === "templates" ? "TEMPLATE" : "PAGE");
-          setShowCreateDialog(true);
-        }}>
+        <Button onClick={() => setShowCreateDialog(true)}>
           <Plus className="mr-2 h-4 w-4" />
-          {activeTab === "templates" ? "Create Template" : "Create Page"}
+          Create Page
         </Button>
       </div>
 
-      {/* Pages / Templates Tabs */}
-      <div className="mb-6 flex gap-1 rounded-lg bg-muted p-1">
-        <button
-          onClick={() => { setActiveTab("pages"); setFilterTemplate("all"); setSearchQuery(""); }}
-          className={`flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-            activeTab === "pages"
-              ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          <FileText className="h-4 w-4" />
-          Pages
-          <Badge variant="secondary" className="ml-1 text-xs">{pageCount}</Badge>
-        </button>
-        <button
-          onClick={() => { setActiveTab("templates"); setFilterTemplate("all"); setSearchQuery(""); }}
-          className={`flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-            activeTab === "templates"
-              ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          <LayoutTemplate className="h-4 w-4" />
-          Templates
-          <Badge variant="secondary" className="ml-1 text-xs">{templateCount}</Badge>
-        </button>
-      </div>
-
-      {/* Template Overview Cards - only show on templates tab */}
-      {activeTab === "templates" && templates.length > 0 && (
+      {/* Template Overview Cards */}
+      {templates.length > 0 && (
         <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {templates.slice(0, 4).map((template) => (
             <Card key={template.type} className={template.isAssigned ? "border-primary/50" : ""}>
@@ -463,30 +422,30 @@ export default function PagesListPage() {
         <CardHeader>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <CardTitle>{activeTab === "templates" ? "All Templates" : "All Pages"}</CardTitle>
+              <CardTitle>All Pages</CardTitle>
               <CardDescription>
-                {filteredPages.length} {activeTab === "templates" ? "template" : "page"}{filteredPages.length !== 1 ? "s" : ""}
+                {pages.length} total &middot; {pageCount} page{pageCount !== 1 ? "s" : ""} &middot; {templateCount} template{templateCount !== 1 ? "s" : ""}
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">
               <div className="relative">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search pages..."
+                  placeholder="Search..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-8 w-[200px]"
                 />
               </div>
-              <Select value={filterTemplate} onValueChange={setFilterTemplate}>
-                <SelectTrigger className="w-[160px]">
+              <Select value={filterType} onValueChange={setFilterType}>
+                <SelectTrigger className="w-[180px]">
                   <Filter className="mr-2 h-4 w-4" />
                   <SelectValue placeholder="Filter" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Pages</SelectItem>
-                  <SelectItem value="assigned">Assigned Templates</SelectItem>
-                  <SelectItem value="unassigned">Unassigned</SelectItem>
+                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="pages">Pages Only</SelectItem>
+                  <SelectItem value="templates">Templates Only</SelectItem>
                   <SelectItem value="HOME">Homepage</SelectItem>
                   <SelectItem value="SERVICE_DETAILS">Service Details</SelectItem>
                   <SelectItem value="SERVICES_LIST">Services List</SelectItem>
@@ -503,28 +462,17 @@ export default function PagesListPage() {
             </div>
           ) : filteredPages.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
-              {activeTab === "templates" ? (
-                <LayoutTemplate className="h-12 w-12 text-muted-foreground/50" />
-              ) : (
-                <FileText className="h-12 w-12 text-muted-foreground/50" />
-              )}
-              <h3 className="mt-4 font-medium">
-                No {activeTab === "templates" ? "templates" : "pages"} found
-              </h3>
+              <FileText className="h-12 w-12 text-muted-foreground/50" />
+              <h3 className="mt-4 font-medium">No pages found</h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                {searchQuery || filterTemplate !== "all"
+                {searchQuery || filterType !== "all"
                   ? "Try adjusting your search or filters"
-                  : activeTab === "templates"
-                    ? "Create your first template to get started"
-                    : "Create your first page to get started"}
+                  : "Create your first page to get started"}
               </p>
-              {!searchQuery && filterTemplate === "all" && (
-                <Button onClick={() => {
-                  setNewPageMode(activeTab === "templates" ? "TEMPLATE" : "PAGE");
-                  setShowCreateDialog(true);
-                }} className="mt-4">
+              {!searchQuery && filterType === "all" && (
+                <Button onClick={() => setShowCreateDialog(true)} className="mt-4">
                   <Plus className="mr-2 h-4 w-4" />
-                  Create {activeTab === "templates" ? "Template" : "Page"}
+                  Create Page
                 </Button>
               )}
             </div>
@@ -534,7 +482,7 @@ export default function PagesListPage() {
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead>Slug</TableHead>
-                  <TableHead>Template</TableHead>
+                  <TableHead>Type</TableHead>
                   <TableHead>Sections</TableHead>
                   <TableHead>Updated</TableHead>
                   <TableHead className="w-[50px]"></TableHead>
@@ -564,7 +512,7 @@ export default function PagesListPage() {
                           {TEMPLATE_LABELS[page.templateType]} (inactive)
                         </Badge>
                       ) : (
-                        <span className="text-muted-foreground">—</span>
+                        <Badge variant="secondary">Page</Badge>
                       )}
                     </TableCell>
                     <TableCell>{page.sectionsCount}</TableCell>
@@ -610,12 +558,14 @@ export default function PagesListPage() {
                             <Copy className="mr-2 h-4 w-4" />
                             Duplicate
                           </DropdownMenuItem>
-                          <DropdownMenuItem asChild>
-                            <a href={`/${page.slug}`} target="_blank" rel="noopener noreferrer">
-                              <ExternalLink className="mr-2 h-4 w-4" />
-                              View
-                            </a>
-                          </DropdownMenuItem>
+                          {!page.templateType && (
+                            <DropdownMenuItem asChild>
+                              <a href={`/${page.slug}`} target="_blank" rel="noopener noreferrer">
+                                <ExternalLink className="mr-2 h-4 w-4" />
+                                View
+                              </a>
+                            </DropdownMenuItem>
+                          )}
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             className="text-destructive"
@@ -643,76 +593,33 @@ export default function PagesListPage() {
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create New {newPageMode === "TEMPLATE" ? "Template" : "Page"}</DialogTitle>
+            <DialogTitle>Create New Page</DialogTitle>
             <DialogDescription>
-              {newPageMode === "TEMPLATE"
-                ? "Create a reusable template layout for dynamic pages (e.g., Service Details)."
-                : "Create a standalone page with its own URL slug."}
+              Create a new page. You can assign it as a template later via the &quot;Assign Template&quot; option.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>Type</Label>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setNewPageMode("PAGE")}
-                  className={`flex-1 rounded-md border p-3 text-left text-sm transition-colors ${
-                    newPageMode === "PAGE"
-                      ? "border-primary bg-primary/5"
-                      : "border-border hover:border-muted-foreground/50"
-                  }`}
-                >
-                  <div className="flex items-center gap-2 font-medium">
-                    <FileText className="h-4 w-4" />
-                    Page
-                  </div>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Standalone page with its own URL
-                  </p>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setNewPageMode("TEMPLATE"); setNewPageSlug(""); }}
-                  className={`flex-1 rounded-md border p-3 text-left text-sm transition-colors ${
-                    newPageMode === "TEMPLATE"
-                      ? "border-primary bg-primary/5"
-                      : "border-border hover:border-muted-foreground/50"
-                  }`}
-                >
-                  <div className="flex items-center gap-2 font-medium">
-                    <LayoutTemplate className="h-4 w-4" />
-                    Template
-                  </div>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Reusable layout for dynamic pages
-                  </p>
-                </button>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="name">{newPageMode === "TEMPLATE" ? "Template" : "Page"} Name</Label>
+              <Label htmlFor="name">Page Name</Label>
               <Input
                 id="name"
-                placeholder={newPageMode === "TEMPLATE" ? "e.g., Service Details Template" : "e.g., About Us, Contact"}
+                placeholder="e.g., About Us, Service Details Template"
                 value={newPageName}
                 onChange={(e) => setNewPageName(e.target.value)}
               />
             </div>
-            {newPageMode === "PAGE" && (
-              <div className="space-y-2">
-                <Label htmlFor="slug">Slug (optional)</Label>
-                <Input
-                  id="slug"
-                  placeholder="Auto-generated from name"
-                  value={newPageSlug}
-                  onChange={(e) => setNewPageSlug(e.target.value)}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Leave empty to auto-generate from name
-                </p>
-              </div>
-            )}
+            <div className="space-y-2">
+              <Label htmlFor="slug">Slug (optional)</Label>
+              <Input
+                id="slug"
+                placeholder="Auto-generated from name"
+                value={newPageSlug}
+                onChange={(e) => setNewPageSlug(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Leave empty to auto-generate from name
+              </p>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
@@ -720,7 +627,7 @@ export default function PagesListPage() {
             </Button>
             <Button onClick={handleCreatePage} disabled={isSubmitting}>
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Create {newPageMode === "TEMPLATE" ? "Template" : "Page"}
+              Create Page
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -764,7 +671,7 @@ export default function PagesListPage() {
                   <SelectValue placeholder="Select page type..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">None (Custom Page)</SelectItem>
+                  <SelectItem value="none">None (Regular Page)</SelectItem>
                   {Object.entries(TEMPLATE_LABELS).map(([value, label]) => {
                     const template = templates.find((t) => t.type === value);
                     const isAssigned = template?.isAssigned && template.assignedPage?.id !== selectedPage?.id;

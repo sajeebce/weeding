@@ -51,7 +51,6 @@ export async function GET(request: NextRequest) {
           slug: page.slug,
           name: page.name,
           isActive: page.isActive,
-          pageMode: page.pageMode,
           templateType: page.templateType,
           isTemplateActive: page.isTemplateActive,
           metaTitle: page.metaTitle,
@@ -84,7 +83,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, slug, templateType, pageMode, metaTitle, metaDescription, ogImage } = body;
+    const { name, slug, templateType, metaTitle, metaDescription, ogImage } = body;
 
     if (!name) {
       return NextResponse.json(
@@ -114,7 +113,6 @@ export async function POST(request: NextRequest) {
         slug: pageSlug,
         name,
         isActive: true,
-        pageMode: pageMode || "PAGE",
         templateType: templateType || null,
         isTemplateActive: false,
         metaTitle: metaTitle || null,
@@ -141,7 +139,6 @@ export async function POST(request: NextRequest) {
         slug: page.slug,
         name: page.name,
         isActive: page.isActive,
-        pageMode: page.pageMode,
         templateType: page.templateType,
         isTemplateActive: page.isTemplateActive,
         sectionsCount: 0,

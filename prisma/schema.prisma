@@ -1524,12 +1524,6 @@ enum PageTemplateType {
   CUSTOM            // Custom standalone pages
 }
 
-// Page mode - distinguishes standalone pages from templates
-enum PageMode {
-  PAGE              // Standalone page with its own slug/URL (e.g., homepage, about)
-  TEMPLATE          // Layout template applied to dynamic pages (e.g., service details)
-}
-
 // Landing page definition
 model LandingPage {
   id              String   @id @default(cuid())
@@ -1538,11 +1532,8 @@ model LandingPage {
   isActive        Boolean  @default(true)
   isDefault       Boolean  @default(false) // Is this the main homepage? (deprecated, use templateType)
 
-  // Page mode - PAGE or TEMPLATE
-  pageMode        PageMode @default(PAGE) // PAGE = standalone, TEMPLATE = layout for dynamic pages
-
-  // Template assignment
-  templateType    PageTemplateType?  // Which page type this template serves (used when pageMode = TEMPLATE)
+  // Template assignment (null = regular page, non-null = template for that page type)
+  templateType    PageTemplateType?  // Which page type this template serves
   isTemplateActive Boolean @default(false) // Is this the active template for the page type?
 
   // SEO
@@ -1564,7 +1555,6 @@ model LandingPage {
   @@index([slug])
   @@index([isActive, isDefault])
   @@index([templateType, isTemplateActive])
-  @@index([pageMode])
 }
 
 // Individual block on a landing page
