@@ -27,7 +27,7 @@ export function BlogPostGridSettingsPanel({
   onChange,
 }: BlogPostGridSettingsProps) {
   // Deep merge with defaults
-  const s: BlogPostGridWidgetSettings = {
+  const s = {
     ...DEFAULT_BLOG_POST_GRID_SETTINGS,
     ...settings,
     header: {
@@ -110,7 +110,7 @@ export function BlogPostGridSettingsPanel({
         ...settings?.animation?.entrance,
       },
     },
-  };
+  } as BlogPostGridWidgetSettings;
 
   // Helper update functions
   const updateDataSource = (key: keyof BlogDataSource, value: unknown) => {

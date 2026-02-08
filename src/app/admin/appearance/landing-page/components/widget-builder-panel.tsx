@@ -52,6 +52,11 @@ import {
   LeadFormWidgetSettingsPanel,
   ServiceHeroWidgetSettingsPanel,
   FaqAccordionWidgetSettingsPanel,
+  BlogPostGridSettingsPanel,
+  BlogPostCarouselSettingsPanel,
+  BlogFeaturedPostSettingsPanel,
+  BlogPostListSettingsPanel,
+  BlogRecentPostsSettingsPanel,
 } from "@/components/page-builder/settings";
 import { NumberInput } from "@/app/admin/appearance/landing-page/components/ui/form-controls";
 import { AccordionSection } from "@/app/admin/appearance/landing-page/components/ui/accordion-section";
@@ -531,8 +536,48 @@ function EditMode({ widget, section, columnId, onBack, onUpdateSettings, onUpdat
             />
           )}
 
+          {/* Blog Post Grid Widget */}
+          {widget.type === "blog-post-grid" && (
+            <BlogPostGridSettingsPanel
+              settings={widget.settings as any}
+              onChange={onUpdateSettings}
+            />
+          )}
+
+          {/* Blog Post Carousel Widget */}
+          {widget.type === "blog-post-carousel" && (
+            <BlogPostCarouselSettingsPanel
+              settings={widget.settings as any}
+              onChange={onUpdateSettings}
+            />
+          )}
+
+          {/* Blog Featured Post Widget */}
+          {widget.type === "blog-featured-post" && (
+            <BlogFeaturedPostSettingsPanel
+              settings={widget.settings as any}
+              onChange={onUpdateSettings}
+            />
+          )}
+
+          {/* Blog Post List Widget */}
+          {widget.type === "blog-post-list" && (
+            <BlogPostListSettingsPanel
+              settings={widget.settings as any}
+              onChange={onUpdateSettings}
+            />
+          )}
+
+          {/* Blog Recent Posts Widget */}
+          {widget.type === "blog-recent-posts" && (
+            <BlogRecentPostsSettingsPanel
+              settings={widget.settings as any}
+              onChange={onUpdateSettings}
+            />
+          )}
+
           {/* Fallback for unknown widget types */}
-          {!["hero-content", "heading", "text-block", "image", "image-slider", "trust-badges", "stats-section", "divider", "service-card", "service-list", "process-steps", "pricing-table", "testimonials-carousel", "lead-form", "service-hero", "faq", "service-features", "service-description", "service-breadcrumb", "related-services"].includes(widget.type) && (
+          {!["hero-content", "heading", "text-block", "image", "image-slider", "trust-badges", "stats-section", "divider", "service-card", "service-list", "process-steps", "pricing-table", "testimonials-carousel", "lead-form", "service-hero", "faq", "service-features", "service-description", "service-breadcrumb", "related-services", "blog-post-grid", "blog-post-carousel", "blog-featured-post", "blog-post-list", "blog-recent-posts"].includes(widget.type) && (
             <p className="text-center text-sm text-muted-foreground">
               Settings for {widget.type} coming soon.
             </p>

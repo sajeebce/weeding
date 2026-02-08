@@ -49,6 +49,12 @@ export const WIDGET_CATEGORIES: WidgetCategoryInfo[] = [
     description: "Testimonials and trust elements",
   },
   {
+    id: "blog",
+    name: "Blog",
+    icon: "Newspaper",
+    description: "Blog post display widgets",
+  },
+  {
     id: "commerce",
     name: "Commerce",
     icon: "CreditCard",

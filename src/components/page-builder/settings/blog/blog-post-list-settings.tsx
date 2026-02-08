@@ -27,7 +27,7 @@ export function BlogPostListSettingsPanel({
   onChange,
 }: BlogPostListSettingsProps) {
   // Deep merge with defaults
-  const s: BlogPostListWidgetSettings = {
+  const s = {
     ...DEFAULT_BLOG_POST_LIST_SETTINGS,
     ...settings,
     header: {
@@ -90,7 +90,7 @@ export function BlogPostListSettingsPanel({
       ...DEFAULT_BLOG_POST_LIST_SETTINGS.pagination,
       ...settings?.pagination,
     },
-  };
+  } as BlogPostListWidgetSettings;
 
   // Helper update functions
   const updateDataSource = (key: keyof BlogDataSource, value: unknown) => {

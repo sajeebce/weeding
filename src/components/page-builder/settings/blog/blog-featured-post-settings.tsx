@@ -25,7 +25,7 @@ export function BlogFeaturedPostSettingsPanel({
   onChange,
 }: BlogFeaturedPostSettingsProps) {
   // Deep merge with defaults
-  const s: BlogFeaturedPostWidgetSettings = {
+  const s = {
     ...DEFAULT_BLOG_FEATURED_POST_SETTINGS,
     ...settings,
     dataSource: {
@@ -64,7 +64,7 @@ export function BlogFeaturedPostSettingsPanel({
         ...settings?.content?.readMore,
       },
     },
-  };
+  } as BlogFeaturedPostWidgetSettings;
 
   // Helper update functions
   const updateDataSource = (key: keyof BlogFeaturedPostWidgetSettings["dataSource"], value: unknown) => {

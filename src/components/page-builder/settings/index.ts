@@ -15,3 +15,10 @@ export { TestimonialsWidgetSettingsPanel } from "./testimonials-settings";
 export { LeadFormWidgetSettingsPanel } from "./lead-form-settings";
 export { ServiceHeroWidgetSettingsPanel } from "./service-hero-settings";
 export { FaqAccordionWidgetSettingsPanel } from "./faq-accordion-settings";
+
+// Blog widget settings
+export { BlogPostGridSettingsPanel } from "./blog/blog-post-grid-settings";
+export { BlogPostCarouselSettingsPanel } from "./blog/blog-post-carousel-settings";
+export { BlogFeaturedPostSettingsPanel } from "./blog/blog-featured-post-settings";
+export { BlogPostListSettingsPanel } from "./blog/blog-post-list-settings";
+export { BlogRecentPostsSettingsPanel } from "./blog/blog-recent-posts-settings";

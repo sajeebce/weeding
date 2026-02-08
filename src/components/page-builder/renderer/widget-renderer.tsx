@@ -26,6 +26,15 @@ import { ServiceListWidget } from "../widgets/commerce/service-list-widget";
 // Service widgets
 import { ServiceHeroWidget } from "../widgets/service/service-hero";
 
+// Blog widgets
+import {
+  BlogPostGridWidget,
+  BlogPostCarouselWidget,
+  BlogFeaturedPostWidget,
+  BlogPostListWidget,
+  BlogRecentPostsWidget,
+} from "../widgets/blog";
+
 // ============================================
 // WIDGET COMPONENT MAP
 // Maps widget types to their React components
@@ -63,6 +72,13 @@ const WIDGET_COMPONENTS: Partial<Record<WidgetType, React.ComponentType<any>>> =
 
   // Service widgets
   "service-hero": ServiceHeroWidget,
+
+  // Blog widgets
+  "blog-post-grid": BlogPostGridWidget,
+  "blog-post-carousel": BlogPostCarouselWidget,
+  "blog-featured-post": BlogFeaturedPostWidget,
+  "blog-post-list": BlogPostListWidget,
+  "blog-recent-posts": BlogRecentPostsWidget,
 };
 
 // ============================================

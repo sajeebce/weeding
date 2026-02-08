@@ -23,7 +23,7 @@ export function BlogRecentPostsSettingsPanel({
   onChange,
 }: BlogRecentPostsSettingsProps) {
   // Deep merge with defaults
-  const s: BlogRecentPostsWidgetSettings = {
+  const s = {
     ...DEFAULT_BLOG_RECENT_POSTS_SETTINGS,
     ...settings,
     header: {
@@ -50,7 +50,7 @@ export function BlogRecentPostsSettingsPanel({
       ...DEFAULT_BLOG_RECENT_POSTS_SETTINGS.viewAllLink,
       ...settings?.viewAllLink,
     },
-  };
+  } as BlogRecentPostsWidgetSettings;
 
   // Helper update functions
   const updateHeader = (key: keyof BlogRecentPostsWidgetSettings["header"], value: unknown) => {

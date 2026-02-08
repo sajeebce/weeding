@@ -26,6 +26,11 @@ import {
   DEFAULT_SERVICE_DESCRIPTION_SETTINGS,
   DEFAULT_SERVICE_BREADCRUMB_SETTINGS,
   DEFAULT_RELATED_SERVICES_SETTINGS,
+  DEFAULT_BLOG_POST_GRID_SETTINGS,
+  DEFAULT_BLOG_POST_CAROUSEL_SETTINGS,
+  DEFAULT_BLOG_FEATURED_POST_SETTINGS,
+  DEFAULT_BLOG_POST_LIST_SETTINGS,
+  DEFAULT_BLOG_RECENT_POSTS_SETTINGS,
 } from "./defaults";
 
 // Import widget components
@@ -46,6 +51,13 @@ import {
   ServiceBreadcrumbWidget,
   RelatedServicesWidget,
 } from "@/components/page-builder/widgets/service";
+import {
+  BlogPostGridWidget,
+  BlogPostCarouselWidget,
+  BlogFeaturedPostWidget,
+  BlogPostListWidget,
+  BlogRecentPostsWidget,
+} from "@/components/page-builder/widgets/blog";
 
 // Register all widgets
 export function registerAllWidgets() {
@@ -255,6 +267,56 @@ export function registerAllWidgets() {
     category: "service",
     defaultSettings: DEFAULT_RELATED_SERVICES_SETTINGS,
     component: RelatedServicesWidget,
+  });
+  // Blog Widgets
+  WidgetRegistry.register({
+    type: "blog-post-grid",
+    name: "Blog Post Grid",
+    description: "Display blog posts in grid, masonry, or magazine layouts",
+    icon: "LayoutGrid",
+    category: "blog",
+    defaultSettings: DEFAULT_BLOG_POST_GRID_SETTINGS,
+    component: BlogPostGridWidget,
+  });
+
+  WidgetRegistry.register({
+    type: "blog-post-carousel",
+    name: "Blog Post Carousel",
+    description: "Swipeable blog post carousel with autoplay and navigation",
+    icon: "GalleryHorizontal",
+    category: "blog",
+    defaultSettings: DEFAULT_BLOG_POST_CAROUSEL_SETTINGS,
+    component: BlogPostCarouselWidget,
+  });
+
+  WidgetRegistry.register({
+    type: "blog-featured-post",
+    name: "Blog Featured Post",
+    description: "Highlight a single featured blog post with large layout",
+    icon: "Star",
+    category: "blog",
+    defaultSettings: DEFAULT_BLOG_FEATURED_POST_SETTINGS,
+    component: BlogFeaturedPostWidget,
+  });
+
+  WidgetRegistry.register({
+    type: "blog-post-list",
+    name: "Blog Post List",
+    description: "Vertical list of blog posts with thumbnails",
+    icon: "List",
+    category: "blog",
+    defaultSettings: DEFAULT_BLOG_POST_LIST_SETTINGS,
+    component: BlogPostListWidget,
+  });
+
+  WidgetRegistry.register({
+    type: "blog-recent-posts",
+    name: "Blog Recent Posts",
+    description: "Compact sidebar-style recent posts widget",
+    icon: "Clock",
+    category: "blog",
+    defaultSettings: DEFAULT_BLOG_RECENT_POSTS_SETTINGS,
+    component: BlogRecentPostsWidget,
   });
 }
 

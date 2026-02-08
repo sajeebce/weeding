@@ -25,87 +25,43 @@ export function BlogPostCarouselSettingsPanel({
   settings,
   onChange,
 }: BlogPostCarouselSettingsProps) {
-  // Deep merge with defaults
-  const s: BlogPostCarouselWidgetSettings = {
-    ...DEFAULT_BLOG_POST_CAROUSEL_SETTINGS,
+  // Deep merge with defaults - defaults guarantee all required fields exist
+  const d = DEFAULT_BLOG_POST_CAROUSEL_SETTINGS;
+  const s = {
+    ...d,
     ...settings,
     header: {
-      ...DEFAULT_BLOG_POST_CAROUSEL_SETTINGS.header,
+      ...d.header,
       ...settings?.header,
-      badge: {
-        ...DEFAULT_BLOG_POST_CAROUSEL_SETTINGS.header.badge,
-        ...settings?.header?.badge,
-      },
-      heading: {
-        ...DEFAULT_BLOG_POST_CAROUSEL_SETTINGS.header.heading,
-        ...settings?.header?.heading,
-      },
-      subheading: {
-        ...DEFAULT_BLOG_POST_CAROUSEL_SETTINGS.header.subheading,
-        ...settings?.header?.subheading,
-      },
-      viewAllLink: {
-        ...DEFAULT_BLOG_POST_CAROUSEL_SETTINGS.header.viewAllLink,
-        ...settings?.header?.viewAllLink,
-      },
+      badge: { ...d.header.badge, ...settings?.header?.badge },
+      heading: { ...d.header.heading, ...settings?.header?.heading },
+      subheading: { ...d.header.subheading, ...settings?.header?.subheading },
+      viewAllLink: { ...d.header.viewAllLink, ...settings?.header?.viewAllLink },
     },
-    dataSource: {
-      ...DEFAULT_BLOG_POST_CAROUSEL_SETTINGS.dataSource,
-      ...settings?.dataSource,
-    },
+    dataSource: { ...d.dataSource, ...settings?.dataSource },
     carousel: {
-      ...DEFAULT_BLOG_POST_CAROUSEL_SETTINGS.carousel,
+      ...d.carousel,
       ...settings?.carousel,
-      slidesPerView: {
-        ...DEFAULT_BLOG_POST_CAROUSEL_SETTINGS.carousel.slidesPerView,
-        ...settings?.carousel?.slidesPerView,
-      },
-      autoplay: {
-        ...DEFAULT_BLOG_POST_CAROUSEL_SETTINGS.carousel.autoplay,
-        ...settings?.carousel?.autoplay,
-      },
+      slidesPerView: { ...d.carousel.slidesPerView, ...settings?.carousel?.slidesPerView },
+      autoplay: { ...d.carousel.autoplay, ...settings?.carousel?.autoplay },
       navigation: {
-        ...DEFAULT_BLOG_POST_CAROUSEL_SETTINGS.carousel.navigation,
+        ...d.carousel.navigation,
         ...settings?.carousel?.navigation,
-        arrows: {
-          ...DEFAULT_BLOG_POST_CAROUSEL_SETTINGS.carousel.navigation.arrows,
-          ...settings?.carousel?.navigation?.arrows,
-        },
-        dots: {
-          ...DEFAULT_BLOG_POST_CAROUSEL_SETTINGS.carousel.navigation.dots,
-          ...settings?.carousel?.navigation?.dots,
-        },
+        arrows: { ...d.carousel.navigation.arrows, ...settings?.carousel?.navigation?.arrows },
+        dots: { ...d.carousel.navigation.dots, ...settings?.carousel?.navigation?.dots },
       },
     },
     card: {
-      ...DEFAULT_BLOG_POST_CAROUSEL_SETTINGS.card,
+      ...d.card,
       ...settings?.card,
-      image: {
-        ...DEFAULT_BLOG_POST_CAROUSEL_SETTINGS.card.image,
-        ...settings?.card?.image,
-      },
-      categoryBadge: {
-        ...DEFAULT_BLOG_POST_CAROUSEL_SETTINGS.card.categoryBadge,
-        ...settings?.card?.categoryBadge,
-      },
-      title: {
-        ...DEFAULT_BLOG_POST_CAROUSEL_SETTINGS.card.title,
-        ...settings?.card?.title,
-      },
-      excerpt: {
-        ...DEFAULT_BLOG_POST_CAROUSEL_SETTINGS.card.excerpt,
-        ...settings?.card?.excerpt,
-      },
-      meta: {
-        ...DEFAULT_BLOG_POST_CAROUSEL_SETTINGS.card.meta,
-        ...settings?.card?.meta,
-      },
-      readMore: {
-        ...DEFAULT_BLOG_POST_CAROUSEL_SETTINGS.card.readMore,
-        ...settings?.card?.readMore,
-      },
+      image: { ...d.card.image, ...settings?.card?.image },
+      categoryBadge: { ...d.card.categoryBadge, ...settings?.card?.categoryBadge },
+      title: { ...d.card.title, ...settings?.card?.title },
+      excerpt: { ...d.card.excerpt, ...settings?.card?.excerpt },
+      meta: { ...d.card.meta, ...settings?.card?.meta },
+      readMore: { ...d.card.readMore, ...settings?.card?.readMore },
     },
-  };
+  } as BlogPostCarouselWidgetSettings;
 
   // Helper update functions
   const updateDataSource = (key: keyof BlogDataSource, value: unknown) => {
