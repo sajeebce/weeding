@@ -3,6 +3,8 @@
 import type { Section, Widget, SectionBackground } from "@/lib/page-builder/types";
 import { DEFAULT_SECTION_BACKGROUND } from "@/lib/page-builder/defaults";
 import { cn } from "@/lib/utils";
+import { getLayoutGridClass, getColumnSpanClasses, getMaxWidthClass } from "@/lib/page-builder/section-layouts";
+import { getPatternCSS, getPatternBackgroundSize } from "@/lib/page-builder/pattern-utils";
 import {
   HeroContentWidget,
   ImageWidget,
@@ -93,9 +95,14 @@ export function WidgetSectionsRenderer({ sections }: WidgetSectionsRendererProps
     return null;
   }
 
+  // Filter out hidden sections and sort by order
+  const visibleSections = [...sections]
+    .filter((s) => s.settings.isVisible !== false)
+    .sort((a, b) => a.order - b.order);
+
   return (
     <>
-      {sections.map((section) => (
+      {visibleSections.map((section) => (
         <SectionRenderer key={section.id} section={section} />
       ))}
     </>
@@ -108,42 +115,13 @@ interface SectionRendererProps {
 
 function SectionRenderer({ section }: SectionRendererProps) {
   const { layout, columns, settings } = section;
+  const columnSpanClasses = getColumnSpanClasses(layout);
 
-  // Get layout grid classes
-  const getLayoutClasses = () => {
-    switch (layout) {
-      case "1":
-        return "grid-cols-1";
-      case "1-1":
-        return "grid-cols-1 lg:grid-cols-2";
-      case "1-2":
-        return "grid-cols-1 lg:grid-cols-3"; // 1fr 2fr
-      case "2-1":
-        return "grid-cols-1 lg:grid-cols-3"; // 2fr 1fr
-      case "1-1-1":
-        return "grid-cols-1 lg:grid-cols-3";
-      case "1-2-1":
-        return "grid-cols-1 lg:grid-cols-4"; // 1fr 2fr 1fr
-      case "1-1-1-1":
-        return "grid-cols-1 lg:grid-cols-4";
-      default:
-        return "grid-cols-1";
-    }
-  };
-
-  // Get column span classes for asymmetric layouts
-  const getColumnSpan = (columnIndex: number) => {
-    switch (layout) {
-      case "1-2":
-        return columnIndex === 1 ? "lg:col-span-2" : "";
-      case "2-1":
-        return columnIndex === 0 ? "lg:col-span-2" : "";
-      case "1-2-1":
-        return columnIndex === 1 ? "lg:col-span-2" : "";
-      default:
-        return "";
-    }
-  };
+  // Responsive visibility classes
+  const visibilityClass = cn(
+    settings.visibleOnMobile === false && "hidden md:block",
+    settings.visibleOnDesktop === false && "md:hidden",
+  );
 
   // Get background from new system, fallback to legacy
   const background: SectionBackground = settings.background || {
@@ -152,66 +130,100 @@ function SectionRenderer({ section }: SectionRendererProps) {
     color: settings.backgroundColor || "transparent",
   };
 
-  // Get background styles
   const backgroundStyles = getBackgroundStyles(background);
+  const overlay = background.overlay ?? settings.backgroundOverlay;
+  const patternOverlay = background.patternOverlay;
+  const borderRadius = settings.borderRadius ? `${settings.borderRadius}px` : undefined;
 
-  // Apply section background, padding, and border radius
-  const sectionStyle: React.CSSProperties = {
-    ...backgroundStyles,
-    paddingTop: settings.paddingTop ? `${settings.paddingTop}px` : "48px",
-    paddingBottom: settings.paddingBottom ? `${settings.paddingBottom}px` : "48px",
-    borderRadius: settings.borderRadius ? `${settings.borderRadius}px` : undefined,
-  };
+  const hasGradientBorder = settings.gradientBorder?.enabled && settings.gradientBorder.colors?.length >= 2;
+  const innerBorderRadius = hasGradientBorder && settings.borderRadius
+    ? Math.max(0, settings.borderRadius - (settings.gradientBorder!.width || 2))
+    : settings.borderRadius;
 
-  return (
-    <section className="relative overflow-hidden" style={sectionStyle}>
+  const sectionContent = (
+    <section
+      className={cn(
+        "relative w-full overflow-hidden",
+        visibilityClass,
+        settings.className,
+      )}
+      style={{
+        ...(settings.fullWidth ? backgroundStyles : {}),
+        paddingTop: `${settings.paddingTop ?? 0}px`,
+        paddingBottom: `${settings.paddingBottom ?? 0}px`,
+        paddingLeft: `${settings.paddingLeft ?? 0}px`,
+        paddingRight: `${settings.paddingRight ?? 0}px`,
+        marginTop: `${settings.marginTop ?? 0}px`,
+        marginBottom: `${settings.marginBottom ?? 0}px`,
+        minHeight: settings.minHeight ? `${settings.minHeight}px` : undefined,
+        borderRadius: innerBorderRadius ? `${innerBorderRadius}px` : undefined,
+      }}
+    >
       {/* Video Background */}
       {background.type === "video" && background.video?.url && (
         <video
-          autoPlay
-          muted={background.video.muted}
-          loop={background.video.loop}
-          playsInline
-          poster={background.video.poster}
           className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-        >
-          <source src={background.video.url} type="video/mp4" />
-        </video>
+          style={{ borderRadius }}
+          src={background.video.url}
+          poster={background.video.poster}
+          muted={background.video.muted ?? true}
+          loop={background.video.loop ?? true}
+          autoPlay
+          playsInline
+        />
       )}
 
-      {/* Background Overlay */}
-      {background.overlay?.enabled && (
+      {/* Color Overlay */}
+      {overlay?.enabled && (
         <div
-          className="absolute inset-0 pointer-events-none"
+          className="absolute inset-0 pointer-events-none z-[1]"
           style={{
-            backgroundColor: background.overlay.color,
-            opacity: background.overlay.opacity,
-            zIndex: 1,
+            backgroundColor: overlay.color,
+            opacity: overlay.opacity,
+            borderRadius: innerBorderRadius ? `${innerBorderRadius}px` : undefined,
           }}
         />
       )}
 
-      {/* Content Container */}
+      {/* Pattern Overlay */}
+      {patternOverlay && patternOverlay.opacity > 0 && (
+        <div
+          className="absolute inset-0 pointer-events-none z-[1]"
+          style={{
+            backgroundImage: getPatternCSS(patternOverlay.type, patternOverlay.color, patternOverlay.opacity),
+            backgroundSize: getPatternBackgroundSize(patternOverlay.type),
+            borderRadius: innerBorderRadius ? `${innerBorderRadius}px` : undefined,
+          }}
+        />
+      )}
+
+      {/* Container */}
       <div
         className={cn(
-          "relative container mx-auto px-4",
-          settings.fullWidth ? "max-w-none" : "max-w-7xl"
+          "relative z-[2] mx-auto",
+          getMaxWidthClass(settings.maxWidth)
         )}
-        style={{ zIndex: 2 }}
+        style={!settings.fullWidth ? backgroundStyles : undefined}
       >
+
+        {/* Grid */}
         <div
-          className={cn("grid", getLayoutClasses())}
-          style={{ gap: settings.gap ? `${settings.gap}px` : "24px" }}
+          className={cn("relative grid", getLayoutGridClass(layout))}
+          style={{ gap: `${settings.gap}px` }}
         >
-          {columns.map((column, colIndex) => (
+          {columns.map((column, index) => (
             <div
               key={column.id}
               className={cn(
-                "flex flex-col gap-4",
-                getColumnSpan(colIndex),
+                "flex flex-col",
+                columnSpanClasses[index] || "col-span-12",
                 column.settings.verticalAlign === "center" && "justify-center",
-                column.settings.verticalAlign === "bottom" && "justify-end"
+                column.settings.verticalAlign === "bottom" && "justify-end",
               )}
+              style={{
+                padding: column.settings.padding ? `${column.settings.padding}px` : undefined,
+                backgroundColor: column.settings.backgroundColor,
+              }}
             >
               {column.widgets.map((widget) => (
                 <WidgetRenderer key={widget.id} widget={widget} />
@@ -222,6 +234,24 @@ function SectionRenderer({ section }: SectionRendererProps) {
       </div>
     </section>
   );
+
+  // Wrap with gradient border if enabled
+  if (hasGradientBorder) {
+    const { colors, angle, width } = settings.gradientBorder!;
+    return (
+      <div
+        style={{
+          padding: `${width || 2}px`,
+          background: `linear-gradient(${angle}deg, ${colors.join(", ")})`,
+          borderRadius: settings.borderRadius ? `${settings.borderRadius}px` : undefined,
+        }}
+      >
+        {sectionContent}
+      </div>
+    );
+  }
+
+  return sectionContent;
 }
 
 interface WidgetRendererProps {

@@ -122,7 +122,12 @@ function SectionRenderer({ section }: SectionRendererProps) {
   const patternOverlay = bg?.patternOverlay;
   const borderRadius = settings.borderRadius ? `${settings.borderRadius}px` : undefined;
 
-  return (
+  const hasGradientBorder = settings.gradientBorder?.enabled && settings.gradientBorder.colors?.length >= 2;
+  const innerBorderRadius = hasGradientBorder && settings.borderRadius
+    ? Math.max(0, settings.borderRadius - (settings.gradientBorder!.width || 2))
+    : settings.borderRadius;
+
+  const sectionContent = (
     <section
       className={cn(
         "relative w-full",
@@ -138,7 +143,7 @@ function SectionRenderer({ section }: SectionRendererProps) {
         marginTop: `${settings.marginTop ?? 0}px`,
         marginBottom: `${settings.marginBottom ?? 0}px`,
         minHeight: settings.minHeight ? `${settings.minHeight}px` : undefined,
-        borderRadius,
+        borderRadius: innerBorderRadius ? `${innerBorderRadius}px` : undefined,
       }}
     >
       {/* Video Background */}
@@ -162,7 +167,7 @@ function SectionRenderer({ section }: SectionRendererProps) {
           style={{
             backgroundColor: overlay.color,
             opacity: overlay.opacity,
-            borderRadius,
+            borderRadius: innerBorderRadius ? `${innerBorderRadius}px` : undefined,
           }}
         />
       )}
@@ -174,7 +179,7 @@ function SectionRenderer({ section }: SectionRendererProps) {
           style={{
             backgroundImage: getPatternCSS(patternOverlay.type, patternOverlay.color, patternOverlay.opacity),
             backgroundSize: getPatternBackgroundSize(patternOverlay.type),
-            borderRadius,
+            borderRadius: innerBorderRadius ? `${innerBorderRadius}px` : undefined,
           }}
         />
       )}
@@ -225,6 +230,23 @@ function SectionRenderer({ section }: SectionRendererProps) {
       </div>
     </section>
   );
+
+  if (hasGradientBorder) {
+    const { colors, angle, width } = settings.gradientBorder!;
+    return (
+      <div
+        style={{
+          padding: `${width || 2}px`,
+          background: `linear-gradient(${angle}deg, ${colors.join(", ")})`,
+          borderRadius: settings.borderRadius ? `${settings.borderRadius}px` : undefined,
+        }}
+      >
+        {sectionContent}
+      </div>
+    );
+  }
+
+  return sectionContent;
 }
 
 // ============================================

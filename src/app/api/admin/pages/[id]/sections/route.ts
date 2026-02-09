@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import prisma from "@/lib/db";
 
 interface RouteParams {
@@ -129,6 +130,12 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       where: { id },
       data: { updatedAt: new Date() },
     });
+
+    // Revalidate the page's public URL so changes show immediately
+    revalidatePath("/");
+    if (page.slug) {
+      revalidatePath(`/${page.slug}`);
+    }
 
     return NextResponse.json({
       success: true,

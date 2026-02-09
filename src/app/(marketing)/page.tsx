@@ -1,3 +1,6 @@
+// Force dynamic rendering - page depends on database content
+export const dynamic = "force-dynamic";
+
 import { WidgetSectionsRenderer } from "@/components/landing-page/widget-sections-renderer";
 import { NoTemplateFallback } from "@/components/templates/no-template-fallback";
 import { MultiJsonLd } from "@/components/seo/json-ld";

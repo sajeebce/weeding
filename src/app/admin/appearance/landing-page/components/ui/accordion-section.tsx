@@ -28,7 +28,7 @@ export function AccordionSection({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-xl border bg-background transition-all duration-200",
+        "overflow-hidden rounded-xl border bg-background transition-all duration-200 min-w-0 w-full",
         isOpen ? "border-primary/40 shadow-sm" : "hover:border-muted-foreground/30",
         className
       )}
@@ -37,14 +37,14 @@ export function AccordionSection({
       <div
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "flex w-full cursor-pointer items-center justify-between px-4 py-3.5 transition-colors",
+          "flex w-full cursor-pointer items-center justify-between px-4 py-3.5 transition-colors min-w-0",
           isOpen ? "bg-primary/5" : "hover:bg-muted/50"
         )}
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
           <div
             className={cn(
-              "flex h-7 w-7 items-center justify-center rounded-lg transition-colors",
+              "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors",
               isOpen ? "bg-primary/10" : "bg-muted"
             )}
           >
@@ -57,7 +57,7 @@ export function AccordionSection({
           </div>
           <span
             className={cn(
-              "text-sm font-medium transition-colors",
+              "text-sm font-medium transition-colors truncate",
               isOpen ? "text-foreground" : "text-foreground/70"
             )}
           >
@@ -81,8 +81,8 @@ export function AccordionSection({
 
       {/* Content - Connected to header */}
       {isOpen && (
-        <div className="border-t border-primary/20 bg-muted/30 px-4 py-4">
-          <div className="space-y-4">{children}</div>
+        <div className="border-t border-primary/20 bg-muted/30 px-3 py-3 min-w-0 w-full overflow-hidden">
+          <div className="space-y-4 min-w-0 w-full">{children}</div>
         </div>
       )}
     </div>

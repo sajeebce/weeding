@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import prisma from "@/lib/db";
 
 interface RouteParams {
@@ -134,6 +135,15 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
           },
         });
       }
+    }
+
+    // Revalidate public pages so changes show immediately
+    revalidatePath("/");
+    if (page.slug) {
+      revalidatePath(`/${page.slug}`);
+    }
+    if (existing.slug && existing.slug !== page.slug) {
+      revalidatePath(`/${existing.slug}`);
     }
 
     return NextResponse.json({

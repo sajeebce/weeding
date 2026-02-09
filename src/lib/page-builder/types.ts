@@ -99,6 +99,12 @@ export interface SectionSettings {
   gap: number;
   maxWidth: MaxWidth;
   borderRadius?: number;
+  gradientBorder?: {
+    enabled: boolean;
+    colors: string[];
+    angle: number;
+    width: number;
+  };
   className?: string;
   // Visibility
   isVisible: boolean;
@@ -1337,12 +1343,22 @@ export interface TextBlockWidgetSettings {
   // === CONTAINER STYLING ===
   container: {
     backgroundColor?: string;
+    backgroundType?: "solid" | "gradient";
+    gradientBackground?: {
+      colors: string[];
+      angle: number;
+    };
     padding: number; // px
     borderRadius: number; // px
     border?: {
       width: number;
       color: string;
       style: "solid" | "dashed" | "dotted";
+    };
+    gradientBorder?: {
+      enabled: boolean;
+      colors: string[];
+      angle: number;
     };
     shadow?: "none" | "sm" | "md" | "lg";
     maxWidth?: number; // px (for readability)
@@ -1825,7 +1841,10 @@ export type ConnectorLineStyle =
   | "solid"
   | "dashed"
   | "dotted"
-  | "gradient";
+  | "gradient"
+  | "double"
+  | "wavy"
+  | "glow";
 
 export type ConnectorAnimation =
   | "none"
@@ -1834,7 +1853,10 @@ export type ConnectorAnimation =
   | "dash-flow"      // Animated dashes moving
   | "dot-travel"     // Dots traveling along the line
   | "shimmer"        // Shimmer/shine effect
-  | "draw";          // Line drawing animation on scroll
+  | "draw"           // Line drawing animation on scroll
+  | "bounce"         // Elastic bounce wave effect
+  | "rainbow"        // Multi-color cycling animation
+  | "snake";         // Wave travels along the line
 
 export type StepNumberStyle =
   | "circle"
@@ -1948,9 +1970,19 @@ export interface ProcessStepsWidgetSettings {
   card: {
     show: boolean;
     backgroundColor?: string;
+    backgroundType?: "solid" | "gradient";
+    gradientBackground?: {
+      colors: string[];
+      angle: number;
+    };
     borderRadius: number;
     borderWidth: number;
     borderColor?: string;
+    gradientBorder?: {
+      enabled: boolean;
+      colors: string[];
+      angle: number;
+    };
     padding: number;
     shadow: "none" | "sm" | "md" | "lg";
     hoverEffect: "none" | "lift" | "glow" | "scale";

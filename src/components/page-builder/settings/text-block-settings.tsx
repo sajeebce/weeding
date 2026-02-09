@@ -802,13 +802,106 @@ export function TextBlockWidgetSettingsPanel({
         {/* Container */}
         <AccordionSection title="Container">
           <div className="space-y-3">
-            <ColorInput
-              label="Background Color"
-              value={settings.container.backgroundColor || "transparent"}
-              onChange={(v) =>
-                updateContainer("backgroundColor", v === "transparent" ? undefined : v)
-              }
+            {/* Background Type */}
+            <SelectInput
+              label="Background Type"
+              value={settings.container.backgroundType || "solid"}
+              onChange={(v) => {
+                const newType = v as "solid" | "gradient";
+                onChange({
+                  ...settings,
+                  container: {
+                    ...settings.container,
+                    backgroundType: newType,
+                    // Initialize gradient background defaults when switching to gradient
+                    ...(newType === "gradient" && !settings.container.gradientBackground
+                      ? {
+                          gradientBackground: {
+                            colors: ["#1e1b4b", "#0f172a"],
+                            angle: 135,
+                          },
+                        }
+                      : {}),
+                  },
+                });
+              }}
+              options={[
+                { value: "solid", label: "Solid" },
+                { value: "gradient", label: "Gradient" },
+              ]}
             />
+            {/* Solid background color */}
+            {(settings.container.backgroundType || "solid") === "solid" && (
+              <ColorInput
+                label="Background Color"
+                value={settings.container.backgroundColor || "transparent"}
+                onChange={(v) =>
+                  updateContainer("backgroundColor", v === "transparent" ? undefined : v)
+                }
+              />
+            )}
+            {/* Gradient background colors */}
+            {settings.container.backgroundType === "gradient" && (
+              <>
+                <div className="space-y-2">
+                  <Label className="text-xs text-slate-400">Gradient Colors</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <ColorInput
+                      label="From"
+                      value={settings.container.gradientBackground?.colors?.[0] || "#1e1b4b"}
+                      onChange={(v) =>
+                        onChange({
+                          ...settings,
+                          container: {
+                            ...settings.container,
+                            gradientBackground: {
+                              colors: [v, settings.container.gradientBackground?.colors?.[1] || "#0f172a"],
+                              angle: settings.container.gradientBackground?.angle || 135,
+                            },
+                          },
+                        })
+                      }
+                    />
+                    <ColorInput
+                      label="To"
+                      value={settings.container.gradientBackground?.colors?.[1] || "#0f172a"}
+                      onChange={(v) =>
+                        onChange({
+                          ...settings,
+                          container: {
+                            ...settings.container,
+                            gradientBackground: {
+                              colors: [settings.container.gradientBackground?.colors?.[0] || "#1e1b4b", v],
+                              angle: settings.container.gradientBackground?.angle || 135,
+                            },
+                          },
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+                <NumberInput
+                  label="Gradient Angle"
+                  value={settings.container.gradientBackground?.angle || 135}
+                  onChange={(v) =>
+                    onChange({
+                      ...settings,
+                      container: {
+                        ...settings.container,
+                        gradientBackground: {
+                          colors: settings.container.gradientBackground?.colors || ["#1e1b4b", "#0f172a"],
+                          angle: v,
+                        },
+                      },
+                    })
+                  }
+                  min={0}
+                  max={360}
+                  step={15}
+                  unit="deg"
+                />
+              </>
+            )}
             <NumberInput
               label="Padding"
               value={settings.container.padding}
@@ -827,6 +920,121 @@ export function TextBlockWidgetSettingsPanel({
               step={2}
               unit="px"
             />
+            {/* Gradient Border */}
+            <ToggleSwitch
+              label="Gradient Border"
+              checked={settings.container.gradientBorder?.enabled || false}
+              onChange={(v: boolean) =>
+                onChange({
+                  ...settings,
+                  container: {
+                    ...settings.container,
+                    gradientBorder: {
+                      enabled: v,
+                      colors: settings.container.gradientBorder?.colors || ["#f97316", "#8b5cf6"],
+                      angle: settings.container.gradientBorder?.angle || 135,
+                    },
+                    // Initialize border width when enabling, clear border when disabling
+                    ...(v && !settings.container.border
+                      ? {
+                          border: {
+                            width: 2,
+                            color: "#f97316",
+                            style: "solid" as const,
+                          },
+                        }
+                      : !v
+                        ? { border: undefined }
+                        : {}),
+                  },
+                })
+              }
+            />
+            {settings.container.gradientBorder?.enabled && (
+              <>
+                <div className="space-y-2">
+                  <Label className="text-xs text-slate-400">Border Gradient Colors</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <ColorInput
+                      label="From"
+                      value={settings.container.gradientBorder?.colors?.[0] || "#f97316"}
+                      onChange={(v) =>
+                        onChange({
+                          ...settings,
+                          container: {
+                            ...settings.container,
+                            gradientBorder: {
+                              enabled: true,
+                              colors: [v, settings.container.gradientBorder?.colors?.[1] || "#8b5cf6"],
+                              angle: settings.container.gradientBorder?.angle || 135,
+                            },
+                          },
+                        })
+                      }
+                    />
+                    <ColorInput
+                      label="To"
+                      value={settings.container.gradientBorder?.colors?.[1] || "#8b5cf6"}
+                      onChange={(v) =>
+                        onChange({
+                          ...settings,
+                          container: {
+                            ...settings.container,
+                            gradientBorder: {
+                              enabled: true,
+                              colors: [settings.container.gradientBorder?.colors?.[0] || "#f97316", v],
+                              angle: settings.container.gradientBorder?.angle || 135,
+                            },
+                          },
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+                <NumberInput
+                  label="Border Gradient Angle"
+                  value={settings.container.gradientBorder?.angle || 135}
+                  onChange={(v) =>
+                    onChange({
+                      ...settings,
+                      container: {
+                        ...settings.container,
+                        gradientBorder: {
+                          enabled: true,
+                          colors: settings.container.gradientBorder?.colors || ["#f97316", "#8b5cf6"],
+                          angle: v,
+                        },
+                      },
+                    })
+                  }
+                  min={0}
+                  max={360}
+                  step={15}
+                  unit="deg"
+                />
+                <NumberInput
+                  label="Border Width"
+                  value={settings.container.border?.width || 2}
+                  onChange={(v) =>
+                    onChange({
+                      ...settings,
+                      container: {
+                        ...settings.container,
+                        border: {
+                          width: v,
+                          color: settings.container.border?.color || "#f97316",
+                          style: settings.container.border?.style || "solid",
+                        },
+                      },
+                    })
+                  }
+                  min={1}
+                  max={6}
+                  step={1}
+                  unit="px"
+                />
+              </>
+            )}
             <SelectInput
               label="Shadow"
               value={settings.container.shadow || "none"}

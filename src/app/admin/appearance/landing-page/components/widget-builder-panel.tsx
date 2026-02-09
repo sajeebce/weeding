@@ -351,17 +351,17 @@ function EditMode({ widget, section, columnId, onBack, onUpdateSettings, onUpdat
   ];
 
   return (
-    <div className="flex h-full min-h-0 flex-col bg-background">
+    <div className="flex h-full min-h-0 min-w-0 flex-col bg-background overflow-hidden">
       {/* Header */}
-      <div className="flex shrink-0 items-center justify-between border-b px-4 py-3">
+      <div className="flex shrink-0 items-center justify-between border-b px-4 py-3 min-w-0">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground"
+          className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground shrink-0"
         >
           <ArrowLeft className="h-4 w-4" />
           Back
         </button>
-        <span className="text-sm font-semibold text-foreground">{displayName}</span>
+        <span className="text-sm font-semibold text-foreground truncate flex-1 text-center mx-2">{displayName}</span>
         <button className="text-muted-foreground hover:text-foreground">
           <MoreVertical className="h-4 w-4" />
         </button>
@@ -390,8 +390,8 @@ function EditMode({ widget, section, columnId, onBack, onUpdateSettings, onUpdat
       </div>
 
       {/* Settings Content */}
-      <ScrollArea className="min-h-0 flex-1">
-        <div className="p-4">
+      <ScrollArea className="min-h-0 flex-1 min-w-0 w-full">
+        <div className="p-4 overflow-hidden w-full min-w-0">
           {/* Hero Content Widget */}
           {widget.type === "hero-content" && (
             <HeroContentWidgetSettingsPanel
@@ -729,25 +729,25 @@ interface SectionModeProps {
 
 function SectionMode({ section, onBack, onUpdateSettings, onUpdateLayout }: SectionModeProps) {
   return (
-    <div className="flex h-full min-h-0 flex-col bg-background">
+    <div className="flex h-full min-h-0 min-w-0 flex-col bg-background overflow-hidden">
       {/* Header */}
-      <div className="flex shrink-0 items-center justify-between border-b px-4 py-3">
+      <div className="flex shrink-0 items-center justify-between border-b px-4 py-3 min-w-0">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground"
+          className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground shrink-0"
         >
           <ArrowLeft className="h-4 w-4" />
           Back
         </button>
-        <span className="text-sm font-semibold text-foreground">Section Settings</span>
+        <span className="text-sm font-semibold text-foreground truncate flex-1 text-center mx-2">Section Settings</span>
         <button className="text-muted-foreground hover:text-foreground">
           <MoreVertical className="h-4 w-4" />
         </button>
       </div>
 
       {/* Settings Content */}
-      <ScrollArea className="min-h-0 flex-1">
-        <div className="p-4">
+      <ScrollArea className="min-h-0 flex-1 min-w-0 w-full">
+        <div className="p-4 overflow-hidden w-full min-w-0">
           <SectionSettingsPanel
             settings={section.settings}
             layout={section.layout}
@@ -840,7 +840,7 @@ export function WidgetBuilderPanel({
   }, [selectedSection, onUpdateSectionLayout]);
 
   return (
-    <div className={cn("flex h-full min-h-0 flex-col overflow-hidden border-r bg-background", className)}>
+    <div className={cn("flex h-full min-h-0 min-w-0 flex-col overflow-hidden border-r bg-background", className)}>
       {effectiveMode === "browse" && (
         <BrowseMode
           onAddWidget={handleAddWidgetFromBrowser}

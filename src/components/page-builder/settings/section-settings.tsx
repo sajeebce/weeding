@@ -667,15 +667,102 @@ export function SectionSettingsPanel({
 
       {/* Border */}
       <AccordionSection title="Border">
-        <NumberInput
-          label="Border Radius"
-          value={s.borderRadius || 0}
-          onChange={(v) => updateField("borderRadius", v)}
-          min={0}
-          max={50}
-          step={4}
-          unit="px"
-        />
+        <div className="space-y-4">
+          <NumberInput
+            label="Border Radius"
+            value={s.borderRadius || 0}
+            onChange={(v) => updateField("borderRadius", v)}
+            min={0}
+            max={50}
+            step={4}
+            unit="px"
+          />
+
+          {/* Gradient Border */}
+          <div className="pt-3 border-t border-slate-700">
+            <ToggleSwitch
+              label="Gradient Border"
+              description="Add a gradient border around the entire section"
+              checked={s.gradientBorder?.enabled ?? false}
+              onChange={(checked) =>
+                updateField("gradientBorder", {
+                  enabled: checked,
+                  colors: s.gradientBorder?.colors || ["#ec4899", "#8b5cf6"],
+                  angle: s.gradientBorder?.angle ?? 135,
+                  width: s.gradientBorder?.width ?? 2,
+                })
+              }
+            />
+
+            {s.gradientBorder?.enabled && (
+              <div className="mt-3 space-y-3">
+                {/* Gradient Preview */}
+                <div
+                  className="h-10 rounded-lg border border-slate-600"
+                  style={{
+                    background: `linear-gradient(${s.gradientBorder.angle}deg, ${(s.gradientBorder.colors || []).join(", ")})`,
+                  }}
+                />
+
+                {/* Color 1 */}
+                <ColorInput
+                  label="Color 1"
+                  value={s.gradientBorder.colors?.[0] || "#ec4899"}
+                  onChange={(v) =>
+                    updateField("gradientBorder", {
+                      ...s.gradientBorder!,
+                      colors: [v, s.gradientBorder!.colors?.[1] || "#8b5cf6"],
+                    })
+                  }
+                />
+
+                {/* Color 2 */}
+                <ColorInput
+                  label="Color 2"
+                  value={s.gradientBorder.colors?.[1] || "#8b5cf6"}
+                  onChange={(v) =>
+                    updateField("gradientBorder", {
+                      ...s.gradientBorder!,
+                      colors: [s.gradientBorder!.colors?.[0] || "#ec4899", v],
+                    })
+                  }
+                />
+
+                {/* Angle */}
+                <NumberInput
+                  label="Angle"
+                  value={s.gradientBorder.angle ?? 135}
+                  onChange={(v) =>
+                    updateField("gradientBorder", {
+                      ...s.gradientBorder!,
+                      angle: v,
+                    })
+                  }
+                  min={0}
+                  max={360}
+                  step={15}
+                  unit="°"
+                />
+
+                {/* Border Width */}
+                <NumberInput
+                  label="Border Width"
+                  value={s.gradientBorder.width ?? 2}
+                  onChange={(v) =>
+                    updateField("gradientBorder", {
+                      ...s.gradientBorder!,
+                      width: v,
+                    })
+                  }
+                  min={1}
+                  max={10}
+                  step={1}
+                  unit="px"
+                />
+              </div>
+            )}
+          </div>
+        </div>
       </AccordionSection>
     </div>
   );

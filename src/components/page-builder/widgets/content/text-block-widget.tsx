@@ -170,6 +170,10 @@ export function TextBlockWidget({
     return () => clearTimeout(timeout);
   }, [settings.animation?.entrance?.enabled, prefersReducedMotion, isEditing]);
 
+  // Check if gradient border is active
+  const hasGradientBorder = settings.container.gradientBorder?.enabled &&
+    settings.container.gradientBorder.colors?.length >= 2;
+
   // Memoized styles for the content wrapper
   const contentStyles = useMemo((): React.CSSProperties => {
     const styles: React.CSSProperties = {
@@ -180,7 +184,6 @@ export function TextBlockWidget({
         ? `${settings.typography.letterSpacing}px`
         : undefined,
       color: settings.typography.color,
-      backgroundColor: settings.container.backgroundColor || undefined,
       padding: settings.container.padding
         ? `${settings.container.padding}px`
         : undefined,
@@ -192,9 +195,22 @@ export function TextBlockWidget({
         : undefined,
     };
 
-    // Border
-    if (settings.container.border) {
-      styles.border = `${settings.container.border.width}px ${settings.container.border.style} ${settings.container.border.color}`;
+    // Background: gradient or solid
+    if (settings.container.backgroundType === "gradient" && settings.container.gradientBackground?.colors?.length) {
+      const { colors, angle } = settings.container.gradientBackground;
+      styles.background = `linear-gradient(${angle}deg, ${colors.join(", ")})`;
+    } else {
+      styles.backgroundColor = settings.container.backgroundColor || undefined;
+    }
+
+    // Border is only used as metadata for gradient border width — don't render as solid border
+    // (there is no independent solid border control in the settings UI)
+
+    // When gradient border is active, adjust inner border radius
+    if (hasGradientBorder) {
+      const borderWidth = settings.container.border?.width || 2;
+      const innerRadius = Math.max(0, (settings.container.borderRadius || 0) - borderWidth);
+      styles.borderRadius = `${innerRadius}px`;
     }
 
     // Columns
@@ -207,7 +223,24 @@ export function TextBlockWidget({
     }
 
     return styles;
-  }, [settings]);
+  }, [settings, hasGradientBorder]);
+
+  // Gradient border wrapper styles
+  const gradientBorderStyles = useMemo((): React.CSSProperties | null => {
+    if (!hasGradientBorder) return null;
+    const { colors, angle } = settings.container.gradientBorder!;
+    const borderWidth = settings.container.border?.width || 2;
+    return {
+      padding: `${borderWidth}px`,
+      background: `linear-gradient(${angle}deg, ${colors.join(", ")})`,
+      borderRadius: settings.container.borderRadius
+        ? `${settings.container.borderRadius}px`
+        : undefined,
+      maxWidth: settings.container.maxWidth
+        ? `${settings.container.maxWidth}px`
+        : undefined,
+    };
+  }, [settings, hasGradientBorder]);
 
   // CSS variables for custom styling
   const cssVariables = useMemo((): React.CSSProperties => {
@@ -284,12 +317,18 @@ export function TextBlockWidget({
     };
   }, [settings.animation, isVisible, isEditing]);
 
-  // Render the widget (read-only view for now - editor will be added in settings panel)
-  return (
+  // Inner content element
+  const innerContent = (
     <div
-      ref={containerRef}
+      ref={hasGradientBorder ? undefined : containerRef}
       className={classNames}
-      style={{ ...contentStyles, ...cssVariables, ...animationStyles }}
+      style={{
+        ...contentStyles,
+        ...cssVariables,
+        ...animationStyles,
+        // When inside gradient border wrapper, remove maxWidth from inner (wrapper handles it)
+        ...(hasGradientBorder ? { maxWidth: undefined } : {}),
+      }}
       id={settings.advanced?.customId}
     >
       <div
@@ -299,6 +338,25 @@ export function TextBlockWidget({
       />
     </div>
   );
+
+  // Render with or without gradient border wrapper
+  if (hasGradientBorder && gradientBorderStyles) {
+    return (
+      <div
+        ref={containerRef}
+        style={gradientBorderStyles}
+        className={cn(
+          getShadowClass(settings.container.shadow),
+          settings.animation?.entrance?.enabled && !isEditing && getEntranceClass(settings.animation),
+          settings.animation?.entrance?.enabled && !isVisible && !isEditing && "text-block-not-visible",
+        )}
+      >
+        {innerContent}
+      </div>
+    );
+  }
+
+  return innerContent;
 }
 
 export default TextBlockWidget;
