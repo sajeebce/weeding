@@ -68,6 +68,11 @@ export const DEFAULT_SECTION_BACKGROUND: SectionBackground = {
     color: "#000000",
     opacity: 0.5,
   },
+  patternOverlay: {
+    type: "dots" as const,
+    color: "#ffffff",
+    opacity: 0.1,
+  },
 };
 
 export const DEFAULT_SECTION_SETTINGS: SectionSettings = {
@@ -75,10 +80,17 @@ export const DEFAULT_SECTION_SETTINGS: SectionSettings = {
   background: DEFAULT_SECTION_BACKGROUND,
   paddingTop: 64,
   paddingBottom: 64,
+  paddingLeft: 16,
+  paddingRight: 16,
+  marginTop: 0,
+  marginBottom: 0,
   gap: 32,
   maxWidth: "xl",
   borderRadius: 0,
   gradientBorder: undefined,
+  isVisible: true,
+  visibleOnMobile: true,
+  visibleOnDesktop: true,
 };
 
 // ============================================

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import type {
   SectionSettings,
   SectionLayout,
@@ -10,9 +9,11 @@ import type {
   BackgroundSize,
   BackgroundPosition,
   BackgroundRepeat,
+  PatternType,
 } from "@/lib/page-builder/types";
 import { DEFAULT_SECTION_SETTINGS, DEFAULT_SECTION_BACKGROUND } from "@/lib/page-builder/defaults";
 import { SECTION_LAYOUTS } from "@/lib/page-builder/section-layouts";
+import { PATTERN_TYPE_OPTIONS } from "@/lib/page-builder/pattern-utils";
 import {
   SelectInput,
   NumberInput,
@@ -24,7 +25,6 @@ import { ImageUpload } from "@/app/admin/appearance/landing-page/components/ui/i
 import { AccordionSection } from "@/app/admin/appearance/landing-page/components/ui/accordion-section";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface SectionSettingsProps {
   settings: SectionSettings;
@@ -107,6 +107,10 @@ export function SectionSettingsPanel({
         ...DEFAULT_SECTION_BACKGROUND.overlay,
         ...(settings?.background?.overlay || {}),
       },
+      patternOverlay: {
+        ...DEFAULT_SECTION_BACKGROUND.patternOverlay,
+        ...(settings?.background?.patternOverlay || {}),
+      },
     },
   } as SectionSettings;
 
@@ -139,6 +143,30 @@ export function SectionSettingsPanel({
 
   return (
     <div className="space-y-4">
+      {/* Visibility */}
+      <AccordionSection title="Visibility">
+        <div className="space-y-3">
+          <ToggleSwitch
+            label="Show Section"
+            description="Toggle section visibility"
+            checked={s.isVisible !== false}
+            onChange={(checked) => updateField("isVisible", checked)}
+          />
+          <ToggleSwitch
+            label="Show on Mobile"
+            description="Visible on mobile devices"
+            checked={s.visibleOnMobile !== false}
+            onChange={(checked) => updateField("visibleOnMobile", checked)}
+          />
+          <ToggleSwitch
+            label="Show on Desktop"
+            description="Visible on desktop screens"
+            checked={s.visibleOnDesktop !== false}
+            onChange={(checked) => updateField("visibleOnDesktop", checked)}
+          />
+        </div>
+      </AccordionSection>
+
       {/* Layout */}
       <SelectInput
         label="Column Layout"
@@ -173,27 +201,85 @@ export function SectionSettingsPanel({
         onChange={(checked) => updateField("fullWidth", checked)}
       />
 
+      {/* Min Height */}
+      <NumberInput
+        label="Min Height (optional)"
+        value={s.minHeight || 0}
+        onChange={(v) => updateField("minHeight", v || undefined)}
+        min={0}
+        max={1200}
+        step={20}
+        unit="px"
+      />
+
       {/* Spacing */}
       <AccordionSection title="Spacing">
         <div className="space-y-3">
-          <NumberInput
-            label="Padding Top"
-            value={s.paddingTop}
-            onChange={(v) => updateField("paddingTop", v)}
-            min={0}
-            max={200}
-            step={8}
-            unit="px"
-          />
-          <NumberInput
-            label="Padding Bottom"
-            value={s.paddingBottom}
-            onChange={(v) => updateField("paddingBottom", v)}
-            min={0}
-            max={200}
-            step={8}
-            unit="px"
-          />
+          {/* Padding */}
+          <label className="text-xs font-medium text-slate-400 uppercase tracking-wide">Padding</label>
+          <div className="grid grid-cols-2 gap-3">
+            <NumberInput
+              label="Top"
+              value={s.paddingTop}
+              onChange={(v) => updateField("paddingTop", v)}
+              min={0}
+              max={200}
+              step={8}
+              unit="px"
+            />
+            <NumberInput
+              label="Bottom"
+              value={s.paddingBottom}
+              onChange={(v) => updateField("paddingBottom", v)}
+              min={0}
+              max={200}
+              step={8}
+              unit="px"
+            />
+            <NumberInput
+              label="Left"
+              value={s.paddingLeft ?? 16}
+              onChange={(v) => updateField("paddingLeft", v)}
+              min={0}
+              max={200}
+              step={4}
+              unit="px"
+            />
+            <NumberInput
+              label="Right"
+              value={s.paddingRight ?? 16}
+              onChange={(v) => updateField("paddingRight", v)}
+              min={0}
+              max={200}
+              step={4}
+              unit="px"
+            />
+          </div>
+
+          {/* Margin */}
+          <label className="text-xs font-medium text-slate-400 uppercase tracking-wide mt-4">Margin</label>
+          <div className="grid grid-cols-2 gap-3">
+            <NumberInput
+              label="Top"
+              value={s.marginTop ?? 0}
+              onChange={(v) => updateField("marginTop", v)}
+              min={-200}
+              max={200}
+              step={8}
+              unit="px"
+            />
+            <NumberInput
+              label="Bottom"
+              value={s.marginBottom ?? 0}
+              onChange={(v) => updateField("marginBottom", v)}
+              min={-200}
+              max={200}
+              step={8}
+              unit="px"
+            />
+          </div>
+
+          {/* Column Gap */}
           <NumberInput
             label="Column Gap"
             value={s.gap}
@@ -470,7 +556,7 @@ export function SectionSettingsPanel({
             </div>
           )}
 
-          {/* Overlay - Available for all background types */}
+          {/* Color Overlay - Available for all background types */}
           <div className="pt-4 border-t border-slate-700">
             <ToggleSwitch
               label="Background Overlay"
@@ -504,6 +590,72 @@ export function SectionSettingsPanel({
                   }
                   min={0}
                   max={100}
+                  step={5}
+                  unit="%"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Pattern Overlay */}
+          <div className="pt-4 border-t border-slate-700">
+            <ToggleSwitch
+              label="Pattern Overlay"
+              description="Add a decorative pattern on top of background"
+              checked={(s.background.patternOverlay?.opacity ?? 0) > 0}
+              onChange={(checked) =>
+                updateBackground({
+                  patternOverlay: {
+                    ...s.background.patternOverlay!,
+                    opacity: checked ? 0.1 : 0,
+                  },
+                })
+              }
+            />
+
+            {(s.background.patternOverlay?.opacity ?? 0) > 0 && (
+              <div className="mt-3 space-y-3">
+                <SelectInput
+                  label="Pattern Type"
+                  value={s.background.patternOverlay?.type || "dots"}
+                  onChange={(v) =>
+                    updateBackground({
+                      patternOverlay: {
+                        ...s.background.patternOverlay!,
+                        type: v as PatternType,
+                      },
+                    })
+                  }
+                  options={PATTERN_TYPE_OPTIONS.map((p) => ({
+                    value: p.value,
+                    label: p.label,
+                  }))}
+                />
+                <ColorInput
+                  label="Pattern Color"
+                  value={s.background.patternOverlay?.color || "#ffffff"}
+                  onChange={(v) =>
+                    updateBackground({
+                      patternOverlay: {
+                        ...s.background.patternOverlay!,
+                        color: v,
+                      },
+                    })
+                  }
+                />
+                <NumberInput
+                  label="Pattern Opacity"
+                  value={Math.round((s.background.patternOverlay?.opacity || 0.1) * 100)}
+                  onChange={(v) =>
+                    updateBackground({
+                      patternOverlay: {
+                        ...s.background.patternOverlay!,
+                        opacity: v / 100,
+                      },
+                    })
+                  }
+                  min={5}
+                  max={50}
                   step={5}
                   unit="%"
                 />

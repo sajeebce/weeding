@@ -4,12 +4,13 @@
 // ============================================
 
 import { cn } from "@/lib/utils";
-import type { Section, Column, Widget, WidgetType } from "@/lib/page-builder/types";
+import type { Section, Column, SectionSettings } from "@/lib/page-builder/types";
 import {
   getLayoutGridClass,
   getColumnSpanClasses,
   getMaxWidthClass,
 } from "@/lib/page-builder/section-layouts";
+import { getPatternCSS, getPatternBackgroundSize } from "@/lib/page-builder/pattern-utils";
 import { WidgetRenderer } from "./widget-renderer";
 
 // ============================================
@@ -26,8 +27,10 @@ export function PageBuilderRenderer({ sections, className }: PageBuilderRenderer
     return null;
   }
 
-  // Sort sections by order
-  const sortedSections = [...sections].sort((a, b) => a.order - b.order);
+  // Sort sections by order, filter out hidden sections
+  const sortedSections = [...sections]
+    .filter((s) => s.settings.isVisible !== false)
+    .sort((a, b) => a.order - b.order);
 
   return (
     <div className={cn("page-builder-content", className)}>
@@ -36,6 +39,63 @@ export function PageBuilderRenderer({ sections, className }: PageBuilderRenderer
       ))}
     </div>
   );
+}
+
+// ============================================
+// BACKGROUND STYLE BUILDER
+// ============================================
+
+function buildBackgroundStyles(settings: SectionSettings): React.CSSProperties {
+  const styles: React.CSSProperties = {};
+
+  if (settings.background) {
+    const { background } = settings;
+    switch (background.type) {
+      case "solid":
+        if (background.color) {
+          styles.backgroundColor = background.color;
+        }
+        break;
+      case "gradient":
+        if (background.gradient) {
+          const { type, angle, colors } = background.gradient;
+          const colorStops = colors.map((c) => `${c.color} ${c.position}%`).join(", ");
+          styles.backgroundImage =
+            type === "linear"
+              ? `linear-gradient(${angle}deg, ${colorStops})`
+              : `radial-gradient(circle, ${colorStops})`;
+        }
+        break;
+      case "image":
+        if (background.image?.url) {
+          styles.backgroundImage = `url(${background.image.url})`;
+          styles.backgroundSize = background.image.size || "cover";
+          styles.backgroundPosition = (background.image.position || "center").replace("-", " ");
+          styles.backgroundRepeat = background.image.repeat || "no-repeat";
+          if (background.image.fixed) {
+            styles.backgroundAttachment = "fixed";
+          }
+        }
+        break;
+      // Video handled as child element, not CSS
+    }
+  }
+
+  // Legacy fallback
+  if (!settings.background?.type || settings.background.type === "solid") {
+    if (settings.backgroundColor && !settings.background?.color) {
+      styles.backgroundColor = settings.backgroundColor;
+    }
+  }
+  if (!settings.background?.type) {
+    if (settings.backgroundImage) {
+      styles.backgroundImage = `url(${settings.backgroundImage})`;
+      styles.backgroundSize = "cover";
+      styles.backgroundPosition = "center";
+    }
+  }
+
+  return styles;
 }
 
 // ============================================
@@ -50,54 +110,17 @@ function SectionRenderer({ section }: SectionRendererProps) {
   const { settings, layout, columns } = section;
   const columnSpanClasses = getColumnSpanClasses(layout);
 
-  // Build background styles
-  const backgroundStyles: React.CSSProperties = {};
+  // Responsive visibility classes
+  const visibilityClass = cn(
+    settings.visibleOnMobile === false && "hidden md:block",
+    settings.visibleOnDesktop === false && "md:hidden",
+  );
 
-  // Handle new background system
-  if (settings.background) {
-    const { background } = settings;
-
-    switch (background.type) {
-      case "solid":
-        if (background.color) {
-          backgroundStyles.backgroundColor = background.color;
-        }
-        break;
-      case "gradient":
-        if (background.gradient) {
-          const { type, angle, colors } = background.gradient;
-          const colorStops = colors
-            .map((c) => `${c.color} ${c.position}%`)
-            .join(", ");
-          backgroundStyles.backgroundImage =
-            type === "linear"
-              ? `linear-gradient(${angle}deg, ${colorStops})`
-              : `radial-gradient(circle, ${colorStops})`;
-        }
-        break;
-      case "image":
-        if (background.image?.url) {
-          backgroundStyles.backgroundImage = `url(${background.image.url})`;
-          backgroundStyles.backgroundSize = background.image.size || "cover";
-          backgroundStyles.backgroundPosition = background.image.position || "center";
-          backgroundStyles.backgroundRepeat = background.image.repeat || "no-repeat";
-          if (background.image.fixed) {
-            backgroundStyles.backgroundAttachment = "fixed";
-          }
-        }
-        break;
-    }
-  }
-
-  // Legacy background support
-  if (settings.backgroundColor && !settings.background?.type) {
-    backgroundStyles.backgroundColor = settings.backgroundColor;
-  }
-  if (settings.backgroundImage && !settings.background?.type) {
-    backgroundStyles.backgroundImage = `url(${settings.backgroundImage})`;
-    backgroundStyles.backgroundSize = "cover";
-    backgroundStyles.backgroundPosition = "center";
-  }
+  const backgroundStyles = buildBackgroundStyles(settings);
+  const bg = settings.background;
+  const overlay = bg?.overlay ?? settings.backgroundOverlay;
+  const patternOverlay = bg?.patternOverlay;
+  const borderRadius = settings.borderRadius ? `${settings.borderRadius}px` : undefined;
 
   const hasGradientBorder = settings.gradientBorder?.enabled && settings.gradientBorder.colors?.length >= 2;
   const innerBorderRadius = hasGradientBorder && settings.borderRadius
@@ -108,22 +131,54 @@ function SectionRenderer({ section }: SectionRendererProps) {
     <section
       className={cn(
         "relative w-full",
-        settings.className
+        visibilityClass,
+        settings.className,
       )}
       style={{
-        ...backgroundStyles,
-        paddingTop: `${settings.paddingTop}px`,
-        paddingBottom: `${settings.paddingBottom}px`,
+        ...(settings.fullWidth ? backgroundStyles : {}),
+        paddingTop: `${settings.paddingTop ?? 0}px`,
+        paddingBottom: `${settings.paddingBottom ?? 0}px`,
+        paddingLeft: `${settings.paddingLeft ?? 0}px`,
+        paddingRight: `${settings.paddingRight ?? 0}px`,
+        marginTop: `${settings.marginTop ?? 0}px`,
+        marginBottom: `${settings.marginBottom ?? 0}px`,
+        minHeight: settings.minHeight ? `${settings.minHeight}px` : undefined,
         borderRadius: innerBorderRadius ? `${innerBorderRadius}px` : undefined,
       }}
     >
-      {/* Background Overlay */}
-      {settings.backgroundOverlay?.enabled && (
+      {/* Video Background */}
+      {bg?.type === "video" && bg.video?.url && (
+        <video
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+          style={{ borderRadius }}
+          src={bg.video.url}
+          poster={bg.video.poster}
+          muted={bg.video.muted ?? true}
+          loop={bg.video.loop ?? true}
+          autoPlay
+          playsInline
+        />
+      )}
+
+      {/* Color Overlay */}
+      {overlay?.enabled && (
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
-            backgroundColor: settings.backgroundOverlay.color,
-            opacity: settings.backgroundOverlay.opacity,
+            backgroundColor: overlay.color,
+            opacity: overlay.opacity,
+            borderRadius: innerBorderRadius ? `${innerBorderRadius}px` : undefined,
+          }}
+        />
+      )}
+
+      {/* Pattern Overlay (fullWidth) */}
+      {settings.fullWidth && patternOverlay && patternOverlay.opacity > 0 && (
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: getPatternCSS(patternOverlay.type, patternOverlay.color, patternOverlay.opacity),
+            backgroundSize: getPatternBackgroundSize(patternOverlay.type),
             borderRadius: innerBorderRadius ? `${innerBorderRadius}px` : undefined,
           }}
         />
@@ -132,13 +187,36 @@ function SectionRenderer({ section }: SectionRendererProps) {
       {/* Container */}
       <div
         className={cn(
-          "relative mx-auto px-4",
-          !settings.fullWidth && getMaxWidthClass(settings.maxWidth)
+          "relative mx-auto",
+          getMaxWidthClass(settings.maxWidth)
         )}
+        style={!settings.fullWidth ? backgroundStyles : undefined}
       >
+        {/* Inner overlays when not fullWidth */}
+        {!settings.fullWidth && overlay?.enabled && (
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              backgroundColor: overlay.color,
+              opacity: overlay.opacity,
+              borderRadius,
+            }}
+          />
+        )}
+        {!settings.fullWidth && patternOverlay && patternOverlay.opacity > 0 && (
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              backgroundImage: getPatternCSS(patternOverlay.type, patternOverlay.color, patternOverlay.opacity),
+              backgroundSize: getPatternBackgroundSize(patternOverlay.type),
+              borderRadius,
+            }}
+          />
+        )}
+
         {/* Grid */}
         <div
-          className={cn("grid", getLayoutGridClass(layout))}
+          className={cn("relative grid", getLayoutGridClass(layout))}
           style={{ gap: `${settings.gap}px` }}
         >
           {columns.map((column, index) => (
