@@ -25,6 +25,7 @@ export type MaxWidth = "sm" | "md" | "lg" | "xl" | "2xl" | "full";
 // Background Types
 export type BackgroundType = "solid" | "gradient" | "image" | "video";
 export type GradientType = "linear" | "radial";
+export type PatternType = "dots" | "grid" | "diagonal" | "waves" | "circuit" | "geometric" | "confetti";
 export type BackgroundSize = "cover" | "contain" | "auto";
 export type BackgroundPosition = "center" | "top" | "bottom" | "left" | "right" | "top-left" | "top-right" | "bottom-left" | "bottom-right";
 export type BackgroundRepeat = "no-repeat" | "repeat" | "repeat-x" | "repeat-y";
@@ -53,6 +54,12 @@ export interface BackgroundVideoSettings {
   loop: boolean;
 }
 
+export interface PatternSettings {
+  type: PatternType;
+  color: string;
+  opacity: number; // 0-1
+}
+
 export interface BackgroundOverlay {
   enabled: boolean;
   color: string;
@@ -67,6 +74,7 @@ export interface SectionBackground {
   image?: BackgroundImageSettings; // For image
   video?: BackgroundVideoSettings; // For video
   overlay?: BackgroundOverlay;
+  patternOverlay?: PatternSettings; // Pattern overlay on top of any background
 }
 
 export interface SectionSettings {
@@ -83,10 +91,19 @@ export interface SectionSettings {
   };
   paddingTop: number;
   paddingBottom: number;
+  paddingLeft: number;
+  paddingRight: number;
+  marginTop: number;
+  marginBottom: number;
+  minHeight?: number;
   gap: number;
   maxWidth: MaxWidth;
   borderRadius?: number;
   className?: string;
+  // Visibility
+  isVisible: boolean;
+  visibleOnMobile: boolean;
+  visibleOnDesktop: boolean;
 }
 
 export interface Section {

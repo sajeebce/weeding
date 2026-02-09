@@ -17,7 +17,8 @@ import {
   createWidget,
   generateId,
 } from "@/lib/page-builder/widget-registry";
-import { getLayoutGridClass, getColumnSpanClasses } from "@/lib/page-builder/section-layouts";
+import { getLayoutGridClass, getColumnSpanClasses, getMaxWidthClass } from "@/lib/page-builder/section-layouts";
+import { getPatternCSS, getPatternBackgroundSize } from "@/lib/page-builder/pattern-utils";
 import { WidgetWrapper } from "@/components/page-builder/core/widget-wrapper";
 import { LayoutSelector, WidgetBrowser } from "@/components/page-builder/ui";
 
@@ -254,13 +255,26 @@ export function WidgetPageBuilder({
 
     const backgroundStyles = getBackgroundStyles(background);
 
+    const borderRadius = settings.borderRadius ? `${settings.borderRadius}px` : undefined;
+    const patternOverlay = background.patternOverlay;
+
+    // Visibility: hide in preview mode if section is not visible
+    if (settings.isVisible === false && isPreviewMode) {
+      return null;
+    }
+
     return (
       <div
         key={section.id}
         className={cn(
           "relative w-full",
-          !isPreviewMode && "group/section pt-4"
+          !isPreviewMode && "group/section pt-4",
+          settings.isVisible === false && !isPreviewMode && "opacity-40",
         )}
+        style={{
+          marginTop: `${settings.marginTop ?? 0}px`,
+          marginBottom: `${settings.marginBottom ?? 0}px`,
+        }}
       >
         {/* Section Toolbar - Outside overflow-hidden container */}
         {!isPreviewMode && (
@@ -268,7 +282,7 @@ export function WidgetPageBuilder({
             {/* Left: Section label */}
             <div className="flex items-center gap-1 bg-slate-800 rounded-md px-2 py-1 text-xs text-slate-400 shadow-lg border border-slate-700">
               <GripVertical className="h-3 w-3 text-slate-500 cursor-grab" />
-              Section {index + 1}
+              Section {index + 1}{settings.isVisible === false ? " (Hidden)" : ""}
             </div>
 
             {/* Right: Actions */}
@@ -304,10 +318,13 @@ export function WidgetPageBuilder({
             isSelected && !isPreviewMode && "ring-2 ring-orange-500 ring-offset-2 ring-offset-slate-900"
           )}
           style={{
-            ...backgroundStyles,
-            paddingTop: `${settings.paddingTop}px`,
-            paddingBottom: `${settings.paddingBottom}px`,
-            borderRadius: settings.borderRadius ? `${settings.borderRadius}px` : undefined,
+            ...(settings.fullWidth ? backgroundStyles : {}),
+            paddingTop: `${settings.paddingTop ?? 0}px`,
+            paddingBottom: `${settings.paddingBottom ?? 0}px`,
+            paddingLeft: `${settings.paddingLeft ?? 0}px`,
+            paddingRight: `${settings.paddingRight ?? 0}px`,
+            minHeight: settings.minHeight ? `${settings.minHeight}px` : undefined,
+            borderRadius,
           }}
           onClick={(e) => {
             e.stopPropagation();
@@ -328,6 +345,7 @@ export function WidgetPageBuilder({
               playsInline
               poster={background.video.poster}
               className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+              style={{ borderRadius }}
             >
               <source src={background.video.url} type="video/mp4" />
             </video>
@@ -340,12 +358,28 @@ export function WidgetPageBuilder({
               style={{
                 backgroundColor: background.overlay.color,
                 opacity: background.overlay.opacity,
+                borderRadius,
+              }}
+            />
+          )}
+
+          {/* Pattern Overlay */}
+          {patternOverlay && patternOverlay.opacity > 0 && (
+            <div
+              className="absolute inset-0 pointer-events-none z-1"
+              style={{
+                backgroundImage: getPatternCSS(patternOverlay.type, patternOverlay.color, patternOverlay.opacity),
+                backgroundSize: getPatternBackgroundSize(patternOverlay.type),
+                borderRadius,
               }}
             />
           )}
 
         {/* Container - above overlay */}
-        <div className={cn("relative z-2 mx-auto px-4", !settings.fullWidth && "max-w-7xl")}>
+        <div
+          className={cn("relative z-2 mx-auto", !settings.fullWidth && getMaxWidthClass(settings.maxWidth))}
+          style={!settings.fullWidth ? backgroundStyles : undefined}
+        >
           {/* Grid */}
           <div
             className={cn(
