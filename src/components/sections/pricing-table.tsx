@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Check, X, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { LocationSelector, type LocationItem } from "@/components/ui/location-selector";
 import { cn } from "@/lib/utils";
+import { getCurrencySymbol } from "@/components/ui/currency-selector";
 
 const packages = [
   {
@@ -23,11 +24,11 @@ const packages = [
     price: 0,
     features: [
       { name: "New Mexico State Filing Fee", included: true },
-      { name: "Registered Agent (First Year)", included: false, addon: "$99" },
-      { name: "EIN Application", included: false, addon: "$70" },
-      { name: "BOI Filing", included: false, addon: "$49" },
-      { name: "US Business Address/Mail Forwarding", included: false, addon: "$120" },
-      { name: "US Business Phone Number", included: false, addon: "$60" },
+      { name: "Registered Agent (First Year)", included: false, addonPrice: 99 },
+      { name: "EIN Application", included: false, addonPrice: 70 },
+      { name: "BOI Filing", included: false, addonPrice: 49 },
+      { name: "US Business Address/Mail Forwarding", included: false, addonPrice: 120 },
+      { name: "US Business Phone Number", included: false, addonPrice: 60 },
       { name: "US Fintech Business Bank Account Setup", included: false },
       { name: "Stripe Business Account Setup", included: false },
     ],
@@ -44,10 +45,10 @@ const packages = [
       { name: "Registered Agent (First Year)", included: true },
       { name: "EIN Application", included: true },
       { name: "BOI Filing", included: true },
-      { name: "US Business Address/Mail Forwarding", included: false, addon: "$120" },
-      { name: "US Business Phone Number", included: false, addon: "$60" },
-      { name: "US Fintech Business Bank Account Setup", included: false, addon: "$99" },
-      { name: "Stripe Business Account Setup", included: false, addon: "$79" },
+      { name: "US Business Address/Mail Forwarding", included: false, addonPrice: 120 },
+      { name: "US Business Phone Number", included: false, addonPrice: 60 },
+      { name: "US Fintech Business Bank Account Setup", included: false, addonPrice: 99 },
+      { name: "Stripe Business Account Setup", included: false, addonPrice: 79 },
     ],
     processingTime: "3 weeks",
     cta: "Get Started",
@@ -78,6 +79,16 @@ const defaultLocation: LocationItem = { code: "US-WY", name: "Wyoming", country:
 
 export function PricingTable() {
   const [selectedLocation, setSelectedLocation] = useState<LocationItem>(defaultLocation);
+  const [currencySymbol, setCurrencySymbol] = useState("$");
+
+  useEffect(() => {
+    fetch("/api/business-config")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.currency) setCurrencySymbol(getCurrencySymbol(data.currency));
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <section className="py-16 lg:py-24">
@@ -128,11 +139,11 @@ export function PricingTable() {
                 <CardDescription>{pkg.description}</CardDescription>
                 <div className="mt-4">
                   <span className="text-4xl font-bold text-foreground">
-                    ${pkg.price}
+                    {currencySymbol}{pkg.price}
                   </span>
                   <span className="text-muted-foreground"> + </span>
                   <span className="text-lg font-semibold text-primary">
-                    ${selectedLocation.fee}
+                    {currencySymbol}{selectedLocation.fee}
                   </span>
                   <span className="text-sm text-muted-foreground">
                     {" "}
@@ -142,7 +153,7 @@ export function PricingTable() {
                 <p className="mt-1 text-sm text-muted-foreground">
                   Total:{" "}
                   <span className="font-semibold text-foreground">
-                    ${pkg.price + selectedLocation.fee}
+                    {currencySymbol}{pkg.price + selectedLocation.fee}
                   </span>
                 </p>
               </CardHeader>
@@ -164,9 +175,9 @@ export function PricingTable() {
                         )}
                       >
                         {feature.name}
-                        {!feature.included && feature.addon && (
+                        {!feature.included && feature.addonPrice && (
                           <span className="ml-1 text-xs text-muted-foreground">
-                            (Add-on {feature.addon})
+                            (Add-on {currencySymbol}{feature.addonPrice})
                           </span>
                         )}
                       </span>

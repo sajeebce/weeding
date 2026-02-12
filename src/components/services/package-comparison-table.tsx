@@ -71,6 +71,9 @@ interface PackageComparisonTableProps {
   serviceId?: string;
   hasLocationBasedPricing?: boolean;
   locationFeeLabel?: string | null;
+  currencySymbol?: string;
+  checkoutBadgeText?: string;
+  checkoutBadgeDescription?: string;
 }
 
 export function PackageComparisonTable({
@@ -80,6 +83,9 @@ export function PackageComparisonTable({
   serviceId,
   hasLocationBasedPricing = false,
   locationFeeLabel,
+  currencySymbol = "$",
+  checkoutBadgeText,
+  checkoutBadgeDescription,
 }: PackageComparisonTableProps) {
   // State management
   const [selectedPackageId, setSelectedPackageId] = useState<string | null>(
@@ -198,7 +204,7 @@ export function PackageComparisonTable({
               ) : (
                 <Plus className="w-4 h-4 mr-1" />
               )}
-              ${addonPriceUSD}
+              {currencySymbol}{addonPriceUSD}
             </Button>
           );
         }
@@ -336,13 +342,13 @@ export function PackageComparisonTable({
 
                         {/* Price */}
                         <div className="text-2xl font-bold text-gray-900">
-                          ${pkg.price}
+                          {currencySymbol}{pkg.price}
                         </div>
 
                         {/* Location Fee Note */}
                         {locationFee > 0 && (
                           <div className="text-xs text-gray-500 mt-1">
-                            + ${locationFee} {locationFeeLabel?.toLowerCase() || "location fee"}
+                            + {currencySymbol}{locationFee} {locationFeeLabel?.toLowerCase() || "location fee"}
                           </div>
                         )}
 
@@ -471,7 +477,7 @@ export function PackageComparisonTable({
                   <span className="text-gray-600">
                     {selectedPackage.name} Package:
                   </span>
-                  <span className="font-medium">${selectedPackage.price}</span>
+                  <span className="font-medium">{currencySymbol}{selectedPackage.price}</span>
                 </div>
               )}
 
@@ -481,7 +487,7 @@ export function PackageComparisonTable({
                   <span className="text-gray-600">
                     {selectedLocation.name} {locationFeeLabel || "Fee"}:
                   </span>
-                  <span className="font-medium">${locationFee}</span>
+                  <span className="font-medium">{currencySymbol}{locationFee}</span>
                 </div>
               )}
 
@@ -494,7 +500,7 @@ export function PackageComparisonTable({
                   <span className="text-gray-600 truncate max-w-40">
                     {addon.featureText}:
                   </span>
-                  <span className="font-medium">${addon.price}</span>
+                  <span className="font-medium">{currencySymbol}{addon.price}</span>
                 </div>
               ))}
 
@@ -504,7 +510,7 @@ export function PackageComparisonTable({
               <div className="flex justify-between items-center">
                 <span className="text-base font-semibold">Total:</span>
                 <span className="text-2xl font-bold text-gray-900">
-                  ${grandTotal}
+                  {currencySymbol}{grandTotal}
                 </span>
               </div>
             </CardContent>
@@ -526,14 +532,17 @@ export function PackageComparisonTable({
                   Get Started
                 </Link>
               </Button>
-              <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
-                <RefreshCw className="h-3 w-3" />
-                <span>One-time fee</span>
-              </div>
-              <p className="text-xs text-center text-gray-500">
-                Unlike companies that charge annual fees, our formation fee is
-                one-time.
-              </p>
+              {checkoutBadgeText && (
+                <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
+                  <RefreshCw className="h-3 w-3" />
+                  <span>{checkoutBadgeText}</span>
+                </div>
+              )}
+              {checkoutBadgeDescription && (
+                <p className="text-xs text-center text-gray-500">
+                  {checkoutBadgeDescription}
+                </p>
+              )}
             </CardFooter>
           </Card>
         </div>
@@ -550,13 +559,13 @@ export function PackageComparisonTable({
             {selectedPackage && (
               <div className="flex justify-between">
                 <span>{selectedPackage.name} Package:</span>
-                <span className="font-medium">${selectedPackage.price}</span>
+                <span className="font-medium">{currencySymbol}{selectedPackage.price}</span>
               </div>
             )}
             {locationFee > 0 && (
               <div className="flex justify-between">
                 <span>{locationFeeLabel || "Location Fee"}:</span>
-                <span className="font-medium">${locationFee}</span>
+                <span className="font-medium">{currencySymbol}{locationFee}</span>
               </div>
             )}
             {selectedAddons.map((addon) => (
@@ -565,13 +574,13 @@ export function PackageComparisonTable({
                 className="flex justify-between"
               >
                 <span className="truncate max-w-48">{addon.featureText}:</span>
-                <span className="font-medium">${addon.price}</span>
+                <span className="font-medium">{currencySymbol}{addon.price}</span>
               </div>
             ))}
             <Separator />
             <div className="flex justify-between font-semibold text-base">
               <span>Total:</span>
-              <span>${grandTotal}</span>
+              <span>{currencySymbol}{grandTotal}</span>
             </div>
           </CardContent>
           <CardFooter>
@@ -586,7 +595,7 @@ export function PackageComparisonTable({
                   }
                 }}
               >
-                Get Started - ${grandTotal}
+                Get Started - {currencySymbol}{grandTotal}
               </Link>
             </Button>
           </CardFooter>
@@ -629,9 +638,9 @@ export function PackageComparisonTable({
                 {/* Header */}
                 <div className="text-center mb-4">
                   <h3 className="text-xl font-semibold">{pkg.name}</h3>
-                  <p className="text-3xl font-bold mt-1">${pkg.price}</p>
+                  <p className="text-3xl font-bold mt-1">{currencySymbol}{pkg.price}</p>
                   {locationFee > 0 && (
-                    <p className="text-xs text-gray-500">+ ${locationFee} {locationFeeLabel?.toLowerCase() || "location fee"}</p>
+                    <p className="text-xs text-gray-500">+ {currencySymbol}{locationFee} {locationFeeLabel?.toLowerCase() || "location fee"}</p>
                   )}
                   {pkg.processingTime && (
                     <div className="flex items-center justify-center gap-1 mt-2 text-xs text-gray-500">

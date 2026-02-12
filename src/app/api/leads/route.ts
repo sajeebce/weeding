@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
               type: "form_resubmitted",
               description: "Lead resubmitted form",
               metadata: {
-                formInstanceId: data.formInstanceId,
+                formTemplateId: data.formTemplateId,
                 sourceDetail: data.sourceDetail,
               },
             },
@@ -130,23 +130,22 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Get form instance if slug provided
-    let formInstance = null;
+    // Get form template if provided
+    let formTemplate: { id: string; name: string; autoAssignToId: string | null } | null = null;
     let autoAssignToId: string | null = null;
 
-    if (data.formInstanceSlug || data.formInstanceId) {
-      formInstance = await prisma.leadFormInstance.findFirst({
-        where: data.formInstanceId
-          ? { id: data.formInstanceId }
-          : { slug: data.formInstanceSlug },
+    if (data.formTemplateId) {
+      formTemplate = await prisma.leadFormTemplate.findUnique({
+        where: { id: data.formTemplateId },
+        select: { id: true, name: true, autoAssignToId: true },
       });
 
-      if (formInstance) {
-        autoAssignToId = formInstance.autoAssignToId;
+      if (formTemplate) {
+        autoAssignToId = formTemplate.autoAssignToId;
 
-        // Update form instance stats
-        await prisma.leadFormInstance.update({
-          where: { id: formInstance.id },
+        // Update template stats
+        await prisma.leadFormTemplate.update({
+          where: { id: formTemplate.id },
           data: {
             submissionCount: { increment: 1 },
             lastSubmission: new Date(),
@@ -233,7 +232,8 @@ export async function POST(request: NextRequest) {
         utmCampaign: data.utmCampaign,
         utmTerm: data.utmTerm,
         utmContent: data.utmContent,
-        formInstanceId: formInstance?.id,
+        formTemplateId: formTemplate?.id,
+        formTemplateName: formTemplate?.name,
         pageViews: data.pageViews || 0,
         visitCount: data.visitCount || 1,
         lastPageViewed: data.lastPageViewed,
@@ -245,7 +245,7 @@ export async function POST(request: NextRequest) {
             description: "Lead submitted form",
             metadata: {
               source: leadSource,
-              formInstanceId: formInstance?.id,
+              formTemplateId: formTemplate?.id,
               score,
             },
           },
@@ -268,7 +268,7 @@ export async function POST(request: NextRequest) {
       budget: data.budget,
       timeline: data.timeline,
       message: data.message,
-      formName: formInstance?.name,
+      formName: formTemplate?.name,
     }).catch((err) => {
       console.error("Failed to send lead notification email:", err);
     });
@@ -287,15 +287,14 @@ export async function POST(request: NextRequest) {
       success: true,
       leadId: lead.id,
       score: lead.score,
-      formInstanceId: formInstance?.id,
+      formTemplateId: formTemplate?.id,
       // Data for GTM/FB Pixel tracking
       trackingData: {
-        event: formInstance?.trackingEventName || "lead_form_submit",
+        event: "lead_form_submit",
         leadId: lead.id,
         score: lead.score,
         service: interestedIn[0] || null,
         source: leadSource,
-        ...(formInstance?.trackingParams as object || {}),
       },
     }, { status: 201 });
   } catch (error) {

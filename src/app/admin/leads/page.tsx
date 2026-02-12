@@ -96,11 +96,11 @@ interface Lead {
     name: string | null;
     email: string;
   } | null;
-  formInstance: {
+  formTemplate: {
     id: string;
     name: string;
-    slug: string;
   } | null;
+  formTemplateName: string | null;
   _count: {
     activities: number;
     leadNotes: number;
@@ -198,6 +198,8 @@ export default function LeadsPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [sourceFilter, setSourceFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
+  const [templateFilter, setTemplateFilter] = useState("all");
+  const [templates, setTemplates] = useState<{ id: string; name: string }[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
@@ -439,6 +441,7 @@ export default function LeadsPage() {
       if (statusFilter !== "all") params.set("status", statusFilter);
       if (sourceFilter !== "all") params.set("source", sourceFilter);
       if (priorityFilter !== "all") params.set("priority", priorityFilter);
+      if (templateFilter !== "all") params.set("formTemplateId", templateFilter);
 
       const response = await fetch(`/api/admin/leads?${params}`);
       if (!response.ok) throw new Error("Failed to fetch leads");
@@ -452,7 +455,7 @@ export default function LeadsPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, search, statusFilter, sourceFilter, priorityFilter]);
+  }, [page, search, statusFilter, sourceFilter, priorityFilter, templateFilter]);
 
   const fetchStats = useCallback(async () => {
     try {
@@ -484,6 +487,22 @@ export default function LeadsPage() {
       }
     }
     fetchTeamMembers();
+  }, []);
+
+  // Fetch form templates for filter
+  useEffect(() => {
+    async function fetchTemplates() {
+      try {
+        const response = await fetch("/api/admin/lead-form-templates");
+        if (response.ok) {
+          const data = await response.json();
+          setTemplates(data.templates || []);
+        }
+      } catch (error) {
+        console.error("Error fetching templates:", error);
+      }
+    }
+    fetchTemplates();
   }, []);
 
   const handleAssign = async (userId: string) => {
@@ -766,6 +785,18 @@ export default function LeadsPage() {
                 <SelectItem value="HIGH">High</SelectItem>
                 <SelectItem value="MEDIUM">Medium</SelectItem>
                 <SelectItem value="LOW">Low</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={templateFilter} onValueChange={(v) => { setTemplateFilter(v); setPage(1); }}>
+              <SelectTrigger className="w-[150px]">
+                <SelectValue placeholder="Form" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Forms</SelectItem>
+                <SelectItem value="none">No Form</SelectItem>
+                {templates.map((t) => (
+                  <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <Button type="submit" variant="secondary">
@@ -1084,6 +1115,7 @@ export default function LeadsPage() {
                     <TableHead>Status</TableHead>
                     <TableHead>Score</TableHead>
                     <TableHead>Source</TableHead>
+                    <TableHead>Form</TableHead>
                     {columnConfig.phone && <TableHead>Phone</TableHead>}
                     {columnConfig.company && <TableHead>Company</TableHead>}
                     {columnConfig.budget && <TableHead>Budget</TableHead>}
@@ -1200,10 +1232,18 @@ export default function LeadsPage() {
                         <div className="text-sm">
                           {sourceLabels[lead.source] || lead.source}
                         </div>
-                        {lead.formInstance && (
-                          <div className="text-xs text-muted-foreground">
-                            {lead.formInstance.name}
-                          </div>
+                      </TableCell>
+                      <TableCell>
+                        {lead.formTemplate ? (
+                          <Badge variant="outline" className="text-xs">
+                            {lead.formTemplate.name}
+                          </Badge>
+                        ) : lead.formTemplateName ? (
+                          <Badge variant="outline" className="text-xs text-muted-foreground">
+                            {lead.formTemplateName}
+                          </Badge>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
                         )}
                       </TableCell>
                       {columnConfig.phone && (

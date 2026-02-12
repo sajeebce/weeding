@@ -60,6 +60,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import { formatCurrency } from "@/lib/utils";
 
 interface ServiceCategory {
   id: string;
@@ -106,6 +107,7 @@ export default function AdminServicesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [serviceToDelete, setServiceToDelete] = useState<Service | null>(null);
+  const [currency, setCurrency] = useState("USD");
 
   const fetchServices = useCallback(async () => {
     setIsLoading(true);
@@ -150,6 +152,10 @@ export default function AdminServicesPage() {
   useEffect(() => {
     fetchServices();
     fetchCategories();
+    fetch("/api/business-config")
+      .then((res) => res.json())
+      .then((data) => { if (data.currency) setCurrency(data.currency); })
+      .catch(() => {});
   }, [fetchServices, fetchCategories]);
 
   const handleToggleActive = async (service: Service) => {
@@ -381,7 +387,7 @@ export default function AdminServicesPage() {
                     </TableCell>
                     <TableCell>
                       <span className="font-medium">
-                        ${service.startingPrice}
+                        {formatCurrency(service.startingPrice, currency)}
                       </span>
                     </TableCell>
                     <TableCell className="hidden lg:table-cell">

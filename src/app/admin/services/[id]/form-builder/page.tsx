@@ -43,6 +43,7 @@ import {
   Globe,
   Type,
   Minus,
+  GitBranch,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -114,13 +115,8 @@ const FIELD_WIDTHS = [
   { value: "TWO_THIRD", label: "Two Thirds" },
 ];
 
-const DATA_SOURCE_TYPES = [
-  { value: "STATIC", label: "Static Options" },
-  { value: "COUNTRY_LIST", label: "Countries" },
-  { value: "STATE_LIST", label: "States (by Country)" },
-  { value: "CURRENCY_LIST", label: "Currencies" },
-  { value: "CUSTOM_LIST", label: "Custom List" },
-];
+// DATA_SOURCE_TYPES removed — Countries/States have dedicated field types,
+// Currencies/Custom List not implemented. SELECT/RADIO just use static options.
 
 interface FormField {
   id?: string;
@@ -244,11 +240,14 @@ function SortableTabItem({
         </div>
         <span className="truncate">{tab.name}</span>
       </div>
-      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
+      <div className={cn(
+        "flex items-center gap-1",
+        isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+      )}>
         <Button
           variant="ghost"
           size="icon"
-          className="h-6 w-6"
+          className={cn("h-6 w-6", isSelected && "hover:bg-primary-foreground/20 text-primary-foreground")}
           onClick={onEdit}
         >
           <Settings2 className="h-3 w-3" />
@@ -257,7 +256,7 @@ function SortableTabItem({
           <Button
             variant="ghost"
             size="icon"
-            className="h-6 w-6 text-destructive"
+            className={cn("h-6 w-6", isSelected ? "hover:bg-destructive/20 text-primary-foreground" : "text-destructive")}
             onClick={onDelete}
           >
             <Trash2 className="h-3 w-3" />
@@ -306,16 +305,18 @@ function SortableFieldItem({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "group flex items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50 bg-background",
+        "group flex items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50 bg-background cursor-pointer",
         field.width === "HALF" && "w-1/2",
         field.width === "THIRD" && "w-1/3",
         field.width === "TWO_THIRD" && "w-2/3"
       )}
+      onClick={onEdit}
     >
       <div
         {...attributes}
         {...listeners}
         className="cursor-grab active:cursor-grabbing"
+        onClick={(e) => e.stopPropagation()}
       >
         <GripVertical className="h-4 w-4 text-muted-foreground hover:text-foreground" />
       </div>
@@ -330,6 +331,12 @@ function SortableFieldItem({
               Required
             </Badge>
           )}
+          {field.conditionalLogic && Object.keys(field.conditionalLogic).length > 0 && (
+            <Badge variant="outline" className="text-xs gap-1 text-orange-600 border-orange-300">
+              <GitBranch className="h-3 w-3" />
+              Conditional
+            </Badge>
+          )}
         </div>
         <p className="text-xs text-muted-foreground">
           {fieldType?.label} • {field.name}
@@ -340,7 +347,7 @@ function SortableFieldItem({
           variant="ghost"
           size="icon"
           className="h-8 w-8"
-          onClick={onEdit}
+          onClick={(e) => { e.stopPropagation(); onEdit(); }}
         >
           <Settings2 className="h-4 w-4" />
         </Button>
@@ -348,7 +355,7 @@ function SortableFieldItem({
           variant="ghost"
           size="icon"
           className="h-8 w-8 text-destructive"
-          onClick={onDelete}
+          onClick={(e) => { e.stopPropagation(); onDelete(); }}
         >
           <Trash2 className="h-4 w-4" />
         </Button>
@@ -378,9 +385,6 @@ export default function FormBuilderPage() {
   const [tabDialogOpen, setTabDialogOpen] = useState(false);
   const [editingTab, setEditingTab] = useState<FormTab | null>(null);
   const [editingTabIndex, setEditingTabIndex] = useState<number | null>(null);
-
-  // Custom lists for data sources
-  const [customLists, setCustomLists] = useState<Array<{ id: string; key: string; name: string }>>([]);
 
   // DnD sensors
   const sensors = useSensors(
@@ -500,22 +504,9 @@ export default function FormBuilderPage() {
     }
   }, [serviceId]);
 
-  const fetchCustomLists = useCallback(async () => {
-    try {
-      const response = await fetch("/api/admin/lists/custom");
-      const data = await response.json();
-      if (response.ok) {
-        setCustomLists(data);
-      }
-    } catch (error) {
-      console.error("Error fetching custom lists:", error);
-    }
-  }, []);
-
   useEffect(() => {
     fetchTemplate();
-    fetchCustomLists();
-  }, [fetchTemplate, fetchCustomLists]);
+  }, [fetchTemplate]);
 
   // Create template if it doesn't exist
   const createTemplate = async () => {
@@ -1317,116 +1308,71 @@ export default function FormBuilderPage() {
                 editingField.type
               ) && (
                 <div className="space-y-4">
-                  <h4 className="text-sm font-semibold text-foreground">Data Source</h4>
+                  <h4 className="text-sm font-semibold text-foreground">Options</h4>
                   <div className="space-y-2">
-                    <Label>Source Type</Label>
-                    <Select
-                      value={editingField.dataSourceType || "STATIC"}
-                      onValueChange={(v) =>
-                        setEditingField({
-                          ...editingField,
-                          dataSourceType: v,
-                          dataSourceKey: undefined,
-                        })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {DATA_SOURCE_TYPES.map((ds) => (
-                          <SelectItem key={ds.value} value={ds.value}>
-                            {ds.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {editingField.dataSourceType === "CUSTOM_LIST" && (
-                    <div className="space-y-2">
-                      <Label>Custom List</Label>
-                      <Select
-                        value={editingField.dataSourceKey || ""}
-                        onValueChange={(v) =>
-                          setEditingField({
-                            ...editingField,
-                            dataSourceKey: v,
-                          })
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a list" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {customLists.map((list) => (
-                            <SelectItem key={list.id} value={list.key}>
-                              {list.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                    <div className="flex items-center justify-between">
+                      <Label>Option List</Label>
+                      <Button variant="ghost" size="sm" onClick={addOption}>
+                        <Plus className="mr-1 h-4 w-4" />
+                        Add
+                      </Button>
                     </div>
-                  )}
-
-                  {editingField.dataSourceType === "STATE_LIST" && (
-                    <div className="space-y-2">
-                      <Label>Depends On Field</Label>
-                      <Input
-                        value={editingField.dependsOn || ""}
-                        onChange={(e) =>
-                          setEditingField({
-                            ...editingField,
-                            dependsOn: e.target.value,
-                          })
-                        }
-                        placeholder="country field name"
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        The country field name to filter states by
+                    {(editingField.options || []).length === 0 && (
+                      <p className="text-xs text-muted-foreground py-2">
+                        No options yet. Click &quot;Add&quot; to create options.
                       </p>
-                    </div>
-                  )}
-
-                  {(!editingField.dataSourceType ||
-                    editingField.dataSourceType === "STATIC") && (
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Label>Options</Label>
-                        <Button variant="ghost" size="sm" onClick={addOption}>
-                          <Plus className="mr-1 h-4 w-4" />
-                          Add
+                    )}
+                    {(editingField.options || []).map((opt, i) => (
+                      <div key={i} className="flex gap-2">
+                        <Input
+                          value={opt.value}
+                          onChange={(e) =>
+                            updateOption(i, "value", e.target.value)
+                          }
+                          placeholder="Value"
+                          className="w-1/3"
+                        />
+                        <Input
+                          value={opt.label}
+                          onChange={(e) =>
+                            updateOption(i, "label", e.target.value)
+                          }
+                          placeholder="Label"
+                          className="flex-1"
+                        />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removeOption(i)}
+                        >
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
-                      {(editingField.options || []).map((opt, i) => (
-                        <div key={i} className="flex gap-2">
-                          <Input
-                            value={opt.value}
-                            onChange={(e) =>
-                              updateOption(i, "value", e.target.value)
-                            }
-                            placeholder="Value"
-                            className="w-1/3"
-                          />
-                          <Input
-                            value={opt.label}
-                            onChange={(e) =>
-                              updateOption(i, "label", e.target.value)
-                            }
-                            placeholder="Label"
-                            className="flex-1"
-                          />
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => removeOption(i)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* State Field - Depends On Country */}
+              {editingField.type === "STATE_SELECT" && (
+                <div className="space-y-4">
+                  <h4 className="text-sm font-semibold text-foreground">State Settings</h4>
+                  <div className="space-y-2">
+                    <Label>Country Field Name</Label>
+                    <Input
+                      value={editingField.dependsOn || ""}
+                      onChange={(e) =>
+                        setEditingField({
+                          ...editingField,
+                          dependsOn: e.target.value,
+                        })
+                      }
+                      placeholder="e.g., country or managerCountry"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      The name of the country field to filter states by. Leave empty to show all US states.
+                    </p>
+                  </div>
                 </div>
               )}
 
@@ -1466,6 +1412,170 @@ export default function FormBuilderPage() {
                   </div>
                 </div>
               )}
+
+              {/* Conditional Visibility */}
+              {!isDisplayOnly && (() => {
+                const conditionalEnabled = !!(editingField.conditionalLogic && (editingField.conditionalLogic as Record<string, unknown>).when);
+                const cl = (editingField.conditionalLogic || {}) as { when?: string; operator?: string; value?: string };
+
+                // Get all fields across all tabs for the "depends on" dropdown
+                const allFields: Array<{ name: string; label: string; type: string; tabName: string; options?: Array<{ value: string; label: string }> }> = [];
+                template.tabs.forEach((tab) => {
+                  tab.fields.forEach((f) => {
+                    // Exclude display-only fields and the current field
+                    if (!["HEADING", "PARAGRAPH", "DIVIDER"].includes(f.type) && f.name !== editingField.name) {
+                      allFields.push({ name: f.name, label: f.label, type: f.type, tabName: tab.name, options: f.options });
+                    }
+                  });
+                });
+
+                // Find the selected "when" field to check if it has options
+                const whenField = allFields.find((f) => f.name === cl.when);
+                const whenFieldHasOptions = whenField && ["SELECT", "MULTI_SELECT", "RADIO", "CHECKBOX_GROUP"].includes(whenField.type) && whenField.options && whenField.options.length > 0;
+
+                return (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                        <GitBranch className="h-4 w-4 text-orange-500" />
+                        Conditional Visibility
+                      </h4>
+                    </div>
+
+                    <div className="flex items-center justify-between rounded-lg border p-3">
+                      <div>
+                        <Label>Show conditionally</Label>
+                        <p className="text-xs text-muted-foreground">
+                          Only show this field when a condition is met
+                        </p>
+                      </div>
+                      <Switch
+                        checked={conditionalEnabled}
+                        onCheckedChange={(enabled) => {
+                          if (enabled) {
+                            setEditingField({
+                              ...editingField,
+                              conditionalLogic: { show: true, when: "", operator: "equals", value: "" },
+                            });
+                          } else {
+                            setEditingField({
+                              ...editingField,
+                              conditionalLogic: null as unknown as Record<string, unknown>,
+                            });
+                          }
+                        }}
+                      />
+                    </div>
+
+                    {conditionalEnabled && (
+                      <div className="space-y-3 rounded-lg border border-orange-200 bg-orange-50/50 p-4">
+                        {/* When Field */}
+                        <div className="space-y-2">
+                          <Label className="text-xs font-medium">Show this field when</Label>
+                          <Select
+                            value={(cl.when as string) || ""}
+                            onValueChange={(v) =>
+                              setEditingField({
+                                ...editingField,
+                                conditionalLogic: { ...cl, when: v, value: "" },
+                              })
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a field..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {allFields.map((f) => (
+                                <SelectItem key={f.name} value={f.name}>
+                                  <span>{f.label}</span>
+                                  <span className="ml-2 text-xs text-muted-foreground">({f.tabName})</span>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* Operator */}
+                        <div className="space-y-2">
+                          <Label className="text-xs font-medium">Operator</Label>
+                          <Select
+                            value={(cl.operator as string) || "equals"}
+                            onValueChange={(v) =>
+                              setEditingField({
+                                ...editingField,
+                                conditionalLogic: { ...cl, operator: v },
+                              })
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="equals">Equals</SelectItem>
+                              <SelectItem value="not_equals">Does not equal</SelectItem>
+                              <SelectItem value="contains">Contains</SelectItem>
+                              <SelectItem value="not_empty">Is not empty</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* Value - Dropdown if parent has options, text input otherwise */}
+                        {cl.operator !== "not_empty" && (
+                          <div className="space-y-2">
+                            <Label className="text-xs font-medium">Value</Label>
+                            {whenFieldHasOptions ? (
+                              <Select
+                                value={(cl.value as string) || ""}
+                                onValueChange={(v) =>
+                                  setEditingField({
+                                    ...editingField,
+                                    conditionalLogic: { ...cl, value: v },
+                                  })
+                                }
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select a value..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {whenField.options!.map((opt) => (
+                                    <SelectItem key={opt.value} value={opt.value}>
+                                      {opt.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            ) : (
+                              <Input
+                                value={(cl.value as string) || ""}
+                                onChange={(e) =>
+                                  setEditingField({
+                                    ...editingField,
+                                    conditionalLogic: { ...cl, value: e.target.value },
+                                  })
+                                }
+                                placeholder="Enter value..."
+                              />
+                            )}
+                          </div>
+                        )}
+
+                        {/* Preview summary */}
+                        {cl.when && (cl.operator === "not_empty" || cl.value) && (
+                          <div className="rounded-md bg-background p-2 text-xs text-muted-foreground border">
+                            <Eye className="inline h-3 w-3 mr-1" />
+                            Show <span className="font-medium text-foreground">{editingField.label || "this field"}</span>
+                            {" "}when <span className="font-medium text-foreground">{whenField?.label || cl.when}</span>
+                            {" "}{cl.operator === "equals" ? "=" : cl.operator === "not_equals" ? "≠" : cl.operator === "contains" ? "contains" : "is not empty"}
+                            {cl.operator !== "not_empty" && (
+                              <> <span className="font-medium text-foreground">&quot;{(cl.value as string)}&quot;</span></>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
               <div className="flex gap-2 pt-6 mt-6 border-t">
                 <Button

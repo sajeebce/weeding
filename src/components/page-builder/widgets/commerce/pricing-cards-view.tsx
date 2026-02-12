@@ -64,6 +64,7 @@ interface PricingCardsViewProps {
   selectedLocation: LocationItem | null;
   locationFee: number;
   serviceSlug: string;
+  currencySymbol?: string;
 }
 
 // =============================================================================
@@ -79,6 +80,7 @@ export function PricingCardsView({
   selectedLocation,
   locationFee,
   serviceSlug,
+  currencySymbol = "$",
 }: PricingCardsViewProps) {
   const { cardStyle, ctaButtons, colors } = settings;
 
@@ -232,13 +234,13 @@ export function PricingCardsView({
                       getPriceSizeClasses()
                     )}
                   >
-                    ${pkg.price}
+                    {currencySymbol}{pkg.price}
                   </span>
                   {locationFee > 0 && (
                     <>
                       <span className="text-muted-foreground text-lg">+</span>
                       <span className="text-lg font-semibold text-primary">
-                        ${locationFee}
+                        {currencySymbol}{locationFee}
                       </span>
                       <span className="text-sm text-muted-foreground ml-1">
                         {settings.stateFee?.label?.toLowerCase() || "location fee"}
@@ -251,7 +253,7 @@ export function PricingCardsView({
                   <p className="mt-2 text-sm text-muted-foreground">
                     Total:{" "}
                     <span className="font-semibold text-foreground">
-                      ${total}
+                      {currencySymbol}{total}
                     </span>
                   </p>
                 )}
@@ -282,7 +284,7 @@ export function PricingCardsView({
                       {feature.text}
                       {!feature.included && feature.isAddon && feature.addonPrice && (
                         <span className="ml-1.5 text-xs text-muted-foreground">
-                          (Add-on ${feature.addonPrice})
+                          (Add-on {currencySymbol}{feature.addonPrice})
                         </span>
                       )}
                       {feature.included && feature.customValue && (

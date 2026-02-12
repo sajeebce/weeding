@@ -20,6 +20,7 @@ const updateServiceSchema = z.object({
   metaTitle: z.string().optional().nullable(),
   metaDescription: z.string().optional().nullable(),
   features: z.array(z.string()).optional(),
+  displayOptions: z.record(z.string(), z.unknown()).optional(),
 });
 
 // GET /api/admin/services/[id] - Get single service for editing
@@ -75,6 +76,7 @@ export async function GET(
       categoryId: service.categoryId,
       metaTitle: service.metaTitle,
       metaDescription: service.metaDescription,
+      displayOptions: service.displayOptions || {},
       category: service.category,
       features: service.features.map((f) => ({ id: f.id, text: f.text })),
       packages: service.packages.map((p) => ({

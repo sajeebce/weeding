@@ -2,20 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
-
-// Generate unique order number
-function generateOrderNumber(serviceSlug: string): string {
-  const year = new Date().getFullYear();
-  const prefix = serviceSlug.substring(0, 3).toUpperCase();
-  const random = Math.random().toString(36).substring(2, 8).toUpperCase();
-  return `${prefix}-${year}-${random}`;
-}
+import { generateOrderNumber } from "@/lib/order-utils";
 
 // Schema for service order - more flexible than LLC-specific
 const serviceOrderSchema = z.object({
   // Service details
   serviceId: z.string(),
   serviceName: z.string(),
+
+  // Package details (optional)
+  packageId: z.string().optional(),
+  packageName: z.string().optional(),
+  packagePrice: z.number().optional(),
 
   // Form data - flexible object for any service
   formData: z.record(z.string(), z.unknown()),
@@ -153,7 +151,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate order number
-    const orderNumber = generateOrderNumber(data.serviceId);
+    const orderNumber = await generateOrderNumber();
 
     // Find or create service by slug
     let service = await prisma.service.findUnique({
@@ -181,6 +179,21 @@ export async function POST(request: NextRequest) {
     const customerPhone = data.account?.phone || (data.formData.phone as string) || user.phone || "";
     const customerCountry = data.account?.country || (data.formData.country as string) || user.country || "";
 
+    // Find package if provided (packageId from checkout is the slug-like name)
+    let packageRecord = null;
+    if (data.packageId) {
+      packageRecord = await prisma.package.findFirst({
+        where: {
+          serviceId: service.id,
+          OR: [
+            { id: data.packageId },
+            { name: { equals: data.packageId, mode: "insensitive" } },
+            { name: { equals: data.packageName || "", mode: "insensitive" } },
+          ],
+        },
+      });
+    }
+
     // Create order
     const order = await prisma.order.create({
       data: {
@@ -200,8 +213,9 @@ export async function POST(request: NextRequest) {
           create: [
             {
               serviceId: service.id,
+              packageId: packageRecord?.id || undefined,
               name: data.serviceName,
-              description: `${data.serviceName} ${data.locationName || data.stateName ? `- ${data.locationName || data.stateName}` : ""}`.trim(),
+              description: `${data.packageName ? data.packageName + " - " : ""}${data.serviceName}${data.locationName || data.stateName ? ` - ${data.locationName || data.stateName}` : ""}`.trim(),
               priceUSD: data.totalAmount,
               stateFee: 0,
               locationCode: data.locationCode || (data.stateCode ? `US-${data.stateCode}` : undefined),

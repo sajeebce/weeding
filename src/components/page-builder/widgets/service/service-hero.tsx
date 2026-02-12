@@ -5,6 +5,7 @@
 
 "use client";
 
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
@@ -16,6 +17,7 @@ import {
 } from "@/lib/page-builder/contexts/service-context";
 import type { ServiceHeroWidgetSettings } from "@/lib/page-builder/types";
 import { ServiceIcon } from "@/components/ui/service-icon";
+import { getCurrencySymbol } from "@/components/ui/currency-selector";
 
 // ============================================
 // DEFAULT SETTINGS
@@ -70,6 +72,18 @@ export function ServiceHeroWidget({
     ...partialSettings,
   };
 
+  // Currency symbol
+  const [currencySymbol, setCurrencySymbol] = useState("$");
+
+  useEffect(() => {
+    fetch("/api/business-config")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.currency) setCurrencySymbol(getCurrencySymbol(data.currency));
+      })
+      .catch(() => {});
+  }, []);
+
   // Get service context
   const serviceContext = useOptionalServiceContext();
 
@@ -96,8 +110,8 @@ export function ServiceHeroWidget({
 
   // Format price for button
   const formattedPrice = service.startingPrice === 0
-    ? "$0"
-    : `$${Number(service.startingPrice).toLocaleString()}`;
+    ? `${currencySymbol}0`
+    : `${currencySymbol}${Number(service.startingPrice).toLocaleString()}`;
 
   // Build background classes
   const getBackgroundClasses = () => {

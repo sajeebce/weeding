@@ -36,11 +36,7 @@ export function formatRelativeTime(date: Date | string): string {
   return formatDate(date);
 }
 
-export function generateOrderNumber(): string {
-  const timestamp = Date.now().toString(36).toUpperCase();
-  const random = Math.random().toString(36).substring(2, 6).toUpperCase();
-  return `LLC-${timestamp}-${random}`;
-}
+// generateOrderNumber is in src/lib/order-utils.ts (server-only)
 
 export function slugify(text: string): string {
   return text
@@ -137,8 +133,6 @@ export function sanitizePhone(value: string): string {
 export function sanitizeText(value: string, maxLength?: number): string {
   // Remove null bytes and control characters except newline and tab
   let sanitized = value.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "");
-  // Trim whitespace
-  sanitized = sanitized.trim();
   // Apply max length if specified
   if (maxLength && sanitized.length > maxLength) {
     sanitized = sanitized.slice(0, maxLength);
@@ -155,8 +149,8 @@ export function sanitizeEmail(value: string): string {
 export function sanitizeName(value: string, maxLength: number = INPUT_LIMITS.name.max): string {
   // Allow unicode letters, spaces, hyphens, apostrophes, and periods
   let sanitized = value.replace(/[^\p{L}\s\-'.]/gu, "");
-  // Remove multiple consecutive spaces
-  sanitized = sanitized.replace(/\s+/g, " ").trim();
+  // Remove multiple consecutive spaces (but preserve trailing single space for typing)
+  sanitized = sanitized.replace(/\s{2,}/g, " ");
   return sanitized.slice(0, maxLength);
 }
 

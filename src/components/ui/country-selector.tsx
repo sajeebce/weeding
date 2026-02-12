@@ -5,7 +5,9 @@ import {
   useEffect,
   useRef,
   useMemo,
+  useCallback,
 } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { Search, ChevronDown, Globe, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -259,8 +261,8 @@ const ELIGIBLE_COUNTRIES: Country[] = [
   { code: "ZW", name: "Zimbabwe", flag: "🇿🇼" },
 ];
 
-// Popular countries for quick selection (target markets)
-const POPULAR_COUNTRY_CODES = ["BD", "IN", "PK", "AE", "SA", "MY", "SG", "GB", "CN", "PH"];
+const ITEM_HEIGHT = 40; // px per row
+const LIST_HEIGHT = 240; // max-h-60 = 240px
 
 export function CountrySelector({
   value,
@@ -274,15 +276,13 @@ export function CountrySelector({
 
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const listRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Find selected country
   const selectedCountry = useMemo(
     () => ELIGIBLE_COUNTRIES.find((c) => c.code === value),
     [value]
   );
 
-  // Filter countries based on search
   const filteredCountries = useMemo(() => {
     if (!search.trim()) return ELIGIBLE_COUNTRIES;
 
@@ -294,11 +294,25 @@ export function CountrySelector({
     );
   }, [search]);
 
-  // Popular countries for quick selection
-  const popularCountries = useMemo(
-    () => ELIGIBLE_COUNTRIES.filter((c) => POPULAR_COUNTRY_CODES.includes(c.code)),
-    []
-  );
+  const virtualizer = useVirtualizer({
+    count: filteredCountries.length,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => ITEM_HEIGHT,
+    overscan: 5,
+  });
+
+  // Scroll to selected item when dropdown opens
+  useEffect(() => {
+    if (isOpen && value && filteredCountries.length > 0) {
+      const index = filteredCountries.findIndex((c) => c.code === value);
+      if (index > -1) {
+        // Small delay to ensure virtualizer is ready
+        requestAnimationFrame(() => {
+          virtualizer.scrollToIndex(index, { align: "center" });
+        });
+      }
+    }
+  }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Close on outside click
   useEffect(() => {
@@ -336,11 +350,11 @@ export function CountrySelector({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isOpen]);
 
-  const handleSelect = (countryCode: string) => {
+  const handleSelect = useCallback((countryCode: string) => {
     onChange(countryCode);
     setIsOpen(false);
     setSearch("");
-  };
+  }, [onChange]);
 
   return (
     <div ref={containerRef} className={cn("relative", className)}>
@@ -403,68 +417,57 @@ export function CountrySelector({
             </div>
           </div>
 
-          {/* Popular Countries (only when no search) */}
-          {!search && (
-            <div className="border-b px-2 py-2">
-              <p className="mb-2 text-xs font-medium text-muted-foreground">
-                Popular Countries
-              </p>
-              <div className="flex flex-wrap gap-1">
-                {popularCountries.map((country) => (
-                  <button
-                    key={`popular-${country.code}`}
-                    type="button"
-                    onClick={() => handleSelect(country.code)}
-                    className={cn(
-                      "flex items-center gap-1 rounded-full border px-2 py-1 text-xs font-medium transition-colors",
-                      "hover:bg-primary hover:text-primary-foreground",
-                      value === country.code &&
-                        "bg-primary text-primary-foreground"
-                    )}
-                  >
-                    <span>{country.flag}</span>
-                    <span>{country.code}</span>
-                  </button>
-                ))}
+          {/* Virtualized Country List */}
+          {filteredCountries.length === 0 ? (
+            <div className="p-4 text-center text-sm text-muted-foreground">
+              No countries found
+            </div>
+          ) : (
+            <div
+              ref={scrollRef}
+              className="overflow-y-auto overscroll-contain"
+              style={{ maxHeight: LIST_HEIGHT }}
+            >
+              <div
+                style={{
+                  height: `${virtualizer.getTotalSize()}px`,
+                  width: "100%",
+                  position: "relative",
+                }}
+              >
+                {virtualizer.getVirtualItems().map((virtualItem) => {
+                  const country = filteredCountries[virtualItem.index];
+                  return (
+                    <button
+                      key={country.code}
+                      type="button"
+                      onClick={() => handleSelect(country.code)}
+                      className={cn(
+                        "absolute left-0 top-0 flex w-full items-center justify-between px-3 text-sm transition-colors",
+                        "hover:bg-accent",
+                        value === country.code && "bg-accent"
+                      )}
+                      style={{
+                        height: `${virtualItem.size}px`,
+                        transform: `translateY(${virtualItem.start}px)`,
+                      }}
+                    >
+                      <span className="flex items-center gap-2">
+                        <span className="text-base">{country.flag}</span>
+                        <span className="font-medium">{country.name}</span>
+                        <span className="text-xs text-muted-foreground">
+                          ({country.code})
+                        </span>
+                      </span>
+                      {value === country.code && (
+                        <Check className="h-4 w-4 text-primary" />
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
-
-          {/* Country List */}
-          <div
-            ref={listRef}
-            className="max-h-60 overflow-y-auto overscroll-contain"
-          >
-            {filteredCountries.length === 0 && (
-              <div className="p-4 text-center text-sm text-muted-foreground">
-                No countries found
-              </div>
-            )}
-
-            {filteredCountries.map((country) => (
-              <button
-                key={`list-${country.code}`}
-                type="button"
-                onClick={() => handleSelect(country.code)}
-                className={cn(
-                  "flex w-full items-center justify-between px-3 py-2.5 text-sm transition-colors",
-                  "hover:bg-accent",
-                  value === country.code && "bg-accent"
-                )}
-              >
-                <span className="flex items-center gap-2">
-                  <span className="text-base">{country.flag}</span>
-                  <span className="font-medium">{country.name}</span>
-                  <span className="text-xs text-muted-foreground">
-                    ({country.code})
-                  </span>
-                </span>
-                {value === country.code && (
-                  <Check className="h-4 w-4 text-primary" />
-                )}
-              </button>
-            ))}
-          </div>
 
           {/* Footer Info */}
           <div className="border-t px-3 py-2">

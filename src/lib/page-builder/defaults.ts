@@ -34,6 +34,7 @@ import type {
   ServiceDescriptionWidgetSettings,
   ServiceBreadcrumbWidgetSettings,
   RelatedServicesWidgetSettings,
+  ButtonGroupWidgetSettings,
 } from "./types";
 
 // ============================================
@@ -300,6 +301,7 @@ export const DEFAULT_STATS_SECTION_SETTINGS: StatsSectionWidgetSettings = {
 };
 
 export const DEFAULT_LEAD_FORM_SETTINGS: LeadFormWidgetSettings = {
+  templateId: undefined,
   title: "Get Your Free Consultation",
   description: "Fill out the form below and we'll get back to you within 24 hours.",
   fields: [
@@ -342,6 +344,25 @@ export const DEFAULT_LEAD_FORM_SETTINGS: LeadFormWidgetSettings = {
   padding: 24,
   borderRadius: 12,
   shadow: true,
+};
+
+export const DEFAULT_BUTTON_GROUP_SETTINGS: ButtonGroupWidgetSettings = {
+  buttons: [
+    {
+      id: "btn_1",
+      text: "Get Started",
+      link: "/services/llc-formation",
+      style: {
+        bgColor: "#F97316",
+        textColor: "#ffffff",
+        borderRadius: 8,
+        hoverEffect: "shadow-lift",
+      },
+    },
+  ],
+  layout: "horizontal",
+  alignment: "center",
+  gap: 16,
 };
 
 export const DEFAULT_VIDEO_SETTINGS: VideoWidgetSettings = {
@@ -2058,4 +2079,5 @@ export const WIDGET_DEFAULTS: Record<string, unknown> = {
   "blog-featured-post": DEFAULT_BLOG_FEATURED_POST_SETTINGS,
   "blog-post-list": DEFAULT_BLOG_POST_LIST_SETTINGS,
   "blog-recent-posts": DEFAULT_BLOG_RECENT_POSTS_SETTINGS,
+  "button-group": DEFAULT_BUTTON_GROUP_SETTINGS,
 };

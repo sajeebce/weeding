@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import {
   Package,
@@ -50,6 +50,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
+import { getCurrencySymbol } from "@/components/ui/currency-selector";
 
 type OrderStatus = "PENDING" | "PROCESSING" | "IN_PROGRESS" | "WAITING_FOR_INFO" | "COMPLETED" | "CANCELLED" | "REFUNDED";
 type PaymentStatus = "PENDING" | "PAID" | "FAILED" | "REFUNDED";
@@ -57,9 +58,6 @@ type PaymentStatus = "PENDING" | "PAID" | "FAILED" | "REFUNDED";
 interface Order {
   id: string;
   orderNumber: string;
-  llcName: string | null;
-  llcState: string | null;
-  llcType: string | null;
   status: OrderStatus;
   paymentStatus: PaymentStatus;
   totalUSD: string;
@@ -74,6 +72,8 @@ interface Order {
     stateFee: string | null;
     locationName: string | null;
     locationFeeLabel: string | null;
+    service: { id: string; name: string; slug: string } | null;
+    package: { id: string; name: string } | null;
   }>;
   user: {
     id: string;
@@ -125,6 +125,7 @@ export default function AdminOrdersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isBulkUpdating, setIsBulkUpdating] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [currencySymbol, setCurrencySymbol] = useState("$");
   const [stats, setStats] = useState({
     pending: 0,
     processing: 0,
@@ -173,6 +174,13 @@ export default function AdminOrdersPage() {
 
   useEffect(() => {
     fetchOrders();
+    // Fetch currency from business config
+    fetch("/api/business-config")
+      .then((res) => res.json())
+      .then((config) => {
+        if (config.currency) setCurrencySymbol(getCurrencySymbol(config.currency));
+      })
+      .catch(() => {});
   }, [fetchOrders]);
 
   const handleFilterChange = (type: "status" | "payment" | "search", value: string) => {
@@ -238,7 +246,7 @@ export default function AdminOrdersPage() {
   };
 
   const formatPrice = (price: string) => {
-    return `$${parseFloat(price).toFixed(0)}`;
+    return `${currencySymbol}${parseFloat(price).toFixed(0)}`;
   };
 
   // Bulk status update
@@ -548,8 +556,7 @@ export default function AdminOrdersPage() {
                     </TableHead>
                     <TableHead>Order</TableHead>
                     <TableHead>Customer</TableHead>
-                    <TableHead className="hidden md:table-cell">LLC Name</TableHead>
-                    <TableHead className="hidden lg:table-cell">State</TableHead>
+                    <TableHead className="hidden md:table-cell">Service</TableHead>
                     <TableHead>Amount</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="hidden sm:table-cell">Payment</TableHead>
@@ -588,14 +595,13 @@ export default function AdminOrdersPage() {
                       </TableCell>
                       <TableCell className="hidden md:table-cell">
                         <div>
-                          <p>{order.llcName || "N/A"}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {order.llcType === "single" ? "Single-Member" : order.llcType === "multi" ? "Multi-Member" : ""}
-                          </p>
+                          <p className="font-medium">{order.items[0]?.service?.name || order.items[0]?.name.split(" - ")[0] || "N/A"}</p>
+                          {order.items[0]?.package && (
+                            <p className="text-xs text-muted-foreground">
+                              {order.items[0].package.name}
+                            </p>
+                          )}
                         </div>
-                      </TableCell>
-                      <TableCell className="hidden lg:table-cell">
-                        {order.llcState || "N/A"}
                       </TableCell>
                       <TableCell>{formatPrice(order.totalUSD)}</TableCell>
                       <TableCell>

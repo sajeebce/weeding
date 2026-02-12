@@ -163,8 +163,6 @@ export async function GET(
         customerEmail: order.customerEmail,
         customerPhone: order.customerPhone,
         customerCountry: order.customerCountry,
-        llcName: order.llcName,
-        llcState: order.llcState,
         items: order.items,
         subtotalUSD: order.subtotalUSD,
         discountUSD: order.discountUSD,

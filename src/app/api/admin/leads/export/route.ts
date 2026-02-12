@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
         assignedTo: {
           select: { name: true, email: true },
         },
-        formInstance: {
+        formTemplate: {
           select: { name: true },
         },
       },
@@ -127,7 +127,7 @@ export async function GET(request: NextRequest) {
       lead.timeline || "",
       lead.notes || "",
       lead.assignedTo?.name || lead.assignedTo?.email || "",
-      lead.formInstance?.name || "",
+      lead.formTemplate?.name || lead.formTemplateName || "",
       lead.utmSource || "",
       lead.utmMedium || "",
       lead.utmCampaign || "",

@@ -148,23 +148,16 @@ function FooterButton({
   );
 }
 
-// Fallback links (used when API fails or during initial load)
+// Fallback links (used when API fails or during initial load) - generic, no business-specific content
 const fallbackLinks = {
   services: [
-    { name: "LLC Formation", href: "/services/llc-formation" },
-    { name: "EIN Application", href: "/services/ein-application" },
-    { name: "Amazon Seller Account", href: "/services/amazon-seller" },
-    { name: "Registered Agent", href: "/services/registered-agent" },
-    { name: "Virtual Address", href: "/services/virtual-address" },
-    { name: "Business Banking", href: "/services/business-banking" },
+    { name: "Browse All Services", href: "/services" },
   ],
   company: [
     { name: "About Us", href: "/about" },
-    { name: "Pricing", href: "/pricing" },
     { name: "Blog", href: "/blog" },
     { name: "FAQs", href: "/faq" },
     { name: "Contact", href: "/contact" },
-    { name: "Testimonials", href: "/testimonials" },
   ],
   legal: [
     { name: "Privacy Policy", href: "/privacy" },
@@ -172,13 +165,7 @@ const fallbackLinks = {
     { name: "Refund Policy", href: "/refund-policy" },
     { name: "Disclaimer", href: "/disclaimer" },
   ],
-  states: [
-    { name: "Wyoming LLC", href: "/llc/wyoming" },
-    { name: "Delaware LLC", href: "/llc/delaware" },
-    { name: "New Mexico LLC", href: "/llc/new-mexico" },
-    { name: "Texas LLC", href: "/llc/texas" },
-    { name: "Florida LLC", href: "/llc/florida" },
-  ],
+  states: [] as { name: string; href: string }[],
 };
 
 // Enhanced Newsletter form component with multiple styles

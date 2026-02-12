@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getServiceForm } from "@/lib/data/service-forms";
+
 import { MultiJsonLd } from "@/components/seo/json-ld";
 import {
   generateServiceSchema,
@@ -21,6 +21,8 @@ import { PackageComparisonTable } from "@/components/services/package-comparison
 import { ServiceFaqAccordion } from "@/components/services/service-faq-accordion";
 import prisma from "@/lib/db";
 import type { FeatureValueType } from "@prisma/client";
+import { getBusinessConfig } from "@/lib/business-settings";
+import { getCurrencySymbol } from "@/lib/currencies";
 import {
   ServiceProvider,
   type ServiceData as ServiceContextData,
@@ -265,6 +267,10 @@ export default async function ServicePage({ params }: PageProps) {
 
   const relatedServices = await getRelatedServices(slug);
 
+  // Get currency from business settings
+  const businessConfig = await getBusinessConfig();
+  const currencySymbol = getCurrencySymbol(businessConfig.currency);
+
   // Check for SERVICE_DETAILS template
   const template = await getActiveTemplateForType("SERVICE_DETAILS");
 
@@ -322,17 +328,12 @@ export default async function ServicePage({ params }: PageProps) {
     updatedAt: new Date(),
   };
 
-  // Determine checkout URL based on whether service has a form config
-  const hasFormConfig = getServiceForm(service.slug) !== undefined;
-  const checkoutBaseUrl = hasFormConfig
-    ? `/checkout/${service.slug}`
-    : `/checkout?service=${service.slug}`;
+  // Always use dynamic checkout route
+  const checkoutBaseUrl = `/checkout/${service.slug}`;
 
   const getPackageCheckoutUrl = (packageName: string) => {
     const pkgSlug = packageName.toLowerCase().replace(/\s+/g, "-");
-    return hasFormConfig
-      ? `/checkout/${service.slug}?package=${pkgSlug}`
-      : `/checkout?service=${service.slug}&package=${pkgSlug}`;
+    return `/checkout/${service.slug}?package=${pkgSlug}`;
   };
 
   const schemaData: Record<string, unknown>[] = [
@@ -372,10 +373,8 @@ export default async function ServicePage({ params }: PageProps) {
 
     return (
       <ServiceProvider service={serviceContextData}>
-        <div className="py-12 lg:py-20">
-          <MultiJsonLd data={schemaData} />
-          <PageBuilderRenderer sections={visibleSections} />
-        </div>
+        <MultiJsonLd data={schemaData} />
+        <PageBuilderRenderer sections={visibleSections} />
       </ServiceProvider>
     );
   }
@@ -474,6 +473,9 @@ export default async function ServicePage({ params }: PageProps) {
                   serviceId={service.id}
                   hasLocationBasedPricing={service.hasLocationBasedPricing}
                   locationFeeLabel={service.locationFeeLabel}
+                  currencySymbol={currencySymbol}
+                  checkoutBadgeText={service.displayOptions.checkoutBadgeText as string}
+                  checkoutBadgeDescription={service.displayOptions.checkoutBadgeDescription as string}
                 />
               ) : (
                 // Fallback: Simple package cards if no comparison data
@@ -496,7 +498,7 @@ export default async function ServicePage({ params }: PageProps) {
                       )}
                       <CardHeader className="text-center">
                         <CardTitle>{pkg.name}</CardTitle>
-                        <p className="text-3xl font-bold">${pkg.priceUSD}</p>
+                        <p className="text-3xl font-bold">{currencySymbol}{pkg.priceUSD}</p>
                         {pkg.description && (
                           <p className="text-sm text-muted-foreground">
                             {pkg.description}

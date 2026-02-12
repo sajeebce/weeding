@@ -35,14 +35,8 @@ export async function GET(
     const template = await prisma.leadFormTemplate.findUnique({
       where: { id },
       include: {
-        formInstances: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            isActive: true,
-            submissionCount: true,
-          },
+        _count: {
+          select: { leads: true },
         },
       },
     });
@@ -70,7 +64,7 @@ const updateTemplateSchema = z.object({
   description: z.string().optional().nullable(),
   fields: z.array(z.object({
     id: z.string(),
-    type: z.enum(["text", "email", "phone", "textarea", "select", "multiselect", "checkbox", "radio", "number", "date", "url", "hidden"]),
+    type: z.enum(["text", "email", "phone", "textarea", "select", "multiselect", "checkbox", "radio", "number", "date", "url", "hidden", "country_select", "service_select"]),
     name: z.string(),
     label: z.string(),
     placeholder: z.string().optional(),
@@ -128,9 +122,9 @@ export async function PATCH(
         ...(data.name !== undefined && { name: data.name }),
         ...(data.description !== undefined && { description: data.description }),
         ...(data.fields !== undefined && { fields: data.fields as Prisma.InputJsonValue }),
-        ...(data.defaultSuccessMessage !== undefined && { defaultSuccessMessage: data.defaultSuccessMessage }),
-        ...(data.defaultSuccessRedirect !== undefined && { defaultSuccessRedirect: data.defaultSuccessRedirect }),
-        ...(data.defaultAutoAssignTo !== undefined && { defaultAutoAssignTo: data.defaultAutoAssignTo }),
+        ...(data.defaultSuccessMessage !== undefined && { successMessage: data.defaultSuccessMessage }),
+        ...(data.defaultSuccessRedirect !== undefined && { successRedirect: data.defaultSuccessRedirect }),
+        ...(data.defaultAutoAssignTo !== undefined && { autoAssignToId: data.defaultAutoAssignTo }),
         ...(data.defaultStyling !== undefined && {
           defaultStyling: data.defaultStyling === null ? Prisma.JsonNull : data.defaultStyling as Prisma.InputJsonValue
         }),
@@ -173,7 +167,7 @@ export async function DELETE(
     // Check if template exists and is not a system template
     const existing = await prisma.leadFormTemplate.findUnique({
       where: { id },
-      include: { _count: { select: { formInstances: true } } },
+      include: { _count: { select: { leads: true } } },
     });
 
     if (!existing) {
@@ -190,11 +184,13 @@ export async function DELETE(
       );
     }
 
-    if (existing._count.formInstances > 0) {
-      return NextResponse.json(
-        { error: "Cannot delete template with active form instances" },
-        { status: 400 }
-      );
+    if (existing._count.leads > 0) {
+      // Deactivate instead of deleting if template has leads
+      await prisma.leadFormTemplate.update({
+        where: { id },
+        data: { isActive: false },
+      });
+      return NextResponse.json({ success: true, deactivated: true });
     }
 
     await prisma.leadFormTemplate.delete({ where: { id } });

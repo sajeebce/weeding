@@ -16,6 +16,7 @@ import {
   Loader2,
   Search,
   Filter,
+  Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -66,6 +67,7 @@ interface PageData {
   slug: string;
   name: string;
   isActive: boolean;
+  isSystem: boolean;
   templateType: string | null;
   isTemplateActive: boolean;
   sectionsCount: number;
@@ -492,12 +494,20 @@ export default function PagesListPage() {
                 {filteredPages.map((page) => (
                   <TableRow key={page.id}>
                     <TableCell className="font-medium">
-                      <Link
-                        href={`/admin/appearance/pages/${page.id}`}
-                        className="hover:text-primary hover:underline"
-                      >
-                        {page.name}
-                      </Link>
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={`/admin/appearance/pages/${page.id}`}
+                          className="hover:text-primary hover:underline"
+                        >
+                          {page.name}
+                        </Link>
+                        {page.isSystem && (
+                          <Badge variant="outline" className="text-xs gap-1 border-amber-300 text-amber-700 bg-amber-50">
+                            <Lock className="h-3 w-3" />
+                            System
+                          </Badge>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       /{page.slug}
@@ -566,18 +576,22 @@ export default function PagesListPage() {
                               </a>
                             </DropdownMenuItem>
                           )}
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            className="text-destructive"
-                            onClick={() => {
-                              setSelectedPage(page);
-                              setShowDeleteDialog(true);
-                            }}
-                            disabled={page.isTemplateActive}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                          </DropdownMenuItem>
+                          {!page.isSystem && (
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                className="text-destructive"
+                                onClick={() => {
+                                  setSelectedPage(page);
+                                  setShowDeleteDialog(true);
+                                }}
+                                disabled={page.isTemplateActive}
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete
+                              </DropdownMenuItem>
+                            </>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -671,7 +685,9 @@ export default function PagesListPage() {
                   <SelectValue placeholder="Select page type..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">None (Regular Page)</SelectItem>
+                  {!selectedPage?.isSystem && (
+                    <SelectItem value="none">None (Regular Page)</SelectItem>
+                  )}
                   {Object.entries(TEMPLATE_LABELS).map(([value, label]) => {
                     const template = templates.find((t) => t.type === value);
                     const isAssigned = template?.isAssigned && template.assignedPage?.id !== selectedPage?.id;
@@ -729,10 +745,17 @@ export default function PagesListPage() {
                 placeholder="e.g., home, services"
                 value={editPageSlug}
                 onChange={(e) => setEditPageSlug(e.target.value)}
+                disabled={selectedPage?.isSystem}
               />
-              <p className="text-xs text-muted-foreground">
-                URL: /{editPageSlug || "slug"}
-              </p>
+              {selectedPage?.isSystem ? (
+                <p className="text-xs text-amber-600">
+                  System page slugs cannot be changed
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  URL: /{editPageSlug || "slug"}
+                </p>
+              )}
             </div>
           </div>
           <DialogFooter>

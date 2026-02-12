@@ -30,6 +30,8 @@ export const BUSINESS_SETTINGS = {
   ADDRESS_STATE: "business.address.state",
   ADDRESS_ZIP: "business.address.zip",
   ADDRESS_COUNTRY: "business.address.country",
+  // Currency
+  CURRENCY: "business.currency",
   // Social Media
   SOCIAL_FACEBOOK: "business.social.facebook",
   SOCIAL_TWITTER: "business.social.twitter",
@@ -63,6 +65,7 @@ export interface BusinessConfig {
     phone: string;
     supportEmail: string;
   };
+  currency: string;
   address: {
     line1: string;
     line2: string;
@@ -122,6 +125,7 @@ export async function getBusinessConfig(): Promise<BusinessConfig> {
       text: settingsMap[BUSINESS_SETTINGS.LOGO_TEXT] || "L",
     },
     favicon: settingsMap[BUSINESS_SETTINGS.FAVICON_URL] || "",
+    currency: settingsMap[BUSINESS_SETTINGS.CURRENCY] || "USD",
     contact: {
       email: settingsMap[BUSINESS_SETTINGS.CONTACT_EMAIL] || "contact@llcpad.com",
       phone: settingsMap[BUSINESS_SETTINGS.CONTACT_PHONE] || "",
@@ -176,6 +180,7 @@ export function getDefaultBusinessConfig(): BusinessConfig {
       text: "L",
     },
     favicon: "",
+    currency: "USD",
     contact: {
       email: "contact@llcpad.com",
       phone: "",

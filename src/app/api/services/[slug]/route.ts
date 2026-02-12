@@ -119,6 +119,8 @@ export async function GET(
         question: f.question,
         answer: f.answer,
       })),
+      hasLocationBasedPricing: service.hasLocationBasedPricing,
+      displayOptions: service.displayOptions || {},
     };
 
     return NextResponse.json(transformedService);

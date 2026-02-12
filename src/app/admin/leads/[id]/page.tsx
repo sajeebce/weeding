@@ -94,12 +94,11 @@ interface Lead {
     name: string | null;
     email: string;
   } | null;
-  formInstance: {
+  formTemplate: {
     id: string;
     name: string;
-    slug: string;
-    template: { name: string } | null;
   } | null;
+  formTemplateName: string | null;
   activities: Activity[];
   leadNotes: Note[];
   utmSource: string | null;
@@ -924,18 +923,18 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
             </CardContent>
           </Card>
 
-          {lead.formInstance && (
+          {(lead.formTemplate || lead.formTemplateName) && (
             <Card>
               <CardHeader>
                 <CardTitle>Form Source</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-sm">
-                  <div className="font-medium">{lead.formInstance.name}</div>
-                  <div className="text-muted-foreground">{lead.formInstance.template?.name}</div>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    Slug: {lead.formInstance.slug}
-                  </div>
+                  {lead.formTemplate ? (
+                    <div className="font-medium">{lead.formTemplate.name}</div>
+                  ) : lead.formTemplateName ? (
+                    <div className="text-muted-foreground">{lead.formTemplateName} (deleted)</div>
+                  ) : null}
                 </div>
               </CardContent>
             </Card>

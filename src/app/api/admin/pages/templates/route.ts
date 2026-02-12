@@ -74,6 +74,7 @@ function formatTemplateLabel(type: PageTemplateType): string {
     BLOG_LIST: "Blog List",
     ABOUT: "About Page",
     CONTACT: "Contact Page",
+    FAQ: "FAQ Page",
     CHECKOUT: "Checkout",
     CUSTOM: "Custom Page",
   };
@@ -92,6 +93,7 @@ function getTemplateDescription(type: PageTemplateType): string {
     BLOG_LIST: "Blog listing page (/blog)",
     ABOUT: "About page (/about)",
     CONTACT: "Contact page (/contact)",
+    FAQ: "FAQ page (/faq)",
     CHECKOUT: "Checkout pages (/checkout/*)",
     CUSTOM: "Custom standalone pages with custom URLs",
   };

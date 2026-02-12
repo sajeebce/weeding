@@ -26,6 +26,7 @@ interface LocationSelectorProps {
   placeholder?: string;
   feeLabel?: string;
   className?: string;
+  currencySymbol?: string;
 }
 
 const ITEMS_PER_PAGE = 10;
@@ -38,6 +39,7 @@ export function LocationSelector({
   placeholder = "Search locations...",
   feeLabel = "fee",
   className,
+  currencySymbol = "$",
 }: LocationSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -306,7 +308,7 @@ export function LocationSelector({
                   <span className="font-medium">{loc.name}</span>
                 </span>
                 {loc.fee > 0 && (
-                  <span className="text-muted-foreground">${loc.fee}</span>
+                  <span className="text-muted-foreground">{currencySymbol}{loc.fee}</span>
                 )}
               </button>
             ))}

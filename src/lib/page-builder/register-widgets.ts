@@ -31,6 +31,7 @@ import {
   DEFAULT_BLOG_FEATURED_POST_SETTINGS,
   DEFAULT_BLOG_POST_LIST_SETTINGS,
   DEFAULT_BLOG_RECENT_POSTS_SETTINGS,
+  DEFAULT_BUTTON_GROUP_SETTINGS,
 } from "./defaults";
 
 // Import widget components
@@ -44,6 +45,7 @@ import {
 import { DividerWidget, FaqAccordionWidget } from "@/components/page-builder/widgets/layout";
 import { ServiceCardWidget, ServiceListWidget, PricingTableWidget } from "@/components/page-builder/widgets/commerce";
 import { LeadFormWidget } from "@/components/page-builder/widgets/forms";
+import { ButtonGroupWidget } from "@/components/page-builder/widgets/cta";
 import {
   ServiceHeroWidget,
   ServiceFeaturesWidget,
@@ -153,6 +155,17 @@ export function registerAllWidgets() {
     category: "forms",
     defaultSettings: DEFAULT_LEAD_FORM_SETTINGS,
     component: LeadFormWidget,
+  });
+
+  // CTA Widgets
+  WidgetRegistry.register({
+    type: "button-group",
+    name: "Button Group",
+    description: "Styled CTA buttons with presets, gradients, and hover effects",
+    icon: "MousePointerClick",
+    category: "cta",
+    defaultSettings: DEFAULT_BUTTON_GROUP_SETTINGS,
+    component: ButtonGroupWidget,
   });
 
   // Layout Widgets

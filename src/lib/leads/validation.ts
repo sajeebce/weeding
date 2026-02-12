@@ -177,9 +177,8 @@ export const enhancedSubmitLeadSchema = z.object({
   utmTerm: z.string().optional(),
   utmContent: z.string().optional(),
 
-  // Form instance
-  formInstanceSlug: z.string().optional(),
-  formInstanceId: z.string().optional(),
+  // Form template
+  formTemplateId: z.string().optional(),
 
   // Custom fields
   customFields: z.record(z.string(), z.unknown()).optional(),
@@ -218,7 +217,7 @@ export const enhancedCreateLeadSchema = z.object({
   utmCampaign: z.string().optional(),
   utmTerm: z.string().optional(),
   utmContent: z.string().optional(),
-  formInstanceId: z.string().optional(),
+  formTemplateId: z.string().optional(),
 });
 
 export type SubmitLeadInput = z.infer<typeof enhancedSubmitLeadSchema>;

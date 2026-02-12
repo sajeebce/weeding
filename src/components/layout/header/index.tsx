@@ -14,50 +14,8 @@ import { HeaderMinimal } from "./layouts/HeaderMinimal";
 import { HeaderMega } from "./layouts/HeaderMega";
 import type { LoggedInUser, NavigationItem, ServiceCategory } from "./types";
 
-// Fallback data when API fails
-const fallbackServiceCategories: ServiceCategory[] = [
-  {
-    name: "Formation & Legal",
-    description: "Start your US business",
-    icon: "building-2",
-    services: [
-      { name: "LLC Formation", href: "/services/llc-formation", popular: true },
-      { name: "EIN Application", href: "/services/ein-application" },
-      { name: "ITIN Application", href: "/services/itin-application" },
-      { name: "Trademark Registration", href: "/services/trademark-registration", popular: true },
-    ],
-  },
-  {
-    name: "Compliance & Documents",
-    description: "Keep your business compliant",
-    icon: "shield",
-    services: [
-      { name: "Registered Agent", href: "/services/registered-agent" },
-      { name: "Annual Compliance", href: "/services/compliance" },
-      { name: "Virtual US Address", href: "/services/virtual-address" },
-    ],
-  },
-  {
-    name: "Amazon Services",
-    description: "Sell on Amazon with confidence",
-    icon: "shopping-cart",
-    services: [
-      { name: "Amazon Seller Account", href: "/services/amazon-seller", popular: true },
-      { name: "Brand Registry", href: "/services/brand-registry", popular: true },
-      { name: "Category Ungating", href: "/services/category-ungating" },
-    ],
-  },
-  {
-    name: "Tax & Finance",
-    description: "Financial services",
-    icon: "calculator",
-    services: [
-      { name: "Business Banking", href: "/services/business-banking", popular: true },
-      { name: "Bookkeeping", href: "/services/bookkeeping" },
-      { name: "Tax Filing", href: "/services/tax-filing" },
-    ],
-  },
-];
+// Fallback data when API fails - generic, no service-specific links
+const fallbackServiceCategories: ServiceCategory[] = [];
 
 const fallbackNavigation: NavigationItem[] = [
   { name: "Home", href: "/", hasDropdown: false },

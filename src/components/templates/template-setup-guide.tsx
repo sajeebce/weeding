@@ -12,7 +12,8 @@ type PageType =
   | "blog_post"
   | "blog_list"
   | "about"
-  | "contact";
+  | "contact"
+  | "faq";
 
 interface SetupStep {
   title: string;
@@ -204,6 +205,31 @@ const SETUP_GUIDE_CONFIG: Record<PageType, SetupGuideConfig> = {
       {
         title: "Save & Publish",
         description: "The contact page will now use this template.",
+      },
+    ],
+  },
+  faq: {
+    title: "FAQ Page",
+    description: "Design your FAQ page.",
+    steps: [
+      {
+        title: "Go to Page Builder",
+        description: "Navigate to Admin Panel → Appearance → Page Builder",
+        action: { label: "Open Page Builder", href: "/admin/appearance/pages" },
+      },
+      {
+        title: "Create a New Page",
+        description: 'Click "Create Page" and design your FAQ page layout.',
+        tip: "Use the FAQ Accordion widget with different sources (All, Category, Service-All).",
+      },
+      {
+        title: "Assign as FAQ Template",
+        description:
+          'In Page Settings, select "FAQ Page" from the template dropdown.',
+      },
+      {
+        title: "Save & Publish",
+        description: "The FAQ page will now use this template.",
       },
     ],
   },

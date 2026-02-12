@@ -37,6 +37,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
+import { getCurrencySymbol } from "@/lib/currencies";
 import type {
   PricingTableWidgetSettings,
   PricingFeatureValueType,
@@ -88,6 +89,11 @@ interface ServiceData {
   name: string;
   comparisonFeatures: ComparisonFeature[];
   packages: Package[];
+  hasLocationBasedPricing: boolean;
+  displayOptions?: {
+    checkoutBadgeText?: string;
+    checkoutBadgeDescription?: string;
+  };
 }
 
 interface SelectedAddon {
@@ -254,6 +260,9 @@ interface OrderSummaryProps {
   selectedAddons: SelectedAddon[];
   grandTotal: number;
   serviceSlug: string;
+  checkoutBadgeText?: string;
+  checkoutBadgeDescription?: string;
+  currencySymbol?: string;
 }
 
 function OrderSummary({
@@ -264,6 +273,9 @@ function OrderSummary({
   selectedAddons,
   grandTotal,
   serviceSlug,
+  checkoutBadgeText,
+  checkoutBadgeDescription,
+  currencySymbol = "$",
 }: OrderSummaryProps) {
   const { orderSummary, ctaButtons } = settings;
 
@@ -299,7 +311,7 @@ function OrderSummary({
               <span className="text-gray-600">
                 {selectedPackage.name} Package:
               </span>
-              <span className="font-medium">${selectedPackage.price}</span>
+              <span className="font-medium">{currencySymbol}{selectedPackage.price}</span>
             </div>
           )}
 
@@ -308,7 +320,7 @@ function OrderSummary({
               <span className="text-gray-600">
                 {selectedLocation.name} {settings.stateFee.label || "Fee"}:
               </span>
-              <span className="font-medium">${locationFee}</span>
+              <span className="font-medium">{currencySymbol}{locationFee}</span>
             </div>
           )}
 
@@ -321,7 +333,7 @@ function OrderSummary({
                 <span className="text-gray-600 truncate max-w-40">
                   {addon.featureText}:
                 </span>
-                <span className="font-medium">${addon.price}</span>
+                <span className="font-medium">{currencySymbol}{addon.price}</span>
               </div>
             ))}
 
@@ -331,7 +343,7 @@ function OrderSummary({
             <div className="flex justify-between items-center">
               <span className="text-base font-semibold">Total:</span>
               <span className="text-2xl font-bold text-gray-900">
-                ${grandTotal}
+                {currencySymbol}{grandTotal}
               </span>
             </div>
           )}
@@ -349,14 +361,17 @@ function OrderSummary({
           >
             <Link href={checkoutUrl}>{orderSummary.ctaButton.text}</Link>
           </Button>
-          <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
-            <RefreshCw className="h-3 w-3" />
-            <span>One-time fee</span>
-          </div>
-          <p className="text-xs text-center text-gray-500">
-            Unlike companies that charge annual fees, our formation fee is
-            one-time.
-          </p>
+          {checkoutBadgeText && (
+            <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
+              <RefreshCw className="h-3 w-3" />
+              <span>{checkoutBadgeText}</span>
+            </div>
+          )}
+          {checkoutBadgeDescription && (
+            <p className="text-xs text-center text-gray-500">
+              {checkoutBadgeDescription}
+            </p>
+          )}
         </CardFooter>
       </Card>
     </div>
@@ -375,6 +390,7 @@ interface MobileOrderSummaryProps {
   grandTotal: number;
   serviceSlug: string;
   selectedLocation: LocationItem | null;
+  currencySymbol?: string;
 }
 
 function MobileOrderSummary({
@@ -385,6 +401,7 @@ function MobileOrderSummary({
   grandTotal,
   serviceSlug,
   selectedLocation,
+  currencySymbol = "$",
 }: MobileOrderSummaryProps) {
   const { orderSummary, ctaButtons } = settings;
 
@@ -412,13 +429,13 @@ function MobileOrderSummary({
         {orderSummary.showPackageDetails && selectedPackage && (
           <div className="flex justify-between">
             <span>{selectedPackage.name} Package:</span>
-            <span className="font-medium">${selectedPackage.price}</span>
+            <span className="font-medium">{currencySymbol}{selectedPackage.price}</span>
           </div>
         )}
         {orderSummary.showStateFee && locationFee > 0 && (
           <div className="flex justify-between">
             <span>{settings.stateFee.label || "Location Fee"}:</span>
-            <span className="font-medium">${locationFee}</span>
+            <span className="font-medium">{currencySymbol}{locationFee}</span>
           </div>
         )}
         {orderSummary.showAddons &&
@@ -428,14 +445,14 @@ function MobileOrderSummary({
               className="flex justify-between"
             >
               <span className="truncate max-w-48">{addon.featureText}:</span>
-              <span className="font-medium">${addon.price}</span>
+              <span className="font-medium">{currencySymbol}{addon.price}</span>
             </div>
           ))}
         <Separator />
         {orderSummary.showTotal && (
           <div className="flex justify-between font-semibold text-base">
             <span>Total:</span>
-            <span>${grandTotal}</span>
+            <span>{currencySymbol}{grandTotal}</span>
           </div>
         )}
       </CardContent>
@@ -451,7 +468,7 @@ function MobileOrderSummary({
           asChild
         >
           <Link href={checkoutUrl}>
-            {ctaButtons.buttonText} - ${grandTotal}
+            {ctaButtons.buttonText} - {currencySymbol}{grandTotal}
           </Link>
         </Button>
       </CardFooter>
@@ -480,6 +497,7 @@ interface ComparisonTableProps {
   isAddonSelected: (featureId: string, packageId: string) => boolean;
   expandedFeature: string | null;
   onExpandFeature: (featureId: string | null) => void;
+  currencySymbol?: string;
 }
 
 function ComparisonTable({
@@ -494,6 +512,7 @@ function ComparisonTable({
   isAddonSelected,
   expandedFeature,
   onExpandFeature,
+  currencySymbol = "$",
 }: ComparisonTableProps) {
   const { tableStyle, tableHeader, featureRows, colors } = settings;
 
@@ -552,7 +571,7 @@ function ComparisonTable({
               ) : (
                 <Plus className="w-4 h-4 mr-1" />
               )}
-              ${addonPriceUSD}
+              {currencySymbol}{addonPriceUSD}
             </Button>
           );
         }
@@ -726,13 +745,13 @@ function ComparisonTable({
 
                     {tableHeader.showPackagePrices && (
                       <div className="text-2xl font-bold text-gray-900">
-                        ${pkg.price}
+                        {currencySymbol}{pkg.price}
                       </div>
                     )}
 
                     {locationFee > 0 && (
                       <div className="text-xs text-gray-500 mt-1">
-                        + ${locationFee} {settings.stateFee.label?.toLowerCase() || "location fee"}
+                        + {currencySymbol}{locationFee} {settings.stateFee.label?.toLowerCase() || "location fee"}
                       </div>
                     )}
 
@@ -875,6 +894,7 @@ interface MobilePackageCardsProps {
   selectedPackageId: string | null;
   onPackageSelect: (packageId: string) => void;
   locationFee: number;
+  currencySymbol?: string;
 }
 
 function MobilePackageCards({
@@ -884,6 +904,7 @@ function MobilePackageCards({
   selectedPackageId,
   onPackageSelect,
   locationFee,
+  currencySymbol = "$",
 }: MobilePackageCardsProps) {
   const { responsive } = settings;
 
@@ -923,9 +944,9 @@ function MobilePackageCards({
 
               <div className="text-center mb-4">
                 <h3 className="text-xl font-semibold">{pkg.name}</h3>
-                <p className="text-3xl font-bold mt-1">${pkg.price}</p>
+                <p className="text-3xl font-bold mt-1">{currencySymbol}{pkg.price}</p>
                 {locationFee > 0 && (
-                  <p className="text-xs text-gray-500">+ ${locationFee} {settings.stateFee.label?.toLowerCase() || "location fee"}</p>
+                  <p className="text-xs text-gray-500">+ {currencySymbol}{locationFee} {settings.stateFee.label?.toLowerCase() || "location fee"}</p>
                 )}
                 {pkg.processingTime && (
                   <div className="flex items-center justify-center gap-1 mt-2 text-xs text-gray-500">
@@ -1018,6 +1039,19 @@ export function PricingTableWidget({
   const [selectedLocation, setSelectedLocation] = useState<LocationItem | null>(null);
   const [selectedAddons, setSelectedAddons] = useState<SelectedAddon[]>([]);
   const [expandedFeature, setExpandedFeature] = useState<string | null>(null);
+  const [currencySymbol, setCurrencySymbol] = useState("$");
+
+  // Fetch currency from business config
+  useEffect(() => {
+    fetch("/api/business-config")
+      .then((res) => res.json())
+      .then((config) => {
+        if (config.currency) {
+          setCurrencySymbol(getCurrencySymbol(config.currency));
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Fetch service data
   useEffect(() => {
@@ -1045,6 +1079,8 @@ export function PricingTableWidget({
           name: data.name,
           comparisonFeatures: data.comparisonFeatures || [],
           packages: data.packages || [],
+          hasLocationBasedPricing: data.hasLocationBasedPricing ?? false,
+          displayOptions: data.displayOptions || {},
         });
 
         // Set default selected package
@@ -1192,8 +1228,8 @@ export function PricingTableWidget({
     <div className="w-full">
       <SectionHeader settings={settings} />
 
-      {/* Location Selector */}
-      {settings.stateFee.enabled && (
+      {/* Location Selector - only show when both widget setting AND service DB flag are enabled */}
+      {settings.stateFee.enabled && serviceData?.hasLocationBasedPricing && (
         <div className="mb-6 flex items-center gap-3">
           <span className="text-sm font-medium">{settings.stateFee.label}:</span>
           <LocationSelector
@@ -1203,6 +1239,7 @@ export function PricingTableWidget({
             placeholder="Select location..."
             feeLabel={settings.stateFee.label || "fee"}
             className="w-64"
+            currencySymbol={currencySymbol}
           />
         </div>
       )}
@@ -1218,6 +1255,7 @@ export function PricingTableWidget({
           selectedLocation={selectedLocation}
           locationFee={locationFee}
           serviceSlug={serviceData.slug}
+          currencySymbol={currencySymbol}
         />
       )}
 
@@ -1237,6 +1275,7 @@ export function PricingTableWidget({
               isAddonSelected={isAddonSelected}
               expandedFeature={expandedFeature}
               onExpandFeature={setExpandedFeature}
+              currencySymbol={currencySymbol}
             />
 
             <OrderSummary
@@ -1247,6 +1286,9 @@ export function PricingTableWidget({
               selectedAddons={selectedAddons}
               grandTotal={grandTotal}
               serviceSlug={serviceData.slug}
+              checkoutBadgeText={serviceData.displayOptions?.checkoutBadgeText}
+              checkoutBadgeDescription={serviceData.displayOptions?.checkoutBadgeDescription}
+              currencySymbol={currencySymbol}
             />
           </div>
 
@@ -1260,6 +1302,7 @@ export function PricingTableWidget({
               grandTotal={grandTotal}
               serviceSlug={serviceData.slug}
               selectedLocation={selectedLocation}
+              currencySymbol={currencySymbol}
             />
 
             <MobilePackageCards
@@ -1269,6 +1312,7 @@ export function PricingTableWidget({
               selectedPackageId={selectedPackageId}
               onPackageSelect={handlePackageSelect}
               locationFee={locationFee}
+              currencySymbol={currencySymbol}
             />
           </div>
         </>

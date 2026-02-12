@@ -42,6 +42,10 @@ export async function GET(
         invoices: {
           orderBy: { createdAt: "desc" },
         },
+        formSubmissions: {
+          orderBy: { createdAt: "desc" },
+          take: 1,
+        },
         user: {
           select: {
             id: true,

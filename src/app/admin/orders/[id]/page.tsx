@@ -10,7 +10,7 @@ import {
   Edit,
   RefreshCcw,
   FileText,
-  Building2,
+  Package,
   User,
   CreditCard,
   Clock,
@@ -65,6 +65,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { getCurrencySymbol } from "@/components/ui/currency-selector";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -125,9 +126,6 @@ interface Order {
   discountUSD: string;
   totalUSD: string;
   currency: string;
-  llcName: string | null;
-  llcState: string | null;
-  llcType: string | null;
   customerName: string;
   customerEmail: string;
   customerPhone: string | null;
@@ -260,9 +258,9 @@ function formatDate(dateString: string) {
   });
 }
 
-function formatPrice(price: string | number) {
+function formatPrice(price: string | number, symbol = "$") {
   const num = typeof price === "string" ? parseFloat(price) : price;
-  return `$${num.toFixed(2)}`;
+  return `${symbol}${num.toFixed(2)}`;
 }
 
 export default function AdminOrderDetailPage({ params }: PageProps) {
@@ -276,11 +274,21 @@ export default function AdminOrderDetailPage({ params }: PageProps) {
   const [emailSubject, setEmailSubject] = useState("");
   const [emailBody, setEmailBody] = useState("");
   const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
+  const [currencySymbol, setCurrencySymbol] = useState("$");
 
   // Resolve params
   useEffect(() => {
     params.then((p) => setOrderId(p.id));
+    // Fetch currency from business config
+    fetch("/api/business-config")
+      .then((res) => res.json())
+      .then((config) => {
+        if (config.currency) setCurrencySymbol(getCurrencySymbol(config.currency));
+      })
+      .catch(() => {});
   }, [params]);
+
+  const fmtPrice = (price: string | number) => formatPrice(price, currencySymbol);
 
   // Fetch order data
   const fetchOrder = async () => {
@@ -629,42 +637,48 @@ export default function AdminOrderDetailPage({ params }: PageProps) {
             </CardContent>
           </Card>
 
-          {/* LLC Details */}
+          {/* Service Details */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Building2 className="h-5 w-5" />
-                LLC Details
+                <Package className="h-5 w-5" />
+                Service Details
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <p className="text-sm text-muted-foreground">LLC Name</p>
-                  <p className="font-medium">{order.llcName || "N/A"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">State</p>
-                  <p className="font-medium">{order.llcState || "N/A"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">LLC Type</p>
+                  <p className="text-sm text-muted-foreground">Service</p>
                   <p className="font-medium">
-                    {order.llcType === "single" ? "Single-Member" : order.llcType === "multi" ? "Multi-Member" : order.llcType || "N/A"}
+                    {order.items[0]?.service?.name || order.items[0]?.name.split(" - ")[0] || "N/A"}
                   </p>
                 </div>
-                {metadata?.businessPurpose && (
-                  <div className="sm:col-span-2">
-                    <p className="text-sm text-muted-foreground">Business Purpose</p>
-                    <p className="font-medium">{metadata.businessPurpose}</p>
-                  </div>
-                )}
-                {metadata?.managementType && (
+                {order.items[0]?.package && (
                   <div>
-                    <p className="text-sm text-muted-foreground">Management Type</p>
-                    <p className="font-medium capitalize">{metadata.managementType}-Managed</p>
+                    <p className="text-sm text-muted-foreground">Package</p>
+                    <p className="font-medium">{order.items[0].package.name}</p>
                   </div>
                 )}
+                {order.items[0]?.locationName && (
+                  <div>
+                    <p className="text-sm text-muted-foreground">Location</p>
+                    <p className="font-medium">{order.items[0].locationName}</p>
+                  </div>
+                )}
+                <div>
+                  <p className="text-sm text-muted-foreground">Order Date</p>
+                  <p className="font-medium">{formatDate(order.createdAt)}</p>
+                </div>
+                {metadata && Object.entries(metadata).map(([key, value]) => (
+                  value && (
+                    <div key={key} className={String(value).length > 50 ? "sm:col-span-2" : ""}>
+                      <p className="text-sm text-muted-foreground capitalize">
+                        {key.replace(/([A-Z])/g, " $1").trim()}
+                      </p>
+                      <p className="font-medium">{String(value)}</p>
+                    </div>
+                  )
+                ))}
               </div>
             </CardContent>
           </Card>
@@ -695,10 +709,10 @@ export default function AdminOrderDetailPage({ params }: PageProps) {
                       )}
                     </div>
                     <div className="text-right">
-                      <p className="font-medium">{formatPrice(item.priceUSD)}</p>
+                      <p className="font-medium">{fmtPrice(item.priceUSD)}</p>
                       {item.stateFee && parseFloat(item.stateFee) > 0 && (
                         <p className="text-sm text-muted-foreground">
-                          +{formatPrice(item.stateFee)} {item.locationFeeLabel?.toLowerCase() || "location fee"}
+                          +{fmtPrice(item.stateFee)} {item.locationFeeLabel?.toLowerCase() || "location fee"}
                           {item.locationName && ` (${item.locationName})`}
                         </p>
                       )}
@@ -935,18 +949,18 @@ export default function AdminOrderDetailPage({ params }: PageProps) {
               <Separator />
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span>{formatPrice(order.subtotalUSD)}</span>
+                <span>{fmtPrice(order.subtotalUSD)}</span>
               </div>
               {parseFloat(order.discountUSD) > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Discount</span>
-                  <span className="text-green-600">-{formatPrice(order.discountUSD)}</span>
+                  <span className="text-green-600">-{fmtPrice(order.discountUSD)}</span>
                 </div>
               )}
               <Separator />
               <div className="flex justify-between font-medium">
                 <span>Total</span>
-                <span className="text-lg">{formatPrice(order.totalUSD)}</span>
+                <span className="text-lg">{fmtPrice(order.totalUSD)}</span>
               </div>
             </CardContent>
           </Card>
@@ -993,10 +1007,6 @@ export default function AdminOrderDetailPage({ params }: PageProps) {
                   <p className="text-sm">{formatDateTime(order.paidAt)}</p>
                 </div>
               )}
-              <Separator />
-              <Button variant="outline" className="w-full" size="sm" disabled>
-                Issue Refund
-              </Button>
             </CardContent>
           </Card>
 

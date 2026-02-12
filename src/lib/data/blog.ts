@@ -102,7 +102,7 @@ Apply for an Employer Identification Number (EIN) from the IRS. You'll need this
 
 Forming a Wyoming LLC is straightforward with the right guidance. Our team handles the entire process for you, from name search to document delivery.
 
-[Get Started with Wyoming LLC Formation →](/checkout?service=llc-formation&state=WY)
+[Get Started with Wyoming LLC Formation →](/checkout/llc-formation?state=WY)
     `,
     coverImage: "/blog/wyoming-llc-guide.jpg",
     author: {

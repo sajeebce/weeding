@@ -3,19 +3,17 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import "dotenv/config";
 
-// Use DATABASE_URL from .env for consistency
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
-// Helper to create field data matching the schema
 interface FieldConfig {
   name: string;
   label: string;
   type: "TEXT" | "EMAIL" | "PHONE" | "NUMBER" | "DATE" | "TEXTAREA" | "SELECT" |
         "MULTI_SELECT" | "RADIO" | "CHECKBOX" | "CHECKBOX_GROUP" | "FILE_UPLOAD" |
         "IMAGE_UPLOAD" | "COUNTRY_SELECT" | "STATE_SELECT" | "ADDRESS" |
-        "SIGNATURE" | "RICH_TEXT" | "HEADING" | "PARAGRAPH";
+        "SIGNATURE" | "RICH_TEXT" | "HEADING" | "PARAGRAPH" | "DIVIDER";
   placeholder?: string;
   helpText?: string;
   order: number;
@@ -30,10 +28,35 @@ interface FieldConfig {
   defaultValue?: string;
 }
 
-async function main() {
-  console.log("🌱 Seeding demo form templates...\n");
+async function createFields(tabId: string, fields: FieldConfig[]) {
+  for (const field of fields) {
+    await prisma.formField.create({
+      data: {
+        tabId,
+        name: field.name,
+        label: field.label,
+        type: field.type,
+        placeholder: field.placeholder ?? null,
+        helpText: field.helpText ?? null,
+        order: field.order,
+        width: field.width,
+        required: field.required,
+        validation: (field.validation ?? Prisma.DbNull) as Prisma.InputJsonValue | typeof Prisma.DbNull,
+        options: (field.options ?? Prisma.DbNull) as Prisma.InputJsonValue | typeof Prisma.DbNull,
+        dataSourceType: field.dataSourceType ?? null,
+        dataSourceKey: field.dataSourceKey ?? null,
+        dependsOn: field.dependsOn ?? null,
+        conditionalLogic: (field.conditionalLogic ?? Prisma.DbNull) as Prisma.InputJsonValue | typeof Prisma.DbNull,
+        defaultValue: field.defaultValue ?? null,
+      },
+    });
+  }
+  return fields.length;
+}
 
-  // Find LLC Formation service
+async function main() {
+  console.log("📋 Seeding LLC Formation form template...\n");
+
   const llcService = await prisma.service.findUnique({
     where: { slug: "llc-formation" },
   });
@@ -43,21 +66,17 @@ async function main() {
     return;
   }
 
-  console.log(`📋 Creating form template for: ${llcService.name}`);
+  console.log(`Found service: ${llcService.name} (${llcService.id})`);
 
-  // Check if template already exists
-  const existingTemplate = await prisma.serviceFormTemplate.findUnique({
+  // Delete existing template (cascade deletes tabs and fields)
+  const existing = await prisma.serviceFormTemplate.findUnique({
     where: { serviceId: llcService.id },
   });
-
-  if (existingTemplate) {
-    console.log("⚠️  Template already exists. Deleting and recreating...");
-    await prisma.serviceFormTemplate.delete({
-      where: { id: existingTemplate.id },
-    });
+  if (existing) {
+    await prisma.serviceFormTemplate.delete({ where: { id: existing.id } });
+    console.log("  Deleted existing template\n");
   }
 
-  // Create the form template
   const template = await prisma.serviceFormTemplate.create({
     data: {
       serviceId: llcService.id,
@@ -65,429 +84,501 @@ async function main() {
       isActive: true,
     },
   });
+  console.log(`  ✓ Template created (${template.id})\n`);
 
-  console.log(`  ✓ Form template created (ID: ${template.id})\n`);
-
-  // Helper function to create fields
-  async function createFields(tabId: string, fields: FieldConfig[]) {
-    for (const field of fields) {
-      await prisma.formField.create({
-        data: {
-          tabId,
-          name: field.name,
-          label: field.label,
-          type: field.type,
-          placeholder: field.placeholder ?? null,
-          helpText: field.helpText ?? null,
-          order: field.order,
-          width: field.width,
-          required: field.required,
-          validation: (field.validation ?? Prisma.DbNull) as Prisma.InputJsonValue | typeof Prisma.DbNull,
-          options: (field.options ?? Prisma.DbNull) as Prisma.InputJsonValue | typeof Prisma.DbNull,
-          dataSourceType: field.dataSourceType ?? null,
-          dataSourceKey: field.dataSourceKey ?? null,
-          dependsOn: field.dependsOn ?? null,
-          conditionalLogic: (field.conditionalLogic ?? Prisma.DbNull) as Prisma.InputJsonValue | typeof Prisma.DbNull,
-          defaultValue: field.defaultValue ?? null,
-        },
-      });
-    }
-    return fields.length;
-  }
-
-  // ========================================
-  // TAB 1: Company Information
-  // ========================================
-  console.log("📑 Creating Tab 1: Company Information");
+  // ============================================
+  // TAB 1: LLC Details
+  // Matches checkout page Step 2 "LLC Details"
+  // ============================================
+  console.log("📑 Tab 1: LLC Details");
   const tab1 = await prisma.formTab.create({
     data: {
       templateId: template.id,
-      name: "Company Information",
-      description: "Basic details about your new LLC",
-      icon: "Building2",
+      name: "LLC Details",
+      description: "Provide the details for your new LLC (2025 Requirements)",
+      icon: "file-text",
       order: 1,
     },
   });
 
   const tab1Fields: FieldConfig[] = [
+    // --- LLC Name Section ---
     {
-      name: "llc_name_option1",
-      label: "LLC Name (First Choice)",
+      name: "llcName",
+      label: "Preferred LLC Name",
       type: "TEXT",
-      placeholder: "My Company LLC",
-      helpText: "Enter your preferred LLC name. Must end with LLC, L.L.C., or Limited Liability Company.",
+      placeholder: "e.g., Global Ventures LLC",
+      helpText: "Must be unique in your state and end with LLC, L.L.C., or Limited Liability Company",
       order: 1,
       width: "FULL",
       required: true,
       validation: { minLength: 3, maxLength: 100 },
     },
     {
-      name: "llc_name_option2",
-      label: "LLC Name (Second Choice)",
+      name: "llcName2",
+      label: "2nd Choice (Optional)",
       type: "TEXT",
-      placeholder: "My Company LLC (Alternative)",
-      helpText: "Backup name in case first choice is unavailable.",
+      placeholder: "Alternative name",
       order: 2,
-      width: "FULL",
+      width: "HALF",
       required: false,
-      validation: { minLength: 3, maxLength: 100 },
     },
     {
-      name: "formation_state",
-      label: "State of Formation",
-      type: "STATE_SELECT",
-      placeholder: "Select state...",
-      helpText: "Popular choices: Wyoming (lowest fees, best privacy), Delaware (business-friendly laws), New Mexico (no annual report).",
+      name: "llcName3",
+      label: "3rd Choice (Optional)",
+      type: "TEXT",
+      placeholder: "Another alternative",
       order: 3,
       width: "HALF",
-      required: true,
-      dataSourceType: "STATE_LIST",
-      dataSourceKey: "us_states",
+      required: false,
     },
+
+    // --- LLC Type Section ---
     {
-      name: "business_purpose",
-      label: "Business Purpose",
-      type: "SELECT",
-      placeholder: "Select business purpose...",
-      helpText: "Select the primary purpose of your LLC.",
+      name: "sectionLlcType",
+      label: "LLC Type",
+      type: "DIVIDER",
       order: 4,
-      width: "HALF",
-      required: true,
-      dataSourceType: "STATIC",
-      options: [
-        { value: "general", label: "General (Any lawful business activity)" },
-        { value: "ecommerce", label: "E-commerce / Online Sales" },
-        { value: "consulting", label: "Consulting / Professional Services" },
-        { value: "technology", label: "Technology / Software" },
-        { value: "real_estate", label: "Real Estate" },
-        { value: "import_export", label: "Import / Export" },
-        { value: "manufacturing", label: "Manufacturing" },
-        { value: "other", label: "Other (Specify Below)" },
-      ],
-    },
-    {
-      name: "business_purpose_other",
-      label: "Other Business Purpose",
-      type: "TEXT",
-      placeholder: "Describe your business purpose...",
-      order: 5,
       width: "FULL",
       required: false,
-      conditionalLogic: {
-        show: true,
-        when: "business_purpose",
-        operator: "equals",
-        value: "other",
-      },
     },
     {
-      name: "management_type",
-      label: "Management Type",
+      name: "llcType",
+      label: "LLC Type",
       type: "RADIO",
-      helpText: "Member-managed: All members participate in management. Manager-managed: Designated manager(s) handle daily operations.",
-      order: 6,
+      order: 5,
       width: "FULL",
       required: true,
+      defaultValue: "single",
       options: [
-        { value: "member", label: "Member-Managed (Recommended for single-member LLCs)" },
-        { value: "manager", label: "Manager-Managed (Recommended for multi-member LLCs)" },
+        { value: "single", label: "Single-Member LLC", description: "One owner - simplest structure" },
+        { value: "multi", label: "Multi-Member LLC", description: "Two or more owners" },
       ],
+    },
+
+    // --- Profit Distribution (conditional: llcType === "multi") - right after LLC Type ---
+    {
+      name: "sectionProfit",
+      label: "Profit & Loss Distribution",
+      type: "HEADING",
+      order: 6,
+      width: "FULL",
+      required: false,
+      conditionalLogic: { show: true, when: "llcType", operator: "equals", value: "multi" },
+    },
+    {
+      name: "profitDistribution",
+      label: "Profit & Loss Distribution",
+      type: "RADIO",
+      order: 7,
+      width: "FULL",
+      required: false,
+      defaultValue: "proportional",
+      options: [
+        { value: "proportional", label: "Based on ownership percentage" },
+        { value: "equal", label: "Split equally among members" },
+        { value: "custom", label: "Custom (define in operating agreement)" },
+      ],
+      conditionalLogic: { show: true, when: "llcType", operator: "equals", value: "multi" },
+    },
+
+    // --- Management Structure Section ---
+    {
+      name: "sectionManagement",
+      label: "Management Structure",
+      type: "DIVIDER",
+      order: 8,
+      width: "FULL",
+      required: false,
+    },
+    {
+      name: "managementType",
+      label: "Management Structure",
+      type: "RADIO",
+      order: 9,
+      width: "FULL",
+      required: true,
+      defaultValue: "member",
+      options: [
+        { value: "member", label: "Member-Managed", description: "Owners manage the business (most common)" },
+        { value: "manager", label: "Manager-Managed", description: "Designated manager(s) run operations" },
+      ],
+    },
+
+    // --- Manager Type (conditional: managementType === "manager") - right after Management Structure ---
+    {
+      name: "managerType",
+      label: "Who will manage the LLC?",
+      type: "RADIO",
+      order: 10,
+      width: "FULL",
+      required: false,
+      defaultValue: "member",
+      options: [
+        { value: "member", label: "A Member (Owner) will manage" },
+        { value: "nonMember", label: "Non-Member Manager (external hire)" },
+      ],
+      conditionalLogic: { show: true, when: "managementType", operator: "equals", value: "manager" },
+    },
+
+    // --- Non-Member Manager Details (conditional: managerType === "nonMember") - right after Manager Type ---
+    {
+      name: "sectionManagerDetails",
+      label: "Non-Member Manager Details",
+      type: "HEADING",
+      order: 11,
+      width: "FULL",
+      required: false,
+      conditionalLogic: { show: true, when: "managerType", operator: "equals", value: "nonMember" },
+    },
+    {
+      name: "managerFirstName",
+      label: "Manager First Name",
+      type: "TEXT",
+      placeholder: "First name",
+      order: 12,
+      width: "HALF",
+      required: false,
+      conditionalLogic: { show: true, when: "managerType", operator: "equals", value: "nonMember" },
+    },
+    {
+      name: "managerLastName",
+      label: "Manager Last Name",
+      type: "TEXT",
+      placeholder: "Last name",
+      order: 13,
+      width: "HALF",
+      required: false,
+      conditionalLogic: { show: true, when: "managerType", operator: "equals", value: "nonMember" },
+    },
+    {
+      name: "managerEmail",
+      label: "Manager Email",
+      type: "EMAIL",
+      placeholder: "manager@example.com",
+      order: 14,
+      width: "HALF",
+      required: false,
+      conditionalLogic: { show: true, when: "managerType", operator: "equals", value: "nonMember" },
+    },
+    {
+      name: "managerPhone",
+      label: "Manager Phone",
+      type: "PHONE",
+      placeholder: "+1 XXX XXX XXXX",
+      order: 15,
+      width: "HALF",
+      required: false,
+      conditionalLogic: { show: true, when: "managerType", operator: "equals", value: "nonMember" },
+    },
+    {
+      name: "managerAddress",
+      label: "Manager Address",
+      type: "TEXT",
+      placeholder: "Street address",
+      order: 16,
+      width: "FULL",
+      required: false,
+      conditionalLogic: { show: true, when: "managerType", operator: "equals", value: "nonMember" },
+    },
+    {
+      name: "managerCity",
+      label: "Manager City",
+      type: "TEXT",
+      placeholder: "City",
+      order: 17,
+      width: "HALF",
+      required: false,
+      conditionalLogic: { show: true, when: "managerType", operator: "equals", value: "nonMember" },
+    },
+    {
+      name: "managerCountry",
+      label: "Manager Country",
+      type: "COUNTRY_SELECT",
+      order: 18,
+      width: "HALF",
+      required: false,
+      defaultValue: "US",
+      dataSourceType: "COUNTRY_LIST",
+      dataSourceKey: "countries",
+      conditionalLogic: { show: true, when: "managerType", operator: "equals", value: "nonMember" },
+    },
+
+    // --- Business Information Section ---
+    {
+      name: "sectionBusiness",
+      label: "Business Information",
+      type: "DIVIDER",
+      order: 19,
+      width: "FULL",
+      required: false,
+    },
+    {
+      name: "businessIndustry",
+      label: "Business Industry/Activity",
+      type: "TEXT",
+      placeholder: "e.g., E-commerce, Software Development, Consulting",
+      order: 20,
+      width: "FULL",
+      required: true,
+    },
+    {
+      name: "businessPurpose",
+      label: "Business Purpose",
+      type: "TEXTAREA",
+      placeholder: "Describe your business activities",
+      helpText: "Most states accept 'Any and all lawful business activities'",
+      order: 21,
+      width: "FULL",
+      required: false,
+      defaultValue: "Any and all lawful business activities",
     },
   ];
 
   const tab1Count = await createFields(tab1.id, tab1Fields);
-  console.log(`  ✓ Created ${tab1Count} fields\n`);
+  console.log(`  ✓ ${tab1Count} fields created\n`);
 
-  // ========================================
+  // ============================================
   // TAB 2: Owner Information
-  // ========================================
-  console.log("📑 Creating Tab 2: Owner Information");
+  // Matches checkout page Step 3 "Owner Info"
+  // ============================================
+  console.log("📑 Tab 2: Owner Information");
   const tab2 = await prisma.formTab.create({
     data: {
       templateId: template.id,
       name: "Owner Information",
-      description: "Details about the LLC owner(s)",
-      icon: "Users",
+      description: "Required for LLC formation and EIN application (2025 FinCEN BOI Compliance)",
+      icon: "user",
       order: 2,
     },
   });
 
   const tab2Fields: FieldConfig[] = [
+    // --- BOI Notice ---
     {
-      name: "owner_heading",
-      label: "Primary Owner / Member Details",
-      type: "HEADING",
+      name: "sectionNotice",
+      label: "Important: As of 2025, all LLC owners must provide identification for Beneficial Ownership Information (BOI) reporting. International owners need a valid passport.",
+      type: "PARAGRAPH",
       order: 1,
       width: "FULL",
       required: false,
     },
+
+    // --- Personal Information ---
     {
-      name: "owner_first_name",
-      label: "First Name",
-      type: "TEXT",
-      placeholder: "John",
+      name: "sectionPersonal",
+      label: "Personal Information",
+      type: "HEADING",
       order: 2,
-      width: "HALF",
-      required: true,
-      validation: { minLength: 1, maxLength: 50 },
+      width: "FULL",
+      required: false,
     },
     {
-      name: "owner_last_name",
-      label: "Last Name",
+      name: "ownerFirstName",
+      label: "First Name (as on passport)",
       type: "TEXT",
-      placeholder: "Doe",
+      placeholder: "Your legal first name",
       order: 3,
       width: "HALF",
       required: true,
       validation: { minLength: 1, maxLength: 50 },
     },
     {
-      name: "owner_email",
-      label: "Email Address",
-      type: "EMAIL",
-      placeholder: "john@example.com",
-      helpText: "We'll use this email for important updates about your LLC.",
+      name: "ownerLastName",
+      label: "Last Name (as on passport)",
+      type: "TEXT",
+      placeholder: "Your legal last name",
       order: 4,
       width: "HALF",
       required: true,
+      validation: { minLength: 1, maxLength: 50 },
     },
     {
-      name: "owner_phone",
-      label: "Phone Number",
-      type: "PHONE",
-      placeholder: "+1 (555) 123-4567",
-      helpText: "Include country code for international numbers.",
+      name: "ownerDateOfBirth",
+      label: "Date of Birth",
+      type: "DATE",
       order: 5,
       width: "HALF",
-      required: true,
+      required: false,
     },
     {
-      name: "owner_country",
-      label: "Country of Residence",
-      type: "COUNTRY_SELECT",
-      placeholder: "Select country...",
+      name: "ownerPassportNumber",
+      label: "Passport Number",
+      type: "TEXT",
+      placeholder: "Required for international owners",
+      helpText: "Your passport number is needed for BOI (Beneficial Ownership Information) reporting",
       order: 6,
       width: "HALF",
       required: true,
-      dataSourceType: "COUNTRY_LIST",
-      dataSourceKey: "countries",
     },
+
+    // --- Contact Information ---
     {
-      name: "owner_citizenship",
-      label: "Country of Citizenship",
-      type: "COUNTRY_SELECT",
-      placeholder: "Select country...",
+      name: "dividerContact",
+      label: "",
+      type: "DIVIDER",
       order: 7,
-      width: "HALF",
-      required: true,
-      dataSourceType: "COUNTRY_LIST",
-      dataSourceKey: "countries",
+      width: "FULL",
+      required: false,
     },
     {
-      name: "owner_address",
-      label: "Full Address",
-      type: "ADDRESS",
-      helpText: "Your residential or business address.",
+      name: "sectionContact",
+      label: "Contact Information",
+      type: "HEADING",
       order: 8,
       width: "FULL",
-      required: true,
+      required: false,
     },
     {
-      name: "owner_ownership_percentage",
-      label: "Ownership Percentage",
-      type: "NUMBER",
-      placeholder: "100",
-      helpText: "Enter your ownership percentage (1-100).",
+      name: "ownerEmail",
+      label: "Email Address",
+      type: "EMAIL",
+      placeholder: "your@email.com",
+      helpText: "We'll use this email for important updates about your LLC",
       order: 9,
       width: "HALF",
       required: true,
-      validation: { min: 1, max: 100 },
     },
     {
-      name: "has_additional_members",
-      label: "Additional Members",
-      type: "RADIO",
-      helpText: "Will this LLC have additional members (owners)?",
+      name: "ownerPhone",
+      label: "Phone Number",
+      type: "PHONE",
+      placeholder: "+880 1XXX XXXXXX",
+      helpText: "Include country code for international numbers",
       order: 10,
-      width: "FULL",
+      width: "HALF",
       required: true,
-      options: [
-        { value: "no", label: "No, I am the only member (Single-Member LLC)" },
-        { value: "yes", label: "Yes, there are additional members" },
-      ],
     },
     {
-      name: "additional_members_note",
-      label: "Additional Members Information",
-      type: "PARAGRAPH",
+      name: "ownerCountry",
+      label: "Country of Residence",
+      type: "COUNTRY_SELECT",
       order: 11,
       width: "FULL",
+      required: true,
+      defaultValue: "BD",
+      dataSourceType: "COUNTRY_LIST",
+      dataSourceKey: "countries",
+    },
+
+    // --- Residential Address ---
+    {
+      name: "dividerAddress",
+      label: "",
+      type: "DIVIDER",
+      order: 12,
+      width: "FULL",
       required: false,
-      defaultValue: "You can add additional members after checkout. Our team will contact you to collect their information.",
-      conditionalLogic: {
-        show: true,
-        when: "has_additional_members",
-        operator: "equals",
-        value: "yes",
-      },
+    },
+    {
+      name: "sectionAddress",
+      label: "Residential Address",
+      type: "HEADING",
+      order: 13,
+      width: "FULL",
+      required: false,
+    },
+    {
+      name: "ownerAddress",
+      label: "Street Address",
+      type: "TEXT",
+      placeholder: "House/Apartment, Road, Area",
+      order: 14,
+      width: "FULL",
+      required: true,
+      validation: { maxLength: 200 },
+    },
+    {
+      name: "ownerCity",
+      label: "City",
+      type: "TEXT",
+      order: 15,
+      width: "HALF",
+      required: true,
+      validation: { maxLength: 100 },
+    },
+    {
+      name: "ownerPostalCode",
+      label: "Postal Code",
+      type: "TEXT",
+      order: 16,
+      width: "HALF",
+      required: false,
     },
   ];
 
   const tab2Count = await createFields(tab2.id, tab2Fields);
-  console.log(`  ✓ Created ${tab2Count} fields\n`);
+  console.log(`  ✓ ${tab2Count} fields created\n`);
 
-  // ========================================
-  // TAB 3: Registered Agent
-  // ========================================
-  console.log("📑 Creating Tab 3: Registered Agent");
+  // ============================================
+  // TAB 3: Additional Services
+  // ============================================
+  console.log("📑 Tab 3: Additional Services");
   const tab3 = await prisma.formTab.create({
     data: {
       templateId: template.id,
-      name: "Registered Agent",
-      description: "Your LLC's official registered agent",
-      icon: "MapPin",
+      name: "Additional Services",
+      description: "Select optional add-on services for your LLC",
+      icon: "plus-circle",
       order: 3,
     },
   });
 
   const tab3Fields: FieldConfig[] = [
     {
-      name: "ra_info",
-      label: "What is a Registered Agent?",
+      name: "addonsInfo",
+      label: "Enhance your LLC package with these optional services. Some services may already be included in your selected package.",
       type: "PARAGRAPH",
       order: 1,
       width: "FULL",
       required: false,
-      defaultValue: "A Registered Agent is a person or company designated to receive legal documents and official correspondence on behalf of your LLC. Every LLC must have a Registered Agent with a physical address in the state of formation.",
     },
     {
-      name: "registered_agent_option",
-      label: "Registered Agent Selection",
-      type: "RADIO",
-      helpText: "Choose how you want to handle the Registered Agent requirement.",
-      order: 2,
-      width: "FULL",
-      required: true,
-      options: [
-        { value: "llcpad", label: "Use LLCPad as my Registered Agent ($99/year - Recommended)" },
-        { value: "own", label: "I have my own Registered Agent" },
-      ],
-    },
-    {
-      name: "own_ra_heading",
-      label: "Your Registered Agent Information",
-      type: "HEADING",
-      order: 3,
-      width: "FULL",
-      required: false,
-      conditionalLogic: {
-        show: true,
-        when: "registered_agent_option",
-        operator: "equals",
-        value: "own",
-      },
-    },
-    {
-      name: "own_ra_name",
-      label: "Registered Agent Name",
-      type: "TEXT",
-      placeholder: "Agent Name or Company",
-      order: 4,
-      width: "FULL",
-      required: false,
-      conditionalLogic: {
-        show: true,
-        when: "registered_agent_option",
-        operator: "equals",
-        value: "own",
-      },
-    },
-    {
-      name: "own_ra_address",
-      label: "Registered Agent Address",
-      type: "ADDRESS",
-      helpText: "Must be a physical address in the state of formation (no PO Boxes).",
-      order: 5,
-      width: "FULL",
-      required: false,
-      conditionalLogic: {
-        show: true,
-        when: "registered_agent_option",
-        operator: "equals",
-        value: "own",
-      },
-    },
-  ];
-
-  const tab3Count = await createFields(tab3.id, tab3Fields);
-  console.log(`  ✓ Created ${tab3Count} fields\n`);
-
-  // ========================================
-  // TAB 4: Additional Services
-  // ========================================
-  console.log("📑 Creating Tab 4: Additional Services");
-  const tab4 = await prisma.formTab.create({
-    data: {
-      templateId: template.id,
-      name: "Additional Services",
-      description: "Optional add-ons for your LLC",
-      icon: "Plus",
-      order: 4,
-    },
-  });
-
-  const tab4Fields: FieldConfig[] = [
-    {
-      name: "addons_info",
-      label: "Enhance Your LLC Package",
-      type: "PARAGRAPH",
-      order: 1,
-      width: "FULL",
-      required: false,
-      defaultValue: "Select any additional services you'd like to add to your order.",
-    },
-    {
-      name: "addon_ein",
-      label: "EIN Application Service",
+      name: "expeditedProcessing",
+      label: "Expedited Processing (+$75)",
       type: "CHECKBOX",
-      helpText: "Get your Federal Tax ID (EIN) - Required for bank accounts, hiring employees, and tax filing. ($99)",
+      helpText: "Get your LLC filed within 1-2 business days instead of 3-5",
       order: 2,
       width: "FULL",
       required: false,
+      defaultValue: "false",
     },
     {
-      name: "addon_operating_agreement",
-      label: "Custom Operating Agreement",
+      name: "needsEIN",
+      label: "EIN (Tax ID) Application",
       type: "CHECKBOX",
-      helpText: "Professional operating agreement tailored to your LLC. Required by most banks. ($79)",
+      helpText: "Federal Employer Identification Number - required for business banking and taxes",
       order: 3,
       width: "FULL",
       required: false,
+      defaultValue: "true",
     },
     {
-      name: "addon_virtual_address",
-      label: "Virtual US Business Address",
+      name: "needsRegisteredAgent",
+      label: "Registered Agent Service (1 Year)",
       type: "CHECKBOX",
-      helpText: "Get a professional US address for your LLC with mail scanning and forwarding. ($149/year)",
+      helpText: "Required by law - receives legal documents on behalf of your LLC",
       order: 4,
       width: "FULL",
       required: false,
+      defaultValue: "true",
     },
     {
-      name: "addon_expedited",
-      label: "Expedited Processing",
+      name: "needsBankingAssistance",
+      label: "Business Banking Assistance",
       type: "CHECKBOX",
-      helpText: "Rush your LLC formation to 24-48 hours instead of standard 5-7 business days. ($99)",
+      helpText: "We'll help you open a US business bank account remotely",
       order: 5,
       width: "FULL",
       required: false,
+      defaultValue: "false",
     },
     {
-      name: "special_instructions",
+      name: "specialInstructions",
       label: "Special Instructions or Questions",
       type: "TEXTAREA",
       placeholder: "Any special requests or questions for our team...",
-      helpText: "Optional: Let us know if you have any specific requirements or questions.",
+      helpText: "Optional: Let us know if you have any specific requirements",
       order: 6,
       width: "FULL",
       required: false,
@@ -495,93 +586,92 @@ async function main() {
     },
   ];
 
-  const tab4Count = await createFields(tab4.id, tab4Fields);
-  console.log(`  ✓ Created ${tab4Count} fields\n`);
+  const tab3Count = await createFields(tab3.id, tab3Fields);
+  console.log(`  ✓ ${tab3Count} fields created\n`);
 
-  // ========================================
-  // TAB 5: Review & Confirm
-  // ========================================
-  console.log("📑 Creating Tab 5: Review & Confirm");
-  const tab5 = await prisma.formTab.create({
+  // ============================================
+  // TAB 4: Review & Confirm
+  // ============================================
+  console.log("📑 Tab 4: Review & Confirm");
+  const tab4 = await prisma.formTab.create({
     data: {
       templateId: template.id,
       name: "Review & Confirm",
-      description: "Review your information and confirm",
-      icon: "CheckCircle",
-      order: 5,
+      description: "Review your information and confirm your order",
+      icon: "check-circle",
+      order: 4,
     },
   });
 
-  const tab5Fields: FieldConfig[] = [
+  const tab4Fields: FieldConfig[] = [
     {
-      name: "review_info",
-      label: "Review Your Information",
+      name: "reviewInfo",
+      label: "Please review all the information you've provided. You can go back to any previous step to make changes before submitting.",
       type: "PARAGRAPH",
       order: 1,
       width: "FULL",
       required: false,
-      defaultValue: "Please review all the information you've provided. You can go back to any previous step to make changes.",
     },
     {
-      name: "accuracy_confirmation",
-      label: "I confirm that all information provided is accurate and complete",
+      name: "agreeTerms",
+      label: "I agree to the Terms of Service and Privacy Policy",
       type: "CHECKBOX",
-      helpText: "Please verify all details before proceeding.",
+      helpText: "You must accept our terms to proceed with your order",
       order: 2,
       width: "FULL",
       required: true,
     },
     {
-      name: "terms_acceptance",
-      label: "I agree to the Terms of Service and Privacy Policy",
+      name: "understandNotLegalAdvice",
+      label: "I understand that LLCPad is a business formation service, not a law firm. This is not legal advice.",
       type: "CHECKBOX",
-      helpText: "You must accept our terms to proceed.",
+      helpText: "LLCPad provides document filing services, not legal counsel",
       order: 3,
       width: "FULL",
       required: true,
     },
     {
-      name: "disclaimer_acknowledgment",
-      label: "I understand that LLCPad is not a law firm and does not provide legal advice",
+      name: "agreeRefundPolicy",
+      label: "I have read and agree to the Refund Policy",
       type: "CHECKBOX",
-      helpText: "LLCPad is a business formation document filing service.",
       order: 4,
       width: "FULL",
       required: true,
     },
     {
-      name: "electronic_signature",
-      label: "Electronic Signature",
-      type: "SIGNATURE",
-      helpText: "Type your full legal name to serve as your electronic signature.",
+      name: "electronicSignature",
+      label: "Electronic Signature (Type your full legal name)",
+      type: "TEXT",
+      placeholder: "Your full legal name",
+      helpText: "By typing your name, you authorize LLCPad to file documents on your behalf",
       order: 5,
       width: "FULL",
       required: true,
+      validation: { minLength: 2, maxLength: 100 },
     },
   ];
 
-  const tab5Count = await createFields(tab5.id, tab5Fields);
-  console.log(`  ✓ Created ${tab5Count} fields\n`);
+  const tab4Count = await createFields(tab4.id, tab4Fields);
+  console.log(`  ✓ ${tab4Count} fields created\n`);
 
   // Summary
-  const totalFields = tab1Count + tab2Count + tab3Count + tab4Count + tab5Count;
-  console.log("✅ Demo form template created successfully!");
+  const totalFields = tab1Count + tab2Count + tab3Count + tab4Count;
+  console.log("✅ LLC Formation form template seeded successfully!");
   console.log(`   Service: ${llcService.name}`);
-  console.log(`   Tabs: 5`);
-  console.log(`   Total Fields: ${totalFields}`);
-  console.log("\n📌 Form Structure:");
-  console.log(`   1. Company Information (${tab1Count} fields)`);
-  console.log(`   2. Owner Information (${tab2Count} fields)`);
-  console.log(`   3. Registered Agent (${tab3Count} fields)`);
-  console.log(`   4. Additional Services (${tab4Count} fields)`);
-  console.log(`   5. Review & Confirm (${tab5Count} fields)`);
+  console.log(`   Template ID: ${template.id}`);
+  console.log(`   Total: 4 tabs, ${totalFields} fields\n`);
+  console.log("   Tab 1: LLC Details .............. " + tab1Count + " fields");
+  console.log("   Tab 2: Owner Information ........ " + tab2Count + " fields");
+  console.log("   Tab 3: Additional Services ...... " + tab3Count + " fields");
+  console.log("   Tab 4: Review & Confirm ......... " + tab4Count + " fields");
 }
 
 main()
   .catch((e) => {
-    console.error("Error seeding form templates:", e);
+    console.error("❌ Seed failed:", e);
     process.exit(1);
   })
   .finally(async () => {
     await prisma.$disconnect();
+    await pool.end();
   });

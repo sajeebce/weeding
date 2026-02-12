@@ -9,7 +9,7 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
-  Building2,
+  Package,
   MapPin,
   Mail,
   Phone,
@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
+import { getCurrencySymbol } from "@/components/ui/currency-selector";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -44,6 +45,10 @@ interface OrderItem {
   priceUSD: string;
   stateFee: string | null;
   quantity: number;
+  locationName: string | null;
+  locationFeeLabel: string | null;
+  service: { id: string; name: string; slug: string } | null;
+  package: { id: string; name: string } | null;
 }
 
 interface OrderDocument {
@@ -67,9 +72,6 @@ interface Order {
   discountUSD: string;
   totalUSD: string;
   currency: string;
-  llcName: string | null;
-  llcState: string | null;
-  llcType: string | null;
   customerName: string;
   customerEmail: string;
   customerPhone: string | null;
@@ -171,19 +173,30 @@ function formatDateTime(dateString: string) {
   });
 }
 
-function formatPrice(price: string | number) {
+function formatPrice(price: string | number, symbol = "$") {
   const num = typeof price === "string" ? parseFloat(price) : price;
-  return `$${num.toFixed(2)}`;
+  return `${symbol}${num.toFixed(2)}`;
 }
 
 export default function OrderDetailPage({ params }: PageProps) {
   const [orderId, setOrderId] = useState<string>("");
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [currencySymbol, setCurrencySymbol] = useState("$");
+  const [businessName, setBusinessName] = useState("");
+
+  const fmtPrice = (price: string | number) => formatPrice(price, currencySymbol);
 
   // Resolve params
   useEffect(() => {
     params.then((p) => setOrderId(p.id));
+    fetch("/api/business-config")
+      .then((res) => res.json())
+      .then((config) => {
+        if (config.currency) setCurrencySymbol(getCurrencySymbol(config.currency));
+        if (config.name) setBusinessName(config.name);
+      })
+      .catch(() => {});
   }, [params]);
 
   // Fetch order data
@@ -244,6 +257,76 @@ export default function OrderDetailPage({ params }: PageProps) {
   const timeline = getTimelineSteps(order);
   const serviceName = order.items[0]?.name.split(" - ")[0] || "Service";
 
+  const handleDownloadInvoice = () => {
+    if (!order) return;
+    const invoiceHtml = `
+      <!DOCTYPE html>
+      <html><head><title>Invoice - ${order.orderNumber}</title>
+      <style>
+        body { font-family: system-ui, sans-serif; max-width: 800px; margin: 0 auto; padding: 40px; color: #333; }
+        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; }
+        .header h1 { font-size: 28px; margin: 0; }
+        .header .company { text-align: right; color: #666; }
+        .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+        .meta-box { background: #f9fafb; padding: 16px; border-radius: 8px; }
+        .meta-box h3 { margin: 0 0 8px; font-size: 14px; color: #666; text-transform: uppercase; }
+        .meta-box p { margin: 4px 0; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th { text-align: left; padding: 12px; border-bottom: 2px solid #e5e7eb; font-size: 14px; color: #666; }
+        td { padding: 12px; border-bottom: 1px solid #e5e7eb; }
+        .total-row { font-weight: bold; font-size: 18px; }
+        .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .badge-paid { background: #d1fae5; color: #065f46; }
+        .badge-pending { background: #fef3c7; color: #92400e; }
+        .footer { margin-top: 40px; text-align: center; color: #999; font-size: 12px; }
+        @media print { body { padding: 20px; } }
+      </style></head><body>
+      <div class="header">
+        <div><h1>INVOICE</h1><p style="color:#666">${order.orderNumber}</p></div>
+        <div class="company"><strong>${businessName || "Business"}</strong></div>
+      </div>
+      <div class="meta">
+        <div class="meta-box">
+          <h3>Bill To</h3>
+          <p><strong>${order.customerName}</strong></p>
+          <p>${order.customerEmail}</p>
+          ${order.customerPhone ? `<p>${order.customerPhone}</p>` : ""}
+          ${order.customerCountry ? `<p>${order.customerCountry}</p>` : ""}
+        </div>
+        <div class="meta-box">
+          <h3>Invoice Details</h3>
+          <p><strong>Date:</strong> ${new Date(order.createdAt).toLocaleDateString()}</p>
+          <p><strong>Order:</strong> ${order.orderNumber}</p>
+          <p><strong>Status:</strong> <span class="badge ${order.paymentStatus === "PAID" ? "badge-paid" : "badge-pending"}">${order.paymentStatus}</span></p>
+          ${order.paidAt ? `<p><strong>Paid:</strong> ${new Date(order.paidAt).toLocaleDateString()}</p>` : ""}
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>Item</th><th style="text-align:right">Price</th></tr></thead>
+        <tbody>
+          ${order.items.map((item) => `
+            <tr>
+              <td>${item.name}${item.description ? `<br><small style="color:#666">${item.description}</small>` : ""}</td>
+              <td style="text-align:right">${fmtPrice(item.priceUSD)}${item.stateFee && parseFloat(item.stateFee) > 0 ? `<br><small style="color:#666">+${fmtPrice(item.stateFee)} ${item.locationFeeLabel || "fee"}</small>` : ""}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+      <div style="text-align:right">
+        <p>Subtotal: ${fmtPrice(order.subtotalUSD)}</p>
+        ${parseFloat(order.discountUSD) > 0 ? `<p style="color:#16a34a">Discount: -${fmtPrice(order.discountUSD)}</p>` : ""}
+        <p class="total-row">Total: ${fmtPrice(order.totalUSD)}</p>
+      </div>
+      <div class="footer"><p>Thank you for your business!</p></div>
+      </body></html>
+    `;
+    const printWindow = window.open("", "_blank");
+    if (printWindow) {
+      printWindow.document.write(invoiceHtml);
+      printWindow.document.close();
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Back Button */}
@@ -265,7 +348,8 @@ export default function OrderDetailPage({ params }: PageProps) {
             </Badge>
           </div>
           <p className="mt-1 text-muted-foreground">
-            {serviceName} • {order.llcState || "N/A"}
+            {serviceName}
+            {order.items[0]?.package && ` • ${order.items[0].package.name}`}
           </p>
         </div>
         {order.documents.some((doc) => doc.status === "APPROVED") && (
@@ -298,10 +382,10 @@ export default function OrderDetailPage({ params }: PageProps) {
                       )}
                     </div>
                     <div className="text-right">
-                      <p className="font-medium">{formatPrice(item.priceUSD)}</p>
+                      <p className="font-medium">{fmtPrice(item.priceUSD)}</p>
                       {item.stateFee && parseFloat(item.stateFee) > 0 && (
                         <p className="text-sm text-muted-foreground">
-                          +{formatPrice(item.stateFee)} state fee
+                          +{fmtPrice(item.stateFee)} {item.locationFeeLabel || "fee"}
                         </p>
                       )}
                     </div>
@@ -311,34 +395,44 @@ export default function OrderDetailPage({ params }: PageProps) {
             </CardContent>
           </Card>
 
-          {/* LLC Details */}
+          {/* Service Details */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Building2 className="h-5 w-5" />
-                LLC Details
+                <Package className="h-5 w-5" />
+                Service Details
               </CardTitle>
             </CardHeader>
             <CardContent className="grid gap-4 sm:grid-cols-2">
               <div>
-                <p className="text-sm text-muted-foreground">LLC Name</p>
-                <p className="font-medium">{order.llcName || "N/A"}</p>
+                <p className="text-sm text-muted-foreground">Service</p>
+                <p className="font-medium">{serviceName}</p>
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">State</p>
-                <p className="font-medium">{order.llcState || "N/A"}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Entity Type</p>
-                <p className="font-medium">
-                  {order.llcType === "single" ? "Single-Member LLC" : order.llcType === "multi" ? "Multi-Member LLC" : order.llcType || "LLC"}
-                </p>
-              </div>
+              {order.items[0]?.package && (
+                <div>
+                  <p className="text-sm text-muted-foreground">Package</p>
+                  <p className="font-medium">{order.items[0].package.name}</p>
+                </div>
+              )}
+              {order.items[0]?.locationName && (
+                <div>
+                  <p className="text-sm text-muted-foreground">Location</p>
+                  <p className="font-medium">{order.items[0].locationName}</p>
+                </div>
+              )}
               <div>
                 <p className="text-sm text-muted-foreground">Status</p>
-                <p className="font-medium">
-                  {order.status === "COMPLETED" ? "Formation Complete" : "Pending Approval"}
-                </p>
+                <p className="font-medium">{statusLabels[order.status]}</p>
+              </div>
+              {order.items.length > 1 && (
+                <div>
+                  <p className="text-sm text-muted-foreground">Items</p>
+                  <p className="font-medium">{order.items.length} services</p>
+                </div>
+              )}
+              <div>
+                <p className="text-sm text-muted-foreground">Order Date</p>
+                <p className="font-medium">{formatDateTime(order.createdAt)}</p>
               </div>
             </CardContent>
           </Card>
@@ -402,7 +496,7 @@ export default function OrderDetailPage({ params }: PageProps) {
             <CardHeader>
               <CardTitle>Documents</CardTitle>
               <CardDescription>
-                Download your LLC formation documents
+                Download your order documents
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -469,18 +563,18 @@ export default function OrderDetailPage({ params }: PageProps) {
             <CardContent className="space-y-4">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span>{formatPrice(order.subtotalUSD)}</span>
+                <span>{fmtPrice(order.subtotalUSD)}</span>
               </div>
               {parseFloat(order.discountUSD) > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Discount</span>
-                  <span className="text-green-600">-{formatPrice(order.discountUSD)}</span>
+                  <span className="text-green-600">-{fmtPrice(order.discountUSD)}</span>
                 </div>
               )}
               <Separator />
               <div className="flex justify-between font-medium">
                 <span>Total</span>
-                <span>{formatPrice(order.totalUSD)}</span>
+                <span>{fmtPrice(order.totalUSD)}</span>
               </div>
               <Badge className={`w-full justify-center ${paymentStatusColors[order.paymentStatus]}`}>
                 {order.paymentStatus === "PAID" ? "Paid" : order.paymentStatus.replace("_", " ")}
@@ -490,6 +584,15 @@ export default function OrderDetailPage({ params }: PageProps) {
                   Paid on {formatDateTime(order.paidAt)}
                 </p>
               )}
+              <Separator />
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={handleDownloadInvoice}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Download Invoice
+              </Button>
             </CardContent>
           </Card>
 

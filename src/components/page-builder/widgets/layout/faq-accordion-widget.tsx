@@ -5,12 +5,25 @@ import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { FaqAccordionWidgetSettings } from "@/lib/page-builder/types";
 import { useOptionalServiceContext } from "@/lib/page-builder/contexts/service-context";
+import Link from "next/link";
 
 interface FaqItem {
   id: string;
   question: string;
   answer: string;
   category: string | null;
+}
+
+interface ServiceFaqGroup {
+  categoryId: string;
+  categoryName: string;
+  categorySlug: string;
+  services: {
+    serviceId: string;
+    serviceName: string;
+    serviceSlug: string;
+    faqs: { id: string; question: string; answer: string }[];
+  }[];
 }
 
 interface FaqAccordionWidgetProps {
@@ -23,6 +36,9 @@ export function FaqAccordionWidget({
   isPreview = false,
 }: FaqAccordionWidgetProps) {
   const [faqs, setFaqs] = useState<FaqItem[]>([]);
+  const [serviceFaqGroups, setServiceFaqGroups] = useState<ServiceFaqGroup[]>(
+    []
+  );
   const [loading, setLoading] = useState(true);
   const [openItems, setOpenItems] = useState<Set<string>>(new Set());
   const [activeCategory, setActiveCategory] = useState<string>("all");
@@ -72,6 +88,32 @@ export function FaqAccordionWidget({
       return;
     }
 
+    // Source: "service-all" - fetch all service FAQs grouped by category/service
+    if (s.source === "service-all") {
+      async function fetchServiceFaqs() {
+        try {
+          const res = await fetch("/api/faq/service-faqs");
+          if (!res.ok) throw new Error("Failed to fetch");
+          const data: ServiceFaqGroup[] = await res.json();
+          setServiceFaqGroups(data);
+
+          // Expand first FAQ of first service
+          if (s.expandFirst && data.length > 0) {
+            const firstService = data[0]?.services?.[0];
+            if (firstService?.faqs?.[0]) {
+              setOpenItems(new Set([firstService.faqs[0].id]));
+            }
+          }
+        } catch {
+          setServiceFaqGroups([]);
+        } finally {
+          setLoading(false);
+        }
+      }
+      fetchServiceFaqs();
+      return;
+    }
+
     // Source: "all" or "category" - fetch from global FAQ API
     async function fetchFaqs() {
       try {
@@ -104,7 +146,13 @@ export function FaqAccordionWidget({
 
     fetchFaqs();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings?.source, settings?.maxItems, settings?.expandFirst, JSON.stringify(settings?.categories), serviceContext?.service?.faqs]);
+  }, [
+    settings?.source,
+    settings?.maxItems,
+    settings?.expandFirst,
+    JSON.stringify(settings?.categories),
+    serviceContext?.service?.faqs,
+  ]);
 
   const toggleItem = (id: string) => {
     setOpenItems((prev) => {
@@ -145,6 +193,118 @@ export function FaqAccordionWidget({
     );
   }
 
+  // Service-all source: render grouped FAQs by category → service
+  if (s.source === "service-all") {
+    if (serviceFaqGroups.length === 0) {
+      if (isPreview) {
+        return (
+          <div className="flex items-center justify-center rounded-xl border border-dashed py-12">
+            <p className="text-sm text-muted-foreground">
+              No service FAQs found. Add FAQs to your services from the admin
+              panel.
+            </p>
+          </div>
+        );
+      }
+      return null;
+    }
+
+    return (
+      <div className="w-full">
+        {s.header.show && (
+          <div
+            className={cn(
+              "mb-10",
+              s.header.alignment === "center" && "text-center"
+            )}
+          >
+            <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+              {s.header.heading}
+            </h2>
+            {s.header.description && (
+              <p className="mt-3 text-lg text-muted-foreground">
+                {s.header.description}
+              </p>
+            )}
+          </div>
+        )}
+
+        <div className="mx-auto max-w-3xl space-y-12">
+          {serviceFaqGroups.map((group) => (
+            <section key={group.categoryId}>
+              <div className="mb-8 rounded-lg border bg-muted/30 p-4">
+                <h3 className="text-2xl font-bold text-foreground">
+                  {group.categoryName}
+                </h3>
+              </div>
+
+              <div className="space-y-8">
+                {group.services.map((service) => (
+                  <div key={service.serviceId} className="space-y-4">
+                    <div className="flex items-center gap-3">
+                      <h4 className="text-lg font-semibold text-foreground">
+                        {service.serviceName}
+                      </h4>
+                      <Link
+                        href={`/services/${service.serviceSlug}`}
+                        className="text-xs text-primary hover:underline"
+                      >
+                        View Service
+                      </Link>
+                    </div>
+
+                    {s.style === "minimal" && (
+                      <div className="divide-y divide-border">
+                        {service.faqs.map((faq) => (
+                          <FaqItemMinimal
+                            key={faq.id}
+                            faq={{ ...faq, category: null }}
+                            isOpen={openItems.has(faq.id)}
+                            onToggle={() => toggleItem(faq.id)}
+                          />
+                        ))}
+                      </div>
+                    )}
+
+                    {s.style === "cards" && (
+                      <div className="space-y-3">
+                        {service.faqs.map((faq) => (
+                          <FaqItemCard
+                            key={faq.id}
+                            faq={{ ...faq, category: null }}
+                            isOpen={openItems.has(faq.id)}
+                            onToggle={() => toggleItem(faq.id)}
+                            accentColor={s.accentColor}
+                          />
+                        ))}
+                      </div>
+                    )}
+
+                    {s.style === "bordered" && (
+                      <div className="space-y-3">
+                        {service.faqs.map((faq, index) => (
+                          <FaqItemBordered
+                            key={faq.id}
+                            faq={{ ...faq, category: null }}
+                            index={index}
+                            isOpen={openItems.has(faq.id)}
+                            onToggle={() => toggleItem(faq.id)}
+                            accentColor={s.accentColor}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Standard source (all/category/service): render flat list
   if (faqs.length === 0) {
     if (isPreview) {
       return (

@@ -13,6 +13,7 @@ import {
   Sparkles,
   ArrowRight,
   Bell,
+  HelpCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,7 +26,8 @@ type PageType =
   | "blog_post"
   | "blog_list"
   | "about"
-  | "contact";
+  | "contact"
+  | "faq";
 
 interface ComingSoonPageProps {
   pageType: PageType;
@@ -91,6 +93,13 @@ const COMING_SOON_CONFIG: Record<
     description:
       "Our contact page is being set up. Feel free to reach out via email in the meantime.",
     icon: Mail,
+  },
+  faq: {
+    title: "FAQ",
+    subtitle: "Coming Soon",
+    description:
+      "Our FAQ page is being prepared. Check back soon for answers to common questions!",
+    icon: HelpCircle,
   },
 };
 

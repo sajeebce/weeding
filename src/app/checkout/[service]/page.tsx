@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { getCurrencySymbol } from "@/components/ui/currency-selector";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
@@ -153,6 +154,10 @@ function ServiceCheckoutForm() {
     name: string;
     shortDesc: string;
     packages: ServicePackage[];
+    displayOptions?: {
+      checkoutBadgeText?: string;
+      checkoutBadgeDescription?: string;
+    };
   }
 
   // Dynamic form template from database
@@ -194,25 +199,36 @@ function ServiceCheckoutForm() {
   const [service, setService] = useState<ServiceInfo | null>(null);
   const [dynamicTemplate, setDynamicTemplate] = useState<DynamicFormTemplate | null>(null);
   const [isLoadingService, setIsLoadingService] = useState(true);
+  const [currencySymbol, setCurrencySymbol] = useState("$");
 
   // Fetch service data and dynamic form from API
   useEffect(() => {
     const fetchServiceAndForm = async () => {
       setIsLoadingService(true);
       try {
-        // Fetch service data
-        const serviceResponse = await fetch(`/api/services/${serviceSlug}`);
+        // Fetch service data, form template, and business config in parallel
+        const [serviceResponse, formResponse, configResponse] = await Promise.all([
+          fetch(`/api/services/${serviceSlug}`),
+          fetch(`/api/services/${serviceSlug}/form`),
+          fetch("/api/business-config"),
+        ]);
+
         if (serviceResponse.ok) {
           const data = await serviceResponse.json();
           setService(data);
         }
 
-        // Fetch dynamic form template
-        const formResponse = await fetch(`/api/services/${serviceSlug}/form`);
         if (formResponse.ok) {
           const formData = await formResponse.json();
           if (formData.template) {
             setDynamicTemplate(formData.template);
+          }
+        }
+
+        if (configResponse.ok) {
+          const config = await configResponse.json();
+          if (config.currency) {
+            setCurrencySymbol(getCurrencySymbol(config.currency));
           }
         }
       } catch (error) {
@@ -296,6 +312,7 @@ function ServiceCheckoutForm() {
               conditionalOn: field.conditionalLogic ? {
                 field: field.conditionalLogic.when,
                 value: field.conditionalLogic.value,
+                operator: field.conditionalLogic.operator,
               } : undefined,
               accept: field.accept || undefined,
             } as FormField;
@@ -462,12 +479,23 @@ function ServiceCheckoutForm() {
   // Check if a field should be visible based on conditional logic
   const isFieldVisible = (field: FormField): boolean => {
     if (!field.conditionalOn) return true;
-    const { field: dependentField, value } = field.conditionalOn;
+    const { field: dependentField, value, operator } = field.conditionalOn;
     const currentValue = formValues[dependentField];
-    if (Array.isArray(value)) {
-      return value.includes(currentValue as string);
+    const op = operator || "equals";
+
+    switch (op) {
+      case "not_equals":
+        if (Array.isArray(value)) return !value.includes(currentValue as string);
+        return currentValue !== value;
+      case "contains":
+        return typeof currentValue === "string" && typeof value === "string" && currentValue.toLowerCase().includes(value.toLowerCase());
+      case "not_empty":
+        return currentValue !== undefined && currentValue !== null && currentValue !== "";
+      case "equals":
+      default:
+        if (Array.isArray(value)) return value.includes(currentValue as string);
+        return currentValue === value;
     }
-    return currentValue === value;
   };
 
   // Handle input changes with sanitization based on field type
@@ -1077,6 +1105,35 @@ function ServiceCheckoutForm() {
           </div>
         );
 
+      case "heading":
+        return (
+          <div key={field.name} className="col-span-full pt-4 first:pt-0">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              {field.label}
+            </h3>
+            {field.helpText && (
+              <p className="text-sm text-muted-foreground mt-1">{field.helpText}</p>
+            )}
+          </div>
+        );
+
+      case "paragraph":
+        return (
+          <div key={field.name} className="col-span-full">
+            <p className="text-sm text-muted-foreground leading-relaxed">{field.label}</p>
+          </div>
+        );
+
+      case "divider":
+        return (
+          <div key={field.name} className="col-span-full">
+            <Separator className="my-2" />
+            {field.label && field.label !== field.name && (
+              <p className="text-xs font-medium text-muted-foreground mt-2">{field.label}</p>
+            )}
+          </div>
+        );
+
       default:
         return null;
     }
@@ -1116,18 +1173,12 @@ function ServiceCheckoutForm() {
   }
 
   if (!formConfig) {
-    // If no form config, redirect to main checkout or show error
-    if (serviceSlug === "llc-formation") {
-      const params = searchParams.toString();
-      router.push("/checkout" + (params ? `?${params}` : ""));
-      return null;
-    }
     return (
       <div className="min-h-screen bg-muted/30 py-8">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-2xl font-bold">Checkout Not Configured</h1>
           <p className="mt-2 text-muted-foreground">
-            The checkout flow for this service is being set up.
+            The checkout form for this service hasn&apos;t been set up yet. Please configure it from the admin panel.
           </p>
           <Link href="/services">
             <Button className="mt-4">Browse Services</Button>
@@ -1605,7 +1656,7 @@ function ServiceCheckoutForm() {
                     ) : (
                       <>
                         <Check className="mr-2 h-4 w-4" />
-                        Submit Application - ${serviceFee + (selectedLocation?.fee || 0)}
+                        Submit Application - {currencySymbol}{serviceFee + (selectedLocation?.fee || 0)}
                       </>
                     )}
                   </Button>
@@ -1661,12 +1712,12 @@ function ServiceCheckoutForm() {
                           <span className="ml-1 text-xs">({selectedPackage.name})</span>
                         )}
                       </span>
-                      <span className="font-medium">${serviceFee}</span>
+                      <span className="font-medium">{currencySymbol}{serviceFee}</span>
                     </div>
                     {selectedLocation && (
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Location Fee ({selectedLocation.name})</span>
-                        <span className="font-medium">${selectedLocation.fee}</span>
+                        <span className="font-medium">{currencySymbol}{selectedLocation.fee}</span>
                       </div>
                     )}
                   </div>
@@ -1676,7 +1727,7 @@ function ServiceCheckoutForm() {
                   <div className="flex justify-between text-lg font-semibold">
                     <span>Total</span>
                     <span className="text-primary">
-                      ${serviceFee + (selectedLocation?.fee || 0)}
+                      {currencySymbol}{serviceFee + (selectedLocation?.fee || 0)}
                     </span>
                   </div>
 
@@ -1698,19 +1749,15 @@ function ServiceCheckoutForm() {
                     </div>
                   )}
 
-                  {/* Processing Time */}
-                  <div className="mt-4 rounded-lg bg-muted p-3">
-                    <p className="text-sm font-medium">Processing Time</p>
-                    <p className="text-sm text-muted-foreground">
-                      3-5 business days
-                    </p>
-                  </div>
-
-                  {/* Guarantee */}
-                  <div className="rounded-lg bg-muted p-3 text-center text-sm">
-                    <p className="font-medium">100% Satisfaction Guarantee</p>
-                    <p className="text-muted-foreground">30-day money back guarantee</p>
-                  </div>
+                  {/* Checkout Badge from service settings */}
+                  {service?.displayOptions?.checkoutBadgeText && (
+                    <div className="mt-4 rounded-lg bg-muted p-3 text-center text-sm">
+                      <p className="font-medium">{service.displayOptions.checkoutBadgeText}</p>
+                      {service.displayOptions.checkoutBadgeDescription && (
+                        <p className="text-muted-foreground">{service.displayOptions.checkoutBadgeDescription}</p>
+                      )}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>

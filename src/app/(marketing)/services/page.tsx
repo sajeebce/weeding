@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ServiceIcon } from "@/components/ui/service-icon";
 import prisma from "@/lib/db";
+import { getBusinessConfig } from "@/lib/business-settings";
+import { getCurrencySymbol } from "@/lib/currencies";
 
 // Force dynamic rendering
 export const dynamic = "force-dynamic";
@@ -54,6 +56,8 @@ async function getServices(): Promise<ServiceListItem[]> {
 
 export default async function ServicesPage() {
   const services = await getServices();
+  const businessConfig = await getBusinessConfig();
+  const currencySymbol = getCurrencySymbol(businessConfig.currency);
 
   return (
     <div className="py-16 lg:py-24">
@@ -87,7 +91,7 @@ export default async function ServicesPage() {
                     <p className="text-muted-foreground">{service.shortDesc}</p>
                     <div className="flex items-center justify-between pt-2">
                       <span className="text-lg font-semibold text-primary">
-                        From ${service.startingPrice}
+                        From {currencySymbol}{service.startingPrice}
                       </span>
                       <ArrowRight className="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary" />
                     </div>

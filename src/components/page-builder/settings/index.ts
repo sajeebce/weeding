@@ -15,6 +15,7 @@ export { TestimonialsWidgetSettingsPanel } from "./testimonials-settings";
 export { LeadFormWidgetSettingsPanel } from "./lead-form-settings";
 export { ServiceHeroWidgetSettingsPanel } from "./service-hero-settings";
 export { FaqAccordionWidgetSettingsPanel } from "./faq-accordion-settings";
+export { ButtonGroupWidgetSettingsPanel } from "./button-group-settings";
 
 // Blog widget settings
 export { BlogPostGridSettingsPanel } from "./blog/blog-post-grid-settings";

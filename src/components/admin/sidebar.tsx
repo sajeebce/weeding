@@ -17,7 +17,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Receipt,
-  Percent,
   UserCog,
   Palette,
   Puzzle,
@@ -100,11 +99,6 @@ const navItems: NavItem[] = [
     icon: Receipt,
   },
   {
-    title: "Coupons",
-    href: "/admin/coupons",
-    icon: Percent,
-  },
-  {
     title: "Service Location",
     href: "/admin/location-pricing",
     icon: MapPin,
@@ -170,7 +164,6 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Tag,
   MapPin,
   Receipt,
-  Percent,
   UserCog,
   Palette,
   Puzzle,

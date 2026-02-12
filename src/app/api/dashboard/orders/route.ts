@@ -35,7 +35,8 @@ export async function GET(request: NextRequest) {
     if (search) {
       where.OR = [
         { orderNumber: { contains: search, mode: "insensitive" } },
-        { llcName: { contains: search, mode: "insensitive" } },
+        { customerName: { contains: search, mode: "insensitive" } },
+        { items: { some: { name: { contains: search, mode: "insensitive" } } } },
       ];
     }
 
@@ -44,7 +45,12 @@ export async function GET(request: NextRequest) {
       prisma.order.findMany({
         where,
         include: {
-          items: true,
+          items: {
+            include: {
+              service: { select: { id: true, name: true, slug: true } },
+              package: { select: { id: true, name: true } },
+            },
+          },
         },
         orderBy: { createdAt: "desc" },
         skip,

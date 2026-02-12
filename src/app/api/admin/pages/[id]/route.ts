@@ -40,6 +40,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       slug: page.slug,
       name: page.name,
       isActive: page.isActive,
+      isSystem: page.isSystem,
       templateType: page.templateType,
       isTemplateActive: page.isTemplateActive,
       metaTitle: page.metaTitle,
@@ -78,6 +79,14 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json(
         { error: "Page not found" },
         { status: 404 }
+      );
+    }
+
+    // System pages cannot have their slug changed
+    if (existing.isSystem && slug && slug !== existing.slug) {
+      return NextResponse.json(
+        { error: "Cannot change the slug of a system page. System pages are required for the site to function correctly." },
+        { status: 400 }
       );
     }
 
@@ -180,6 +189,14 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json(
         { error: "Page not found" },
         { status: 404 }
+      );
+    }
+
+    // Prevent deleting system pages
+    if (page.isSystem) {
+      return NextResponse.json(
+        { error: "Cannot delete a system page. System pages are required for the site to function correctly." },
+        { status: 400 }
       );
     }
 

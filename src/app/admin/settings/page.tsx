@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import {
   Building2,
+  DollarSign,
   Loader2,
   Save,
   Upload,
@@ -32,6 +33,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
+import { CountrySelector } from "@/components/ui/country-selector";
+import { CurrencySelector } from "@/components/ui/currency-selector";
 
 interface BusinessSettings {
   // General
@@ -57,6 +60,8 @@ interface BusinessSettings {
   "business.address.state": string;
   "business.address.zip": string;
   "business.address.country": string;
+  // Currency
+  "business.currency": string;
   // Social Media
   "business.social.facebook": string;
   "business.social.twitter": string;
@@ -84,7 +89,8 @@ const defaultSettings: BusinessSettings = {
   "business.address.city": "",
   "business.address.state": "",
   "business.address.zip": "",
-  "business.address.country": "USA",
+  "business.address.country": "US",
+  "business.currency": "USD",
   "business.social.facebook": "",
   "business.social.twitter": "",
   "business.social.linkedin": "",
@@ -668,12 +674,42 @@ export default function BusinessSettingsPage() {
             </div>
             <div className="space-y-2">
               <Label>Country</Label>
-              <Input
+              <CountrySelector
                 value={settings["business.address.country"]}
-                onChange={(e) => updateSetting("business.address.country", e.target.value)}
-                placeholder="USA"
+                onChange={(code) => updateSetting("business.address.country", code)}
+                placeholder="Select country..."
               />
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Currency */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-emerald-100 rounded-lg">
+              <DollarSign className="h-6 w-6 text-emerald-600" />
+            </div>
+            <div>
+              <CardTitle>Currency</CardTitle>
+              <CardDescription>
+                Default currency used for pricing across the website
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>Default Currency</Label>
+            <CurrencySelector
+              value={settings["business.currency"]}
+              onChange={(code) => updateSetting("business.currency", code)}
+              placeholder="Select currency..."
+            />
+            <p className="text-xs text-muted-foreground">
+              This currency will be used for all pricing displays including service packages, location fees, and checkout totals.
+            </p>
           </div>
         </CardContent>
       </Card>

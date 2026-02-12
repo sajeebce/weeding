@@ -20,8 +20,9 @@ export async function GET() {
       display: { showLogo: true, showName: true },
       logo: { url: "", darkUrl: "", text: "L" },
       favicon: "",
+      currency: "USD",
       contact: { email: "contact@llcpad.com", phone: "", supportEmail: "support@llcpad.com" },
-      address: { line1: "", line2: "", city: "", state: "", zip: "", country: "USA", full: "" },
+      address: { line1: "", line2: "", city: "", state: "", zip: "", country: "US", full: "" },
       social: { facebook: "", twitter: "", linkedin: "", instagram: "", youtube: "", tiktok: "" },
     });
   }

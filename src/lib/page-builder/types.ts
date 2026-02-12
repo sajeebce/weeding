@@ -743,7 +743,18 @@ export interface ImageSliderWidgetSettings {
 }
 
 // Lead Form Widget
-export type FormFieldType = "text" | "email" | "phone" | "select" | "textarea";
+export type FormFieldType =
+  | "text"
+  | "email"
+  | "phone"
+  | "select"
+  | "textarea"
+  | "radio"
+  | "checkbox"
+  | "number"
+  | "date"
+  | "country_select"
+  | "service_select";
 export type FormSubmitTo = "database" | "webhook" | "email";
 
 export interface LeadFormField {
@@ -753,19 +764,24 @@ export interface LeadFormField {
   label: string;
   placeholder?: string;
   required: boolean;
-  options?: string[]; // For select
+  options?: string[]; // For select, radio, checkbox
+  mapToLeadField?: string; // Maps to Lead model field (e.g., "interestedIn", "country")
+  width?: "full" | "half"; // Field width: "half" renders 2 fields side by side
 }
 
 export interface LeadFormWidgetSettings {
   title?: string;
   description?: string;
+  templateId?: string; // Reference to LeadFormTemplate
   fields: LeadFormField[];
   submitButton: {
     text: string;
+    icon?: string; // Lucide icon name (e.g., "Send")
     style?: ButtonCustomStyle;
     fullWidth: boolean;
   };
   successMessage: string;
+  footerText?: string; // HTML text below submit button (e.g., privacy policy link)
   // Integration
   submitTo: FormSubmitTo;
   webhookUrl?: string;
@@ -779,6 +795,22 @@ export interface LeadFormWidgetSettings {
   padding: number;
   borderRadius: number;
   shadow: boolean;
+}
+
+// Button Group Widget
+export interface ButtonGroupButton {
+  id: string;
+  text: string;
+  link: string;
+  openInNewTab?: boolean;
+  style?: ButtonCustomStyle;
+}
+
+export interface ButtonGroupWidgetSettings {
+  buttons: ButtonGroupButton[];
+  layout: "horizontal" | "vertical" | "stacked";
+  alignment: "left" | "center" | "right";
+  gap: number;
 }
 
 // Trust Badges Widget
@@ -2423,7 +2455,7 @@ export interface FaqAccordionWidgetSettings {
     description: string;
     alignment: "left" | "center";
   };
-  source: "all" | "category" | "service";
+  source: "all" | "category" | "service" | "service-all";
   categories: string[];
   maxItems: number;
   expandFirst: boolean;

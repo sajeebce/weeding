@@ -39,8 +39,8 @@ export async function GET(
         assignedTo: {
           select: { id: true, name: true, email: true, image: true },
         },
-        formInstance: {
-          select: { id: true, name: true, slug: true, template: { select: { name: true } } },
+        formTemplate: {
+          select: { id: true, name: true },
         },
         activities: {
           orderBy: { createdAt: "desc" },

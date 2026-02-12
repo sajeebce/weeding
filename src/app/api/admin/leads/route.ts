@@ -122,6 +122,14 @@ export async function GET(request: NextRequest) {
     if (dateTo) {
       where.createdAt = { ...where.createdAt, lte: new Date(dateTo) };
     }
+    // Form template filter
+    const formTemplateId = searchParams.get("formTemplateId");
+    if (formTemplateId === "none") {
+      where.formTemplateId = null;
+    } else if (formTemplateId && formTemplateId !== "all") {
+      where.formTemplateId = formTemplateId;
+    }
+
     if (search) {
       where.OR = [
         { firstName: { contains: search, mode: "insensitive" } },
@@ -148,8 +156,8 @@ export async function GET(request: NextRequest) {
           assignedTo: {
             select: { id: true, name: true, email: true, image: true },
           },
-          formInstance: {
-            select: { id: true, name: true, slug: true },
+          formTemplate: {
+            select: { id: true, name: true },
           },
           _count: {
             select: { activities: true, leadNotes: true },
@@ -247,7 +255,7 @@ export async function POST(request: NextRequest) {
         utmCampaign: data.utmCampaign,
         utmTerm: data.utmTerm,
         utmContent: data.utmContent,
-        formInstanceId: data.formInstanceId,
+        formTemplateId: data.formTemplateId,
         activities: {
           create: {
             type: "lead_created",

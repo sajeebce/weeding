@@ -265,8 +265,8 @@ export default async function BlogPostPage({ params }: PageProps) {
               </p>
               <div className="mt-6 flex flex-wrap justify-center gap-4">
                 <Button asChild>
-                  <Link href="/checkout?service=llc-formation">
-                    Start LLC Formation
+                  <Link href="/services">
+                    Browse Our Services
                   </Link>
                 </Button>
                 <Button variant="outline" asChild>

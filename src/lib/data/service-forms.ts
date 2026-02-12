@@ -13,7 +13,10 @@ export type FieldType =
   | "radio"
   | "file"
   | "country"
-  | "state";
+  | "state"
+  | "heading"
+  | "paragraph"
+  | "divider";
 
 export interface FormField {
   name: string;
@@ -33,6 +36,7 @@ export interface FormField {
   conditionalOn?: {
     field: string;
     value: string | string[];
+    operator?: "equals" | "not_equals" | "contains" | "not_empty";
   };
   accept?: string; // For file inputs
 }

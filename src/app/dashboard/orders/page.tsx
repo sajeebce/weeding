@@ -6,6 +6,7 @@ import { Plus, Search, Package, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { getCurrencySymbol } from "@/components/ui/currency-selector";
 import {
   Card,
   CardContent,
@@ -35,16 +36,17 @@ type OrderStatus = "PENDING" | "PROCESSING" | "IN_PROGRESS" | "WAITING_FOR_INFO"
 interface Order {
   id: string;
   orderNumber: string;
-  llcName: string | null;
-  llcState: string | null;
   status: OrderStatus;
   paymentStatus: string;
   totalUSD: string;
+  currency: string;
   createdAt: string;
   items: Array<{
     id: string;
     name: string;
     priceUSD: string;
+    service: { id: string; name: string; slug: string } | null;
+    package: { id: string; name: string } | null;
   }>;
 }
 
@@ -76,6 +78,17 @@ export default function OrdersPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalOrders, setTotalOrders] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
+  const [currencySymbol, setCurrencySymbol] = useState("$");
+
+  // Fetch currency from business config
+  useEffect(() => {
+    fetch("/api/business-config")
+      .then((res) => res.json())
+      .then((config) => {
+        if (config.currency) setCurrencySymbol(getCurrencySymbol(config.currency));
+      })
+      .catch(() => {});
+  }, []);
 
   // Fetch orders
   const fetchOrders = useCallback(async () => {
@@ -128,15 +141,20 @@ export default function OrdersPage() {
   };
 
   const formatPrice = (price: string) => {
-    return `$${parseFloat(price).toFixed(0)}`;
+    return `${currencySymbol}${parseFloat(price).toFixed(2)}`;
   };
 
   // Get service name from order items
   const getServiceName = (order: Order) => {
     if (order.items.length > 0) {
-      return order.items[0].name.split(" - ")[0]; // Get service name before " - "
+      return order.items[0].name.split(" - ")[0];
     }
     return "N/A";
+  };
+
+  // Get package name from first order item
+  const getPackageName = (order: Order) => {
+    return order.items[0]?.package?.name || null;
   };
 
   return (
@@ -170,7 +188,7 @@ export default function OrdersPage() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Search by order ID or LLC name..."
+                placeholder="Search by order ID or service name..."
                 className="pl-9"
                 value={searchQuery}
                 onChange={(e) => handleFilterChange("search", e.target.value)}
@@ -226,7 +244,6 @@ export default function OrdersPage() {
                   <TableRow>
                     <TableHead>Order ID</TableHead>
                     <TableHead>Service</TableHead>
-                    <TableHead className="hidden md:table-cell">LLC Name</TableHead>
                     <TableHead className="hidden sm:table-cell">Date</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Total</TableHead>
@@ -246,15 +263,12 @@ export default function OrdersPage() {
                       <TableCell>
                         <div>
                           <p className="font-medium">{getServiceName(order)}</p>
-                          {order.llcState && (
+                          {getPackageName(order) && (
                             <p className="text-sm text-muted-foreground">
-                              {order.llcState}
+                              {getPackageName(order)}
                             </p>
                           )}
                         </div>
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        {order.llcName || "N/A"}
                       </TableCell>
                       <TableCell className="hidden sm:table-cell">
                         {formatDate(order.createdAt)}

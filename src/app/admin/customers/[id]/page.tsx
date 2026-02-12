@@ -25,6 +25,8 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getBusinessConfig } from "@/lib/business-settings";
+import { getCurrencySymbol } from "@/lib/currencies";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -125,6 +127,8 @@ const statusColors: Record<string, string> = {
 export default async function AdminCustomerDetailPage({ params }: PageProps) {
   const { id } = await params;
   const customer = getCustomer(id);
+  const businessConfig = await getBusinessConfig();
+  const currencySymbol = getCurrencySymbol(businessConfig.currency);
 
   return (
     <div className="space-y-6">
@@ -220,7 +224,7 @@ export default async function AdminCustomerDetailPage({ params }: PageProps) {
                           >
                             {order.status}
                           </Badge>
-                          <span className="font-medium">${order.amount}</span>
+                          <span className="font-medium">{currencySymbol}{order.amount}</span>
                         </div>
                       </div>
                     ))}
@@ -385,11 +389,11 @@ export default async function AdminCustomerDetailPage({ params }: PageProps) {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm">Total Spent</span>
-                <span className="font-medium">${customer.stats.totalSpent}</span>
+                <span className="font-medium">{currencySymbol}{customer.stats.totalSpent}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm">Avg. Order Value</span>
-                <span className="font-medium">${customer.stats.avgOrderValue}</span>
+                <span className="font-medium">{currencySymbol}{customer.stats.avgOrderValue}</span>
               </div>
             </CardContent>
           </Card>

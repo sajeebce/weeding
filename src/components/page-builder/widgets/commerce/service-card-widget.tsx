@@ -6,6 +6,7 @@ import * as LucideIcons from "lucide-react";
 import { ArrowRight, Briefcase } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { getCurrencySymbol } from "@/components/ui/currency-selector";
 import type {
   ServiceCardWidgetSettings,
   ServiceCardStyle,
@@ -56,10 +57,10 @@ function getLucideIcon(
 }
 
 // Format price for display
-function formatPrice(price: string | number): string {
+function formatPrice(price: string | number, symbol = "$"): string {
   const numPrice = typeof price === "string" ? parseFloat(price) : price;
   if (isNaN(numPrice)) return "Contact Us";
-  return `From $${numPrice.toLocaleString()}`;
+  return `From ${symbol}${numPrice.toLocaleString()}`;
 }
 
 // Get badge style classes
@@ -342,9 +343,11 @@ function getHoverClasses(effect: ServiceCardHoverEffect): string {
 function MinimalCard({
   service,
   settings,
+  cs = "$",
 }: {
   service: ServiceData;
   settings: ServiceCardWidgetSettings;
+  cs?: string;
 }) {
   const Icon = getLucideIcon(service.icon);
   const iconSize = getIconSizeClasses(settings.icon.size);
@@ -353,7 +356,7 @@ function MinimalCard({
   const iconAnimation = getIconAnimationClasses(settings.icon.hoverAnimation);
   const isInline = settings.icon.position === "inline";
   const isCentered = settings.icon.position === "top-center";
-  const priceDisplay = getPriceDisplay(settings.content.pricePosition, formatPrice(service.startingPrice));
+  const priceDisplay = getPriceDisplay(settings.content.pricePosition, formatPrice(service.startingPrice, cs));
 
   const renderIcon = () => {
     if (!settings.icon.show) return null;
@@ -386,7 +389,7 @@ function MinimalCard({
       {/* Price at top-right */}
       {settings.content.showPrice && priceDisplay.isTopRight && (
         <span className={priceDisplay.className}>
-          {formatPrice(service.startingPrice)}
+          {formatPrice(service.startingPrice, cs)}
         </span>
       )}
 
@@ -419,7 +422,7 @@ function MinimalCard({
       {/* Price at bottom or as badge */}
       {settings.content.showPrice && !priceDisplay.isTopRight && (
         <span className={priceDisplay.className}>
-          {formatPrice(service.startingPrice)}
+          {formatPrice(service.startingPrice, cs)}
         </span>
       )}
     </div>
@@ -429,9 +432,11 @@ function MinimalCard({
 function ElevatedCard({
   service,
   settings,
+  cs = "$",
 }: {
   service: ServiceData;
   settings: ServiceCardWidgetSettings;
+  cs?: string;
 }) {
   const Icon = getLucideIcon(service.icon);
   const iconSize = getIconSizeClasses(settings.icon.size);
@@ -441,7 +446,7 @@ function ElevatedCard({
   const hasBadge = settings.content.showBadge && service.isPopular;
   const isInline = settings.icon.position === "inline";
   const isCentered = settings.icon.position === "top-center";
-  const priceDisplay = getPriceDisplay(settings.content.pricePosition, formatPrice(service.startingPrice));
+  const priceDisplay = getPriceDisplay(settings.content.pricePosition, formatPrice(service.startingPrice, cs));
 
   const renderIcon = () => {
     if (!settings.icon.show) return null;
@@ -486,7 +491,7 @@ function ElevatedCard({
       {/* Price at top-right */}
       {settings.content.showPrice && priceDisplay.isTopRight && (
         <span className={cn(priceDisplay.className, hasBadge && settings.content.badgePosition === "top-right" && "top-10")}>
-          {formatPrice(service.startingPrice)}
+          {formatPrice(service.startingPrice, cs)}
         </span>
       )}
 
@@ -531,7 +536,7 @@ function ElevatedCard({
           {/* Price at bottom or as badge */}
           {settings.content.showPrice && !priceDisplay.isTopRight && (
             <span className={priceDisplay.className}>
-              {formatPrice(service.startingPrice)}
+              {formatPrice(service.startingPrice, cs)}
             </span>
           )}
           {settings.content.showArrow && (
@@ -546,9 +551,11 @@ function ElevatedCard({
 function GlassmorphismCard({
   service,
   settings,
+  cs = "$",
 }: {
   service: ServiceData;
   settings: ServiceCardWidgetSettings;
+  cs?: string;
 }) {
   const Icon = getLucideIcon(service.icon);
   const iconSize = getIconSizeClasses(settings.icon.size);
@@ -558,7 +565,7 @@ function GlassmorphismCard({
   const hasBadge = settings.content.showBadge && service.isPopular;
   const isInline = settings.icon.position === "inline";
   const isCentered = settings.icon.position === "top-center";
-  const priceDisplay = getPriceDisplay(settings.content.pricePosition, formatPrice(service.startingPrice));
+  const priceDisplay = getPriceDisplay(settings.content.pricePosition, formatPrice(service.startingPrice, cs));
 
   const renderIcon = () => {
     if (!settings.icon.show) return null;
@@ -606,7 +613,7 @@ function GlassmorphismCard({
       {/* Price at top-right */}
       {settings.content.showPrice && priceDisplay.isTopRight && (
         <span className={getPriceClasses()}>
-          {formatPrice(service.startingPrice)}
+          {formatPrice(service.startingPrice, cs)}
         </span>
       )}
 
@@ -654,7 +661,7 @@ function GlassmorphismCard({
           {/* Price at bottom or as badge */}
           {settings.content.showPrice && !priceDisplay.isTopRight && (
             <span className={getPriceClasses()}>
-              {formatPrice(service.startingPrice)}
+              {formatPrice(service.startingPrice, cs)}
             </span>
           )}
           {settings.content.showArrow && (
@@ -669,9 +676,11 @@ function GlassmorphismCard({
 function GradientBorderCard({
   service,
   settings,
+  cs = "$",
 }: {
   service: ServiceData;
   settings: ServiceCardWidgetSettings;
+  cs?: string;
 }) {
   const Icon = getLucideIcon(service.icon);
   const iconSize = getIconSizeClasses(settings.icon.size);
@@ -681,7 +690,7 @@ function GradientBorderCard({
   const hasBadge = settings.content.showBadge && service.isPopular;
   const isInline = settings.icon.position === "inline";
   const isCentered = settings.icon.position === "top-center";
-  const priceDisplay = getPriceDisplay(settings.content.pricePosition, formatPrice(service.startingPrice));
+  const priceDisplay = getPriceDisplay(settings.content.pricePosition, formatPrice(service.startingPrice, cs));
 
   const renderIcon = () => {
     if (!settings.icon.show) return null;
@@ -733,7 +742,7 @@ function GradientBorderCard({
         {/* Price at top-right */}
         {settings.content.showPrice && priceDisplay.isTopRight && (
           <span className={getPriceClasses()}>
-            {formatPrice(service.startingPrice)}
+            {formatPrice(service.startingPrice, cs)}
           </span>
         )}
 
@@ -778,7 +787,7 @@ function GradientBorderCard({
             {/* Price at bottom or as badge */}
             {settings.content.showPrice && !priceDisplay.isTopRight && (
               <span className={getPriceClasses()}>
-                {formatPrice(service.startingPrice)}
+                {formatPrice(service.startingPrice, cs)}
               </span>
             )}
             {settings.content.showArrow && (
@@ -794,9 +803,11 @@ function GradientBorderCard({
 function SpotlightCard({
   service,
   settings,
+  cs = "$",
 }: {
   service: ServiceData;
   settings: ServiceCardWidgetSettings;
+  cs?: string;
 }) {
   const Icon = getLucideIcon(service.icon);
   const iconSize = getIconSizeClasses(settings.icon.size);
@@ -804,7 +815,7 @@ function SpotlightCard({
   const hasBadge = settings.content.showBadge && service.isPopular;
   const isInline = settings.icon.position === "inline";
   const isCentered = settings.icon.position === "top-center";
-  const priceDisplay = getPriceDisplay(settings.content.pricePosition, formatPrice(service.startingPrice));
+  const priceDisplay = getPriceDisplay(settings.content.pricePosition, formatPrice(service.startingPrice, cs));
 
   const iconHoverEffect = getIconHoverEffectClasses(settings.hover.iconEffect);
   const iconAnimation = getIconAnimationClasses(settings.icon.hoverAnimation);
@@ -855,7 +866,7 @@ function SpotlightCard({
       {/* Price at top-right */}
       {settings.content.showPrice && priceDisplay.isTopRight && (
         <span className={cn(priceDisplay.className, "z-10", hasBadge && settings.content.badgePosition === "top-right" && "top-10")}>
-          {formatPrice(service.startingPrice)}
+          {formatPrice(service.startingPrice, cs)}
         </span>
       )}
 
@@ -900,7 +911,7 @@ function SpotlightCard({
           {/* Price at bottom or as badge */}
           {settings.content.showPrice && !priceDisplay.isTopRight && (
             <span className={priceDisplay.className}>
-              {formatPrice(service.startingPrice)}
+              {formatPrice(service.startingPrice, cs)}
             </span>
           )}
           {settings.content.showArrow && (
@@ -915,9 +926,11 @@ function SpotlightCard({
 function NeonGlowCard({
   service,
   settings,
+  cs = "$",
 }: {
   service: ServiceData;
   settings: ServiceCardWidgetSettings;
+  cs?: string;
 }) {
   const Icon = getLucideIcon(service.icon);
   const iconSize = getIconSizeClasses(settings.icon.size);
@@ -926,7 +939,7 @@ function NeonGlowCard({
   const hasBadge = settings.content.showBadge && service.isPopular;
   const isInline = settings.icon.position === "inline";
   const isCentered = settings.icon.position === "top-center";
-  const priceDisplay = getPriceDisplay(settings.content.pricePosition, formatPrice(service.startingPrice));
+  const priceDisplay = getPriceDisplay(settings.content.pricePosition, formatPrice(service.startingPrice, cs));
   const iconHoverEffect = getIconHoverEffectClasses(settings.hover.iconEffect);
   const iconAnimation = getIconAnimationClasses(settings.icon.hoverAnimation);
 
@@ -996,7 +1009,7 @@ function NeonGlowCard({
           className={getPriceClasses()}
           style={{ borderColor: glowColor, color: glowColor }}
         >
-          {formatPrice(service.startingPrice)}
+          {formatPrice(service.startingPrice, cs)}
         </span>
       )}
 
@@ -1062,7 +1075,7 @@ function NeonGlowCard({
               className={getPriceClasses()}
               style={{ borderColor: priceDisplay.isBadge ? glowColor : undefined, color: glowColor }}
             >
-              {formatPrice(service.startingPrice)}
+              {formatPrice(service.startingPrice, cs)}
             </span>
           )}
           {settings.content.showArrow && (
@@ -1081,9 +1094,11 @@ function NeonGlowCard({
 function ServiceCard({
   service,
   settings,
+  cs = "$",
 }: {
   service: ServiceData;
   settings: ServiceCardWidgetSettings;
+  cs?: string;
 }) {
   const hoverClasses = getHoverClasses(settings.hover.effect);
 
@@ -1106,18 +1121,18 @@ function ServiceCard({
   const content = (() => {
     switch (settings.cardStyle) {
       case "minimal":
-        return <MinimalCard service={service} settings={settings} />;
+        return <MinimalCard service={service} settings={settings} cs={cs} />;
       case "glassmorphism":
-        return <GlassmorphismCard service={service} settings={settings} />;
+        return <GlassmorphismCard service={service} settings={settings} cs={cs} />;
       case "gradient-border":
-        return <GradientBorderCard service={service} settings={settings} />;
+        return <GradientBorderCard service={service} settings={settings} cs={cs} />;
       case "spotlight":
-        return <SpotlightCard service={service} settings={settings} />;
+        return <SpotlightCard service={service} settings={settings} cs={cs} />;
       case "neon-glow":
-        return <NeonGlowCard service={service} settings={settings} />;
+        return <NeonGlowCard service={service} settings={settings} cs={cs} />;
       case "elevated":
       default:
-        return <ElevatedCard service={service} settings={settings} />;
+        return <ElevatedCard service={service} settings={settings} cs={cs} />;
     }
   })();
 
@@ -1153,6 +1168,7 @@ export function ServiceCardWidget({ settings: partialSettings, isPreview = false
   const [services, setServices] = useState<ServiceData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currencySymbol, setCurrencySymbol] = useState("$");
 
   // Deep merge with defaults to ensure all nested properties exist
   const settings: ServiceCardWidgetSettings = {
@@ -1224,6 +1240,16 @@ export function ServiceCardWidget({ settings: partialSettings, isPreview = false
     settings.filters.categories,
   ]);
 
+  // Fetch currency
+  useEffect(() => {
+    fetch("/api/business-config")
+      .then((res) => res.json())
+      .then((config) => {
+        if (config.currency) setCurrencySymbol(getCurrencySymbol(config.currency));
+      })
+      .catch(() => {});
+  }, []);
+
   if (loading) {
     return (
       <div
@@ -1279,7 +1305,7 @@ export function ServiceCardWidget({ settings: partialSettings, isPreview = false
         style={{ gap: `${settings.layout.gap}px` }}
       >
         {services.map((service) => (
-          <ServiceCard key={service.id} service={service} settings={settings} />
+          <ServiceCard key={service.id} service={service} settings={settings} cs={currencySymbol} />
         ))}
       </div>
     </div>

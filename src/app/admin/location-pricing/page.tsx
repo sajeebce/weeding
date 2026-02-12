@@ -47,6 +47,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { CountrySelector, ELIGIBLE_COUNTRIES } from "@/components/ui/country-selector";
 
 interface Location {
   id: string;
@@ -92,14 +93,7 @@ export default function LocationPricingPage() {
   const fetchLocations = useCallback(async () => {
     setIsLoading(true);
     try {
-      const params = new URLSearchParams();
-      if (filterCountry) params.set("country", filterCountry);
-      if (filterType) params.set("type", filterType);
-      if (searchQuery) params.set("search", searchQuery);
-
-      const response = await fetch(
-        `/api/admin/location-pricing?${params}`
-      );
+      const response = await fetch("/api/admin/location-pricing");
       const data = await response.json();
 
       if (response.ok) {
@@ -113,11 +107,22 @@ export default function LocationPricingPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [filterCountry, filterType, searchQuery]);
+  }, []);
 
   useEffect(() => {
     fetchLocations();
   }, [fetchLocations]);
+
+  // Client-side filtering
+  const filteredLocations = locations.filter((l) => {
+    if (filterCountry && l.country !== filterCountry) return false;
+    if (filterType && l.type !== filterType) return false;
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      if (!l.name.toLowerCase().includes(q) && !l.code.toLowerCase().includes(q)) return false;
+    }
+    return true;
+  });
 
   const openDialog = (location?: Location) => {
     if (location) {
@@ -280,12 +285,25 @@ export default function LocationPricingPage() {
             className="pl-9"
           />
         </div>
-        <Input
-          placeholder="Filter by country..."
-          value={filterCountry}
-          onChange={(e) => setFilterCountry(e.target.value)}
-          className="w-[180px]"
-        />
+        <Select
+          value={filterCountry || "all"}
+          onValueChange={(v) => setFilterCountry(v === "all" ? "" : v)}
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="All Countries" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Countries</SelectItem>
+            {[...new Set(locations.map((l) => l.country))].sort().map((code) => {
+              const country = ELIGIBLE_COUNTRIES.find((c) => c.code === code);
+              return (
+                <SelectItem key={code} value={code}>
+                  {country ? `${country.flag} ${country.name}` : code}
+                </SelectItem>
+              );
+            })}
+          </SelectContent>
+        </Select>
         <Select
           value={filterType}
           onValueChange={(v) => setFilterType(v === "all" ? "" : v)}
@@ -320,17 +338,19 @@ export default function LocationPricingPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {locations.length === 0 ? (
+              {filteredLocations.length === 0 ? (
                 <TableRow>
                   <TableCell
                     colSpan={7}
                     className="text-center text-muted-foreground"
                   >
-                    No locations found. Add your first location to get started.
+                    {locations.length === 0
+                      ? "No locations found. Add your first location to get started."
+                      : "No locations match your filters."}
                   </TableCell>
                 </TableRow>
               ) : (
-                locations.map((location) => (
+                filteredLocations.map((location) => (
                   <TableRow
                     key={location.id}
                     className={
@@ -347,10 +367,17 @@ export default function LocationPricingPage() {
                       <Badge variant="outline">{location.code}</Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-1">
-                        <Globe className="h-3 w-3 text-muted-foreground" />
-                        {location.country}
-                      </div>
+                      {(() => {
+                        const c = ELIGIBLE_COUNTRIES.find((c) => c.code === location.country);
+                        return c ? (
+                          <span>{c.flag} {c.name}</span>
+                        ) : (
+                          <div className="flex items-center gap-1">
+                            <Globe className="h-3 w-3 text-muted-foreground" />
+                            {location.country}
+                          </div>
+                        );
+                      })()}
                     </TableCell>
                     <TableCell>
                       <Badge variant="secondary" className="text-xs">
@@ -442,12 +469,12 @@ export default function LocationPricingPage() {
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label>Country *</Label>
-                <Input
+                <CountrySelector
                   value={formData.country}
-                  onChange={(e) =>
-                    setFormData({ ...formData, country: e.target.value })
+                  onChange={(code) =>
+                    setFormData({ ...formData, country: code })
                   }
-                  placeholder="e.g., United States, Bangladesh"
+                  placeholder="Select country..."
                 />
               </div>
               <div className="space-y-2">

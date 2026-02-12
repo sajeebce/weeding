@@ -1,9 +1,40 @@
 "use client";
 
+import React from "react";
 import { GripVertical, Settings, Trash2, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Widget } from "@/lib/page-builder/types";
 import { WidgetRegistry } from "@/lib/page-builder/widget-registry";
+
+// Error boundary to catch widget rendering errors without crashing the entire page
+class WidgetErrorBoundary extends React.Component<
+  { children: React.ReactNode; widgetType: string },
+  { hasError: boolean; error: Error | null }
+> {
+  constructor(props: { children: React.ReactNode; widgetType: string }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    console.error(`[WidgetErrorBoundary] ${this.props.widgetType} crashed:`, error, info.componentStack);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-4 bg-red-950/50 border border-red-500 rounded-lg text-sm">
+          <p className="text-red-400 font-medium">Widget Error: {this.props.widgetType}</p>
+          <p className="text-red-300/70 mt-1 text-xs font-mono break-all">
+            {this.state.error?.message}
+          </p>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 interface WidgetWrapperProps {
   widget: Widget<unknown>;
@@ -61,11 +92,16 @@ export function WidgetWrapper({
         }
       }}
     >
-      {/* Widget Toolbar (shown on hover in edit mode) */}
+      {/* Widget Toolbar - inside widget bounds, visible on hover or when selected */}
       {!isPreview && (
-        <div className="absolute -top-8 left-0 right-0 flex items-center justify-between opacity-0 group-hover/widget:opacity-100 transition-opacity z-20">
+        <div
+          className={cn(
+            "absolute top-1 left-1 right-1 flex items-center justify-between transition-opacity z-20 pointer-events-none",
+            isSelected ? "opacity-100" : "opacity-0 group-hover/widget:opacity-100"
+          )}
+        >
           {/* Left: Drag Handle & Widget Name */}
-          <div className="flex items-center gap-1 bg-slate-800 rounded-md px-2 py-1 shadow-lg border border-slate-700">
+          <div className="flex items-center gap-1 bg-slate-800/90 backdrop-blur-sm rounded-md px-2 py-1 shadow-lg border border-slate-700 pointer-events-auto">
             <GripVertical className="h-3 w-3 text-slate-500 cursor-grab" />
             <span className="text-xs text-slate-400">
               {definition?.name || widget.type}
@@ -73,7 +109,7 @@ export function WidgetWrapper({
           </div>
 
           {/* Right: Actions */}
-          <div className="flex items-center gap-1 bg-slate-800 rounded-md px-1 py-1 shadow-lg border border-slate-700">
+          <div className="flex items-center gap-1 bg-slate-800/90 backdrop-blur-sm rounded-md px-1 py-1 shadow-lg border border-slate-700 pointer-events-auto">
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -110,7 +146,9 @@ export function WidgetWrapper({
 
       {/* Widget Content */}
       <div className={cn(!isPreview && "pointer-events-none")}>
-        {renderWidget()}
+        <WidgetErrorBoundary widgetType={widget.type}>
+          {renderWidget()}
+        </WidgetErrorBoundary>
       </div>
     </div>
   );

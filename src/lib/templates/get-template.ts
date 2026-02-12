@@ -101,6 +101,27 @@ export async function getBlogListTemplate(): Promise<TemplateData | null> {
 }
 
 /**
+ * Get the ABOUT template
+ */
+export async function getAboutTemplate(): Promise<TemplateData | null> {
+  return getActiveTemplate("ABOUT");
+}
+
+/**
+ * Get the CONTACT template
+ */
+export async function getContactTemplate(): Promise<TemplateData | null> {
+  return getActiveTemplate("CONTACT");
+}
+
+/**
+ * Get the FAQ template
+ */
+export async function getFaqTemplate(): Promise<TemplateData | null> {
+  return getActiveTemplate("FAQ");
+}
+
+/**
  * Check if a template exists for a page type
  */
 export async function hasTemplate(templateType: PageTemplateType): Promise<boolean> {

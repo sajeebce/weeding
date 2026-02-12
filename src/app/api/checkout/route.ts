@@ -135,7 +135,7 @@ export async function GET(request: NextRequest) {
     // For now, return mock data
     return NextResponse.json({
       status: "complete",
-      orderId: "LLC-2024-" + Math.random().toString(36).substring(2, 8).toUpperCase(),
+      orderId: "ORD-" + new Date().toISOString().slice(0, 10).replace(/-/g, "") + "001",
       customerEmail: "customer@example.com",
     });
   } catch (error) {

@@ -69,8 +69,10 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-import { Minus, DollarSign, MapPin, Search as SearchIcon, Loader2 as Loader2Icon } from "lucide-react";
+import { getCurrencySymbol } from "@/components/ui/currency-selector";
+import { Minus, DollarSign, MapPin, Search as SearchIcon, ChevronsUpDown } from "lucide-react";
 
 interface Category {
   id: string;
@@ -144,6 +146,11 @@ interface ServiceData {
   features: Feature[];
   packages: Package[];
   faqs: FAQ[];
+  displayOptions: {
+    checkoutBadgeText?: string;
+    checkoutBadgeDescription?: string;
+    [key: string]: unknown;
+  };
 }
 
 const defaultService: ServiceData = {
@@ -164,6 +171,7 @@ const defaultService: ServiceData = {
   features: [],
   packages: [],
   faqs: [],
+  displayOptions: {},
 };
 
 const defaultPackage: Package = {
@@ -211,6 +219,9 @@ export default function ServiceEditorPage() {
   const [featureDialogOpen, setFeatureDialogOpen] = useState(false);
   const [editingFeature, setEditingFeature] = useState<ServiceFeature | null>(null);
 
+  // Currency from business settings
+  const [currencySymbol, setCurrencySymbol] = useState("$");
+
   // Pending mapping changes (for batch update)
   const [pendingMappingChanges, setPendingMappingChanges] = useState<
     Map<string, Partial<PackageFeatureMapping> & { packageId: string; featureId: string }>
@@ -250,6 +261,7 @@ export default function ServiceEditorPage() {
             notIncluded: pkg.notIncluded || [],
           })),
           faqs: data.faqs || [],
+          displayOptions: data.displayOptions || {},
         });
       } else {
         toast.error("Failed to load service");
@@ -294,6 +306,15 @@ export default function ServiceEditorPage() {
       fetchService();
       fetchMasterFeatures();
     }
+    // Fetch currency from business config
+    fetch("/api/business-config")
+      .then((res) => res.json())
+      .then((config) => {
+        if (config.currency) {
+          setCurrencySymbol(getCurrencySymbol(config.currency));
+        }
+      })
+      .catch(() => {});
   }, [isNew, fetchService, fetchCategories, fetchMasterFeatures]);
 
   const handleInputChange = (
@@ -301,6 +322,13 @@ export default function ServiceEditorPage() {
     value: string | number | boolean
   ) => {
     setService((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleDisplayOptionChange = (key: string, value: string) => {
+    setService((prev) => ({
+      ...prev,
+      displayOptions: { ...prev.displayOptions, [key]: value },
+    }));
   };
 
   const handleSave = async () => {
@@ -1019,7 +1047,7 @@ export default function ServiceEditorPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="startingPrice">Starting Price ($)</Label>
+                    <Label htmlFor="startingPrice">Starting Price ({currencySymbol})</Label>
                     <Input
                       id="startingPrice"
                       type="number"
@@ -1071,6 +1099,40 @@ export default function ServiceEditorPage() {
                       id="isActive"
                       checked={service.isActive}
                       onCheckedChange={(v) => handleInputChange("isActive", v)}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Checkout Badge</CardTitle>
+                  <CardDescription>
+                    Optional badge text shown below the order summary CTA
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="checkoutBadgeText">Badge Text</Label>
+                    <Input
+                      id="checkoutBadgeText"
+                      value={service.displayOptions.checkoutBadgeText || ""}
+                      onChange={(e) =>
+                        handleDisplayOptionChange("checkoutBadgeText", e.target.value)
+                      }
+                      placeholder="e.g., One-time fee"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="checkoutBadgeDescription">Badge Description</Label>
+                    <Textarea
+                      id="checkoutBadgeDescription"
+                      value={service.displayOptions.checkoutBadgeDescription || ""}
+                      onChange={(e) =>
+                        handleDisplayOptionChange("checkoutBadgeDescription", e.target.value)
+                      }
+                      placeholder="e.g., Our formation fee is a one-time payment."
+                      rows={2}
                     />
                   </div>
                 </CardContent>
@@ -1185,7 +1247,7 @@ export default function ServiceEditorPage() {
                               >
                                 <div className="flex flex-col items-center gap-1">
                                   <span className="font-semibold">{pkg.name}</span>
-                                  <span className="text-lg font-bold">${pkg.price}</span>
+                                  <span className="text-lg font-bold">{currencySymbol}{pkg.price}</span>
                                   {pkg.isPopular && (
                                     <Badge variant="default" className="text-xs">
                                       Popular
@@ -1385,7 +1447,7 @@ export default function ServiceEditorPage() {
                         className="flex items-center gap-3 rounded-lg border px-4 py-2"
                       >
                         <span className="font-medium">{pkg.name}</span>
-                        <span className="text-muted-foreground">${pkg.price}</span>
+                        <span className="text-muted-foreground">{currencySymbol}{pkg.price}</span>
                         <Button
                           variant="ghost"
                           size="icon"
@@ -1473,7 +1535,7 @@ export default function ServiceEditorPage() {
         {/* Location Pricing Tab */}
         {!isNew && serviceId && (
           <TabsContent value="location-pricing">
-            <LocationPricingTab serviceId={serviceId} />
+            <LocationPricingTab serviceId={serviceId} currencySymbol={currencySymbol} />
           </TabsContent>
         )}
 
@@ -1567,7 +1629,7 @@ export default function ServiceEditorPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Price (USD) *</Label>
+                  <Label>Price ({currencySymbol}) *</Label>
                   <Input
                     type="number"
                     min="0"
@@ -1786,7 +1848,7 @@ interface LocationFeeRow {
   isActive: boolean;
 }
 
-function LocationPricingTab({ serviceId }: { serviceId: string }) {
+function LocationPricingTab({ serviceId, currencySymbol }: { serviceId: string; currencySymbol: string }) {
   const [isEnabled, setIsEnabled] = useState(false);
   const [feeLabel, setFeeLabel] = useState("State Fee");
   const [fees, setFees] = useState<LocationFeeRow[]>([]);
@@ -1797,6 +1859,9 @@ function LocationPricingTab({ serviceId }: { serviceId: string }) {
   const [isSaving, setIsSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [hasChanges, setHasChanges] = useState(false);
+  const [addPopoverOpen, setAddPopoverOpen] = useState(false);
+  const [selectedLocationIds, setSelectedLocationIds] = useState<Set<string>>(new Set());
+  const [addLocationSearch, setAddLocationSearch] = useState("");
 
   // Fetch service location fees and all available locations
   const fetchData = useCallback(async () => {
@@ -1907,6 +1972,36 @@ function LocationPricingTab({ serviceId }: { serviceId: string }) {
     setHasChanges(true);
   };
 
+  const addMultipleLocationFees = () => {
+    if (selectedLocationIds.size === 0) return;
+
+    const newFees: LocationFeeRow[] = [];
+    for (const locId of selectedLocationIds) {
+      if (fees.find((f) => f.locationId === locId)) continue;
+      const location = allLocations.find((l) => l.id === locId);
+      if (!location) continue;
+      newFees.push({
+        locationId: location.id,
+        locationCode: location.code,
+        locationName: location.name,
+        locationCountry: location.country,
+        filingFee: 0,
+        annualFee: null,
+        processingTime: "",
+        isActive: true,
+      });
+    }
+
+    if (newFees.length > 0) {
+      setFees((prev) => [...prev, ...newFees]);
+      setHasChanges(true);
+      toast.success(`Added ${newFees.length} location(s)`);
+    }
+    setSelectedLocationIds(new Set());
+    setAddPopoverOpen(false);
+    setAddLocationSearch("");
+  };
+
   const removeLocationFee = async (locationId: string) => {
     // Remove from local state
     setFees((prev) => prev.filter((f) => f.locationId !== locationId));
@@ -2006,18 +2101,15 @@ function LocationPricingTab({ serviceId }: { serviceId: string }) {
               Location-Based Pricing
             </CardTitle>
             <CardDescription>
-              Enable location-specific fees for this service (e.g., state filing
-              fees)
+              Configure location-specific pricing for this service
             </CardDescription>
           </div>
-          {hasChanges && (
-            <Button onClick={saveFees} disabled={isSaving}>
-              {isSaving && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
-              Save Changes
-            </Button>
-          )}
+          <Button onClick={saveFees} disabled={isSaving || !hasChanges}>
+            {isSaving && (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            )}
+            Save Changes
+          </Button>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -2072,20 +2164,131 @@ function LocationPricingTab({ serviceId }: { serviceId: string }) {
                 />
               </div>
               {availableLocations.length > 0 && (
-                <Select
-                  onValueChange={(v) => addLocationFee(v)}
-                >
-                  <SelectTrigger className="w-55">
-                    <SelectValue placeholder="+ Add Location" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableLocations.map((loc) => (
-                      <SelectItem key={loc.id} value={loc.id}>
-                        {loc.name} ({loc.code})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Popover open={addPopoverOpen} onOpenChange={(open) => {
+                  setAddPopoverOpen(open);
+                  if (!open) {
+                    setSelectedLocationIds(new Set());
+                    setAddLocationSearch("");
+                  }
+                }}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-55 justify-between">
+                      <span className="flex items-center gap-1">
+                        <Plus className="h-4 w-4" />
+                        Add Locations
+                        {selectedLocationIds.size > 0 && (
+                          <Badge variant="secondary" className="ml-1 text-xs">
+                            {selectedLocationIds.size}
+                          </Badge>
+                        )}
+                      </span>
+                      <ChevronsUpDown className="h-4 w-4 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-80 p-0" align="end">
+                    <div className="p-3 border-b space-y-2">
+                      <Input
+                        placeholder="Search locations..."
+                        value={addLocationSearch}
+                        onChange={(e) => setAddLocationSearch(e.target.value)}
+                        className="h-8"
+                      />
+                      <div className="flex items-center justify-between">
+                        <label
+                          className="flex items-center gap-2 text-sm cursor-pointer"
+                          onClick={() => {
+                            const filteredAvailable = availableLocations.filter((loc) =>
+                              addLocationSearch
+                                ? loc.name.toLowerCase().includes(addLocationSearch.toLowerCase()) ||
+                                  loc.code.toLowerCase().includes(addLocationSearch.toLowerCase())
+                                : true
+                            );
+                            const allFilteredSelected = filteredAvailable.length > 0 &&
+                              filteredAvailable.every((loc) => selectedLocationIds.has(loc.id));
+
+                            setSelectedLocationIds((prev) => {
+                              const next = new Set(prev);
+                              if (allFilteredSelected) {
+                                filteredAvailable.forEach((loc) => next.delete(loc.id));
+                              } else {
+                                filteredAvailable.forEach((loc) => next.add(loc.id));
+                              }
+                              return next;
+                            });
+                          }}
+                        >
+                          <Checkbox
+                            checked={(() => {
+                              const filteredAvailable = availableLocations.filter((loc) =>
+                                addLocationSearch
+                                  ? loc.name.toLowerCase().includes(addLocationSearch.toLowerCase()) ||
+                                    loc.code.toLowerCase().includes(addLocationSearch.toLowerCase())
+                                  : true
+                              );
+                              return filteredAvailable.length > 0 &&
+                                filteredAvailable.every((loc) => selectedLocationIds.has(loc.id));
+                            })()}
+                          />
+                          Select All{addLocationSearch ? " (filtered)" : ""}
+                        </label>
+                        <span className="text-xs text-muted-foreground">
+                          {selectedLocationIds.size} selected
+                        </span>
+                      </div>
+                    </div>
+                    <div className="max-h-64 overflow-y-auto p-1">
+                      {(() => {
+                        const filtered = availableLocations.filter((loc) =>
+                          addLocationSearch
+                            ? loc.name.toLowerCase().includes(addLocationSearch.toLowerCase()) ||
+                              loc.code.toLowerCase().includes(addLocationSearch.toLowerCase())
+                            : true
+                        );
+                        if (filtered.length === 0) {
+                          return (
+                            <p className="p-3 text-center text-sm text-muted-foreground">
+                              No locations found
+                            </p>
+                          );
+                        }
+                        return filtered.map((loc) => (
+                          <label
+                            key={loc.id}
+                            className="flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm cursor-pointer hover:bg-accent"
+                          >
+                            <Checkbox
+                              checked={selectedLocationIds.has(loc.id)}
+                              onCheckedChange={(checked) => {
+                                setSelectedLocationIds((prev) => {
+                                  const next = new Set(prev);
+                                  if (checked) {
+                                    next.add(loc.id);
+                                  } else {
+                                    next.delete(loc.id);
+                                  }
+                                  return next;
+                                });
+                              }}
+                            />
+                            <span className="flex-1">{loc.name}</span>
+                            <span className="text-xs text-muted-foreground font-mono">{loc.code}</span>
+                          </label>
+                        ));
+                      })()}
+                    </div>
+                    {selectedLocationIds.size > 0 && (
+                      <div className="border-t p-2">
+                        <Button
+                          size="sm"
+                          className="w-full"
+                          onClick={addMultipleLocationFees}
+                        >
+                          Add {selectedLocationIds.size} Location{selectedLocationIds.size > 1 ? "s" : ""}
+                        </Button>
+                      </div>
+                    )}
+                  </PopoverContent>
+                </Popover>
               )}
             </div>
 
@@ -2104,8 +2307,8 @@ function LocationPricingTab({ serviceId }: { serviceId: string }) {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Location</TableHead>
-                      <TableHead>Filing Fee ($)</TableHead>
-                      <TableHead>Annual Fee ($)</TableHead>
+                      <TableHead>Filing Fee ({currencySymbol})</TableHead>
+                      <TableHead>Annual Fee ({currencySymbol})</TableHead>
                       <TableHead>Processing Time</TableHead>
                       <TableHead>Active</TableHead>
                       <TableHead className="w-10"></TableHead>
@@ -2204,17 +2407,6 @@ function LocationPricingTab({ serviceId }: { serviceId: string }) {
               </div>
             )}
 
-            {/* Save Button (sticky at bottom) */}
-            {hasChanges && (
-              <div className="flex justify-end border-t pt-4">
-                <Button onClick={saveFees} disabled={isSaving}>
-                  {isSaving && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
-                  Save Location Pricing
-                </Button>
-              </div>
-            )}
           </>
         )}
       </CardContent>

@@ -1611,6 +1611,7 @@ enum PageTemplateType {
   BLOG_LIST         // Blog listing page (/blog)
   ABOUT             // About page (/about)
   CONTACT           // Contact page (/contact)
+  FAQ               // FAQ page (/faq)
   CHECKOUT          // Checkout pages (/checkout/*)
   CUSTOM            // Custom standalone pages
 }
@@ -1622,6 +1623,7 @@ model LandingPage {
   name            String   // "Homepage", "LLC Landing Page"
   isActive        Boolean  @default(true)
   isDefault       Boolean  @default(false) // Is this the main homepage? (deprecated, use templateType)
+  isSystem        Boolean  @default(false) // System pages cannot be deleted or have slug changed
 
   // Template assignment (null = regular page, non-null = template for that page type)
   templateType    PageTemplateType?  // Which page type this template serves
@@ -1921,9 +1923,10 @@ model Lead {
   convertedAt     DateTime?
   convertedToId   String?      // User ID if converted to customer
 
-  // Form Instance Reference
-  formInstanceId  String?
-  formInstance    LeadFormInstance? @relation(fields: [formInstanceId], references: [id])
+  // Form Template Reference
+  formTemplateId    String?
+  formTemplate      LeadFormTemplate? @relation(fields: [formTemplateId], references: [id], onDelete: SetNull)
+  formTemplateName  String?      // Denormalized — preserved if template deleted
 
   // Notes & Communication
   notes           String?      @db.Text
@@ -1946,7 +1949,7 @@ model Lead {
   @@index([score])
   @@index([createdAt])
   @@index([priority])
-  @@index([formInstanceId])
+  @@index([formTemplateId])
 }
 
 // Lead Activity Log
@@ -1993,75 +1996,37 @@ model LeadNote {
 
 // Lead Form Templates (reusable field definitions)
 model LeadFormTemplate {
-  id                    String   @id @default(cuid())
-  name                  String   // "LLC Lead Form"
-  description           String?
-  fields                Json     // Field definitions array
+  id                String   @id @default(cuid())
+  name              String   // "LLC Lead Form"
+  description       String?
+  fields            Json     // Field definitions array
 
-  // Defaults (can be overridden in instance)
-  defaultSuccessMessage  String?
-  defaultSuccessRedirect String?
-  defaultAutoAssignTo    String?
+  // Settings
+  successMessage    String?
+  successRedirect   String?
+  autoAssignToId    String?
 
   // Styling defaults
-  defaultStyling         Json?
+  defaultStyling    Json?
 
   // Management
-  isActive      Boolean  @default(true)
-  isSystem      Boolean  @default(false) // System templates can't be deleted
-  usageCount    Int      @default(0)
-
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  // Relations
-  formInstances LeadFormInstance[]
-
-  @@index([isActive])
-}
-
-// Lead Form Instances (page-specific configurations)
-model LeadFormInstance {
-  id              String   @id @default(cuid())
-  name            String   // "Homepage LLC Form"
-  slug            String   @unique // "homepage-llc-form"
-
-  // Template reference
-  templateId      String
-  template        LeadFormTemplate @relation(fields: [templateId], references: [id])
-
-  // Override fields
-  fieldOverrides  Json?
-  stylingOverrides Json?
-
-  // Instance-specific settings
-  successMessage   String?
-  successRedirect  String?
-  autoAssignToId   String?
-  roundRobinAssign Boolean  @default(false)
-
-  // Tracking identifiers
-  trackingEventName String?
-  trackingParams    Json?
-
-  // Status
-  isActive      Boolean  @default(true)
+  isActive          Boolean  @default(true)
+  isSystem          Boolean  @default(false) // System templates can't be deleted
+  usageCount        Int      @default(0)
 
   // Stats
-  submissionCount Int     @default(0)
-  conversionCount Int     @default(0)
-  lastSubmission  DateTime?
+  submissionCount   Int      @default(0)
+  lastSubmission    DateTime?
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   // Relations
-  leads         Lead[]
+  leads             Lead[]
 
-  @@index([templateId])
   @@index([isActive])
-  @@index([slug])
 }
+
 
 // Global Tracking Settings (GTM, FB Pixel, Google Ads)
 model TrackingSettings {

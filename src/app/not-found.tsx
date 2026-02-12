@@ -41,20 +41,14 @@ export default function NotFound() {
             Looking for something specific?
           </p>
           <div className="flex flex-wrap justify-center gap-4 text-sm">
-            <Link
-              href="/services/llc-formation"
-              className="text-primary hover:underline"
-            >
-              LLC Formation
+            <Link href="/services" className="text-primary hover:underline">
+              Our Services
             </Link>
-            <Link
-              href="/services/ein-application"
-              className="text-primary hover:underline"
-            >
-              EIN Application
+            <Link href="/about" className="text-primary hover:underline">
+              About Us
             </Link>
-            <Link href="/pricing" className="text-primary hover:underline">
-              Pricing
+            <Link href="/blog" className="text-primary hover:underline">
+              Blog
             </Link>
             <Link href="/contact" className="text-primary hover:underline">
               Contact Us

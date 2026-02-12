@@ -2,13 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
-
-// Generate unique order number
-function generateOrderNumber(): string {
-  const year = new Date().getFullYear();
-  const random = Math.random().toString(36).substring(2, 8).toUpperCase();
-  return `LLC-${year}-${random}`;
-}
+import { generateOrderNumber } from "@/lib/order-utils";
 
 const orderSchema = z.object({
   // Service & Package
@@ -139,7 +133,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate order number
-    const orderNumber = generateOrderNumber();
+    const orderNumber = await generateOrderNumber();
 
     // Find or create service by slug
     let service = await prisma.service.findUnique({
@@ -316,9 +310,9 @@ export async function GET(request: NextRequest) {
     if (search) {
       where.OR = [
         { orderNumber: { contains: search, mode: "insensitive" } },
-        { llcName: { contains: search, mode: "insensitive" } },
         { customerName: { contains: search, mode: "insensitive" } },
         { customerEmail: { contains: search, mode: "insensitive" } },
+        { items: { some: { name: { contains: search, mode: "insensitive" } } } },
       ];
     }
 
@@ -327,7 +321,12 @@ export async function GET(request: NextRequest) {
       prisma.order.findMany({
         where,
         include: {
-          items: true,
+          items: {
+            include: {
+              service: { select: { id: true, name: true, slug: true } },
+              package: { select: { id: true, name: true } },
+            },
+          },
           user: {
             select: {
               id: true,

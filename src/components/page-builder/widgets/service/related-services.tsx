@@ -12,6 +12,7 @@ import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useOptionalServiceContext } from "@/lib/page-builder/contexts/service-context";
 import { ServiceIcon } from "@/components/ui/service-icon";
+import { getCurrencySymbol } from "@/lib/currencies";
 
 // ============================================
 // TYPES
@@ -103,6 +104,19 @@ export function RelatedServicesWidget({
   // State for fetched services
   const [services, setServices] = useState<RelatedService[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [currencySymbol, setCurrencySymbol] = useState("$");
+
+  // Fetch currency
+  useEffect(() => {
+    fetch("/api/business-config")
+      .then((res) => res.json())
+      .then((config) => {
+        if (config.currency) {
+          setCurrencySymbol(getCurrencySymbol(config.currency));
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Fetch related services
   useEffect(() => {
@@ -197,7 +211,7 @@ export function RelatedServicesWidget({
         {s.cardVariant === "horizontal" ? (
           <div className="space-y-3">
             {services.map((svc) => (
-              <HorizontalCard key={svc.id} svc={svc} settings={s} />
+              <HorizontalCard key={svc.id} svc={svc} settings={s} cs={currencySymbol} />
             ))}
           </div>
         ) : (
@@ -212,12 +226,12 @@ export function RelatedServicesWidget({
             {services.map((svc) => {
               switch (s.cardVariant) {
                 case "minimal":
-                  return <MinimalCard key={svc.id} svc={svc} settings={s} />;
+                  return <MinimalCard key={svc.id} svc={svc} settings={s} cs={currencySymbol} />;
                 case "bordered-badge":
-                  return <BorderedBadgeCard key={svc.id} svc={svc} settings={s} />;
+                  return <BorderedBadgeCard key={svc.id} svc={svc} settings={s} cs={currencySymbol} />;
                 case "elevated":
                 default:
-                  return <ElevatedCard key={svc.id} svc={svc} settings={s} />;
+                  return <ElevatedCard key={svc.id} svc={svc} settings={s} cs={currencySymbol} />;
               }
             })}
           </div>
@@ -234,9 +248,11 @@ export function RelatedServicesWidget({
 function MinimalCard({
   svc,
   settings,
+  cs = "$",
 }: {
   svc: RelatedService;
   settings: RelatedServicesWidgetSettings;
+  cs?: string;
 }) {
   return (
     <Link href={"/services/" + svc.slug}>
@@ -254,7 +270,7 @@ function MinimalCard({
         {/* Price */}
         {settings.showPrice && (
           <p className="mt-1 text-sm text-muted-foreground">
-            From ${svc.startingPrice.toLocaleString()}
+            From {cs}{svc.startingPrice.toLocaleString()}
           </p>
         )}
 
@@ -275,9 +291,11 @@ function MinimalCard({
 function ElevatedCard({
   svc,
   settings,
+  cs = "$",
 }: {
   svc: RelatedService;
   settings: RelatedServicesWidgetSettings;
+  cs?: string;
 }) {
   return (
     <Link href={"/services/" + svc.slug}>
@@ -300,7 +318,7 @@ function ElevatedCard({
         {/* Price */}
         {settings.showPrice && (
           <p className="mt-3 text-sm font-semibold text-primary">
-            From ${svc.startingPrice.toLocaleString()}
+            From {cs}{svc.startingPrice.toLocaleString()}
           </p>
         )}
 
@@ -321,9 +339,11 @@ function ElevatedCard({
 function HorizontalCard({
   svc,
   settings,
+  cs = "$",
 }: {
   svc: RelatedService;
   settings: RelatedServicesWidgetSettings;
+  cs?: string;
 }) {
   return (
     <Link href={"/services/" + svc.slug}>
@@ -349,7 +369,7 @@ function HorizontalCard({
         <div className="shrink-0 text-right">
           {settings.showPrice && (
             <p className="text-sm font-semibold text-primary">
-              From ${svc.startingPrice.toLocaleString()}
+              From {cs}{svc.startingPrice.toLocaleString()}
             </p>
           )}
           <span className="mt-1 inline-flex items-center gap-1 text-sm font-medium text-primary">
@@ -369,9 +389,11 @@ function HorizontalCard({
 function BorderedBadgeCard({
   svc,
   settings,
+  cs = "$",
 }: {
   svc: RelatedService;
   settings: RelatedServicesWidgetSettings;
+  cs?: string;
 }) {
   return (
     <Link href={"/services/" + svc.slug}>
@@ -401,7 +423,7 @@ function BorderedBadgeCard({
         {/* Price */}
         {settings.showPrice && (
           <p className="mt-3 text-sm font-semibold text-primary">
-            From ${svc.startingPrice.toLocaleString()}
+            From {cs}{svc.startingPrice.toLocaleString()}
           </p>
         )}
 

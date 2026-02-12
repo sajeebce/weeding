@@ -21,6 +21,9 @@ export interface ServiceDisplayOptions {
   showRelatedServices: boolean;
   showTestimonials: boolean;
   showCtaBanner: boolean;
+  // Checkout / Order Summary customizable text
+  checkoutBadgeText: string;
+  checkoutBadgeDescription: string;
 }
 
 export const DEFAULT_DISPLAY_OPTIONS: ServiceDisplayOptions = {
@@ -35,6 +38,8 @@ export const DEFAULT_DISPLAY_OPTIONS: ServiceDisplayOptions = {
   showRelatedServices: true,
   showTestimonials: true,
   showCtaBanner: true,
+  checkoutBadgeText: "",
+  checkoutBadgeDescription: "",
 };
 
 // ============================================

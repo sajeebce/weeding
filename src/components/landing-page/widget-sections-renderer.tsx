@@ -20,6 +20,7 @@ import {
   TestimonialsWidget,
 } from "@/components/page-builder/widgets";
 import { ServiceCardWidget, ServiceListWidget, PricingTableWidget } from "@/components/page-builder/widgets/commerce";
+import { ButtonGroupWidget } from "@/components/page-builder/widgets/cta";
 import {
   ServiceHeroWidget,
   ServiceFeaturesWidget,
@@ -326,6 +327,9 @@ function WidgetRenderer({ widget }: WidgetRendererProps) {
 
       case "faq":
         return <FaqAccordionWidget settings={widget.settings as any} />;
+
+      case "button-group":
+        return <ButtonGroupWidget settings={widget.settings as any} />;
 
       default:
         // Unknown widget type - render nothing in production

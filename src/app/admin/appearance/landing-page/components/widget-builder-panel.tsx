@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { useState, useCallback } from "react";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
@@ -57,12 +58,49 @@ import {
   BlogFeaturedPostSettingsPanel,
   BlogPostListSettingsPanel,
   BlogRecentPostsSettingsPanel,
+  ButtonGroupWidgetSettingsPanel,
 } from "@/components/page-builder/settings";
 import { NumberInput } from "@/app/admin/appearance/landing-page/components/ui/form-controls";
 import { AccordionSection } from "@/app/admin/appearance/landing-page/components/ui/accordion-section";
 
 // Import widget registration
 import "@/lib/page-builder/register-widgets";
+
+// Error boundary to catch settings panel rendering errors
+class SettingsErrorBoundary extends React.Component<
+  { children: React.ReactNode; widgetType: string },
+  { hasError: boolean; error: Error | null }
+> {
+  constructor(props: { children: React.ReactNode; widgetType: string }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    console.error(`[SettingsErrorBoundary] ${this.props.widgetType} settings crashed:`, error, info.componentStack);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-4 bg-red-950/50 border border-red-500 rounded-lg text-sm">
+          <p className="text-red-400 font-medium">Settings Panel Error: {this.props.widgetType}</p>
+          <p className="text-red-300/70 mt-1 text-xs font-mono break-all">
+            {this.state.error?.message}
+          </p>
+          <button
+            className="mt-2 text-xs text-blue-400 hover:underline"
+            onClick={() => this.setState({ hasError: false, error: null })}
+          >
+            Try Again
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 // ============================================
 // TYPES
@@ -392,6 +430,7 @@ function EditMode({ widget, section, columnId, onBack, onUpdateSettings, onUpdat
       {/* Settings Content */}
       <ScrollArea className="min-h-0 flex-1 min-w-0 w-full">
         <div className="p-4 overflow-hidden w-full min-w-0">
+          <SettingsErrorBoundary widgetType={widget.type}>
           {/* Hero Content Widget */}
           {widget.type === "hero-content" && (
             <HeroContentWidgetSettingsPanel
@@ -518,6 +557,15 @@ function EditMode({ widget, section, columnId, onBack, onUpdateSettings, onUpdat
             />
           )}
 
+          {/* Button Group Widget */}
+          {widget.type === "button-group" && (
+            <ButtonGroupWidgetSettingsPanel
+              settings={widget.settings as any}
+              onChange={onUpdateSettings}
+              activeTab={activeTab}
+            />
+          )}
+
           {/* Service Hero Widget */}
           {widget.type === "service-hero" && (
             <ServiceHeroWidgetSettingsPanel
@@ -582,6 +630,8 @@ function EditMode({ widget, section, columnId, onBack, onUpdateSettings, onUpdat
               Settings for {widget.type} coming soon.
             </p>
           )}
+
+          </SettingsErrorBoundary>
 
           {/* Common Spacing Settings - Available for all widgets in Advanced tab */}
           {activeTab === "advanced" && (

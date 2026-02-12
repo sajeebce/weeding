@@ -20,6 +20,7 @@ import { TestimonialsWidget } from "../widgets/social-proof/testimonials-widget"
 import { DividerWidget } from "../widgets/layout/divider-widget";
 import { FaqAccordionWidget } from "../widgets/layout/faq-accordion-widget";
 import { LeadFormWidget } from "../widgets/forms/lead-form-widget";
+import { ButtonGroupWidget } from "../widgets/cta/button-group-widget";
 import { PricingTableWidget } from "../widgets/commerce/pricing-table-widget";
 import { ServiceCardWidget } from "../widgets/commerce/service-card-widget";
 import { ServiceListWidget } from "../widgets/commerce/service-list-widget";
@@ -71,6 +72,9 @@ const WIDGET_COMPONENTS: Partial<Record<WidgetType, React.ComponentType<any>>> =
   "pricing-table": PricingTableWidget,
   "service-card": ServiceCardWidget,
   "service-list": ServiceListWidget,
+
+  // CTA widgets
+  "button-group": ButtonGroupWidget,
 
   // Layout widgets
   "divider": DividerWidget,

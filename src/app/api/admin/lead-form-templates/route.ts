@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
       where: includeInactive ? {} : { isActive: true },
       include: {
         _count: {
-          select: { formInstances: true },
+          select: { leads: true },
         },
       },
       orderBy: { createdAt: "desc" },
@@ -56,7 +56,7 @@ const createTemplateSchema = z.object({
   description: z.string().optional(),
   fields: z.array(z.object({
     id: z.string(),
-    type: z.enum(["text", "email", "phone", "textarea", "select", "multiselect", "checkbox", "radio", "number", "date", "url", "hidden"]),
+    type: z.enum(["text", "email", "phone", "textarea", "select", "multiselect", "checkbox", "radio", "number", "date", "url", "hidden", "country_select", "service_select"]),
     name: z.string(),
     label: z.string(),
     placeholder: z.string().optional(),
@@ -95,9 +95,9 @@ export async function POST(request: NextRequest) {
         name: data.name,
         description: data.description,
         fields: data.fields as Prisma.InputJsonValue,
-        defaultSuccessMessage: data.defaultSuccessMessage,
-        defaultSuccessRedirect: data.defaultSuccessRedirect,
-        defaultAutoAssignTo: data.defaultAutoAssignTo,
+        successMessage: data.defaultSuccessMessage,
+        successRedirect: data.defaultSuccessRedirect,
+        autoAssignToId: data.defaultAutoAssignTo,
         defaultStyling: data.defaultStyling as Prisma.InputJsonValue | undefined,
       },
     });

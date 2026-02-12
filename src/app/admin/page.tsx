@@ -19,6 +19,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { StatCard } from "@/components/admin/stat-card";
+import { getBusinessConfig } from "@/lib/business-settings";
+import { getCurrencySymbol } from "@/lib/currencies";
 
 // Mock data
 const stats = {
@@ -109,7 +111,9 @@ const priorityColors: Record<string, string> = {
   high: "bg-red-100 text-red-700",
 };
 
-export default function AdminDashboardPage() {
+export default async function AdminDashboardPage() {
+  const businessConfig = await getBusinessConfig();
+  const currencySymbol = getCurrencySymbol(businessConfig.currency);
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -231,7 +235,7 @@ export default function AdminDashboardPage() {
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-medium">${order.amount}</p>
+                    <p className="font-medium">{currencySymbol}{order.amount}</p>
                     <p className="text-sm text-muted-foreground">{order.date}</p>
                   </div>
                 </div>

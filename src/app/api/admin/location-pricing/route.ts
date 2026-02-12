@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
 
     const where: Record<string, unknown> = {};
 
-    if (country) where.country = { contains: country, mode: "insensitive" };
+    if (country) where.country = country;
     if (type) where.type = type.toUpperCase();
     if (search) {
       where.OR = [

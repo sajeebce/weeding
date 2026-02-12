@@ -34,6 +34,8 @@ import {
   stateLandingPages,
 } from "@/lib/data/states";
 import { MultiJsonLd } from "@/components/seo/json-ld";
+import { getBusinessConfig } from "@/lib/business-settings";
+import { getCurrencySymbol } from "@/lib/currencies";
 import {
   generateProductSchema,
   generateBreadcrumbSchema,
@@ -146,6 +148,9 @@ export default async function StateLandingPage({ params }: PageProps) {
     notFound();
   }
 
+  const businessConfig = await getBusinessConfig();
+  const currencySymbol = getCurrencySymbol(businessConfig.currency);
+
   const schemaData: Record<string, unknown>[] = [
     generateProductSchema({
       name: `${stateInfo.name} LLC Formation`,
@@ -197,12 +202,12 @@ export default async function StateLandingPage({ params }: PageProps) {
           <div className="mx-auto mt-8 grid max-w-3xl gap-4 sm:grid-cols-3">
             <div className="rounded-lg border bg-card p-4">
               <p className="text-sm text-muted-foreground">State Filing Fee</p>
-              <p className="text-2xl font-bold text-primary">${stateInfo.fee}</p>
+              <p className="text-2xl font-bold text-primary">{currencySymbol}{stateInfo.fee}</p>
             </div>
             <div className="rounded-lg border bg-card p-4">
               <p className="text-sm text-muted-foreground">Annual Fee</p>
               <p className="text-2xl font-bold text-primary">
-                {stateInfo.annualFee === 0 ? "FREE" : `$${stateInfo.annualFee}`}
+                {stateInfo.annualFee === 0 ? "FREE" : `${currencySymbol}${stateInfo.annualFee}`}
               </p>
             </div>
             <div className="rounded-lg border bg-card p-4">
@@ -213,7 +218,7 @@ export default async function StateLandingPage({ params }: PageProps) {
 
           <div className="mt-8 flex flex-wrap justify-center gap-4">
             <Button size="lg" asChild>
-              <Link href={`/checkout?service=llc-formation&location=US-${stateInfo.code}`}>
+              <Link href={`/checkout/llc-formation?location=US-${stateInfo.code}`}>
                 Start Your {stateInfo.name} LLC
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
@@ -289,8 +294,8 @@ export default async function StateLandingPage({ params }: PageProps) {
                   <CardTitle>{pkg.name}</CardTitle>
                   <CardDescription>{pkg.description}</CardDescription>
                   <div className="mt-4">
-                    <span className="text-4xl font-bold">${pkg.price}</span>
-                    <span className="text-muted-foreground"> + ${stateInfo.fee} state fee</span>
+                    <span className="text-4xl font-bold">{currencySymbol}{pkg.price}</span>
+                    <span className="text-muted-foreground"> + {currencySymbol}{stateInfo.fee} state fee</span>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -310,7 +315,7 @@ export default async function StateLandingPage({ params }: PageProps) {
                     asChild
                   >
                     <Link
-                      href={`/checkout?service=llc-formation&location=US-${stateInfo.code}&package=${pkg.name.toLowerCase()}`}
+                      href={`/checkout/llc-formation?location=US-${stateInfo.code}&package=${pkg.name.toLowerCase()}`}
                     >
                       Choose {pkg.name}
                     </Link>
@@ -379,12 +384,12 @@ export default async function StateLandingPage({ params }: PageProps) {
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <p className="text-muted-foreground">Filing Fee</p>
-                      <p className="font-semibold">${otherState.fee}</p>
+                      <p className="font-semibold">{currencySymbol}{otherState.fee}</p>
                     </div>
                     <div>
                       <p className="text-muted-foreground">Annual Fee</p>
                       <p className="font-semibold">
-                        {otherState.annualFee === 0 ? "FREE" : `$${otherState.annualFee}`}
+                        {otherState.annualFee === 0 ? "FREE" : `${currencySymbol}${otherState.annualFee}`}
                       </p>
                     </div>
                   </div>
@@ -412,7 +417,7 @@ export default async function StateLandingPage({ params }: PageProps) {
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
             <Button size="lg" asChild>
-              <Link href={`/checkout?service=llc-formation&location=US-${stateInfo.code}`}>
+              <Link href={`/checkout/llc-formation?location=US-${stateInfo.code}`}>
                 Start Your {stateInfo.name} LLC - From ${149 + stateInfo.fee}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
