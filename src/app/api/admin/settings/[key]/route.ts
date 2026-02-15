@@ -1,12 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
+import { checkAdminOnly, authError } from "@/lib/admin-auth";
+import { decrypt, encrypt, maskSecret, isEncrypted } from "@/lib/encryption";
+import { clearSettingsCache } from "@/lib/payment-settings";
+import { clearBusinessConfigCache } from "@/lib/business-settings";
 
 interface RouteParams {
   params: Promise<{ key: string }>;
 }
 
-// GET /api/admin/settings/[key] - Get single setting
+// Keys that contain secrets — must be masked in responses
+const SECRET_KEYS = [
+  "payment.stripe.test.secretKey",
+  "payment.stripe.test.webhookSecret",
+  "payment.stripe.live.secretKey",
+  "payment.stripe.live.webhookSecret",
+  "payment.paypal.sandbox.clientSecret",
+  "payment.paypal.live.clientSecret",
+];
+
+// GET /api/admin/settings/[key] - Get single setting (ADMIN only)
 export async function GET(request: NextRequest, { params }: RouteParams) {
+  const auth = await checkAdminOnly();
+  if (auth.error) return authError(auth);
+
   try {
     const { key } = await params;
     const decodedKey = decodeURIComponent(key);
@@ -22,7 +39,21 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    return NextResponse.json({ setting });
+    // Mask secret values — never return raw secrets
+    const isSecret = SECRET_KEYS.includes(setting.key);
+    let value = setting.value;
+    if (isSecret && value) {
+      try {
+        const decrypted = isEncrypted(value) ? decrypt(value) : value;
+        value = decrypted ? maskSecret(decrypted) : "";
+      } catch {
+        value = maskSecret(value);
+      }
+    }
+
+    return NextResponse.json({
+      setting: { ...setting, value, isSecret },
+    });
   } catch (error) {
     console.error("Error fetching setting:", error);
     return NextResponse.json(
@@ -32,8 +63,11 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   }
 }
 
-// PATCH /api/admin/settings/[key] - Update single setting
+// PATCH /api/admin/settings/[key] - Update single setting (ADMIN only)
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
+  const auth = await checkAdminOnly();
+  if (auth.error) return authError(auth);
+
   try {
     const { key } = await params;
     const decodedKey = decodeURIComponent(key);
@@ -47,11 +81,26 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       );
     }
 
+    let finalValue = String(value);
+
+    // Encrypt secret keys before storage
+    const isSecret = SECRET_KEYS.includes(decodedKey);
+    if (isSecret && finalValue && !finalValue.includes("••••")) {
+      finalValue = encrypt(finalValue);
+    } else if (isSecret && finalValue.includes("••••")) {
+      // Masked value submitted — skip update, return existing
+      const existing = await prisma.setting.findUnique({ where: { key: decodedKey } });
+      return NextResponse.json({ setting: existing });
+    }
+
     const setting = await prisma.setting.upsert({
       where: { key: decodedKey },
-      update: { value: String(value), type },
-      create: { key: decodedKey, value: String(value), type },
+      update: { value: finalValue, type },
+      create: { key: decodedKey, value: finalValue, type },
     });
+
+    clearSettingsCache();
+    clearBusinessConfigCache();
 
     return NextResponse.json({ setting });
   } catch (error) {
@@ -63,8 +112,11 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   }
 }
 
-// DELETE /api/admin/settings/[key] - Delete single setting
+// DELETE /api/admin/settings/[key] - Delete single setting (ADMIN only)
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
+  const auth = await checkAdminOnly();
+  if (auth.error) return authError(auth);
+
   try {
     const { key } = await params;
     const decodedKey = decodeURIComponent(key);
@@ -72,6 +124,9 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     await prisma.setting.delete({
       where: { key: decodedKey },
     });
+
+    clearSettingsCache();
+    clearBusinessConfigCache();
 
     return NextResponse.json({ message: "Setting deleted successfully" });
   } catch (error) {
