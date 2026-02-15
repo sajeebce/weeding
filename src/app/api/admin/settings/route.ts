@@ -4,6 +4,7 @@ import { z } from "zod";
 import { encrypt, decrypt, maskSecret, isEncrypted } from "@/lib/encryption";
 import { clearSettingsCache } from "@/lib/payment-settings";
 import { clearBusinessConfigCache } from "@/lib/business-settings";
+import { checkAdminOnly, authError } from "@/lib/admin-auth";
 
 // Keys that require encryption
 const SECRET_KEYS = [
@@ -27,8 +28,11 @@ const settingsUpdateSchema = z.object({
   ),
 });
 
-// GET /api/admin/settings - Get all settings or by prefix
+// GET /api/admin/settings - Get all settings or by prefix (ADMIN only)
 export async function GET(request: NextRequest) {
+  const auth = await checkAdminOnly();
+  if (auth.error) return authError(auth);
+
   try {
     const searchParams = request.nextUrl.searchParams;
     const prefix = searchParams.get("prefix");
@@ -86,8 +90,11 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/admin/settings - Create or update multiple settings
+// POST /api/admin/settings - Create or update multiple settings (ADMIN only)
 export async function POST(request: NextRequest) {
+  const auth = await checkAdminOnly();
+  if (auth.error) return authError(auth);
+
   try {
     const body = await request.json();
     const validatedData = settingsUpdateSchema.parse(body);
@@ -138,8 +145,11 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PATCH /api/admin/settings - Update single setting (convenience method)
+// PATCH /api/admin/settings - Update single setting (ADMIN only)
 export async function PATCH(request: NextRequest) {
+  const auth = await checkAdminOnly();
+  if (auth.error) return authError(auth);
+
   try {
     const body = await request.json();
     const { key, value, type = "string" } = body;
