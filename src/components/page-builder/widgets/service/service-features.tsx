@@ -12,6 +12,7 @@ import {
   resolvePlaceholders,
 } from "@/lib/page-builder/contexts/service-context";
 import type { ServiceFeaturesWidgetSettings } from "@/lib/page-builder/types";
+import { WidgetContainer } from "@/components/page-builder/shared/widget-container";
 
 // ============================================
 // WIDGET PROPS
@@ -80,7 +81,7 @@ export function ServiceFeaturesWidget({
 
   // If no service context, show placeholder (works in Page Builder admin)
   if (!serviceContext) {
-    return <ServiceFeaturesPlaceholder settings={s} />;
+    return <WidgetContainer container={settings.container}><ServiceFeaturesPlaceholder settings={s} /></WidgetContainer>;
   }
 
   const { service } = serviceContext;
@@ -94,6 +95,7 @@ export function ServiceFeaturesWidget({
   }
 
   return (
+    <WidgetContainer container={settings.container}>
     <section>
       {/* Header */}
       {s.header.show && (
@@ -199,6 +201,7 @@ export function ServiceFeaturesWidget({
         </div>
       )}
     </section>
+    </WidgetContainer>
   );
 }
 

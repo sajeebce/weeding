@@ -1,7 +1,8 @@
 "use client";
 
 import type { FaqAccordionWidgetSettings } from "@/lib/page-builder/types";
-import { DEFAULT_FAQ_ACCORDION_SETTINGS } from "@/lib/page-builder/defaults";
+import { DEFAULT_FAQ_ACCORDION_SETTINGS, DEFAULT_WIDGET_CONTAINER } from "@/lib/page-builder/defaults";
+import { ContainerStyleSection } from "@/components/page-builder/shared/container-style-section";
 import {
   SelectInput,
   NumberInput,
@@ -36,6 +37,9 @@ export function FaqAccordionWidgetSettingsPanel({
       ...DEFAULT_FAQ_ACCORDION_SETTINGS.header,
       ...partialSettings?.header,
     },
+    headerStyle: { ...DEFAULT_FAQ_ACCORDION_SETTINGS.headerStyle!, ...partialSettings?.headerStyle },
+    itemStyle: { ...DEFAULT_FAQ_ACCORDION_SETTINGS.itemStyle!, ...partialSettings?.itemStyle },
+    container: { ...DEFAULT_WIDGET_CONTAINER, ...partialSettings?.container },
   };
 
   const updateField = <K extends keyof FaqAccordionWidgetSettings>(
@@ -188,9 +192,91 @@ export function FaqAccordionWidgetSettingsPanel({
 
   // Style Tab
   if (activeTab === "style") {
+    const hs = settings.headerStyle!;
+    const is = settings.itemStyle!;
+
+    const updateHeaderStyle = (updates: Partial<NonNullable<FaqAccordionWidgetSettings["headerStyle"]>>) => {
+      onChange({ ...settings, headerStyle: { ...hs, ...updates } });
+    };
+
+    const updateItemStyle = (updates: Partial<NonNullable<FaqAccordionWidgetSettings["itemStyle"]>>) => {
+      onChange({ ...settings, itemStyle: { ...is, ...updates } });
+    };
+
     return (
       <div className="space-y-4">
-        <AccordionSection title="Accordion Style" defaultOpen>
+        {/* Header Style */}
+        {settings.header.show && (
+          <AccordionSection title="Header Style" defaultOpen>
+            <div className="space-y-3">
+              <SelectInput
+                label="Heading Size"
+                value={hs.headingSize}
+                onChange={(v) => updateHeaderStyle({ headingSize: v as "sm" | "md" | "lg" | "xl" | "2xl" })}
+                options={[
+                  { value: "sm", label: "Small" },
+                  { value: "md", label: "Medium" },
+                  { value: "lg", label: "Large" },
+                  { value: "xl", label: "Extra Large" },
+                  { value: "2xl", label: "2X Large" },
+                ]}
+              />
+              <ColorInput
+                label="Heading Color"
+                value={hs.headingColor || ""}
+                onChange={(v) => updateHeaderStyle({ headingColor: v || undefined })}
+              />
+              <ColorInput
+                label="Description Color"
+                value={hs.descriptionColor || ""}
+                onChange={(v) => updateHeaderStyle({ descriptionColor: v || undefined })}
+              />
+            </div>
+          </AccordionSection>
+        )}
+
+        {/* Item Style */}
+        <AccordionSection title="Item Style">
+          <div className="space-y-3">
+            <ColorInput
+              label="Question Text Color"
+              value={is.questionColor || ""}
+              onChange={(v) => updateItemStyle({ questionColor: v || undefined })}
+            />
+            <ColorInput
+              label="Answer Text Color"
+              value={is.answerColor || ""}
+              onChange={(v) => updateItemStyle({ answerColor: v || undefined })}
+            />
+            <NumberInput
+              label="Item Gap"
+              value={is.gap}
+              onChange={(v) => updateItemStyle({ gap: v })}
+              min={0}
+              max={48}
+              step={4}
+            />
+            <NumberInput
+              label="Border Radius"
+              value={is.borderRadius}
+              onChange={(v) => updateItemStyle({ borderRadius: v })}
+              min={0}
+              max={32}
+              step={2}
+            />
+            <NumberInput
+              label="Item Padding"
+              value={is.padding}
+              onChange={(v) => updateItemStyle({ padding: v })}
+              min={0}
+              max={48}
+              step={4}
+            />
+          </div>
+        </AccordionSection>
+
+        {/* Accordion Style */}
+        <AccordionSection title="Accordion Style">
           <div className="space-y-3">
             <SelectInput
               label="Style Variant"
@@ -211,6 +297,12 @@ export function FaqAccordionWidgetSettingsPanel({
             />
           </div>
         </AccordionSection>
+
+        {/* Container Style */}
+        <ContainerStyleSection
+          container={settings.container || DEFAULT_WIDGET_CONTAINER}
+          onChange={(container) => onChange({ ...settings, container })}
+        />
       </div>
     );
   }

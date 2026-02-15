@@ -11,6 +11,7 @@ import { BlogFilterTabs } from "./shared/blog-filter-tabs";
 import { BlogPagination } from "./shared/blog-pagination";
 import { cn } from "@/lib/utils";
 import { FileText } from "lucide-react";
+import { WidgetContainer } from "@/components/page-builder/shared/widget-container";
 
 // ── Deep merge settings with defaults ────────────────────────────────
 
@@ -105,6 +106,7 @@ export function BlogPostGridWidget({
   const gridClass = `blog-grid-${gridId}`;
 
   return (
+    <WidgetContainer container={s.container}>
     <div>
       {/* Responsive grid styles */}
       <style>{`
@@ -201,5 +203,6 @@ export function BlogPostGridWidget({
         current={posts.length}
       />
     </div>
+    </WidgetContainer>
   );
 }

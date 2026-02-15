@@ -16,6 +16,7 @@ import {
   resolvePlaceholders,
 } from "@/lib/page-builder/contexts/service-context";
 import type { ServiceHeroWidgetSettings } from "@/lib/page-builder/types";
+import { WidgetContainer } from "@/components/page-builder/shared/widget-container";
 import { ServiceIcon } from "@/components/ui/service-icon";
 import { getCurrencySymbol } from "@/components/ui/currency-selector";
 
@@ -89,7 +90,7 @@ export function ServiceHeroWidget({
 
   // If no service context, show placeholder (works in Page Builder admin)
   if (!serviceContext) {
-    return <ServiceHeroPlaceholder settings={settings} />;
+    return <WidgetContainer container={settings.container}><ServiceHeroPlaceholder settings={settings} /></WidgetContainer>;
   }
 
   const { service } = serviceContext;
@@ -165,6 +166,7 @@ export function ServiceHeroWidget({
   };
 
   return (
+    <WidgetContainer container={settings.container}>
     <section
       className={cn(
         "relative",
@@ -233,6 +235,7 @@ export function ServiceHeroWidget({
         </div>
       </div>
     </section>
+    </WidgetContainer>
   );
 }
 

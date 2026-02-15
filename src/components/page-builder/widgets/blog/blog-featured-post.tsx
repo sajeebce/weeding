@@ -10,6 +10,7 @@ import type {
   BlogPostData,
 } from "@/lib/page-builder/types";
 import { DEFAULT_BLOG_FEATURED_POST_SETTINGS } from "@/lib/page-builder/defaults";
+import { WidgetContainer } from "@/components/page-builder/shared/widget-container";
 
 // ── Deep merge settings with defaults ────────────────────────────────
 
@@ -208,6 +209,7 @@ export function BlogFeaturedPostWidget({
   // Loading skeleton
   if (loading) {
     return (
+      <WidgetContainer container={s.container}>
       <div
         className={cn(
           "animate-pulse overflow-hidden bg-slate-200 dark:bg-slate-700",
@@ -215,27 +217,32 @@ export function BlogFeaturedPostWidget({
         )}
         style={{ borderRadius: s.image.borderRadius }}
       />
+      </WidgetContainer>
     );
   }
 
   // Error
   if (error) {
     return (
+      <WidgetContainer container={s.container}>
       <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center dark:border-red-900/50 dark:bg-red-900/10">
         <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
       </div>
+      </WidgetContainer>
     );
   }
 
   // No post
   if (!post) {
     return (
+      <WidgetContainer container={s.container}>
       <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 py-16 text-center dark:border-slate-700">
         <ImageIcon className="mb-3 h-10 w-10 text-slate-300 dark:text-slate-600" />
         <p className="text-sm text-slate-500 dark:text-slate-400">
           No featured post available
         </p>
       </div>
+      </WidgetContainer>
     );
   }
 
@@ -458,6 +465,7 @@ export function BlogFeaturedPostWidget({
   // ── Layout: Overlay ──────────────────────────────────────────────
   if (s.layout === "overlay") {
     return (
+      <WidgetContainer container={s.container}>
       <WrapLink
         className={cn(
           "group relative block overflow-hidden",
@@ -481,6 +489,7 @@ export function BlogFeaturedPostWidget({
           <div className="max-w-2xl">{contentBlock}</div>
         </div>
       </WrapLink>
+      </WidgetContainer>
     );
   }
 
@@ -489,6 +498,7 @@ export function BlogFeaturedPostWidget({
     const imageOnLeft = s.layout === "split-left";
 
     return (
+      <WidgetContainer container={s.container}>
       <WrapLink
         className={cn(
           "group grid overflow-hidden md:grid-cols-2",
@@ -517,11 +527,13 @@ export function BlogFeaturedPostWidget({
           {contentBlock}
         </div>
       </WrapLink>
+      </WidgetContainer>
     );
   }
 
   // ── Layout: Stacked ──────────────────────────────────────────────
   return (
+    <WidgetContainer container={s.container}>
     <WrapLink
       className="group block overflow-hidden"
       style={{ borderRadius: s.image.borderRadius }}
@@ -534,5 +546,6 @@ export function BlogFeaturedPostWidget({
       {/* Content below */}
       <div className="p-6 md:p-8">{contentBlock}</div>
     </WrapLink>
+    </WidgetContainer>
   );
 }

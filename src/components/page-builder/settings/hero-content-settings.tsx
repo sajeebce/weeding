@@ -3,7 +3,8 @@
 import { useCallback } from "react";
 import * as LucideIcons from "lucide-react";
 import type { HeroContentWidgetSettings } from "@/lib/page-builder/types";
-import { DEFAULT_HERO_CONTENT_SETTINGS } from "@/lib/page-builder/defaults";
+import { DEFAULT_HERO_CONTENT_SETTINGS, DEFAULT_WIDGET_CONTAINER } from "@/lib/page-builder/defaults";
+import { ContainerStyleSection } from "@/components/page-builder/shared/container-style-section";
 import { AccordionSection } from "@/app/admin/appearance/landing-page/components/ui/accordion-section";
 import {
   TextInput,
@@ -66,6 +67,7 @@ export function HeroContentWidgetSettingsPanel({
     primaryButton: { ...DEFAULT_HERO_CONTENT_SETTINGS.primaryButton, ...settings?.primaryButton },
     secondaryButton: { ...DEFAULT_HERO_CONTENT_SETTINGS.secondaryButton, ...settings?.secondaryButton },
     trustText: { ...DEFAULT_HERO_CONTENT_SETTINGS.trustText, ...settings?.trustText },
+    container: { ...DEFAULT_WIDGET_CONTAINER, ...settings?.container },
   };
 
   const updateNested = useCallback(
@@ -420,6 +422,12 @@ export function HeroContentWidgetSettingsPanel({
           />
         </AccordionSection>
       )}
+
+      {/* Container Style */}
+      <ContainerStyleSection
+        container={s.container || DEFAULT_WIDGET_CONTAINER}
+        onChange={(container) => onChange({ ...s, container })}
+      />
     </div>
   );
 

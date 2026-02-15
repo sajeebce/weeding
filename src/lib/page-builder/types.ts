@@ -242,6 +242,29 @@ export interface Widget<T = Record<string, unknown>> {
 }
 
 // ============================================
+// SHARED WIDGET CONTAINER STYLE
+// ============================================
+
+export interface WidgetContainerStyle {
+  backgroundColor?: string;
+  backgroundType?: "solid" | "gradient";
+  gradientBackground?: {
+    colors: string[];
+    angle: number;
+  };
+  padding: number;
+  borderRadius: number;
+  gradientBorder?: {
+    enabled: boolean;
+    colors: string[];
+    angle: number;
+  };
+  borderWidth?: number;
+  shadow?: "none" | "sm" | "md" | "lg";
+  maxWidth?: number;
+}
+
+// ============================================
 // WIDGET DEFINITIONS
 // ============================================
 
@@ -319,6 +342,9 @@ export interface HeroContentWidgetSettings {
 
   // Alignment
   alignment: "left" | "center" | "right";
+
+  // Container Style
+  container?: WidgetContainerStyle;
 }
 
 // Image Widget - Comprehensive Modern Settings
@@ -430,6 +456,9 @@ export interface ImageWidgetSettings {
     sepia: number; // 0-100%
     hueRotate: number; // 0-360deg
   };
+
+  // Container Style
+  container?: WidgetContainerStyle;
 }
 
 // ============================================
@@ -741,6 +770,9 @@ export interface ImageSliderWidgetSettings {
       spaceBetween?: number;
     };
   };
+
+  // Container Style
+  container?: WidgetContainerStyle;
 }
 
 // Lead Form Widget
@@ -796,6 +828,9 @@ export interface LeadFormWidgetSettings {
   padding: number;
   borderRadius: number;
   shadow: boolean;
+
+  // Container Style
+  container?: WidgetContainerStyle;
 }
 
 // Button Group Widget
@@ -812,6 +847,9 @@ export interface ButtonGroupWidgetSettings {
   layout: "horizontal" | "vertical" | "stacked";
   alignment: "left" | "center" | "right";
   gap: number;
+
+  // Container Style
+  container?: WidgetContainerStyle;
 }
 
 // Trust Badges Widget
@@ -833,6 +871,9 @@ export interface TrustBadgesWidgetSettings {
     borderRadius: number;
   };
   centered: boolean;
+
+  // Container Style
+  container?: WidgetContainerStyle;
 }
 
 // Stats Section Widget
@@ -858,6 +899,9 @@ export interface StatsSectionWidgetSettings {
   };
   centered: boolean;
   animateOnScroll: boolean;
+
+  // Container Style
+  container?: WidgetContainerStyle;
 }
 
 // Video Widget
@@ -875,6 +919,9 @@ export interface VideoWidgetSettings {
   aspectRatio: VideoAspectRatio;
   borderRadius: number;
   shadow: boolean;
+
+  // Container Style
+  container?: WidgetContainerStyle;
 }
 
 // Testimonial Widget (Single)
@@ -892,6 +939,8 @@ export interface TestimonialWidgetSettings {
     quoteColor: string;
     showQuoteIcon: boolean;
   };
+  // Container Style
+  container?: WidgetContainerStyle;
 }
 
 // ============================================
@@ -1109,6 +1158,9 @@ export interface TestimonialsWidgetSettings {
       layout?: "vertical"; // Force vertical on mobile
     };
   };
+
+  // Container Style
+  container?: WidgetContainerStyle;
 }
 
 // ============================================
@@ -1343,6 +1395,9 @@ export interface HeadingWidgetSettings {
     customId?: string;
     customAttributes?: Record<string, string>;
   };
+
+  // Container Style
+  container?: WidgetContainerStyle;
 }
 
 // Text Block Widget (Tiptap)
@@ -1480,6 +1535,9 @@ export interface TextBlockWidgetSettings {
 export interface SpacerWidgetSettings {
   height: number;
   mobileHeight?: number;
+
+  // Container Style
+  container?: WidgetContainerStyle;
 }
 
 // Divider Widget
@@ -1510,6 +1568,9 @@ export interface DividerWidgetSettings {
   textSize?: "sm" | "md" | "lg";
   textColor?: string;
   textBackground?: string;
+
+  // Container Style
+  container?: WidgetContainerStyle;
 }
 
 // ============================================
@@ -1661,6 +1722,9 @@ export interface ServiceCardWidgetSettings {
       columns: 1 | 2;
     };
   };
+
+  // Container Style
+  container?: WidgetContainerStyle;
 }
 
 // ============================================
@@ -1862,6 +1926,9 @@ export interface ServiceListWidgetSettings {
       columns: 1 | 2;
     };
   };
+
+  // Container Style
+  container?: WidgetContainerStyle;
 }
 
 // ============================================
@@ -1998,6 +2065,9 @@ export interface ProcessStepsWidgetSettings {
     dotSize?: number;
     dotColor?: string;
   };
+
+  // Container Style (for the whole widget)
+  container?: WidgetContainerStyle;
 
   // Card Style (for each step)
   card: {
@@ -2319,6 +2389,9 @@ export interface PricingTableWidgetSettings {
     rowBorderColor?: string;
     addonToggleActive?: string;
   };
+
+  // Container Style
+  container?: WidgetContainerStyle;
 }
 
 // ============================================
@@ -2363,6 +2436,9 @@ export interface ServiceHeroWidgetSettings {
   // Spacing (Advanced)
   marginTop?: number;
   marginBottom?: number;
+
+  // Container Style
+  container?: WidgetContainerStyle;
 }
 
 /**
@@ -2387,6 +2463,9 @@ export interface ServiceFeaturesWidgetSettings {
   iconStyle: "check" | "circle-check" | "badge-check";
   iconColor: string;
   showDescriptions: boolean;
+
+  // Container Style
+  container?: WidgetContainerStyle;
 }
 
 /**
@@ -2404,6 +2483,9 @@ export interface ServiceDescriptionWidgetSettings {
     showStartingPrice: boolean;
     showPopularBadge: boolean;
   };
+
+  // Container Style
+  container?: WidgetContainerStyle;
 }
 
 /**
@@ -2418,6 +2500,9 @@ export interface ServiceBreadcrumbWidgetSettings {
   showCategory: boolean;
   fontSize: "xs" | "sm" | "md";
   alignment: "left" | "center";
+
+  // Container Style
+  container?: WidgetContainerStyle;
 }
 
 /**
@@ -2431,6 +2516,8 @@ export interface ServicePricingWidgetSettings {
   highlightRecommended: boolean;
   showComparisonTable: boolean;
   ctaText: string; // Default: "Select Plan"
+  // Container Style
+  container?: WidgetContainerStyle;
 }
 
 /**
@@ -2443,6 +2530,8 @@ export interface ServiceProcessWidgetSettings {
   layout: "horizontal" | "vertical" | "alternating";
   showStepNumbers: boolean;
   showConnectors: boolean;
+  // Container Style
+  container?: WidgetContainerStyle;
 }
 
 /**
@@ -2464,6 +2553,25 @@ export interface FaqAccordionWidgetSettings {
   style: "minimal" | "cards" | "bordered";
   accentColor: string;
   showCategoryFilter: boolean;
+
+  // Header Style
+  headerStyle?: {
+    headingSize: "sm" | "md" | "lg" | "xl" | "2xl";
+    headingColor?: string;
+    descriptionColor?: string;
+  };
+
+  // Item Style
+  itemStyle?: {
+    questionColor?: string;
+    answerColor?: string;
+    gap: number;
+    borderRadius: number;
+    padding: number;
+  };
+
+  // Container Style
+  container?: WidgetContainerStyle;
 }
 
 /**
@@ -2476,6 +2584,8 @@ export interface ServiceFaqWidgetSettings {
   layout: "accordion" | "grid" | "list";
   expandFirst: boolean;
   allowMultipleOpen: boolean;
+  // Container Style
+  container?: WidgetContainerStyle;
 }
 
 /**
@@ -2487,6 +2597,8 @@ export interface ServiceRequirementsWidgetSettings {
   customTitle?: string; // Default: "What You'll Need"
   layout: "list" | "cards";
   showIcons: boolean;
+  // Container Style
+  container?: WidgetContainerStyle;
 }
 
 /**
@@ -2498,6 +2610,8 @@ export interface ServiceDeliverablesWidgetSettings {
   customTitle?: string; // Default: "What You'll Get"
   layout: "list" | "cards" | "timeline";
   showIcons: boolean;
+  // Container Style
+  container?: WidgetContainerStyle;
 }
 
 /**
@@ -2509,6 +2623,8 @@ export interface ServiceTimelineWidgetSettings {
   customTitle?: string; // Default: "Timeline"
   showIcon: boolean;
   layout: "inline" | "card";
+  // Container Style
+  container?: WidgetContainerStyle;
 }
 
 /**
@@ -2524,6 +2640,9 @@ export interface RelatedServicesWidgetSettings {
   showDescription: boolean;
   showCategoryBadge: boolean;
   ctaText: string;
+
+  // Container Style
+  container?: WidgetContainerStyle;
 }
 
 /**
@@ -2537,6 +2656,8 @@ export interface ServiceTestimonialsWidgetSettings {
   maxItems: number;
   showRating: boolean;
   showDate: boolean;
+  // Container Style
+  container?: WidgetContainerStyle;
 }
 
 /**
@@ -2553,6 +2674,8 @@ export interface ServiceCtaWidgetSettings {
   backgroundType: "solid" | "gradient" | "image";
   backgroundColor?: string;
   backgroundGradient?: string;
+  // Container Style
+  container?: WidgetContainerStyle;
 }
 
 // ============================================
@@ -2701,6 +2824,9 @@ export interface BlogPostGridWidgetSettings {
       staggerDelay: number;
     };
   };
+
+  // Container Style
+  container?: WidgetContainerStyle;
 }
 
 /** Blog Post Carousel Widget Settings */
@@ -2734,6 +2860,9 @@ export interface BlogPostCarouselWidgetSettings {
     };
   };
   card: BlogPostGridWidgetSettings["card"];
+
+  // Container Style
+  container?: WidgetContainerStyle;
 }
 
 /** Blog Featured Post Widget Settings */
@@ -2783,6 +2912,9 @@ export interface BlogFeaturedPostWidgetSettings {
     verticalPosition: "top" | "center" | "bottom";
   };
   height: "auto" | "sm" | "md" | "lg" | "xl";
+
+  // Container Style
+  container?: WidgetContainerStyle;
 }
 
 /** Blog Post List Widget Settings */
@@ -2832,6 +2964,9 @@ export interface BlogPostListWidgetSettings {
     type: "none" | "load-more" | "numbered";
     loadMoreText: string;
   };
+
+  // Container Style
+  container?: WidgetContainerStyle;
 }
 
 /** Blog Recent Posts Widget Settings (compact) */
@@ -2870,4 +3005,7 @@ export interface BlogRecentPostsWidgetSettings {
     url: string;
     color?: string;
   };
+
+  // Container Style
+  container?: WidgetContainerStyle;
 }

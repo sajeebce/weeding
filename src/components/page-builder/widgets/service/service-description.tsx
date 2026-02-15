@@ -13,6 +13,7 @@ import {
   resolvePlaceholders,
 } from "@/lib/page-builder/contexts/service-context";
 import type { ServiceDescriptionWidgetSettings } from "@/lib/page-builder/types";
+import { WidgetContainer } from "@/components/page-builder/shared/widget-container";
 
 // ============================================
 // DEFAULT SETTINGS
@@ -90,7 +91,7 @@ export function ServiceDescriptionWidget({
 
   // If no service context, show placeholder (works in Page Builder admin)
   if (!serviceContext) {
-    return <ServiceDescriptionPlaceholder settings={s} />;
+    return <WidgetContainer container={s.container}><ServiceDescriptionPlaceholder settings={s} /></WidgetContainer>;
   }
 
   const { service } = serviceContext;
@@ -114,6 +115,7 @@ export function ServiceDescriptionWidget({
   // ---- Variant: clean-prose ----
   if (s.variant === "clean-prose") {
     return (
+      <WidgetContainer container={s.container}>
       <div className="mx-auto" style={{ maxWidth: maxWidthMap[s.maxWidth] }}>
         {headerElement}
         <div
@@ -125,12 +127,14 @@ export function ServiceDescriptionWidget({
           dangerouslySetInnerHTML={{ __html: service.description }}
         />
       </div>
+      </WidgetContainer>
     );
   }
 
   // ---- Variant: bordered ----
   if (s.variant === "bordered") {
     return (
+      <WidgetContainer container={s.container}>
       <div className="mx-auto" style={{ maxWidth: maxWidthMap[s.maxWidth] }}>
         {headerElement}
         <div className="rounded-xl border border-l-4 border-l-primary bg-card p-8">
@@ -140,11 +144,13 @@ export function ServiceDescriptionWidget({
           />
         </div>
       </div>
+      </WidgetContainer>
     );
   }
 
   // ---- Variant: two-column-sidebar ----
   return (
+    <WidgetContainer container={s.container}>
     <div className="mx-auto" style={{ maxWidth: maxWidthMap[s.maxWidth] }}>
       {headerElement}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -188,6 +194,7 @@ export function ServiceDescriptionWidget({
         )}
       </div>
     </div>
+    </WidgetContainer>
   );
 }
 

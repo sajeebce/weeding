@@ -3,6 +3,7 @@
 import * as LucideIcons from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { DividerWidgetSettings } from "@/lib/page-builder/types";
+import { WidgetContainer } from "@/components/page-builder/shared/widget-container";
 import { DEFAULT_DIVIDER_SETTINGS } from "@/lib/page-builder/defaults";
 
 interface DividerWidgetProps {
@@ -114,16 +115,19 @@ export function DividerWidget({ settings: partialSettings, isPreview }: DividerW
   // Render based on style
   if (style === "double") {
     return (
+      <WidgetContainer container={settings.container}>
       <div className={cn("flex flex-col w-full gap-1", colAlignmentClass)} style={containerStyle}>
         <div style={{ height: `${thickness}px`, width: `${width}%`, backgroundColor: color }} />
         <div style={{ height: `${thickness}px`, width: `${width}%`, backgroundColor: color }} />
       </div>
+      </WidgetContainer>
     );
   }
 
   if (style === "with-icon") {
     const IconComponent = getLucideIcon(icon || "Minus");
     return (
+      <WidgetContainer container={settings.container}>
       <div className={cn("flex w-full items-center gap-4", rowAlignmentClass)} style={containerStyle}>
         <div
           className="flex-1"
@@ -145,11 +149,13 @@ export function DividerWidget({ settings: partialSettings, isPreview }: DividerW
           }}
         />
       </div>
+      </WidgetContainer>
     );
   }
 
   if (style === "with-text") {
     return (
+      <WidgetContainer container={settings.container}>
       <div className={cn("flex w-full items-center gap-4", rowAlignmentClass)} style={containerStyle}>
         <div
           className="flex-1"
@@ -175,13 +181,16 @@ export function DividerWidget({ settings: partialSettings, isPreview }: DividerW
           }}
         />
       </div>
+      </WidgetContainer>
     );
   }
 
   // Default line styles (solid, dashed, dotted, gradient, gradient-fade)
   return (
+    <WidgetContainer container={settings.container}>
     <div className={cn("flex w-full", rowAlignmentClass)} style={containerStyle}>
       <div style={getLineStyle()} />
     </div>
+    </WidgetContainer>
   );
 }

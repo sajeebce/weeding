@@ -11,6 +11,7 @@ import type {
   ServiceListCardStyle,
   BadgeStyle,
 } from "@/lib/page-builder/types";
+import { WidgetContainer } from "@/components/page-builder/shared/widget-container";
 import { DEFAULT_SERVICE_LIST_SETTINGS } from "@/lib/page-builder/defaults";
 import type { ButtonCustomStyle } from "@/lib/header-footer/types";
 import {
@@ -696,6 +697,7 @@ export function ServiceListWidget({
 
   if (loading) {
     return (
+      <WidgetContainer container={settings.container}>
       <div>
         <SectionHeader settings={settings} />
         <div
@@ -714,19 +716,23 @@ export function ServiceListWidget({
           ))}
         </div>
       </div>
+      </WidgetContainer>
     );
   }
 
   if (error) {
     return (
+      <WidgetContainer container={settings.container}>
       <div className="flex items-center justify-center h-32 bg-destructive/10 rounded-xl border border-destructive/20">
         <p className="text-sm text-destructive">{error}</p>
       </div>
+      </WidgetContainer>
     );
   }
 
   if (categories.length === 0) {
     return (
+      <WidgetContainer container={settings.container}>
       <div>
         <SectionHeader settings={settings} />
         <div className="flex items-center justify-center h-32 bg-muted/30 rounded-xl border border-dashed border-muted-foreground/30">
@@ -735,10 +741,12 @@ export function ServiceListWidget({
           </p>
         </div>
       </div>
+      </WidgetContainer>
     );
   }
 
   return (
+    <WidgetContainer container={settings.container}>
     <div>
       <SectionHeader settings={settings} />
       <div
@@ -758,5 +766,6 @@ export function ServiceListWidget({
       </div>
       <CTASection settings={settings} />
     </div>
+    </WidgetContainer>
   );
 }

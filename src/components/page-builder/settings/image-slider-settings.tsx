@@ -6,7 +6,8 @@ import type {
   SlideItem,
   LayerAnimation,
 } from "@/lib/page-builder/types";
-import { DEFAULT_IMAGE_SLIDER_SETTINGS, DEFAULT_LAYER_ANIMATION } from "@/lib/page-builder/defaults";
+import { DEFAULT_IMAGE_SLIDER_SETTINGS, DEFAULT_LAYER_ANIMATION, DEFAULT_WIDGET_CONTAINER } from "@/lib/page-builder/defaults";
+import { ContainerStyleSection } from "@/components/page-builder/shared/container-style-section";
 import {
   TextInput,
   SelectInput,
@@ -104,6 +105,7 @@ export function ImageSliderSettingsPanel({
       scale: { ...DEFAULT_IMAGE_SLIDER_SETTINGS.kenBurns.scale, ...settings.kenBurns?.scale },
     },
     parallax: { ...DEFAULT_IMAGE_SLIDER_SETTINGS.parallax, ...settings.parallax },
+    container: { ...DEFAULT_WIDGET_CONTAINER, ...settings?.container },
   };
 
   const updateField = <K extends keyof ImageSliderWidgetSettings>(
@@ -669,6 +671,12 @@ export function ImageSliderSettingsPanel({
           )}
         </div>
       </AccordionSection>
+
+      {/* Container Style */}
+      <ContainerStyleSection
+        container={s.container || DEFAULT_WIDGET_CONTAINER}
+        onChange={(container) => onChange({ ...s, container })}
+      />
 
       {/* Navigation */}
       <AccordionSection title="Navigation">

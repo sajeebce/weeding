@@ -9,7 +9,8 @@ import type {
   HeadingHoverAnimationType,
   HeadingEasingType,
 } from "@/lib/page-builder/types";
-import { DEFAULT_HEADING_SETTINGS } from "@/lib/page-builder/defaults";
+import { DEFAULT_HEADING_SETTINGS, DEFAULT_WIDGET_CONTAINER } from "@/lib/page-builder/defaults";
+import { ContainerStyleSection } from "@/components/page-builder/shared/container-style-section";
 import {
   SelectInput,
   NumberInput,
@@ -67,10 +68,13 @@ export function HeadingWidgetSettingsPanel({
   activeTab,
 }: HeadingWidgetSettingsPanelProps) {
   // Deep merge with defaults
-  const settings: HeadingWidgetSettings = deepMerge(
-    DEFAULT_HEADING_SETTINGS,
-    partialSettings as Partial<HeadingWidgetSettings>
-  );
+  const settings: HeadingWidgetSettings = {
+    ...deepMerge(
+      DEFAULT_HEADING_SETTINGS,
+      partialSettings as Partial<HeadingWidgetSettings>
+    ),
+    container: { ...DEFAULT_WIDGET_CONTAINER, ...partialSettings?.container },
+  };
 
   // Update nested content
   const updateContent = <K extends keyof HeadingWidgetSettings["content"]>(
@@ -840,6 +844,12 @@ export function HeadingWidgetSettingsPanel({
             </div>
           </AccordionSection>
         )}
+
+        {/* Container Style */}
+        <ContainerStyleSection
+          container={settings.container || DEFAULT_WIDGET_CONTAINER}
+          onChange={(container) => onChange({ ...settings, container })}
+        />
       </div>
     );
   }

@@ -3,7 +3,8 @@
 import { useCallback } from "react";
 import type { ServiceListWidgetSettings } from "@/lib/page-builder/types";
 import type { ButtonCustomStyle } from "@/lib/header-footer/types";
-import { DEFAULT_SERVICE_LIST_SETTINGS } from "@/lib/page-builder/defaults";
+import { DEFAULT_SERVICE_LIST_SETTINGS, DEFAULT_WIDGET_CONTAINER } from "@/lib/page-builder/defaults";
+import { ContainerStyleSection } from "@/components/page-builder/shared/container-style-section";
 import { AccordionSection } from "@/app/admin/appearance/landing-page/components/ui/accordion-section";
 import {
   TextInput,
@@ -73,6 +74,7 @@ export function ServiceListWidgetSettingsPanel({
       ...DEFAULT_SERVICE_LIST_SETTINGS.responsive,
       ...settings?.responsive,
     },
+    container: { ...DEFAULT_WIDGET_CONTAINER, ...settings?.container },
   };
 
   const updateNested = useCallback(
@@ -690,6 +692,12 @@ export function ServiceListWidgetSettingsPanel({
           unit="px"
         />
       </AccordionSection>
+
+      {/* Container Style */}
+      <ContainerStyleSection
+        container={s.container || DEFAULT_WIDGET_CONTAINER}
+        onChange={(container) => onChange({ ...s, container })}
+      />
 
       {/* CTA Style */}
       {s.cta.show && (

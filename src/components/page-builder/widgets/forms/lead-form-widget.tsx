@@ -7,7 +7,8 @@ import type {
   LeadFormWidgetSettings,
   LeadFormField,
 } from "@/lib/page-builder/types";
-import { DEFAULT_LEAD_FORM_SETTINGS } from "@/lib/page-builder/defaults";
+import { WidgetContainer } from "@/components/page-builder/shared/widget-container";
+import { DEFAULT_LEAD_FORM_SETTINGS, DEFAULT_WIDGET_CONTAINER } from "@/lib/page-builder/defaults";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -318,10 +319,19 @@ export function LeadFormWidget({
   >({});
   const formRef = useRef<HTMLFormElement>(null);
 
-  // Merge with defaults
+  // Merge with defaults (deep-merge container so gradient border/bg work)
   const settings: LeadFormWidgetSettings = {
     ...DEFAULT_LEAD_FORM_SETTINGS,
     ...partialSettings,
+    container: {
+      ...DEFAULT_WIDGET_CONTAINER,
+      ...partialSettings?.container,
+      gradientBorder: {
+        ...DEFAULT_WIDGET_CONTAINER.gradientBorder!,
+        ...partialSettings?.container?.gradientBorder,
+      },
+      gradientBackground: partialSettings?.container?.gradientBackground ?? DEFAULT_WIDGET_CONTAINER.gradientBackground,
+    },
   };
 
   const {
@@ -339,8 +349,42 @@ export function LeadFormWidget({
     shadow,
   } = settings;
 
-  // Adaptive input styling based on background color
-  const lightBg = isLightColor(backgroundColor || "#1e293b");
+  // Container gradient background → apply directly to form div
+  const containerGradientColors = settings.container?.gradientBackground?.colors;
+  const hasContainerGradientBg =
+    settings.container?.backgroundType === "gradient" &&
+    containerGradientColors &&
+    containerGradientColors.length >= 2;
+
+  const formBackground = hasContainerGradientBg
+    ? `linear-gradient(${settings.container!.gradientBackground!.angle ?? 135}deg, ${containerGradientColors!.join(", ")})`
+    : undefined;
+
+  // Container solid background → also apply to form if set
+  const containerSolidBg =
+    !hasContainerGradientBg && settings.container?.backgroundType === "solid" && settings.container?.backgroundColor
+      ? settings.container.backgroundColor
+      : undefined;
+
+  const formBgColor = formBackground
+    ? undefined
+    : containerSolidBg || backgroundColor || "transparent";
+
+  // Strip background from container passed to WidgetContainer (form handles it)
+  const widgetContainerSettings = settings.container
+    ? {
+        ...settings.container,
+        backgroundType: "solid" as const,
+        backgroundColor: undefined,
+        gradientBackground: undefined,
+      }
+    : settings.container;
+
+  // Adaptive input styling based on effective background color
+  const effectiveBgColor = hasContainerGradientBg
+    ? containerGradientColors![0]
+    : containerSolidBg || backgroundColor || "#1e293b";
+  const lightBg = isLightColor(effectiveBgColor);
   const inputClasses = lightBg
     ? "bg-gray-50/50 border-gray-200 placeholder:text-gray-400 focus:border-primary focus:ring-primary"
     : "bg-slate-800/50 border-slate-700 placeholder:text-slate-500 focus:border-primary focus:ring-primary";
@@ -698,10 +742,12 @@ export function LeadFormWidget({
   // Show success message
   if (isSubmitted) {
     return (
+      <WidgetContainer container={widgetContainerSettings}>
       <div
         className={cn("w-full", shadow && "shadow-lg")}
         style={{
-          backgroundColor: backgroundColor || "transparent",
+          background: formBackground,
+          backgroundColor: formBgColor,
           padding: `${padding}px`,
           borderRadius: `${borderRadius}px`,
         }}
@@ -731,14 +777,17 @@ export function LeadFormWidget({
           </Button>
         </div>
       </div>
+      </WidgetContainer>
     );
   }
 
   return (
+    <WidgetContainer container={widgetContainerSettings}>
     <div
       className={cn("w-full", shadow && "shadow-lg")}
       style={{
-        backgroundColor: backgroundColor || "transparent",
+        background: formBackground,
+        backgroundColor: formBgColor,
         padding: `${padding}px`,
         borderRadius: `${borderRadius}px`,
       }}
@@ -814,5 +863,6 @@ export function LeadFormWidget({
         )}
       </form>
     </div>
+    </WidgetContainer>
   );
 }

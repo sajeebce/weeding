@@ -4,6 +4,7 @@ import * as LucideIcons from "lucide-react";
 import { Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { TrustBadgesWidgetSettings } from "@/lib/page-builder/types";
+import { WidgetContainer } from "@/components/page-builder/shared/widget-container";
 
 interface TrustBadgesWidgetProps {
   settings: TrustBadgesWidgetSettings;
@@ -42,14 +43,17 @@ export function TrustBadgesWidget({ settings, isPreview = false }: TrustBadgesWi
 
   if (badges.length === 0) {
     return (
+      <WidgetContainer container={settings.container}>
       <div className="flex items-center justify-center h-24 bg-slate-800/50 rounded-lg border border-dashed border-slate-600">
         <span className="text-sm text-slate-500">No badges configured</span>
       </div>
+      </WidgetContainer>
     );
   }
 
   if (layout === "horizontal") {
     return (
+      <WidgetContainer container={settings.container}>
       <div
         className={cn(
           "flex flex-wrap gap-3",
@@ -82,11 +86,13 @@ export function TrustBadgesWidget({ settings, isPreview = false }: TrustBadgesWi
           );
         })}
       </div>
+      </WidgetContainer>
     );
   }
 
   // Grid layout - Card style
   return (
+    <WidgetContainer container={settings.container}>
     <div className={cn(centered && "flex justify-center")}>
       <div
         className={cn(
@@ -122,5 +128,6 @@ export function TrustBadgesWidget({ settings, isPreview = false }: TrustBadgesWi
         })}
       </div>
     </div>
+    </WidgetContainer>
   );
 }

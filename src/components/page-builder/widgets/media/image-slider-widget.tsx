@@ -36,6 +36,7 @@ import type {
   SlideContentConfig,
   LayerAnimation,
 } from "@/lib/page-builder/types";
+import { WidgetContainer } from "@/components/page-builder/shared/widget-container";
 
 // Import Swiper styles
 import "swiper/css";
@@ -442,6 +443,7 @@ export function ImageSliderWidget({ settings, isPreview = false }: ImageSliderWi
   // Empty state
   if (settings.slides.length === 0) {
     return (
+      <WidgetContainer container={settings.container}>
       <div
         className={cn(
           "flex flex-col items-center justify-center gap-4",
@@ -452,6 +454,7 @@ export function ImageSliderWidget({ settings, isPreview = false }: ImageSliderWi
         <ImageIcon className="h-16 w-16 text-slate-500" />
         <span className="text-slate-400">No slides added</span>
       </div>
+      </WidgetContainer>
     );
   }
 
@@ -508,6 +511,7 @@ export function ImageSliderWidget({ settings, isPreview = false }: ImageSliderWi
   };
 
   return (
+    <WidgetContainer container={settings.container}>
     <div
       className={cn(
         "image-slider-widget relative group",
@@ -918,5 +922,6 @@ export function ImageSliderWidget({ settings, isPreview = false }: ImageSliderWi
         }
       `}</style>
     </div>
+    </WidgetContainer>
   );
 }

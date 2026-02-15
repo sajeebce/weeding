@@ -56,6 +56,7 @@ export function ProcessStepsWidgetSettingsPanel({
     stepIcon: { ...DEFAULT_PROCESS_STEPS_SETTINGS.stepIcon, ...settings?.stepIcon },
     stepContent: { ...DEFAULT_PROCESS_STEPS_SETTINGS.stepContent, ...settings?.stepContent },
     connector: { ...DEFAULT_PROCESS_STEPS_SETTINGS.connector, ...settings?.connector },
+    container: { ...DEFAULT_PROCESS_STEPS_SETTINGS.container!, ...settings?.container },
     card: { ...DEFAULT_PROCESS_STEPS_SETTINGS.card, ...settings?.card },
     responsive: { ...DEFAULT_PROCESS_STEPS_SETTINGS.responsive, ...settings?.responsive },
     animation: { ...DEFAULT_PROCESS_STEPS_SETTINGS.animation, ...settings?.animation },
@@ -96,6 +97,10 @@ export function ProcessStepsWidgetSettingsPanel({
 
   const updateConnector = (updates: Partial<ProcessStepsWidgetSettings["connector"]>) => {
     onChange({ ...s, connector: { ...s.connector, ...updates } });
+  };
+
+  const updateContainer = (updates: Partial<NonNullable<ProcessStepsWidgetSettings["container"]>>) => {
+    onChange({ ...s, container: { ...s.container!, ...updates } });
   };
 
   const updateCard = (updates: Partial<ProcessStepsWidgetSettings["card"]>) => {
@@ -728,6 +733,200 @@ export function ProcessStepsWidgetSettingsPanel({
               )}
             </>
           )}
+        </div>
+      </AccordionSection>
+
+      {/* Container Style */}
+      <AccordionSection title="Container Style">
+        <div className="space-y-4">
+          {/* Background Type */}
+          <SelectInput
+            label="Background Type"
+            value={s.container?.backgroundType || "solid"}
+            onChange={(v) => {
+              const newType = v as "solid" | "gradient";
+              updateContainer({
+                backgroundType: newType,
+                ...(newType === "gradient" && !s.container?.gradientBackground
+                  ? {
+                      gradientBackground: {
+                        colors: ["#1e1b4b", "#0f172a"],
+                        angle: 135,
+                      },
+                    }
+                  : {}),
+              });
+            }}
+            options={[
+              { value: "solid", label: "Solid" },
+              { value: "gradient", label: "Gradient" },
+            ]}
+          />
+          {/* Solid background color */}
+          {(s.container?.backgroundType || "solid") === "solid" && (
+            <ColorInput
+              label="Background Color"
+              value={s.container?.backgroundColor || "transparent"}
+              onChange={(v) => updateContainer({ backgroundColor: v === "transparent" ? undefined : v })}
+            />
+          )}
+          {/* Gradient background colors */}
+          {s.container?.backgroundType === "gradient" && (
+            <>
+              <div className="space-y-2">
+                <Label className="text-xs text-slate-400">Gradient Colors</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <ColorInput
+                    label="From"
+                    value={s.container?.gradientBackground?.colors?.[0] || "#1e1b4b"}
+                    onChange={(v) =>
+                      updateContainer({
+                        gradientBackground: {
+                          colors: [v, s.container?.gradientBackground?.colors?.[1] || "#0f172a"],
+                          angle: s.container?.gradientBackground?.angle || 135,
+                        },
+                      })
+                    }
+                  />
+                  <ColorInput
+                    label="To"
+                    value={s.container?.gradientBackground?.colors?.[1] || "#0f172a"}
+                    onChange={(v) =>
+                      updateContainer({
+                        gradientBackground: {
+                          colors: [s.container?.gradientBackground?.colors?.[0] || "#1e1b4b", v],
+                          angle: s.container?.gradientBackground?.angle || 135,
+                        },
+                      })
+                    }
+                  />
+                </div>
+              </div>
+              <NumberInput
+                label="Gradient Angle"
+                value={s.container?.gradientBackground?.angle || 135}
+                onChange={(v) =>
+                  updateContainer({
+                    gradientBackground: {
+                      colors: s.container?.gradientBackground?.colors || ["#1e1b4b", "#0f172a"],
+                      angle: v,
+                    },
+                  })
+                }
+                min={0}
+                max={360}
+                step={15}
+              />
+            </>
+          )}
+          <NumberInput
+            label="Padding"
+            value={s.container?.padding || 0}
+            onChange={(v) => updateContainer({ padding: v })}
+            min={0}
+            max={64}
+            step={4}
+          />
+          <NumberInput
+            label="Border Radius"
+            value={s.container?.borderRadius || 16}
+            onChange={(v) => updateContainer({ borderRadius: v })}
+            min={0}
+            max={48}
+            step={2}
+          />
+          {/* Gradient Border */}
+          <ToggleSwitch
+            label="Gradient Border"
+            checked={s.container?.gradientBorder?.enabled || false}
+            onChange={(v: boolean) =>
+              updateContainer({
+                gradientBorder: {
+                  enabled: v,
+                  colors: s.container?.gradientBorder?.colors || ["#ec4899", "#8b5cf6"],
+                  angle: s.container?.gradientBorder?.angle || 135,
+                },
+                ...(v && !s.container?.borderWidth ? { borderWidth: 2 } : {}),
+              })
+            }
+          />
+          {s.container?.gradientBorder?.enabled && (
+            <>
+              <div className="space-y-2">
+                <Label className="text-xs text-slate-400">Border Gradient Colors</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <ColorInput
+                    label="From"
+                    value={s.container?.gradientBorder?.colors?.[0] || "#ec4899"}
+                    onChange={(v) =>
+                      updateContainer({
+                        gradientBorder: {
+                          enabled: true,
+                          colors: [v, s.container?.gradientBorder?.colors?.[1] || "#8b5cf6"],
+                          angle: s.container?.gradientBorder?.angle || 135,
+                        },
+                      })
+                    }
+                  />
+                  <ColorInput
+                    label="To"
+                    value={s.container?.gradientBorder?.colors?.[1] || "#8b5cf6"}
+                    onChange={(v) =>
+                      updateContainer({
+                        gradientBorder: {
+                          enabled: true,
+                          colors: [s.container?.gradientBorder?.colors?.[0] || "#ec4899", v],
+                          angle: s.container?.gradientBorder?.angle || 135,
+                        },
+                      })
+                    }
+                  />
+                </div>
+              </div>
+              <NumberInput
+                label="Border Gradient Angle"
+                value={s.container?.gradientBorder?.angle || 135}
+                onChange={(v) =>
+                  updateContainer({
+                    gradientBorder: {
+                      enabled: true,
+                      colors: s.container?.gradientBorder?.colors || ["#ec4899", "#8b5cf6"],
+                      angle: v,
+                    },
+                  })
+                }
+                min={0}
+                max={360}
+                step={15}
+              />
+              <NumberInput
+                label="Border Width"
+                value={s.container?.borderWidth || 2}
+                onChange={(v) => updateContainer({ borderWidth: v })}
+                min={1}
+                max={6}
+              />
+            </>
+          )}
+          <SelectInput
+            label="Shadow"
+            value={s.container?.shadow || "none"}
+            onChange={(v) => updateContainer({ shadow: v as "none" | "sm" | "md" | "lg" })}
+            options={[
+              { value: "none", label: "None" },
+              { value: "sm", label: "Small" },
+              { value: "md", label: "Medium" },
+              { value: "lg", label: "Large" },
+            ]}
+          />
+          <NumberInput
+            label="Max Width"
+            value={s.container?.maxWidth || 0}
+            onChange={(v) => updateContainer({ maxWidth: v > 0 ? v : undefined })}
+            min={0}
+            max={1400}
+            step={50}
+          />
         </div>
       </AccordionSection>
 

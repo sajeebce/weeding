@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ImageIcon, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ImageWidgetSettings } from "@/lib/page-builder/types";
+import { WidgetContainer } from "@/components/page-builder/shared/widget-container";
 
 interface ImageWidgetProps {
   settings: ImageWidgetSettings;
@@ -261,6 +262,7 @@ export function ImageWidget({ settings, isPreview = false }: ImageWidgetProps) {
   // Empty state - show when no src or invalid URL
   if (!hasValidSrc) {
     return (
+      <WidgetContainer container={settings.container}>
       <div
         className={cn(
           "flex flex-col items-center justify-center gap-2",
@@ -276,6 +278,7 @@ export function ImageWidget({ settings, isPreview = false }: ImageWidgetProps) {
         <ImageIcon className="h-12 w-12 text-slate-500" />
         <span className="text-sm text-slate-500">No image selected</span>
       </div>
+      </WidgetContainer>
     );
   }
 
@@ -487,9 +490,9 @@ export function ImageWidget({ settings, isPreview = false }: ImageWidgetProps) {
   );
 
   return (
-    <>
+    <WidgetContainer container={settings.container}>
       {wrappedContent}
       {lightboxModal}
-    </>
+    </WidgetContainer>
   );
 }

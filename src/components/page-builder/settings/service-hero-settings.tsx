@@ -2,7 +2,8 @@
 
 import { useCallback } from "react";
 import type { ServiceHeroWidgetSettings } from "@/lib/page-builder/types";
-import { DEFAULT_SERVICE_HERO_SETTINGS } from "@/lib/page-builder/defaults";
+import { DEFAULT_SERVICE_HERO_SETTINGS, DEFAULT_WIDGET_CONTAINER } from "@/lib/page-builder/defaults";
+import { ContainerStyleSection } from "@/components/page-builder/shared/container-style-section";
 import { AccordionSection } from "@/app/admin/appearance/landing-page/components/ui/accordion-section";
 import {
   TextInput,
@@ -28,6 +29,7 @@ export function ServiceHeroWidgetSettingsPanel({
   const s: ServiceHeroWidgetSettings = {
     ...DEFAULT_SERVICE_HERO_SETTINGS,
     ...settings,
+    container: { ...DEFAULT_WIDGET_CONTAINER, ...settings?.container },
   };
 
   const updateField = useCallback(
@@ -196,6 +198,12 @@ export function ServiceHeroWidgetSettingsPanel({
           { value: "lg", label: "Large" },
           { value: "xl", label: "Extra Large" },
         ]}
+      />
+
+      {/* Container Style */}
+      <ContainerStyleSection
+        container={s.container || DEFAULT_WIDGET_CONTAINER}
+        onChange={(container) => onChange({ ...s, container })}
       />
 
       {/* Background */}

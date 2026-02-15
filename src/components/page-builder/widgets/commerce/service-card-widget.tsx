@@ -13,6 +13,7 @@ import type {
   ServiceCardHoverEffect,
   BadgeStyle,
 } from "@/lib/page-builder/types";
+import { WidgetContainer } from "@/components/page-builder/shared/widget-container";
 import { DEFAULT_SERVICE_CARD_SETTINGS } from "@/lib/page-builder/defaults";
 
 // Service type from database
@@ -1252,6 +1253,7 @@ export function ServiceCardWidget({ settings: partialSettings, isPreview = false
 
   if (loading) {
     return (
+      <WidgetContainer container={settings.container}>
       <div
         className={cn(
           "grid",
@@ -1267,19 +1269,23 @@ export function ServiceCardWidget({ settings: partialSettings, isPreview = false
           />
         ))}
       </div>
+      </WidgetContainer>
     );
   }
 
   if (error) {
     return (
+      <WidgetContainer container={settings.container}>
       <div className="flex items-center justify-center h-32 bg-destructive/10 rounded-xl border border-destructive/20">
         <p className="text-sm text-destructive">{error}</p>
       </div>
+      </WidgetContainer>
     );
   }
 
   if (services.length === 0) {
     return (
+      <WidgetContainer container={settings.container}>
       <div>
         <SectionHeader settings={settings} />
         <div className="flex items-center justify-center h-32 bg-muted/30 rounded-xl border border-dashed border-muted-foreground/30">
@@ -1288,10 +1294,12 @@ export function ServiceCardWidget({ settings: partialSettings, isPreview = false
           </p>
         </div>
       </div>
+      </WidgetContainer>
     );
   }
 
   return (
+    <WidgetContainer container={settings.container}>
     <div>
       <SectionHeader settings={settings} />
       <div
@@ -1309,5 +1317,6 @@ export function ServiceCardWidget({ settings: partialSettings, isPreview = false
         ))}
       </div>
     </div>
+    </WidgetContainer>
   );
 }

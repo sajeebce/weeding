@@ -10,6 +10,7 @@ import { TestimonialsGridView } from "./testimonials-grid-view";
 import { TestimonialsCarouselView } from "./testimonials-carousel-view";
 import { TestimonialsVideoView } from "./testimonials-video-view";
 import { cn } from "@/lib/utils";
+import { WidgetContainer } from "@/components/page-builder/shared/widget-container";
 
 interface TestimonialsWidgetProps {
   settings: Partial<TestimonialsWidgetSettings>;
@@ -283,6 +284,7 @@ export function TestimonialsWidget({ settings: partialSettings, isPreview = fals
   const description = header.description || DEFAULT_TESTIMONIALS_SETTINGS.header.description;
 
   return (
+    <WidgetContainer container={settings.container}>
     <div className="w-full">
       {/* Header Section */}
       {(header.show !== false) && (
@@ -365,5 +367,6 @@ export function TestimonialsWidget({ settings: partialSettings, isPreview = fals
       {/* Trust Footer */}
       {renderTrustFooter()}
     </div>
+    </WidgetContainer>
   );
 }

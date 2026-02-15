@@ -21,7 +21,8 @@ import { CSS } from "@dnd-kit/utilities";
 import { Plus, Trash2, GripVertical, Copy } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import type { TrustBadgesWidgetSettings, TrustBadge } from "@/lib/page-builder/types";
-import { DEFAULT_TRUST_BADGES_SETTINGS } from "@/lib/page-builder/defaults";
+import { DEFAULT_TRUST_BADGES_SETTINGS, DEFAULT_WIDGET_CONTAINER } from "@/lib/page-builder/defaults";
+import { ContainerStyleSection } from "@/components/page-builder/shared/container-style-section";
 import { generateId } from "@/lib/page-builder/widget-registry";
 import {
   SelectInput,
@@ -240,6 +241,7 @@ export function TrustBadgesWidgetSettingsPanel({
     ...DEFAULT_TRUST_BADGES_SETTINGS,
     ...settings,
     style: { ...DEFAULT_TRUST_BADGES_SETTINGS.style, ...settings?.style },
+    container: { ...DEFAULT_WIDGET_CONTAINER, ...settings?.container },
   };
 
   const updateField = <K extends keyof TrustBadgesWidgetSettings>(
@@ -418,6 +420,12 @@ export function TrustBadgesWidgetSettingsPanel({
         max={24}
         step={1}
         unit="px"
+      />
+
+      {/* Container Style */}
+      <ContainerStyleSection
+        container={s.container || DEFAULT_WIDGET_CONTAINER}
+        onChange={(container) => onChange({ ...s, container })}
       />
     </div>
   );

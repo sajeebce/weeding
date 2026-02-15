@@ -819,8 +819,54 @@ export function ProcessStepsWidget({
     return cn("grid-cols-1", tabletMap[tabletCols], colMap[cols]);
   };
 
-  return (
-    <div ref={containerRef}>
+  // Container style
+  const container = settings.container;
+  const hasContainerGradientBorder = container?.gradientBorder?.enabled &&
+    container.gradientBorder.colors?.length >= 2;
+
+  const borderRadius = container?.borderRadius || 0;
+  const borderWidth = container?.borderWidth || 2;
+
+  // Shadow class
+  const getShadowClass = (shadow?: string) => {
+    switch (shadow) {
+      case "sm": return "shadow-sm";
+      case "md": return "shadow-md";
+      case "lg": return "shadow-lg";
+      default: return "";
+    }
+  };
+
+  // Container background
+  const getContainerBackground = (): string | undefined => {
+    if (container?.backgroundType === "gradient" && container.gradientBackground?.colors?.length) {
+      const { colors, angle } = container.gradientBackground;
+      return `linear-gradient(${angle}deg, ${colors.join(", ")})`;
+    }
+    return undefined;
+  };
+
+  const containerBackground = getContainerBackground();
+  const containerBgColor = !containerBackground ? (container?.backgroundColor || undefined) : undefined;
+
+  const innerContent = (
+    <div
+      ref={containerRef}
+      className={cn(
+        !hasContainerGradientBorder && getShadowClass(container?.shadow),
+      )}
+      style={{
+        background: containerBackground,
+        backgroundColor: containerBgColor,
+        borderRadius: hasContainerGradientBorder
+          ? `${Math.max(0, borderRadius - borderWidth)}px`
+          : borderRadius ? `${borderRadius}px` : undefined,
+        padding: container?.padding ? `${container.padding}px` : undefined,
+        maxWidth: !hasContainerGradientBorder && container?.maxWidth
+          ? `${container.maxWidth}px`
+          : undefined,
+      }}
+    >
       <SectionHeader settings={settings} />
 
       <div
@@ -858,4 +904,23 @@ export function ProcessStepsWidget({
       </div>
     </div>
   );
+
+  if (hasContainerGradientBorder) {
+    const { colors, angle } = container!.gradientBorder!;
+    return (
+      <div
+        className={getShadowClass(container?.shadow)}
+        style={{
+          padding: `${borderWidth}px`,
+          background: `linear-gradient(${angle}deg, ${colors.join(", ")})`,
+          borderRadius: `${borderRadius}px`,
+          maxWidth: container?.maxWidth ? `${container.maxWidth}px` : undefined,
+        }}
+      >
+        {innerContent}
+      </div>
+    );
+  }
+
+  return innerContent;
 }

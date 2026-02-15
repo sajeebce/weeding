@@ -43,6 +43,7 @@ import type {
   PricingFeatureValueType,
   BadgeStyle,
 } from "@/lib/page-builder/types";
+import { WidgetContainer } from "@/components/page-builder/shared/widget-container";
 import { DEFAULT_PRICING_TABLE_SETTINGS } from "@/lib/page-builder/defaults";
 import { useOptionalServiceContext } from "@/lib/page-builder/contexts/service-context";
 import { PricingCardsView } from "./pricing-cards-view";
@@ -1159,6 +1160,7 @@ export function PricingTableWidget({
   // Loading state
   if (loading) {
     return (
+      <WidgetContainer container={settings.container}>
       <div>
         <SectionHeader settings={settings} />
         <div className="flex gap-6">
@@ -1175,24 +1177,28 @@ export function PricingTableWidget({
           )}
         </div>
       </div>
+      </WidgetContainer>
     );
   }
 
   // Error state
   if (error) {
     return (
+      <WidgetContainer container={settings.container}>
       <div>
         <SectionHeader settings={settings} />
         <div className="flex items-center justify-center h-32 bg-destructive/10 rounded-xl border border-destructive/20">
           <p className="text-sm text-destructive">{error}</p>
         </div>
       </div>
+      </WidgetContainer>
     );
   }
 
   // No service selected
   if (!resolvedSlug || !serviceData) {
     return (
+      <WidgetContainer container={settings.container}>
       <div>
         <SectionHeader settings={settings} />
         <div className="flex items-center justify-center h-64 bg-muted/30 rounded-xl border-2 border-dashed border-muted-foreground/30">
@@ -1207,12 +1213,14 @@ export function PricingTableWidget({
           </div>
         </div>
       </div>
+      </WidgetContainer>
     );
   }
 
   // No packages
   if (serviceData.packages.length === 0) {
     return (
+      <WidgetContainer container={settings.container}>
       <div>
         <SectionHeader settings={settings} />
         <div className="flex items-center justify-center h-32 bg-muted/30 rounded-xl border border-dashed border-muted-foreground/30">
@@ -1221,10 +1229,12 @@ export function PricingTableWidget({
           </p>
         </div>
       </div>
+      </WidgetContainer>
     );
   }
 
   return (
+    <WidgetContainer container={settings.container}>
     <div className="w-full">
       <SectionHeader settings={settings} />
 
@@ -1318,5 +1328,6 @@ export function PricingTableWidget({
         </>
       )}
     </div>
+    </WidgetContainer>
   );
 }

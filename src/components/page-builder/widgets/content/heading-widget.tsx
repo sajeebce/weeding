@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { SmartLink } from "@/components/ui/smart-link";
 import type { HeadingWidgetSettings } from "@/lib/page-builder/types";
+import { WidgetContainer } from "@/components/page-builder/shared/widget-container";
 
 interface HeadingWidgetProps {
   settings: HeadingWidgetSettings;
@@ -554,6 +555,7 @@ export function HeadingWidget({ settings, isPreview = false }: HeadingWidgetProp
   // Wrap in link if needed
   if (settings.content.link?.url) {
     return (
+      <WidgetContainer container={settings.container}>
       <Tag
         key={animationElementKey}
         ref={ref as React.RefObject<HTMLHeadingElement>}
@@ -570,10 +572,12 @@ export function HeadingWidget({ settings, isPreview = false }: HeadingWidgetProp
           {content}
         </SmartLink>
       </Tag>
+      </WidgetContainer>
     );
   }
 
   return (
+    <WidgetContainer container={settings.container}>
     <Tag
       key={animationElementKey}
       ref={ref as React.RefObject<HTMLHeadingElement>}
@@ -584,6 +588,7 @@ export function HeadingWidget({ settings, isPreview = false }: HeadingWidgetProp
     >
       {content}
     </Tag>
+    </WidgetContainer>
   );
 }
 

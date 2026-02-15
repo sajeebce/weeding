@@ -5,7 +5,8 @@ import type {
   ButtonGroupWidgetSettings,
   ButtonGroupButton,
 } from "@/lib/page-builder/types";
-import { DEFAULT_BUTTON_GROUP_SETTINGS } from "@/lib/page-builder/defaults";
+import { DEFAULT_BUTTON_GROUP_SETTINGS, DEFAULT_WIDGET_CONTAINER } from "@/lib/page-builder/defaults";
+import { ContainerStyleSection } from "@/components/page-builder/shared/container-style-section";
 import {
   SelectInput,
   NumberInput,
@@ -31,6 +32,7 @@ export function ButtonGroupWidgetSettingsPanel({
   const settings: ButtonGroupWidgetSettings = {
     ...DEFAULT_BUTTON_GROUP_SETTINGS,
     ...partialSettings,
+    container: { ...DEFAULT_WIDGET_CONTAINER, ...partialSettings?.container },
   };
 
   const updateField = <K extends keyof ButtonGroupWidgetSettings>(
@@ -182,6 +184,12 @@ export function ButtonGroupWidgetSettingsPanel({
           />
         </div>
       </AccordionSection>
+
+      {/* Container Style */}
+      <ContainerStyleSection
+        container={settings.container || DEFAULT_WIDGET_CONTAINER}
+        onChange={(container) => onChange({ ...settings, container })}
+      />
     </div>
   );
 

@@ -10,6 +10,7 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { useOptionalServiceContext } from "@/lib/page-builder/contexts/service-context";
 import type { ServiceBreadcrumbWidgetSettings } from "@/lib/page-builder/types";
+import { WidgetContainer } from "@/components/page-builder/shared/widget-container";
 
 // ============================================
 // DEFAULT SETTINGS
@@ -290,7 +291,7 @@ export function ServiceBreadcrumbWidget({
 
   // If no service context, show placeholder
   if (!serviceContext) {
-    return <ServiceBreadcrumbPlaceholder settings={s} />;
+    return <WidgetContainer container={partialSettings.container}><ServiceBreadcrumbPlaceholder settings={s} /></WidgetContainer>;
   }
 
   const { service } = serviceContext;
@@ -322,31 +323,37 @@ export function ServiceBreadcrumbWidget({
   switch (s.variant) {
     case "pill-chip":
       return (
+        <WidgetContainer container={partialSettings.container}>
         <PillChipBreadcrumb
           items={items}
           fontSizeClass={fontSizeClass}
           alignmentClass={alignmentClass}
         />
+        </WidgetContainer>
       );
 
     case "minimal":
       return (
+        <WidgetContainer container={partialSettings.container}>
         <MinimalBreadcrumb
           items={items}
           separator={s.separator}
           alignmentClass={alignmentClass}
         />
+        </WidgetContainer>
       );
 
     case "simple-text":
     default:
       return (
+        <WidgetContainer container={partialSettings.container}>
         <SimpleTextBreadcrumb
           items={items}
           separator={s.separator}
           fontSizeClass={fontSizeClass}
           alignmentClass={alignmentClass}
         />
+        </WidgetContainer>
       );
   }
 }

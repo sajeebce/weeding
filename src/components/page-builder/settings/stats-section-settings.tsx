@@ -27,7 +27,8 @@ import {
   ChevronUp,
 } from "lucide-react";
 import type { StatsSectionWidgetSettings, StatItem } from "@/lib/page-builder/types";
-import { DEFAULT_STATS_SECTION_SETTINGS } from "@/lib/page-builder/defaults";
+import { DEFAULT_STATS_SECTION_SETTINGS, DEFAULT_WIDGET_CONTAINER } from "@/lib/page-builder/defaults";
+import { ContainerStyleSection } from "@/components/page-builder/shared/container-style-section";
 import { generateId } from "@/lib/page-builder/widget-registry";
 import {
   SelectInput,
@@ -214,6 +215,7 @@ export function StatsSectionWidgetSettingsPanel({
     ...DEFAULT_STATS_SECTION_SETTINGS,
     ...settings,
     style: { ...DEFAULT_STATS_SECTION_SETTINGS.style, ...settings?.style },
+    container: { ...DEFAULT_WIDGET_CONTAINER, ...settings?.container },
   };
 
   const updateField = <K extends keyof StatsSectionWidgetSettings>(
@@ -382,6 +384,12 @@ export function StatsSectionWidgetSettingsPanel({
         label="Show Dividers"
         checked={s.style.divider}
         onChange={(checked) => updateStyleField("divider", checked)}
+      />
+
+      {/* Container Style */}
+      <ContainerStyleSection
+        container={s.container || DEFAULT_WIDGET_CONTAINER}
+        onChange={(container) => onChange({ ...s, container })}
       />
     </div>
   );

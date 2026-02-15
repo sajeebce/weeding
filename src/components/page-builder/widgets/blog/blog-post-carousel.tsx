@@ -14,6 +14,7 @@ import { BlogSectionHeader } from "./shared/blog-section-header";
 import { BlogSkeleton } from "./shared/blog-skeleton";
 import { cn } from "@/lib/utils";
 import { FileText } from "lucide-react";
+import { WidgetContainer } from "@/components/page-builder/shared/widget-container";
 
 // ── Deep merge settings with defaults ────────────────────────────────
 
@@ -102,6 +103,7 @@ export function BlogPostCarouselWidget({
   };
 
   return (
+    <WidgetContainer container={s.container}>
     <div>
       {/* Section Header */}
       <BlogSectionHeader settings={s.header} />
@@ -181,5 +183,6 @@ export function BlogPostCarouselWidget({
         </div>
       )}
     </div>
+    </WidgetContainer>
   );
 }

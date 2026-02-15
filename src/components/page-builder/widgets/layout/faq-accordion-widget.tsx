@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { FaqAccordionWidgetSettings } from "@/lib/page-builder/types";
+import { DEFAULT_FAQ_ACCORDION_SETTINGS } from "@/lib/page-builder/defaults";
+import { WidgetContainer } from "@/components/page-builder/shared/widget-container";
 import { useOptionalServiceContext } from "@/lib/page-builder/contexts/service-context";
 import Link from "next/link";
 
@@ -64,6 +66,9 @@ export function FaqAccordionWidget({
     showCategoryFilter: settings?.showCategoryFilter ?? false,
     header: { ...defaultHeader, ...settings?.header },
   };
+
+  const hs = { ...DEFAULT_FAQ_ACCORDION_SETTINGS.headerStyle!, ...settings?.headerStyle };
+  const is = { ...DEFAULT_FAQ_ACCORDION_SETTINGS.itemStyle!, ...settings?.itemStyle };
 
   useEffect(() => {
     // Source: "service" - read FAQs directly from ServiceContext (no API call)
@@ -185,11 +190,13 @@ export function FaqAccordionWidget({
 
   if (loading) {
     return (
+      <WidgetContainer container={settings.container}>
       <div className="mx-auto max-w-3xl space-y-4">
         {[1, 2, 3].map((i) => (
           <div key={i} className="h-16 animate-pulse rounded-xl bg-muted" />
         ))}
       </div>
+      </WidgetContainer>
     );
   }
 
@@ -198,18 +205,21 @@ export function FaqAccordionWidget({
     if (serviceFaqGroups.length === 0) {
       if (isPreview) {
         return (
+          <WidgetContainer container={settings.container}>
           <div className="flex items-center justify-center rounded-xl border border-dashed py-12">
             <p className="text-sm text-muted-foreground">
               No service FAQs found. Add FAQs to your services from the admin
               panel.
             </p>
           </div>
+          </WidgetContainer>
         );
       }
       return null;
     }
 
     return (
+      <WidgetContainer container={settings.container}>
       <div className="w-full">
         {s.header.show && (
           <div
@@ -218,11 +228,23 @@ export function FaqAccordionWidget({
               s.header.alignment === "center" && "text-center"
             )}
           >
-            <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            <h2
+              className={cn("font-bold tracking-tight", {
+                "text-xl sm:text-2xl": hs.headingSize === "sm",
+                "text-2xl sm:text-3xl": hs.headingSize === "md",
+                "text-3xl sm:text-4xl": hs.headingSize === "lg",
+                "text-4xl sm:text-5xl": hs.headingSize === "xl",
+                "text-5xl sm:text-6xl": hs.headingSize === "2xl",
+              })}
+              style={{ color: hs.headingColor || undefined }}
+            >
               {s.header.heading}
             </h2>
             {s.header.description && (
-              <p className="mt-3 text-lg text-muted-foreground">
+              <p
+                className="mt-3 text-lg"
+                style={{ color: hs.descriptionColor || undefined }}
+              >
                 {s.header.description}
               </p>
             )}
@@ -254,20 +276,21 @@ export function FaqAccordionWidget({
                     </div>
 
                     {s.style === "minimal" && (
-                      <div className="divide-y divide-border">
+                      <div className="divide-y divide-border" style={{ gap: `${is.gap}px` }}>
                         {service.faqs.map((faq) => (
                           <FaqItemMinimal
                             key={faq.id}
                             faq={{ ...faq, category: null }}
                             isOpen={openItems.has(faq.id)}
                             onToggle={() => toggleItem(faq.id)}
+                            itemStyle={is}
                           />
                         ))}
                       </div>
                     )}
 
                     {s.style === "cards" && (
-                      <div className="space-y-3">
+                      <div className="flex flex-col" style={{ gap: `${is.gap}px` }}>
                         {service.faqs.map((faq) => (
                           <FaqItemCard
                             key={faq.id}
@@ -275,13 +298,14 @@ export function FaqAccordionWidget({
                             isOpen={openItems.has(faq.id)}
                             onToggle={() => toggleItem(faq.id)}
                             accentColor={s.accentColor}
+                            itemStyle={is}
                           />
                         ))}
                       </div>
                     )}
 
                     {s.style === "bordered" && (
-                      <div className="space-y-3">
+                      <div className="flex flex-col" style={{ gap: `${is.gap}px` }}>
                         {service.faqs.map((faq, index) => (
                           <FaqItemBordered
                             key={faq.id}
@@ -290,6 +314,7 @@ export function FaqAccordionWidget({
                             isOpen={openItems.has(faq.id)}
                             onToggle={() => toggleItem(faq.id)}
                             accentColor={s.accentColor}
+                            itemStyle={is}
                           />
                         ))}
                       </div>
@@ -301,6 +326,7 @@ export function FaqAccordionWidget({
           ))}
         </div>
       </div>
+      </WidgetContainer>
     );
   }
 
@@ -308,17 +334,20 @@ export function FaqAccordionWidget({
   if (faqs.length === 0) {
     if (isPreview) {
       return (
+        <WidgetContainer container={settings.container}>
         <div className="flex items-center justify-center rounded-xl border border-dashed py-12">
           <p className="text-sm text-muted-foreground">
             No FAQs found. Add FAQs from the admin panel.
           </p>
         </div>
+        </WidgetContainer>
       );
     }
     return null;
   }
 
   return (
+    <WidgetContainer container={settings.container}>
     <div className="w-full">
       {/* Header */}
       {s.header.show && (
@@ -328,11 +357,26 @@ export function FaqAccordionWidget({
             s.header.alignment === "center" && "text-center"
           )}
         >
-          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+          <h2
+            className={cn(
+              "font-bold tracking-tight",
+              {
+                "text-xl sm:text-2xl": hs.headingSize === "sm",
+                "text-2xl sm:text-3xl": hs.headingSize === "md",
+                "text-3xl sm:text-4xl": hs.headingSize === "lg",
+                "text-4xl sm:text-5xl": hs.headingSize === "xl",
+                "text-5xl sm:text-6xl": hs.headingSize === "2xl",
+              }
+            )}
+            style={{ color: hs.headingColor || undefined }}
+          >
             {s.header.heading}
           </h2>
           {s.header.description && (
-            <p className="mt-3 text-lg text-muted-foreground">
+            <p
+              className="mt-3 text-lg"
+              style={{ color: hs.descriptionColor || undefined }}
+            >
               {s.header.description}
             </p>
           )}
@@ -390,13 +434,14 @@ export function FaqAccordionWidget({
                 faq={faq}
                 isOpen={openItems.has(faq.id)}
                 onToggle={() => toggleItem(faq.id)}
+                itemStyle={is}
               />
             ))}
           </div>
         )}
 
         {s.style === "cards" && (
-          <div className="space-y-3">
+          <div className="flex flex-col" style={{ gap: `${is.gap}px` }}>
             {displayFaqs.map((faq) => (
               <FaqItemCard
                 key={faq.id}
@@ -404,13 +449,14 @@ export function FaqAccordionWidget({
                 isOpen={openItems.has(faq.id)}
                 onToggle={() => toggleItem(faq.id)}
                 accentColor={s.accentColor}
+                itemStyle={is}
               />
             ))}
           </div>
         )}
 
         {s.style === "bordered" && (
-          <div className="space-y-3">
+          <div className="flex flex-col" style={{ gap: `${is.gap}px` }}>
             {displayFaqs.map((faq, index) => (
               <FaqItemBordered
                 key={faq.id}
@@ -419,13 +465,23 @@ export function FaqAccordionWidget({
                 isOpen={openItems.has(faq.id)}
                 onToggle={() => toggleItem(faq.id)}
                 accentColor={s.accentColor}
+                itemStyle={is}
               />
             ))}
           </div>
         )}
       </div>
     </div>
+    </WidgetContainer>
   );
+}
+
+interface FaqItemStyle {
+  questionColor?: string;
+  answerColor?: string;
+  gap: number;
+  borderRadius: number;
+  padding: number;
 }
 
 /* ── Style: Minimal (Stripe-like) ── */
@@ -433,18 +489,23 @@ function FaqItemMinimal({
   faq,
   isOpen,
   onToggle,
+  itemStyle,
 }: {
   faq: FaqItem;
   isOpen: boolean;
   onToggle: () => void;
+  itemStyle: FaqItemStyle;
 }) {
   return (
-    <div className="py-5">
+    <div style={{ padding: `${itemStyle.padding}px 0` }}>
       <button
         onClick={onToggle}
         className="group flex w-full items-center justify-between text-left"
       >
-        <span className="text-base font-medium text-foreground pr-4 transition-colors group-hover:text-foreground/80">
+        <span
+          className="text-base font-medium pr-4 transition-colors group-hover:opacity-80"
+          style={{ color: itemStyle.questionColor || undefined }}
+        >
           {faq.question}
         </span>
         <ChevronDown
@@ -464,7 +525,8 @@ function FaqItemMinimal({
       >
         <div className="overflow-hidden">
           <div
-            className="prose prose-sm max-w-none pt-3 text-muted-foreground"
+            className="prose prose-sm max-w-none pt-3"
+            style={{ color: itemStyle.answerColor || undefined }}
             dangerouslySetInnerHTML={{ __html: faq.answer }}
           />
         </div>
@@ -479,31 +541,35 @@ function FaqItemCard({
   isOpen,
   onToggle,
   accentColor,
+  itemStyle,
 }: {
   faq: FaqItem;
   isOpen: boolean;
   onToggle: () => void;
   accentColor: string;
+  itemStyle: FaqItemStyle;
 }) {
   return (
     <div
       className={cn(
-        "rounded-xl border transition-all duration-300",
+        "border transition-all duration-300",
         isOpen
           ? "bg-accent/30 shadow-md"
           : "bg-card hover:-translate-y-0.5 hover:shadow-md"
       )}
-      style={isOpen ? { borderColor: `${accentColor}40` } : undefined}
+      style={{
+        borderRadius: `${itemStyle.borderRadius}px`,
+        ...(isOpen ? { borderColor: `${accentColor}40` } : {}),
+      }}
     >
       <button
         onClick={onToggle}
-        className="flex w-full items-center justify-between px-6 py-5 text-left"
+        className="flex w-full items-center justify-between text-left"
+        style={{ padding: `${itemStyle.padding}px` }}
       >
         <span
-          className={cn(
-            "text-base font-semibold transition-colors duration-200 pr-4",
-            isOpen ? "text-foreground" : "text-foreground/90"
-          )}
+          className="text-base font-semibold transition-colors duration-200 pr-4"
+          style={{ color: itemStyle.questionColor || undefined }}
         >
           {faq.question}
         </span>
@@ -532,7 +598,12 @@ function FaqItemCard({
       >
         <div className="overflow-hidden">
           <div
-            className="prose prose-sm max-w-none px-6 pb-5 text-muted-foreground"
+            className="prose prose-sm max-w-none pb-5"
+            style={{
+              color: itemStyle.answerColor || undefined,
+              paddingLeft: `${itemStyle.padding}px`,
+              paddingRight: `${itemStyle.padding}px`,
+            }}
             dangerouslySetInnerHTML={{ __html: faq.answer }}
           />
         </div>
@@ -548,24 +619,30 @@ function FaqItemBordered({
   isOpen,
   onToggle,
   accentColor,
+  itemStyle,
 }: {
   faq: FaqItem;
   index: number;
   isOpen: boolean;
   onToggle: () => void;
   accentColor: string;
+  itemStyle: FaqItemStyle;
 }) {
   return (
     <div
       className={cn(
-        "rounded-xl border-l-[3px] border border-border transition-all duration-300",
+        "border-l-[3px] border border-border transition-all duration-300",
         isOpen ? "bg-accent/20 shadow-sm" : "bg-card hover:bg-accent/10"
       )}
-      style={{ borderLeftColor: isOpen ? accentColor : "transparent" }}
+      style={{
+        borderRadius: `${itemStyle.borderRadius}px`,
+        borderLeftColor: isOpen ? accentColor : "transparent",
+      }}
     >
       <button
         onClick={onToggle}
-        className="flex w-full items-center gap-4 px-5 py-5 text-left"
+        className="flex w-full items-center gap-4 text-left"
+        style={{ padding: `${itemStyle.padding}px` }}
       >
         <span
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sm font-bold tabular-nums"
@@ -576,7 +653,10 @@ function FaqItemBordered({
         >
           {String(index + 1).padStart(2, "0")}
         </span>
-        <span className="flex-1 text-base font-medium text-foreground">
+        <span
+          className="flex-1 text-base font-medium"
+          style={{ color: itemStyle.questionColor || undefined }}
+        >
           {faq.question}
         </span>
         <ChevronDown
@@ -596,7 +676,11 @@ function FaqItemBordered({
       >
         <div className="overflow-hidden">
           <div
-            className="prose prose-sm max-w-none px-5 pb-5 pl-17 text-muted-foreground"
+            className="prose prose-sm max-w-none pb-5 pl-17"
+            style={{
+              color: itemStyle.answerColor || undefined,
+              paddingRight: `${itemStyle.padding}px`,
+            }}
             dangerouslySetInnerHTML={{ __html: faq.answer }}
           />
         </div>

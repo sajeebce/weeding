@@ -13,6 +13,8 @@ import { cn } from "@/lib/utils";
 import { useOptionalServiceContext } from "@/lib/page-builder/contexts/service-context";
 import { ServiceIcon } from "@/components/ui/service-icon";
 import { getCurrencySymbol } from "@/lib/currencies";
+import { WidgetContainer } from "@/components/page-builder/shared/widget-container";
+import type { WidgetContainerStyle } from "@/lib/page-builder/types";
 
 // ============================================
 // TYPES
@@ -32,6 +34,7 @@ interface RelatedServicesWidgetSettings {
   showDescription: boolean;
   showCategoryBadge: boolean;
   ctaText: string;
+  container?: WidgetContainerStyle;
 }
 
 interface RelatedService {
@@ -149,12 +152,13 @@ export function RelatedServicesWidget({
 
   // If no service context, show placeholder (Page Builder admin preview)
   if (!serviceContext) {
-    return <RelatedServicesPlaceholder settings={s} />;
+    return <WidgetContainer container={partialSettings.container}><RelatedServicesPlaceholder settings={s} /></WidgetContainer>;
   }
 
   // Loading state
   if (isLoading) {
     return (
+      <WidgetContainer container={partialSettings.container}>
       <section className="py-12 lg:py-16">
         <div className="mx-auto max-w-7xl px-4">
           {s.header.show && (
@@ -177,6 +181,7 @@ export function RelatedServicesWidget({
           <SkeletonGrid columns={s.columns} count={s.maxItems} variant={s.cardVariant} />
         </div>
       </section>
+      </WidgetContainer>
     );
   }
 
@@ -186,6 +191,7 @@ export function RelatedServicesWidget({
   }
 
   return (
+    <WidgetContainer container={partialSettings.container}>
     <section className="py-12 lg:py-16">
       <div className="mx-auto max-w-7xl px-4">
         {/* Header */}
@@ -238,6 +244,7 @@ export function RelatedServicesWidget({
         )}
       </div>
     </section>
+    </WidgetContainer>
   );
 }
 

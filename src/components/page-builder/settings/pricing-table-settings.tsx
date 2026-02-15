@@ -11,7 +11,8 @@ import type {
   OrderSummaryPosition,
   PricingCTAStyle,
 } from "@/lib/page-builder/types";
-import { DEFAULT_PRICING_TABLE_SETTINGS } from "@/lib/page-builder/defaults";
+import { DEFAULT_PRICING_TABLE_SETTINGS, DEFAULT_WIDGET_CONTAINER } from "@/lib/page-builder/defaults";
+import { ContainerStyleSection } from "@/components/page-builder/shared/container-style-section";
 import {
   SelectInput,
   NumberInput,
@@ -121,6 +122,7 @@ export function PricingTableWidgetSettingsPanel({
       ...DEFAULT_PRICING_TABLE_SETTINGS.colors,
       ...settings?.colors,
     },
+    container: { ...DEFAULT_WIDGET_CONTAINER, ...settings?.container },
   };
 
   // Update helpers
@@ -954,6 +956,12 @@ export function PricingTableWidgetSettingsPanel({
           )}
         </div>
       </AccordionSection>
+
+      {/* Container Style */}
+      <ContainerStyleSection
+        container={s.container || DEFAULT_WIDGET_CONTAINER}
+        onChange={(container) => onChange({ ...s, container })}
+      />
 
       {/* Order Summary CTA */}
       {s.orderSummary.enabled && (

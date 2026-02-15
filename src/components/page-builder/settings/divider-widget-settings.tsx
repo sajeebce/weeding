@@ -1,7 +1,8 @@
 "use client";
 
 import type { DividerWidgetSettings, DividerStyle } from "@/lib/page-builder/types";
-import { DEFAULT_DIVIDER_SETTINGS } from "@/lib/page-builder/defaults";
+import { DEFAULT_DIVIDER_SETTINGS, DEFAULT_WIDGET_CONTAINER } from "@/lib/page-builder/defaults";
+import { ContainerStyleSection } from "@/components/page-builder/shared/container-style-section";
 import {
   SelectInput,
   NumberInput,
@@ -25,6 +26,7 @@ export function DividerWidgetSettingsPanel({
   const settings: DividerWidgetSettings = {
     ...DEFAULT_DIVIDER_SETTINGS,
     ...partialSettings,
+    container: { ...DEFAULT_WIDGET_CONTAINER, ...partialSettings?.container },
   };
 
   const updateField = <K extends keyof DividerWidgetSettings>(
@@ -184,6 +186,12 @@ export function DividerWidgetSettingsPanel({
             unit="px"
           />
         </AccordionSection>
+
+        {/* Container Style */}
+        <ContainerStyleSection
+          container={settings.container || DEFAULT_WIDGET_CONTAINER}
+          onChange={(container) => onChange({ ...settings, container })}
+        />
       </div>
     );
   }

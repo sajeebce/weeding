@@ -10,6 +10,7 @@ import type {
   BlogPostData,
 } from "@/lib/page-builder/types";
 import { DEFAULT_BLOG_RECENT_POSTS_SETTINGS } from "@/lib/page-builder/defaults";
+import { WidgetContainer } from "@/components/page-builder/shared/widget-container";
 
 // ── Deep merge settings with defaults ────────────────────────────────
 
@@ -148,6 +149,7 @@ export function BlogRecentPostsWidget({
   // Loading skeleton
   if (loading) {
     return (
+      <WidgetContainer container={s.container}>
       <div className="space-y-3">
         {s.header.show && (
           <div className="h-6 w-32 animate-pulse rounded bg-slate-200 dark:bg-slate-700" />
@@ -164,12 +166,14 @@ export function BlogRecentPostsWidget({
           </div>
         ))}
       </div>
+      </WidgetContainer>
     );
   }
 
   if (posts.length === 0) return null;
 
   return (
+    <WidgetContainer container={s.container}>
     <div>
       {/* Header */}
       {s.header.show && (
@@ -298,5 +302,6 @@ export function BlogRecentPostsWidget({
         </div>
       )}
     </div>
+    </WidgetContainer>
   );
 }

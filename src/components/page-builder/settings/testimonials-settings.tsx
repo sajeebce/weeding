@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type { TestimonialsWidgetSettings } from "@/lib/page-builder/types";
-import { DEFAULT_TESTIMONIALS_SETTINGS } from "@/lib/page-builder/defaults";
+import { DEFAULT_TESTIMONIALS_SETTINGS, DEFAULT_WIDGET_CONTAINER } from "@/lib/page-builder/defaults";
+import { ContainerStyleSection } from "@/components/page-builder/shared/container-style-section";
 import {
   SelectInput,
   ColorInput,
@@ -84,7 +85,10 @@ export function TestimonialsWidgetSettingsPanel({
   }
 
   // Deep merge with defaults to ensure all nested properties exist
-  const s: TestimonialsWidgetSettings = deepMerge(DEFAULT_TESTIMONIALS_SETTINGS, settings);
+  const s: TestimonialsWidgetSettings = {
+    ...deepMerge(DEFAULT_TESTIMONIALS_SETTINGS, settings),
+    container: { ...DEFAULT_WIDGET_CONTAINER, ...settings?.container },
+  };
   const updateSettings = useCallback(
     (updates: Partial<TestimonialsWidgetSettings>) => {
       onChange({ ...s, ...updates });
@@ -706,6 +710,12 @@ export function TestimonialsWidgetSettingsPanel({
               />
             </CollapsibleContent>
           </Collapsible>
+
+          {/* Container Style */}
+          <ContainerStyleSection
+            container={s.container || DEFAULT_WIDGET_CONTAINER}
+            onChange={(container) => onChange({ ...s, container })}
+          />
         </>
       )}
 

@@ -35,7 +35,28 @@ import type {
   ServiceBreadcrumbWidgetSettings,
   RelatedServicesWidgetSettings,
   ButtonGroupWidgetSettings,
+  WidgetContainerStyle,
 } from "./types";
+
+// ============================================
+// DEFAULT WIDGET CONTAINER STYLE
+// ============================================
+
+export const DEFAULT_WIDGET_CONTAINER: WidgetContainerStyle = {
+  backgroundType: "solid",
+  backgroundColor: undefined,
+  gradientBackground: undefined,
+  padding: 0,
+  borderRadius: 0,
+  gradientBorder: {
+    enabled: false,
+    colors: ["#ec4899", "#8b5cf6"],
+    angle: 135,
+  },
+  borderWidth: 2,
+  shadow: "none",
+  maxWidth: undefined,
+};
 
 // ============================================
 // DEFAULT SECTION SETTINGS
@@ -174,6 +195,8 @@ export const DEFAULT_HERO_CONTENT_SETTINGS: HeroContentWidgetSettings = {
     starColor: "#facc15",
   },
   alignment: "center",
+  // Container Style
+  container: DEFAULT_WIDGET_CONTAINER,
 };
 
 export const DEFAULT_IMAGE_SETTINGS: ImageWidgetSettings = {
@@ -259,6 +282,8 @@ export const DEFAULT_IMAGE_SETTINGS: ImageWidgetSettings = {
     sepia: 0,
     hueRotate: 0,
   },
+  // Container Style
+  container: DEFAULT_WIDGET_CONTAINER,
 };
 
 export const DEFAULT_TRUST_BADGES_SETTINGS: TrustBadgesWidgetSettings = {
@@ -278,6 +303,8 @@ export const DEFAULT_TRUST_BADGES_SETTINGS: TrustBadgesWidgetSettings = {
     borderRadius: 12,
   },
   centered: true,
+  // Container Style
+  container: DEFAULT_WIDGET_CONTAINER,
 };
 
 export const DEFAULT_STATS_SECTION_SETTINGS: StatsSectionWidgetSettings = {
@@ -298,6 +325,8 @@ export const DEFAULT_STATS_SECTION_SETTINGS: StatsSectionWidgetSettings = {
   },
   centered: true,
   animateOnScroll: true,
+  // Container Style
+  container: DEFAULT_WIDGET_CONTAINER,
 };
 
 export const DEFAULT_LEAD_FORM_SETTINGS: LeadFormWidgetSettings = {
@@ -344,6 +373,8 @@ export const DEFAULT_LEAD_FORM_SETTINGS: LeadFormWidgetSettings = {
   padding: 24,
   borderRadius: 12,
   shadow: true,
+  // Container Style
+  container: DEFAULT_WIDGET_CONTAINER,
 };
 
 export const DEFAULT_BUTTON_GROUP_SETTINGS: ButtonGroupWidgetSettings = {
@@ -363,6 +394,8 @@ export const DEFAULT_BUTTON_GROUP_SETTINGS: ButtonGroupWidgetSettings = {
   layout: "horizontal",
   alignment: "center",
   gap: 16,
+  // Container Style
+  container: DEFAULT_WIDGET_CONTAINER,
 };
 
 export const DEFAULT_VIDEO_SETTINGS: VideoWidgetSettings = {
@@ -375,6 +408,8 @@ export const DEFAULT_VIDEO_SETTINGS: VideoWidgetSettings = {
   aspectRatio: "16:9",
   borderRadius: 8,
   shadow: true,
+  // Container Style
+  container: DEFAULT_WIDGET_CONTAINER,
 };
 
 export const DEFAULT_TESTIMONIAL_SETTINGS: TestimonialWidgetSettings = {
@@ -391,6 +426,8 @@ export const DEFAULT_TESTIMONIAL_SETTINGS: TestimonialWidgetSettings = {
     quoteColor: "#f8fafc",
     showQuoteIcon: true,
   },
+  // Container Style
+  container: DEFAULT_WIDGET_CONTAINER,
 };
 
 // ============================================
@@ -580,6 +617,8 @@ export const DEFAULT_TESTIMONIALS_SETTINGS: TestimonialsWidgetSettings = {
       layout: "vertical",
     },
   },
+  // Container Style
+  container: DEFAULT_WIDGET_CONTAINER,
 };
 
 export const DEFAULT_HEADING_SETTINGS: HeadingWidgetSettings = {
@@ -725,6 +764,8 @@ export const DEFAULT_HEADING_SETTINGS: HeadingWidgetSettings = {
     customId: undefined,
     customAttributes: undefined,
   },
+  // Container Style
+  container: DEFAULT_WIDGET_CONTAINER,
 };
 
 export const DEFAULT_TEXT_BLOCK_SETTINGS: TextBlockWidgetSettings = {
@@ -843,6 +884,8 @@ export const DEFAULT_TEXT_BLOCK_SETTINGS: TextBlockWidgetSettings = {
 export const DEFAULT_SPACER_SETTINGS: SpacerWidgetSettings = {
   height: 48,
   mobileHeight: 24,
+  // Container Style
+  container: DEFAULT_WIDGET_CONTAINER,
 };
 
 export const DEFAULT_DIVIDER_SETTINGS: DividerWidgetSettings = {
@@ -860,6 +903,8 @@ export const DEFAULT_DIVIDER_SETTINGS: DividerWidgetSettings = {
   textSize: "sm",
   textColor: "#64748b",
   textBackground: "#0f172a",
+  // Container Style
+  container: DEFAULT_WIDGET_CONTAINER,
 };
 
 export const DEFAULT_SERVICE_CARD_SETTINGS: ServiceCardWidgetSettings = {
@@ -955,6 +1000,8 @@ export const DEFAULT_SERVICE_CARD_SETTINGS: ServiceCardWidgetSettings = {
     tablet: { columns: 2 },
     mobile: { columns: 1 },
   },
+  // Container Style
+  container: DEFAULT_WIDGET_CONTAINER,
 };
 
 export const DEFAULT_SERVICE_LIST_SETTINGS: ServiceListWidgetSettings = {
@@ -1071,6 +1118,8 @@ export const DEFAULT_SERVICE_LIST_SETTINGS: ServiceListWidgetSettings = {
     tablet: { columns: 2 },
     mobile: { columns: 1 },
   },
+  // Container Style
+  container: DEFAULT_WIDGET_CONTAINER,
 };
 
 export const DEFAULT_PROCESS_STEPS_SETTINGS: ProcessStepsWidgetSettings = {
@@ -1182,6 +1231,9 @@ export const DEFAULT_PROCESS_STEPS_SETTINGS: ProcessStepsWidgetSettings = {
     dotSize: 8,
     dotColor: "#f97316",
   },
+
+  // Container Style
+  container: { ...DEFAULT_WIDGET_CONTAINER, borderRadius: 16 },
 
   // Card Style (no cards, transparent background)
   card: {
@@ -1409,6 +1461,8 @@ export const DEFAULT_PRICING_TABLE_SETTINGS: PricingTableWidgetSettings = {
     rowBorderColor: undefined,
     addonToggleActive: undefined,
   },
+  // Container Style
+  container: DEFAULT_WIDGET_CONTAINER,
 };
 
 // Default Layer Animation
@@ -1632,6 +1686,8 @@ export const DEFAULT_IMAGE_SLIDER_SETTINGS: ImageSliderWidgetSettings = {
       },
     },
   },
+  // Container Style
+  container: DEFAULT_WIDGET_CONTAINER,
 };
 
 // ============================================
@@ -1666,6 +1722,8 @@ export const DEFAULT_SERVICE_HERO_SETTINGS: import("./types").ServiceHeroWidgetS
   // Spacing (Advanced)
   marginTop: 0,
   marginBottom: 0,
+  // Container Style
+  container: DEFAULT_WIDGET_CONTAINER,
 };
 
 // ============================================
@@ -1687,6 +1745,20 @@ export const DEFAULT_FAQ_ACCORDION_SETTINGS = {
   style: "cards" as const,
   accentColor: "#3b82f6",
   showCategoryFilter: false,
+  headerStyle: {
+    headingSize: "lg" as const,
+    headingColor: undefined,
+    descriptionColor: undefined,
+  },
+  itemStyle: {
+    questionColor: undefined,
+    answerColor: undefined,
+    gap: 16,
+    borderRadius: 12,
+    padding: 20,
+  },
+  // Container Style
+  container: DEFAULT_WIDGET_CONTAINER,
 };
 
 // ============================================
@@ -1706,6 +1778,8 @@ export const DEFAULT_SERVICE_FEATURES_SETTINGS: ServiceFeaturesWidgetSettings = 
   iconStyle: "circle-check",
   iconColor: "#22C55E",
   showDescriptions: false,
+  // Container Style
+  container: DEFAULT_WIDGET_CONTAINER,
 };
 
 // ============================================
@@ -1728,6 +1802,8 @@ export const DEFAULT_SERVICE_DESCRIPTION_SETTINGS: ServiceDescriptionWidgetSetti
     showStartingPrice: true,
     showPopularBadge: true,
   },
+  // Container Style
+  container: DEFAULT_WIDGET_CONTAINER,
 };
 
 // ============================================
@@ -1742,6 +1818,8 @@ export const DEFAULT_SERVICE_BREADCRUMB_SETTINGS: ServiceBreadcrumbWidgetSetting
   showCategory: true,
   fontSize: "sm",
   alignment: "left",
+  // Container Style
+  container: DEFAULT_WIDGET_CONTAINER,
 };
 
 // ============================================
@@ -1762,6 +1840,8 @@ export const DEFAULT_RELATED_SERVICES_SETTINGS: RelatedServicesWidgetSettings = 
   showDescription: true,
   showCategoryBadge: false,
   ctaText: "Learn More",
+  // Container Style
+  container: DEFAULT_WIDGET_CONTAINER,
 };
 
 // ============================================
@@ -1889,6 +1969,8 @@ export const DEFAULT_BLOG_POST_GRID_SETTINGS: BlogPostGridWidgetSettings = {
       staggerDelay: 100,
     },
   },
+  // Container Style
+  container: DEFAULT_WIDGET_CONTAINER,
 };
 
 export const DEFAULT_BLOG_POST_CAROUSEL_SETTINGS: BlogPostCarouselWidgetSettings = {
@@ -1917,6 +1999,8 @@ export const DEFAULT_BLOG_POST_CAROUSEL_SETTINGS: BlogPostCarouselWidgetSettings
     },
   },
   card: { ...DEFAULT_BLOG_CARD },
+  // Container Style
+  container: DEFAULT_WIDGET_CONTAINER,
 };
 
 export const DEFAULT_BLOG_FEATURED_POST_SETTINGS: BlogFeaturedPostWidgetSettings = {
@@ -1963,6 +2047,8 @@ export const DEFAULT_BLOG_FEATURED_POST_SETTINGS: BlogFeaturedPostWidgetSettings
     verticalPosition: "bottom",
   },
   height: "lg",
+  // Container Style
+  container: DEFAULT_WIDGET_CONTAINER,
 };
 
 export const DEFAULT_BLOG_POST_LIST_SETTINGS: BlogPostListWidgetSettings = {
@@ -2011,6 +2097,8 @@ export const DEFAULT_BLOG_POST_LIST_SETTINGS: BlogPostListWidgetSettings = {
     type: "none",
     loadMoreText: "Load More",
   },
+  // Container Style
+  container: DEFAULT_WIDGET_CONTAINER,
 };
 
 export const DEFAULT_BLOG_RECENT_POSTS_SETTINGS: BlogRecentPostsWidgetSettings = {
@@ -2044,6 +2132,8 @@ export const DEFAULT_BLOG_RECENT_POSTS_SETTINGS: BlogRecentPostsWidgetSettings =
     text: "View All Posts →",
     url: "/blog",
   },
+  // Container Style
+  container: DEFAULT_WIDGET_CONTAINER,
 };
 
 // ============================================

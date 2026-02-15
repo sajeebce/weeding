@@ -3,6 +3,7 @@
 import { cn } from "@/lib/utils";
 import { StyledButton } from "@/components/ui/styled-button";
 import type { ButtonGroupWidgetSettings } from "@/lib/page-builder/types";
+import { WidgetContainer } from "@/components/page-builder/shared/widget-container";
 import { DEFAULT_BUTTON_GROUP_SETTINGS } from "@/lib/page-builder/defaults";
 
 interface ButtonGroupWidgetProps {
@@ -26,6 +27,7 @@ export function ButtonGroupWidget({
   }[settings.alignment];
 
   return (
+    <WidgetContainer container={settings.container}>
     <div
       className={cn(
         "flex flex-wrap",
@@ -50,5 +52,6 @@ export function ButtonGroupWidget({
         </StyledButton>
       ))}
     </div>
+    </WidgetContainer>
   );
 }

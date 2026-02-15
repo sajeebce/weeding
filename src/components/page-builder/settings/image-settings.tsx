@@ -1,7 +1,8 @@
 "use client";
 
 import type { ImageWidgetSettings } from "@/lib/page-builder/types";
-import { DEFAULT_IMAGE_SETTINGS } from "@/lib/page-builder/defaults";
+import { DEFAULT_IMAGE_SETTINGS, DEFAULT_WIDGET_CONTAINER } from "@/lib/page-builder/defaults";
+import { ContainerStyleSection } from "@/components/page-builder/shared/container-style-section";
 import {
   TextInput,
   SelectInput,
@@ -32,6 +33,7 @@ export function ImageWidgetSettingsPanel({
     overlay: { ...DEFAULT_IMAGE_SETTINGS.overlay, ...(settings.overlay || {}) },
     parallax: { ...DEFAULT_IMAGE_SETTINGS.parallax, ...(settings.parallax || {}) },
     filters: { ...DEFAULT_IMAGE_SETTINGS.filters, ...(settings.filters || {}) },
+    container: { ...DEFAULT_WIDGET_CONTAINER, ...(settings.container || {}) },
   } as ImageWidgetSettings;
 
   const updateField = <K extends keyof ImageWidgetSettings>(
@@ -354,6 +356,12 @@ export function ImageWidgetSettingsPanel({
           )}
         </div>
       </AccordionSection>
+
+      {/* Container Style */}
+      <ContainerStyleSection
+        container={s.container || DEFAULT_WIDGET_CONTAINER}
+        onChange={(container) => onChange({ ...s, container })}
+      />
     </div>
   );
 

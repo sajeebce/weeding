@@ -7,7 +7,8 @@ import type {
   LeadFormField,
   FormSubmitTo,
 } from "@/lib/page-builder/types";
-import { DEFAULT_LEAD_FORM_SETTINGS } from "@/lib/page-builder/defaults";
+import { DEFAULT_LEAD_FORM_SETTINGS, DEFAULT_WIDGET_CONTAINER } from "@/lib/page-builder/defaults";
+import { ContainerStyleSection } from "@/components/page-builder/shared/container-style-section";
 import {
   SelectInput,
   NumberInput,
@@ -68,6 +69,7 @@ export function LeadFormWidgetSettingsPanel({
       ...DEFAULT_LEAD_FORM_SETTINGS.submitButton,
       ...partialSettings?.submitButton,
     },
+    container: { ...DEFAULT_WIDGET_CONTAINER, ...partialSettings?.container },
   };
 
   // Fetch templates on mount
@@ -299,7 +301,7 @@ export function LeadFormWidgetSettingsPanel({
   // Style Tab
   const renderStyleTab = () => (
     <div className="space-y-4">
-      <AccordionSection title="Container Style" defaultOpen>
+      <AccordionSection title="Form Style" defaultOpen>
         <div className="space-y-3">
           <ColorInput
             label="Background Color"
@@ -363,6 +365,12 @@ export function LeadFormWidgetSettingsPanel({
           showPresets={true}
         />
       </AccordionSection>
+
+      {/* Container Style */}
+      <ContainerStyleSection
+        container={settings.container || DEFAULT_WIDGET_CONTAINER}
+        onChange={(container) => onChange({ ...settings, container })}
+      />
     </div>
   );
 

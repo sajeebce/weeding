@@ -8,6 +8,7 @@ import { ArrowRight, ArrowUpRight, Star, CheckCircle } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { HeroContentWidgetSettings } from "@/lib/page-builder/types";
+import { WidgetContainer } from "@/components/page-builder/shared/widget-container";
 
 // Button style utilities
 import {
@@ -514,6 +515,7 @@ export function HeroContentWidget({ settings, isPreview = false }: HeroContentWi
   };
 
   return (
+    <WidgetContainer container={settings.container}>
     <div className={cn("flex flex-col gap-6", getAlignmentClass())}>
       {/* Badge */}
       {settings.badge.show && (
@@ -649,5 +651,6 @@ export function HeroContentWidget({ settings, isPreview = false }: HeroContentWi
         </div>
       )}
     </div>
+    </WidgetContainer>
   );
 }

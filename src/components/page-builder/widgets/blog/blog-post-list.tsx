@@ -11,6 +11,7 @@ import { BlogSectionHeader } from "./shared/blog-section-header";
 import { BlogSkeleton } from "./shared/blog-skeleton";
 import { BlogPagination } from "./shared/blog-pagination";
 import { FileText } from "lucide-react";
+import { WidgetContainer } from "@/components/page-builder/shared/widget-container";
 
 // ── Deep merge settings with defaults ────────────────────────────────
 
@@ -148,6 +149,7 @@ export function BlogPostListWidget({
   }
 
   return (
+    <WidgetContainer container={s.container}>
     <div>
       {/* Section Header */}
       <BlogSectionHeader settings={s.header} />
@@ -363,5 +365,6 @@ export function BlogPostListWidget({
         current={posts.length}
       />
     </div>
+    </WidgetContainer>
   );
 }

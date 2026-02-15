@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { cn } from "@/lib/utils";
 import type { StatsSectionWidgetSettings } from "@/lib/page-builder/types";
+import { WidgetContainer } from "@/components/page-builder/shared/widget-container";
 
 interface StatsSectionWidgetProps {
   settings: StatsSectionWidgetSettings;
@@ -167,13 +168,16 @@ export function StatsSectionWidget({ settings, isPreview = false }: StatsSection
 
   if (stats.length === 0) {
     return (
+      <WidgetContainer container={settings.container}>
       <div className="flex items-center justify-center h-24 bg-slate-800/50 rounded-lg border border-dashed border-slate-600">
         <span className="text-sm text-slate-500">No stats configured</span>
       </div>
+      </WidgetContainer>
     );
   }
 
   return (
+    <WidgetContainer container={settings.container}>
     <div
       ref={containerRef}
       className={cn(
@@ -209,5 +213,6 @@ export function StatsSectionWidget({ settings, isPreview = false }: StatsSection
         </div>
       ))}
     </div>
+    </WidgetContainer>
   );
 }

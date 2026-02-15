@@ -10,7 +10,8 @@ import type {
   ServiceCardSortBy,
   BadgeStyle,
 } from "@/lib/page-builder/types";
-import { DEFAULT_SERVICE_CARD_SETTINGS } from "@/lib/page-builder/defaults";
+import { DEFAULT_SERVICE_CARD_SETTINGS, DEFAULT_WIDGET_CONTAINER } from "@/lib/page-builder/defaults";
+import { ContainerStyleSection } from "@/components/page-builder/shared/container-style-section";
 import {
   SelectInput,
   NumberInput,
@@ -62,6 +63,7 @@ export function ServiceCardWidgetSettingsPanel({
     hover: { ...DEFAULT_SERVICE_CARD_SETTINGS.hover, ...settings?.hover },
     colors: { ...DEFAULT_SERVICE_CARD_SETTINGS.colors, ...settings?.colors },
     responsive: { ...DEFAULT_SERVICE_CARD_SETTINGS.responsive, ...settings?.responsive },
+    container: { ...DEFAULT_WIDGET_CONTAINER, ...settings?.container },
   };
 
   // Fetch categories
@@ -655,6 +657,12 @@ export function ServiceCardWidgetSettingsPanel({
           />
         )}
       </AccordionSection>
+
+      {/* Container Style */}
+      <ContainerStyleSection
+        container={s.container || DEFAULT_WIDGET_CONTAINER}
+        onChange={(container) => onChange({ ...s, container })}
+      />
 
       {/* Hover Effects Accordion */}
       <AccordionSection title="Hover Effects">
