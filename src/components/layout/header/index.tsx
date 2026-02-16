@@ -116,14 +116,17 @@ export function Header() {
   const textColor = headerConfig?.styling?.textColor || (isDarkBg ? "#ffffff" : "#0f172a");
   const hoverColor = headerConfig?.styling?.hoverColor || (isDarkBg ? "#f97316" : "#f97316");
 
+  // Check if user has set a custom background color
+  const hasCustomBgColor = !!headerConfig?.styling?.bgColor;
+
   // Get styling from header config - always set background color
   const headerStyle: React.CSSProperties = {
-    ...(!headerConfig?.transparent && { backgroundColor: bgColor }),
+    ...((!headerConfig?.transparent || hasCustomBgColor) && { backgroundColor: bgColor }),
     color: textColor,
   };
 
-  // Transparent header styles - always use inline style for background
-  const transparentStyles = headerConfig?.transparent && !isScrolled
+  // Transparent header styles - only go transparent if no custom bg color is set
+  const transparentStyles = headerConfig?.transparent && !isScrolled && !hasCustomBgColor
     ? "bg-transparent text-white"
     : "border-b"; // Let inline style handle background
 
