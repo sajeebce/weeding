@@ -301,6 +301,77 @@ export function LeadFormWidgetSettingsPanel({
   // Style Tab
   const renderStyleTab = () => (
     <div className="space-y-4">
+      {/* Form Layout */}
+      <AccordionSection title="Form Layout" defaultOpen>
+        <div className="space-y-3">
+          <NumberInput
+            label="Max Width"
+            value={settings.formMaxWidth || 0}
+            onChange={(v) => updateField("formMaxWidth", v)}
+            min={0}
+            max={1200}
+            step={20}
+            unit="px"
+            description="0 = full width"
+          />
+          <SelectInput
+            label="Alignment"
+            value={settings.formAlignment || "center"}
+            onChange={(v) => updateField("formAlignment", v as "left" | "center" | "right")}
+            options={[
+              { value: "left", label: "Left" },
+              { value: "center", label: "Center" },
+              { value: "right", label: "Right" },
+            ]}
+          />
+        </div>
+      </AccordionSection>
+
+      {/* Button Layout */}
+      <AccordionSection title="Button Layout">
+        <div className="space-y-3">
+          <SelectInput
+            label="Direction"
+            value={settings.buttonLayout || "vertical"}
+            onChange={(v) => updateField("buttonLayout", v as "horizontal" | "vertical" | "stacked")}
+            options={[
+              { value: "horizontal", label: "Horizontal" },
+              { value: "vertical", label: "Vertical" },
+              { value: "stacked", label: "Stacked (Full Width)" },
+            ]}
+          />
+          <SelectInput
+            label="Alignment"
+            value={settings.buttonAlignment || "center"}
+            onChange={(v) => updateField("buttonAlignment", v as "left" | "center" | "right")}
+            options={[
+              { value: "left", label: "Left" },
+              { value: "center", label: "Center" },
+              { value: "right", label: "Right" },
+            ]}
+          />
+          <NumberInput
+            label="Gap"
+            value={settings.buttonGap ?? 12}
+            onChange={(v) => updateField("buttonGap", v)}
+            min={0}
+            max={64}
+            step={4}
+            unit="px"
+          />
+          <NumberInput
+            label="Button Width"
+            value={settings.buttonWidth || 0}
+            onChange={(v) => updateField("buttonWidth", v)}
+            min={0}
+            max={600}
+            step={10}
+            unit="px"
+            description="0 = auto"
+          />
+        </div>
+      </AccordionSection>
+
       <AccordionSection title="Form Style" defaultOpen>
         <div className="space-y-3">
           <ColorInput

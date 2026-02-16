@@ -819,6 +819,14 @@ export interface LeadFormWidgetSettings {
   submitTo: FormSubmitTo;
   webhookUrl?: string;
   emailTo?: string;
+  // Form Layout
+  formMaxWidth?: number; // Max width in px (0 = full width)
+  formAlignment?: "left" | "center" | "right";
+  // Button Layout
+  buttonLayout?: "horizontal" | "vertical" | "stacked";
+  buttonAlignment?: "left" | "center" | "right";
+  buttonGap?: number;
+  buttonWidth?: number; // Width in px (0 = auto)
   // Styling
   backgroundColor?: string;
   titleColor?: string;

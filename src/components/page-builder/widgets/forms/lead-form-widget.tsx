@@ -347,6 +347,12 @@ export function LeadFormWidget({
     padding,
     borderRadius,
     shadow,
+    formMaxWidth,
+    formAlignment,
+    buttonLayout,
+    buttonAlignment,
+    buttonGap,
+    buttonWidth,
   } = settings;
 
   // Container gradient background → apply directly to form div
@@ -744,12 +750,18 @@ export function LeadFormWidget({
     return (
       <WidgetContainer container={widgetContainerSettings}>
       <div
-        className={cn("w-full", shadow && "shadow-lg")}
+        className={cn(
+          "w-full",
+          shadow && "shadow-lg",
+          formAlignment === "center" && "mx-auto",
+          formAlignment === "right" && "ml-auto",
+        )}
         style={{
           background: formBackground,
           backgroundColor: formBgColor,
           padding: `${padding}px`,
           borderRadius: `${borderRadius}px`,
+          ...(formMaxWidth && formMaxWidth > 0 ? { maxWidth: `${formMaxWidth}px` } : {}),
         }}
       >
         <div className="text-center py-8">
@@ -784,12 +796,18 @@ export function LeadFormWidget({
   return (
     <WidgetContainer container={widgetContainerSettings}>
     <div
-      className={cn("w-full", shadow && "shadow-lg")}
+      className={cn(
+        "w-full",
+        shadow && "shadow-lg",
+        formAlignment === "center" && "mx-auto",
+        formAlignment === "right" && "ml-auto",
+      )}
       style={{
         background: formBackground,
         backgroundColor: formBgColor,
         padding: `${padding}px`,
         borderRadius: `${borderRadius}px`,
+        ...(formMaxWidth && formMaxWidth > 0 ? { maxWidth: `${formMaxWidth}px` } : {}),
       }}
     >
       {/* Title */}
@@ -837,21 +855,34 @@ export function LeadFormWidget({
           return renderField(item);
         })}
 
-        {/* Submit Button */}
-        <StyledButton
-          as="button"
-          type="submit"
-          style={submitButton.style}
-          disabled={isPreview || isSubmitting}
-          loading={isSubmitting}
-          loadingText="Submitting..."
-          fullWidth={submitButton.fullWidth}
-          size="md"
-          isPreview={isPreview}
+        {/* Submit Button with layout controls */}
+        <div
+          className={cn(
+            "flex",
+            buttonLayout === "horizontal" ? "flex-row flex-wrap" : "flex-col",
+            buttonAlignment === "center" && "items-center justify-center",
+            buttonAlignment === "right" && "items-end justify-end",
+            buttonAlignment === "left" && "items-start justify-start",
+          )}
+          style={{ gap: `${buttonGap ?? 12}px` }}
         >
-          {submitButton.text}
-          {ButtonIcon && <ButtonIcon className="ml-2 h-4 w-4" />}
-        </StyledButton>
+          <div style={buttonWidth && buttonWidth > 0 ? { width: `${buttonWidth}px` } : undefined}>
+            <StyledButton
+              as="button"
+              type="submit"
+              style={submitButton.style}
+              disabled={isPreview || isSubmitting}
+              loading={isSubmitting}
+              loadingText="Submitting..."
+              fullWidth={buttonLayout === "stacked" || submitButton.fullWidth || (buttonWidth !== undefined && buttonWidth > 0)}
+              size="md"
+              isPreview={isPreview}
+            >
+              {submitButton.text}
+              {ButtonIcon && <ButtonIcon className="ml-2 h-4 w-4" />}
+            </StyledButton>
+          </div>
+        </div>
 
         {/* Footer Text (e.g., privacy policy) */}
         {settings.footerText && (
