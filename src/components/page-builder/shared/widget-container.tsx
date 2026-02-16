@@ -16,6 +16,20 @@ function getShadowClass(shadow?: string) {
   }
 }
 
+function hexToRgba(hex: string, opacity: number): string {
+  const c = hex.replace("#", "");
+  const r = parseInt(c.substring(0, 2), 16);
+  const g = parseInt(c.substring(2, 4), 16);
+  const b = parseInt(c.substring(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+}
+
+function getGlowBoxShadow(glow?: WidgetContainerStyle["glow"]): string | undefined {
+  if (!glow?.enabled) return undefined;
+  const color = hexToRgba(glow.color || "#8b5cf6", glow.opacity ?? 0.4);
+  return `0 0 ${glow.blur ?? 20}px ${glow.spread ?? 5}px ${color}`;
+}
+
 export function WidgetContainer({ container, children, className }: WidgetContainerProps) {
   if (!container) return <>{children}</>;
 
@@ -24,6 +38,7 @@ export function WidgetContainer({ container, children, className }: WidgetContai
 
   const borderRadius = container.borderRadius || 0;
   const borderWidth = container.borderWidth || 2;
+  const glowShadow = getGlowBoxShadow(container.glow);
 
   // Container background
   const getBackground = (): string | undefined => {
@@ -53,6 +68,7 @@ export function WidgetContainer({ container, children, className }: WidgetContai
         maxWidth: !hasGradientBorder && container.maxWidth
           ? `${container.maxWidth}px`
           : undefined,
+        ...(!hasGradientBorder && glowShadow ? { boxShadow: glowShadow } : {}),
       }}
     >
       {children}
@@ -69,6 +85,7 @@ export function WidgetContainer({ container, children, className }: WidgetContai
           background: `linear-gradient(${angle}deg, ${colors.join(", ")})`,
           borderRadius: `${borderRadius}px`,
           maxWidth: container.maxWidth ? `${container.maxWidth}px` : undefined,
+          ...(glowShadow ? { boxShadow: glowShadow } : {}),
         }}
       >
         {innerContent}

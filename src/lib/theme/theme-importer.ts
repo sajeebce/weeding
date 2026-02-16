@@ -131,6 +131,7 @@ export async function importThemeData(
             themeId: options.themeId,
             themeName: options.themeName || options.themeId,
             colorPalette: data.colorPalette as unknown as Prisma.InputJsonValue,
+            originalColorPalette: data.colorPalette as unknown as Prisma.InputJsonValue,
           },
         });
       }

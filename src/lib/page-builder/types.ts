@@ -262,6 +262,13 @@ export interface WidgetContainerStyle {
   borderWidth?: number;
   shadow?: "none" | "sm" | "md" | "lg";
   maxWidth?: number;
+  glow?: {
+    enabled: boolean;
+    color: string;
+    blur: number;
+    spread: number;
+    opacity: number;
+  };
 }
 
 // ============================================
@@ -1458,6 +1465,13 @@ export interface TextBlockWidgetSettings {
     };
     shadow?: "none" | "sm" | "md" | "lg";
     maxWidth?: number; // px (for readability)
+    glow?: {
+      enabled: boolean;
+      color: string;
+      blur: number;
+      spread: number;
+      opacity: number;
+    };
   };
 
   // === PARAGRAPH STYLING ===

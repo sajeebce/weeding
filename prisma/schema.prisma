@@ -2078,11 +2078,13 @@ model TrackingSettings {
 
 // ============ THEME SYSTEM ============
 model ActiveTheme {
-  id           String   @id @default(cuid())
-  themeId      String   @unique // "legal", "agency", "cleaning", etc.
-  themeName    String
-  activatedAt  DateTime @default(now())
-  colorPalette Json?    // Full color palette JSON (light + dark mode)
+  id                   String   @id @default(cuid())
+  themeId              String   @unique // "legal", "agency", "cleaning", etc.
+  themeName            String
+  activatedAt          DateTime @default(now())
+  colorPalette         Json?    // Current (possibly customized) color palette
+  originalColorPalette Json?    // Original palette from theme file (for reset)
+  fontConfig           Json?    // { headingFont: string, bodyFont: string }
 
   @@index([themeId])
 }

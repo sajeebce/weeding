@@ -211,6 +211,74 @@ export function ContainerStyleSection({ container, onChange }: ContainerStyleSec
           max={1400}
           step={50}
         />
+        {/* Glow Effect */}
+        <ToggleSwitch
+          label="Glow Effect"
+          checked={container.glow?.enabled || false}
+          onChange={(v: boolean) =>
+            update({
+              glow: {
+                enabled: v,
+                color: container.glow?.color || "#8b5cf6",
+                blur: container.glow?.blur ?? 20,
+                spread: container.glow?.spread ?? 5,
+                opacity: container.glow?.opacity ?? 0.4,
+              },
+            })
+          }
+        />
+        {container.glow?.enabled && (
+          <>
+            <ColorInput
+              label="Glow Color"
+              value={container.glow?.color || "#8b5cf6"}
+              onChange={(v) =>
+                update({
+                  glow: { ...container.glow!, color: v },
+                })
+              }
+            />
+            <NumberInput
+              label="Blur"
+              value={container.glow?.blur ?? 20}
+              onChange={(v) =>
+                update({
+                  glow: { ...container.glow!, blur: v },
+                })
+              }
+              min={0}
+              max={80}
+              step={2}
+              unit="px"
+            />
+            <NumberInput
+              label="Spread"
+              value={container.glow?.spread ?? 5}
+              onChange={(v) =>
+                update({
+                  glow: { ...container.glow!, spread: v },
+                })
+              }
+              min={0}
+              max={40}
+              step={1}
+              unit="px"
+            />
+            <NumberInput
+              label="Opacity"
+              value={Math.round((container.glow?.opacity ?? 0.4) * 100)}
+              onChange={(v) =>
+                update({
+                  glow: { ...container.glow!, opacity: v / 100 },
+                })
+              }
+              min={5}
+              max={100}
+              step={5}
+              unit="%"
+            />
+          </>
+        )}
       </div>
     </AccordionSection>
   );

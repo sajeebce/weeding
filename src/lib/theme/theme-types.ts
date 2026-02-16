@@ -48,6 +48,18 @@ export interface ThemeColorPalette {
   dark: ThemeColorValues;
 }
 
+// ---- Font Configuration ----
+
+export interface ThemeFontConfig {
+  headingFont: string; // Google Fonts family name
+  bodyFont: string; // Google Fonts family name
+}
+
+export const DEFAULT_FONT_CONFIG: ThemeFontConfig = {
+  headingFont: "Inter",
+  bodyFont: "Inter",
+};
+
 // ---- Widget Presets (per-widget demo content) ----
 
 export type ThemeWidgetPresets = Record<string, Record<string, unknown>>;

@@ -12,6 +12,20 @@ interface TextBlockWidgetProps {
   isPreview?: boolean;
 }
 
+function hexToRgba(hex: string, opacity: number): string {
+  const c = hex.replace("#", "");
+  const r = parseInt(c.substring(0, 2), 16);
+  const g = parseInt(c.substring(2, 4), 16);
+  const b = parseInt(c.substring(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+}
+
+function getGlowBoxShadow(glow?: { enabled: boolean; color: string; blur: number; spread: number; opacity: number }): string | undefined {
+  if (!glow?.enabled) return undefined;
+  const color = hexToRgba(glow.color || "#8b5cf6", glow.opacity ?? 0.4);
+  return `0 0 ${glow.blur ?? 20}px ${glow.spread ?? 5}px ${color}`;
+}
+
 // Merge settings with defaults to ensure all properties exist
 function mergeWithDefaults(
   settings: Partial<TextBlockWidgetSettings>
@@ -317,6 +331,8 @@ export function TextBlockWidget({
     };
   }, [settings.animation, isVisible, isEditing]);
 
+  const glowShadow = getGlowBoxShadow(settings.container.glow);
+
   // Inner content element
   const innerContent = (
     <div
@@ -328,6 +344,7 @@ export function TextBlockWidget({
         ...animationStyles,
         // When inside gradient border wrapper, remove maxWidth from inner (wrapper handles it)
         ...(hasGradientBorder ? { maxWidth: undefined } : {}),
+        ...(!hasGradientBorder && glowShadow ? { boxShadow: glowShadow } : {}),
       }}
       id={settings.advanced?.customId}
     >
@@ -344,7 +361,10 @@ export function TextBlockWidget({
     return (
       <div
         ref={containerRef}
-        style={gradientBorderStyles}
+        style={{
+          ...gradientBorderStyles,
+          ...(glowShadow ? { boxShadow: glowShadow } : {}),
+        }}
         className={cn(
           getShadowClass(settings.container.shadow),
           settings.animation?.entrance?.enabled && !isEditing && getEntranceClass(settings.animation),

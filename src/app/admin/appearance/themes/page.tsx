@@ -22,6 +22,7 @@ import {
   Package,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 interface ThemeListItem {
   id: string;
@@ -239,14 +240,25 @@ export default function ThemeGalleryPage() {
                 {/* Action Button */}
                 <div className="pt-1">
                   {theme.isActive ? (
-                    <Button
-                      variant="outline"
-                      className="w-full text-green-600 border-green-200 cursor-default"
-                      disabled
-                    >
-                      <Check className="h-4 w-4 mr-2" />
-                      Active
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        className="flex-1"
+                        asChild
+                      >
+                        <Link href="/admin/appearance/themes/customize">
+                          <Palette className="h-4 w-4 mr-2" />
+                          Customize
+                        </Link>
+                      </Button>
+                      <Badge
+                        variant="secondary"
+                        className="flex items-center gap-1 text-green-600 border-green-200 px-3"
+                      >
+                        <Check className="h-3 w-3" />
+                        Active
+                      </Badge>
+                    </div>
                   ) : (
                     <Button
                       className="w-full"

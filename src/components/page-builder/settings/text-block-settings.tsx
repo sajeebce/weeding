@@ -1058,6 +1058,64 @@ export function TextBlockWidgetSettingsPanel({
               unit="px"
               description="0 = full width"
             />
+            {/* Glow Effect */}
+            <ToggleSwitch
+              label="Glow Effect"
+              checked={settings.container.glow?.enabled || false}
+              onChange={(v: boolean) =>
+                updateContainer("glow", {
+                  enabled: v,
+                  color: settings.container.glow?.color || "#8b5cf6",
+                  blur: settings.container.glow?.blur ?? 20,
+                  spread: settings.container.glow?.spread ?? 5,
+                  opacity: settings.container.glow?.opacity ?? 0.4,
+                })
+              }
+            />
+            {settings.container.glow?.enabled && (
+              <>
+                <ColorInput
+                  label="Glow Color"
+                  value={settings.container.glow?.color || "#8b5cf6"}
+                  onChange={(v) =>
+                    updateContainer("glow", { ...settings.container.glow!, color: v })
+                  }
+                />
+                <NumberInput
+                  label="Blur"
+                  value={settings.container.glow?.blur ?? 20}
+                  onChange={(v) =>
+                    updateContainer("glow", { ...settings.container.glow!, blur: v })
+                  }
+                  min={0}
+                  max={80}
+                  step={2}
+                  unit="px"
+                />
+                <NumberInput
+                  label="Spread"
+                  value={settings.container.glow?.spread ?? 5}
+                  onChange={(v) =>
+                    updateContainer("glow", { ...settings.container.glow!, spread: v })
+                  }
+                  min={0}
+                  max={40}
+                  step={1}
+                  unit="px"
+                />
+                <NumberInput
+                  label="Opacity"
+                  value={Math.round((settings.container.glow?.opacity ?? 0.4) * 100)}
+                  onChange={(v) =>
+                    updateContainer("glow", { ...settings.container.glow!, opacity: v / 100 })
+                  }
+                  min={5}
+                  max={100}
+                  step={5}
+                  unit="%"
+                />
+              </>
+            )}
           </div>
         </AccordionSection>
 
