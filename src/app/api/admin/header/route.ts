@@ -18,7 +18,7 @@ const headerConfigSchema = z.object({
   ctaButtons: z.any().optional(),
   showAuthButtons: z.boolean().default(true),
   loginText: z.string().default("Sign In"),
-  loginUrl: z.string().default("/auth/signin"),
+  loginUrl: z.string().default("/login"),
   loginStyle: z.any().optional(),
   registerText: z.string().default("Get Started"),
   registerUrl: z.string().default("/services/llc-formation"),

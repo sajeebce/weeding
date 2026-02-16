@@ -77,7 +77,7 @@ export function HeaderSplit({
             showAuth={config.auth?.showButtons ?? true}
             authConfig={{
               loginText: config.auth?.loginText || "Sign In",
-              loginUrl: config.auth?.loginUrl || "/auth/signin",
+              loginUrl: config.auth?.loginUrl || "/login",
               loginStyle: config.auth?.loginStyle,
               registerText: config.auth?.registerText || "Get Started",
               registerUrl: config.auth?.registerUrl || "/services/llc-formation",
