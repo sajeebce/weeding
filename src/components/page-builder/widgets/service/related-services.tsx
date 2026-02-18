@@ -80,6 +80,15 @@ interface RelatedServicesWidgetProps {
 // WIDGET COMPONENT
 // ============================================
 
+// Coerce a value that may be a string or { text: string } object into a string
+function resolveString(val: unknown, fallback: string): string {
+  if (typeof val === "string") return val || fallback;
+  if (val && typeof val === "object" && "text" in val) {
+    return (val as { text: string }).text || fallback;
+  }
+  return fallback;
+}
+
 export function RelatedServicesWidget({
   settings: partialSettings,
   isPreview = false,
@@ -88,8 +97,8 @@ export function RelatedServicesWidget({
   const s: RelatedServicesWidgetSettings = {
     header: {
       show: partialSettings.header?.show ?? DEFAULT_SETTINGS.header.show,
-      heading: partialSettings.header?.heading ?? DEFAULT_SETTINGS.header.heading,
-      description: partialSettings.header?.description ?? DEFAULT_SETTINGS.header.description,
+      heading: resolveString(partialSettings.header?.heading, DEFAULT_SETTINGS.header.heading),
+      description: resolveString(partialSettings.header?.description, DEFAULT_SETTINGS.header.description),
       alignment: partialSettings.header?.alignment ?? DEFAULT_SETTINGS.header.alignment,
     },
     maxItems: partialSettings.maxItems ?? DEFAULT_SETTINGS.maxItems,

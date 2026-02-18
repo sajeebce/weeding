@@ -28,6 +28,13 @@ import {
   ServiceBreadcrumbWidget,
   RelatedServicesWidget,
 } from "@/components/page-builder/widgets/service";
+import {
+  BlogPostGridWidget,
+  BlogPostCarouselWidget,
+  BlogFeaturedPostWidget,
+  BlogPostListWidget,
+  BlogRecentPostsWidget,
+} from "@/components/page-builder/widgets/blog";
 
 // Helper: Generate background styles from SectionBackground
 function getBackgroundStyles(bg: SectionBackground): React.CSSProperties {
@@ -331,6 +338,21 @@ function WidgetRenderer({ widget }: WidgetRendererProps) {
 
       case "button-group":
         return <ButtonGroupWidget settings={widget.settings as any} />;
+
+      case "blog-post-grid":
+        return <BlogPostGridWidget settings={widget.settings as any} />;
+
+      case "blog-post-carousel":
+        return <BlogPostCarouselWidget settings={widget.settings as any} />;
+
+      case "blog-featured-post":
+        return <BlogFeaturedPostWidget settings={widget.settings as any} />;
+
+      case "blog-post-list":
+        return <BlogPostListWidget settings={widget.settings as any} />;
+
+      case "blog-recent-posts":
+        return <BlogRecentPostsWidget settings={widget.settings as any} />;
 
       default:
         // Unknown widget type - render nothing in production

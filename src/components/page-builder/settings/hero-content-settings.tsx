@@ -359,6 +359,11 @@ export function HeroContentWidgetSettingsPanel({
           ]}
         />
         <ColorInput
+          label="Text Color"
+          value={s.headline.color || "#000000"}
+          onChange={(v) => updateNested("headline", "color", v)}
+        />
+        <ColorInput
           label="Highlight Color"
           value={s.headline.highlightColor}
           onChange={(v) => updateNested("headline", "highlightColor", v)}

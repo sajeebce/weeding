@@ -128,14 +128,19 @@ function renderHighlightedText(
 
 // Header Section Component
 function SectionHeader({ settings }: { settings: ServiceCardWidgetSettings }) {
-  const { header } = settings;
+  const rawHeader = settings.header;
 
-  if (!header?.show) return null;
+  if (!rawHeader?.show) return null;
 
-  const badgeStyles = getBadgeStyles(header.badge.style, {
-    bgColor: header.badge.bgColor,
-    textColor: header.badge.textColor,
-    borderColor: header.badge.borderColor,
+  // Merge with defaults to handle DB data missing nested properties
+  const badge = { ...DEFAULT_SERVICE_CARD_SETTINGS.header.badge, ...rawHeader.badge };
+  const heading = { ...DEFAULT_SERVICE_CARD_SETTINGS.header.heading, ...rawHeader.heading };
+  const description = { ...DEFAULT_SERVICE_CARD_SETTINGS.header.description, ...rawHeader.description };
+
+  const badgeStyles = getBadgeStyles(badge.style, {
+    bgColor: badge.bgColor,
+    textColor: badge.textColor,
+    borderColor: badge.borderColor,
   });
 
   const headingSizeClasses = {
@@ -162,14 +167,14 @@ function SectionHeader({ settings }: { settings: ServiceCardWidgetSettings }) {
     <div
       className={cn(
         "flex flex-col gap-4",
-        alignmentClasses[header.alignment]
+        alignmentClasses[rawHeader.alignment]
       )}
-      style={{ marginBottom: `${header.marginBottom}px` }}
+      style={{ marginBottom: `${rawHeader.marginBottom}px` }}
     >
       {/* Badge */}
-      {header.badge.show && (
+      {badge.show && (
         <span className={badgeStyles.className} style={badgeStyles.style}>
-          {header.badge.text}
+          {badge.text}
         </span>
       )}
 
@@ -177,27 +182,27 @@ function SectionHeader({ settings }: { settings: ServiceCardWidgetSettings }) {
       <h2
         className={cn(
           "font-bold tracking-tight",
-          headingSizeClasses[header.heading.size]
+          headingSizeClasses[heading.size]
         )}
-        style={{ color: header.heading.color || "#ffffff" }}
+        style={{ color: heading.color || "#ffffff" }}
       >
         {renderHighlightedText(
-          header.heading.text,
-          header.heading.highlightWords,
-          header.heading.highlightColor
+          heading.text,
+          heading.highlightWords,
+          heading.highlightColor
         )}
       </h2>
 
       {/* Description */}
-      {header.description.show && (
+      {description.show && (
         <p
           className={cn(
             "max-w-3xl",
-            descriptionSizeClasses[header.description.size]
+            descriptionSizeClasses[description.size]
           )}
-          style={{ color: header.description.color || "#94a3b8" }}
+          style={{ color: description.color || "#94a3b8" }}
         >
-          {header.description.text}
+          {description.text}
         </p>
       )}
     </div>

@@ -155,7 +155,7 @@ export const DEFAULT_HERO_CONTENT_SETTINGS: HeroContentWidgetSettings = {
     highlightWords: "US LLC",
     highlightColor: "#f97316",
     size: "xl",
-    color: "#ffffff",
+    color: "#000000",
   },
   subheadline: {
     text: "Launch your American dream from anywhere in the world. We handle everything from LLC formation to EIN, Amazon seller accounts, and business banking — so you can focus on growing your business.",

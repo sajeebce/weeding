@@ -56,6 +56,15 @@ function FeatureIcon({
 // WIDGET COMPONENT
 // ============================================
 
+// Coerce a value that may be a string or { text: string } object into a string
+function resolveString(val: unknown, fallback: string): string {
+  if (typeof val === "string") return val || fallback;
+  if (val && typeof val === "object" && "text" in val) {
+    return (val as { text: string }).text || fallback;
+  }
+  return fallback;
+}
+
 export function ServiceFeaturesWidget({
   settings,
   isPreview = false,
@@ -64,8 +73,8 @@ export function ServiceFeaturesWidget({
   const s = {
     header: {
       show: settings?.header?.show ?? true,
-      heading: settings?.header?.heading ?? "What's Included",
-      description: settings?.header?.description ?? "",
+      heading: resolveString(settings?.header?.heading, "What's Included"),
+      description: resolveString(settings?.header?.description, ""),
       alignment: settings?.header?.alignment ?? "left",
     },
     variant: settings?.variant ?? "minimal-checkmark",

@@ -122,7 +122,8 @@ export function ServiceDescriptionWidget({
           className={cn(
             "prose dark:prose-invert max-w-none",
             fontSizeClass,
-            "prose-headings:font-semibold prose-a:text-primary prose-li:marker:text-primary"
+            "prose-headings:font-semibold prose-a:text-primary prose-li:marker:text-primary",
+            "prose-p:text-foreground prose-li:text-foreground prose-headings:text-foreground"
           )}
           dangerouslySetInnerHTML={{ __html: service.description }}
         />
@@ -139,7 +140,11 @@ export function ServiceDescriptionWidget({
         {headerElement}
         <div className="rounded-xl border border-l-4 border-l-primary bg-card p-8">
           <div
-            className={cn("prose dark:prose-invert max-w-none", fontSizeClass)}
+            className={cn(
+              "prose dark:prose-invert max-w-none",
+              fontSizeClass,
+              "prose-p:text-foreground prose-li:text-foreground prose-headings:text-foreground"
+            )}
             dangerouslySetInnerHTML={{ __html: service.description }}
           />
         </div>
@@ -156,7 +161,11 @@ export function ServiceDescriptionWidget({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Content (2/3) */}
         <div
-          className={cn("lg:col-span-2 prose dark:prose-invert max-w-none", fontSizeClass)}
+          className={cn(
+            "lg:col-span-2 prose dark:prose-invert max-w-none",
+            fontSizeClass,
+            "prose-p:text-foreground prose-li:text-foreground prose-headings:text-foreground"
+          )}
           dangerouslySetInnerHTML={{ __html: service.description }}
         />
         {/* Sidebar (1/3) */}

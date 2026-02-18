@@ -58,12 +58,19 @@ function buildBackgroundStyles(settings: SectionSettings): React.CSSProperties {
         break;
       case "gradient":
         if (background.gradient) {
-          const { type, angle, colors } = background.gradient;
-          const colorStops = colors.map((c) => `${c.color} ${c.position}%`).join(", ");
-          styles.backgroundImage =
-            type === "linear"
-              ? `linear-gradient(${angle}deg, ${colorStops})`
-              : `radial-gradient(circle, ${colorStops})`;
+          // Support both legacy string format and new object format
+          if (typeof background.gradient === "string") {
+            styles.backgroundImage = background.gradient;
+          } else {
+            const { type, angle, colors } = background.gradient;
+            if (colors?.length) {
+              const colorStops = colors.map((c) => `${c.color} ${c.position}%`).join(", ");
+              styles.backgroundImage =
+                type === "linear"
+                  ? `linear-gradient(${angle}deg, ${colorStops})`
+                  : `radial-gradient(circle, ${colorStops})`;
+            }
+          }
         }
         break;
       case "image":

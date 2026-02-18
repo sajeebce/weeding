@@ -7,68 +7,42 @@ datasource db {
   provider = "postgresql"
 }
 
-// ============ USER & AUTH ============
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  emailVerified DateTime?
-  name          String?
-  phone         String?
-  country       String?
-  image         String?
-  password      String?
-  role          UserRole  @default(CUSTOMER)
-  isActive      Boolean   @default(true)
-
-  accounts       Account[]
-  sessions       Session[]
-  orders         Order[]
-  documents      Document[]
-  paymentMethods PaymentMethod[]
-
-  // Support ticket relations
-  customerTickets   SupportTicket[]   @relation("CustomerTickets")
-  assignedTickets   SupportTicket[]   @relation("AssignedTickets")
-  sentMessages      SupportMessage[]  @relation("SentMessages")
-  authoredNotes     InternalNote[]    @relation("AuthoredNotes")
-  cannedResponses   CannedResponse[]  @relation("CreatedCannedResponses")
-
-  // Lead management relations
-  assignedLeads     Lead[]           @relation("AssignedLeads")
-  performedActivities LeadActivity[] @relation("PerformedActivities")
-  authoredLeadNotes LeadNote[]       @relation("AuthoredLeadNotes")
-
-  // Invoice relations
-  invoices          Invoice[]
-
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id                  String           @id @default(cuid())
+  email               String           @unique
+  emailVerified       DateTime?
+  name                String?
+  phone               String?
+  country             String?
+  image               String?
+  password            String?
+  role                UserRole         @default(CUSTOMER)
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  isActive            Boolean          @default(true)
+  accounts            Account[]
+  cannedResponses     CannedResponse[] @relation("CreatedCannedResponses")
+  documents           Document[]
+  authoredNotes       InternalNote[]   @relation("AuthoredNotes")
+  invoices            Invoice[]
+  assignedLeads       Lead[]           @relation("AssignedLeads")
+  performedActivities LeadActivity[]   @relation("PerformedActivities")
+  authoredLeadNotes   LeadNote[]       @relation("AuthoredLeadNotes")
+  orders              Order[]
+  paymentMethods      PaymentMethod[]
+  sessions            Session[]
+  sentMessages        SupportMessage[] @relation("SentMessages")
+  assignedTickets     SupportTicket[]  @relation("AssignedTickets")
+  customerTickets     SupportTicket[]  @relation("CustomerTickets")
 
   @@index([email])
   @@index([role])
 }
 
-enum UserRole {
-  CUSTOMER
-  ADMIN
-  CONTENT_MANAGER
-  SALES_AGENT
-  SUPPORT_AGENT
-}
-
-// Feature value types for comparison table
-enum FeatureValueType {
-  BOOLEAN    // Shows ✓ or ✗
-  TEXT       // Shows customValue text
-  ADDON      // Shows "+ $XX" button (clickable add-on)
-  DASH       // Shows — (not applicable)
-}
-
-// ============ ROLE PERMISSIONS ============
 model RolePermission {
   id         String   @id @default(cuid())
   role       UserRole
-  permission String   // e.g., "users.view", "blog.create"
+  permission String
   createdAt  DateTime @default(now())
 
   @@unique([role, permission])
@@ -81,15 +55,14 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@index([userId])
@@ -113,66 +86,51 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-// ============ SERVICE CATEGORIES ============
 model ServiceCategory {
   id          String    @id @default(cuid())
-  name        String    // "Formation & Legal"
-  slug        String    @unique // "formation"
+  name        String
+  slug        String    @unique
   description String?
-  icon        String?   // Icon name from lucide-react
+  icon        String?
   sortOrder   Int       @default(0)
   isActive    Boolean   @default(true)
-
-  services    Service[]
-
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  services    Service[]
 
   @@index([slug])
   @@index([isActive])
 }
 
-// ============ SERVICES & PACKAGES ============
 model Service {
-  id              String   @id @default(cuid())
-  name            String
-  slug            String   @unique
-  shortDesc       String   @db.Text // Short description for cards
-  description     String   @db.Text // Rich HTML content (Sun Editor)
-  icon            String?  // Icon name from lucide-react
-  image           String?  // Image URL (Cloudflare R2)
-  startingPrice   Decimal  @default(0) @db.Decimal(10, 2) // Lowest package price
-  processingTime  String?  // "3-5 business days"
-  isPopular       Boolean  @default(false)
-  isActive        Boolean  @default(true)
-  sortOrder       Int      @default(0)
-
-  // Category relation
-  categoryId      String?
-  category        ServiceCategory? @relation(fields: [categoryId], references: [id])
-
-  // Relations
-  packages        Package[]
-  features        ServiceFeature[]
-  faqs            ServiceFAQ[]
-  orderItems      OrderItem[]
-  formTemplate    ServiceFormTemplate?
-  locationFees    LocationFee[]
-
-  // Location-Based Pricing
-  hasLocationBasedPricing  Boolean  @default(false)
-  locationFeeLabel         String?  // "State Fee", "Province Fee", "Filing Fee"
-
-  // SEO
-  metaTitle       String?
-  metaDescription String?
-  keywords        String[]
-
-  // Page Builder Display Options (per-service section visibility)
-  displayOptions  Json     @default("{}")  // ServiceDisplayOptions type
-
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id                      String               @id @default(cuid())
+  name                    String
+  slug                    String               @unique
+  shortDesc               String
+  description             String
+  icon                    String?
+  image                   String?
+  startingPrice           Decimal              @default(0) @db.Decimal(10, 2)
+  processingTime          String?
+  isPopular               Boolean              @default(false)
+  isActive                Boolean              @default(true)
+  sortOrder               Int                  @default(0)
+  categoryId              String?
+  metaTitle               String?
+  metaDescription         String?
+  keywords                String[]
+  createdAt               DateTime             @default(now())
+  updatedAt               DateTime             @updatedAt
+  displayOptions          Json                 @default("{}")
+  hasLocationBasedPricing Boolean              @default(false)
+  locationFeeLabel        String?
+  locationFees            LocationFee[]
+  orderItems              OrderItem[]
+  packages                Package[]
+  category                ServiceCategory?     @relation(fields: [categoryId], references: [id])
+  faqs                    ServiceFAQ[]
+  features                ServiceFeature[]
+  formTemplate            ServiceFormTemplate?
 
   @@index([slug])
   @@index([isActive])
@@ -180,33 +138,26 @@ model Service {
   @@index([isPopular])
 }
 
-// Service features - Master list for comparison table
 model ServiceFeature {
-  id          String  @id @default(cuid())
-  text        String  // "Employer Identification Number (EIN)"
-  description String? @db.Text // Detailed description (optional)
-  tooltip     String? // Short tooltip shown on hover in table
-  sortOrder   Int     @default(0)
-
-  serviceId   String
-  service     Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
-
-  // Which packages include this feature
+  id              String              @id @default(cuid())
+  text            String
+  sortOrder       Int                 @default(0)
+  serviceId       String
+  createdAt       DateTime            @default(now())
+  description     String?
+  tooltip         String?
+  updatedAt       DateTime            @updatedAt
   packageMappings PackageFeatureMap[]
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  service         Service             @relation(fields: [serviceId], references: [id], onDelete: Cascade)
 
   @@index([serviceId])
 }
 
-// Service-specific FAQs
 model ServiceFAQ {
   id        String  @id @default(cuid())
   question  String
-  answer    String  @db.Text // Can be rich text
+  answer    String
   sortOrder Int     @default(0)
-
   serviceId String
   service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
 
@@ -214,137 +165,1168 @@ model ServiceFAQ {
 }
 
 model Package {
-  id          String   @id @default(cuid())
-  serviceId   String
-  name        String   // "Basic", "Standard", "Premium"
-  description String?  @db.Text // Package tagline
-  priceUSD    Decimal  @db.Decimal(10, 2)
-  priceBDT    Decimal? @db.Decimal(10, 2)
-  isPopular   Boolean  @default(false)
-  isActive    Boolean  @default(true)
-  sortOrder   Int      @default(0)
-
-  // Processing time display
-  processingTime     String?  // "3 weeks", "3 business days"
-  processingTimeNote String?  // "(instead of 3 weeks)"
-  processingIcon     String?  // "clock" or "zap" for fast
-
-  // Badge/label for package
-  badgeText   String?  // "Recommended", "Best Value", "Most Popular"
-  badgeColor  String?  // "orange", "green", "blue"
-
-  service     Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
-  features    PackageFeature[]
-  notIncluded PackageNotIncluded[]
-  featureMap  PackageFeatureMap[]  // For comparison table
-  orderItems  OrderItem[]
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                 String               @id @default(cuid())
+  serviceId          String
+  name               String
+  description        String?
+  priceUSD           Decimal              @db.Decimal(10, 2)
+  priceBDT           Decimal?             @db.Decimal(10, 2)
+  isPopular          Boolean              @default(false)
+  isActive           Boolean              @default(true)
+  sortOrder          Int                  @default(0)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  badgeColor         String?
+  badgeText          String?
+  processingIcon     String?
+  processingTime     String?
+  processingTimeNote String?
+  orderItems         OrderItem[]
+  service            Service              @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  features           PackageFeature[]
+  featureMap         PackageFeatureMap[]
+  notIncluded        PackageNotIncluded[]
 
   @@index([serviceId])
   @@index([isActive])
 }
 
-// Package included features
 model PackageFeature {
   id        String  @id @default(cuid())
-  text      String  // "EIN Application"
+  text      String
   sortOrder Int     @default(0)
-
   packageId String
   package   Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
 
   @@index([packageId])
 }
 
-// Package not-included features (legacy - keep for backward compatibility)
 model PackageNotIncluded {
   id        String  @id @default(cuid())
-  text      String  // "Virtual Address"
+  text      String
   sortOrder Int     @default(0)
-
   packageId String
   package   Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
 
   @@index([packageId])
 }
 
-// Junction table: Package <-> ServiceFeature (for comparison table)
 model PackageFeatureMap {
-  id          String  @id @default(cuid())
-
-  packageId   String
-  package     Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
-
-  featureId   String
-  feature     ServiceFeature @relation(fields: [featureId], references: [id], onDelete: Cascade)
-
-  included    Boolean @default(true)  // true = ✓, false = ✗
-  customValue String? // Optional: "10 per month" instead of just ✓
-
-  // New fields for enhanced comparison table
-  valueType     FeatureValueType @default(BOOLEAN)  // BOOLEAN, TEXT, ADDON, DASH
-  addonPriceUSD Decimal?         @db.Decimal(10, 2) // Add-on price if valueType=ADDON
-  addonPriceBDT Decimal?         @db.Decimal(10, 2) // BDT price for addon
+  id            String           @id @default(cuid())
+  packageId     String
+  featureId     String
+  included      Boolean          @default(true)
+  customValue   String?
+  valueType     FeatureValueType @default(BOOLEAN)
+  addonPriceUSD Decimal?         @db.Decimal(10, 2)
+  addonPriceBDT Decimal?         @db.Decimal(10, 2)
+  feature       ServiceFeature   @relation(fields: [featureId], references: [id], onDelete: Cascade)
+  package       Package          @relation(fields: [packageId], references: [id], onDelete: Cascade)
 
   @@unique([packageId, featureId])
   @@index([packageId])
   @@index([featureId])
 }
 
-// ============ ORDERS & PAYMENTS ============
 model Order {
-  id              String      @id @default(cuid())
-  orderNumber     String      @unique
+  id              String           @id @default(cuid())
+  orderNumber     String           @unique
   userId          String
-  status          OrderStatus @default(PENDING)
-
-  // Pricing
-  subtotalUSD     Decimal     @db.Decimal(10, 2)
-  discountUSD     Decimal     @default(0) @db.Decimal(10, 2)
-  totalUSD        Decimal     @db.Decimal(10, 2)
-  currency        String      @default("USD")
-  exchangeRate    Decimal?    @db.Decimal(10, 4)
-
-  // Payment
+  status          OrderStatus      @default(PENDING)
+  subtotalUSD     Decimal          @db.Decimal(10, 2)
+  discountUSD     Decimal          @default(0) @db.Decimal(10, 2)
+  totalUSD        Decimal          @db.Decimal(10, 2)
+  currency        String           @default("USD")
+  exchangeRate    Decimal?         @db.Decimal(10, 4)
   paymentMethod   String?
-  paymentStatus   PaymentStatus @default(PENDING)
+  paymentStatus   PaymentStatus    @default(PENDING)
   paymentId       String?
   paidAt          DateTime?
-
-  // LLC Details
   llcName         String?
   llcState        String?
   llcType         String?
-
-  // Contact
   customerName    String
   customerEmail   String
   customerPhone   String?
   customerCountry String?
-
-  // Coupon
   couponId        String?
-  coupon          Coupon?     @relation(fields: [couponId], references: [id])
-
-  // Relations
-  user            User        @relation(fields: [userId], references: [id])
-  items           OrderItem[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
   documents       Document[]
-  notes           OrderNote[]
-  invoices        Invoice[]
-  tickets         SupportTicket[]
   formSubmissions FormSubmission[]
-
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  invoices        Invoice[]
+  coupon          Coupon?          @relation(fields: [couponId], references: [id])
+  user            User             @relation(fields: [userId], references: [id])
+  items           OrderItem[]
+  notes           OrderNote[]
+  tickets         SupportTicket[]
 
   @@index([userId])
   @@index([orderNumber])
   @@index([status])
   @@index([paymentStatus])
   @@index([createdAt])
+}
+
+model OrderItem {
+  id               String   @id @default(cuid())
+  orderId          String
+  serviceId        String?
+  packageId        String?
+  name             String
+  description      String?
+  quantity         Int      @default(1)
+  priceUSD         Decimal  @db.Decimal(10, 2)
+  stateFee         Decimal? @db.Decimal(10, 2)
+  createdAt        DateTime @default(now())
+  locationCode     String?
+  locationFeeLabel String?
+  locationId       String?
+  locationName     String?
+  order            Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  package          Package? @relation(fields: [packageId], references: [id])
+  service          Service? @relation(fields: [serviceId], references: [id])
+
+  @@index([orderId])
+}
+
+model OrderNote {
+  id         String   @id @default(cuid())
+  orderId    String
+  authorId   String?
+  content    String
+  isInternal Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+}
+
+model Document {
+  id        String         @id @default(cuid())
+  orderId   String?
+  userId    String
+  type      DocumentType
+  name      String
+  fileName  String
+  fileUrl   String
+  fileSize  Int
+  mimeType  String
+  status    DocumentStatus @default(PENDING)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  order     Order?         @relation(fields: [orderId], references: [id])
+  user      User           @relation(fields: [userId], references: [id])
+
+  @@index([orderId])
+  @@index([userId])
+  @@index([status])
+}
+
+model Invoice {
+  id              String        @id @default(cuid())
+  invoiceNumber   String        @unique
+  orderId         String?
+  subtotal        Decimal       @db.Decimal(10, 2)
+  discount        Decimal       @default(0) @db.Decimal(10, 2)
+  total           Decimal       @db.Decimal(10, 2)
+  currency        String        @default("USD")
+  status          InvoiceStatus @default(DRAFT)
+  dueDate         DateTime?
+  paidAt          DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  customerCountry String?
+  customerEmail   String
+  customerName    String
+  customerPhone   String?
+  items           Json?
+  notes           String?
+  serviceName     String?
+  userId          String
+  order           Order?        @relation(fields: [orderId], references: [id])
+  user            User          @relation(fields: [userId], references: [id])
+
+  @@index([orderId])
+  @@index([userId])
+  @@index([status])
+  @@index([serviceName])
+}
+
+model SupportTicket {
+  id              String           @id @default(cuid())
+  ticketNumber    String           @unique
+  subject         String
+  status          TicketStatus     @default(OPEN)
+  priority        TicketPriority   @default(MEDIUM)
+  category        String?
+  customerId      String?
+  guestName       String?
+  guestEmail      String?
+  guestPhone      String?
+  assignedToId    String?
+  orderId         String?
+  source          TicketSource     @default(LIVE_CHAT)
+  ipAddress       String?
+  userAgent       String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  firstResponseAt DateTime?
+  resolvedAt      DateTime?
+  closedAt        DateTime?
+  aiResponses     AIResponse[]
+  internalNotes   InternalNote[]
+  messages        SupportMessage[]
+  assignedTo      User?            @relation("AssignedTickets", fields: [assignedToId], references: [id])
+  customer        User?            @relation("CustomerTickets", fields: [customerId], references: [id])
+  order           Order?           @relation(fields: [orderId], references: [id])
+
+  @@index([customerId])
+  @@index([assignedToId])
+  @@index([status])
+  @@index([priority])
+  @@index([ticketNumber])
+  @@index([createdAt])
+}
+
+model SupportMessage {
+  id          String              @id @default(cuid())
+  ticketId    String
+  content     String
+  contentHtml String?
+  senderId    String?
+  senderType  SenderType
+  senderName  String
+  type        MessageType         @default(TEXT)
+  isRead      Boolean             @default(false)
+  readAt      DateTime?
+  createdAt   DateTime            @default(now())
+  attachments MessageAttachment[]
+  sender      User?               @relation("SentMessages", fields: [senderId], references: [id])
+  ticket      SupportTicket       @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
+  @@index([senderId])
+  @@index([createdAt])
+}
+
+model MessageAttachment {
+  id        String         @id @default(cuid())
+  messageId String
+  fileName  String
+  fileUrl   String
+  fileType  String
+  fileSize  Int
+  createdAt DateTime       @default(now())
+  message   SupportMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([messageId])
+}
+
+model InternalNote {
+  id        String        @id @default(cuid())
+  ticketId  String
+  content   String
+  authorId  String
+  mentions  String[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  author    User          @relation("AuthoredNotes", fields: [authorId], references: [id])
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
+  @@index([authorId])
+}
+
+model CannedResponse {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  category    String?
+  useCount    Int      @default(0)
+  createdById String
+  isPublic    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   User     @relation("CreatedCannedResponses", fields: [createdById], references: [id])
+
+  @@index([category])
+  @@index([createdById])
+}
+
+model BlogPost {
+  id              String         @id @default(cuid())
+  title           String
+  slug            String         @unique
+  excerpt         String?
+  content         String
+  coverImage      String?
+  authorId        String?
+  status          PostStatus     @default(DRAFT)
+  publishedAt     DateTime?
+  tags            String[]
+  metaTitle       String?
+  metaDescription String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  categories      BlogCategory[] @relation("BlogCategoryToBlogPost")
+
+  @@index([slug])
+  @@index([status])
+  @@index([publishedAt])
+}
+
+model BlogCategory {
+  id          String         @id @default(cuid())
+  name        String
+  slug        String         @unique
+  description String?
+  parentId    String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @default(now()) @updatedAt
+  parent      BlogCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children    BlogCategory[] @relation("CategoryHierarchy")
+  posts       BlogPost[]     @relation("BlogCategoryToBlogPost")
+
+  @@index([slug])
+  @@index([parentId])
+}
+
+model Testimonial {
+  id           String          @id @default(cuid())
+  name         String
+  company      String?
+  country      String?
+  avatar       String?
+  content      String
+  rating       Int             @default(5)
+  isActive     Boolean         @default(true)
+  sortOrder    Int             @default(0)
+  createdAt    DateTime        @default(now())
+  tags         String[]
+  thumbnailUrl String?
+  type         TestimonialType @default(PHOTO)
+  videoUrl     String?
+
+  @@index([isActive])
+  @@index([type])
+}
+
+model FAQ {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String
+  category  String?
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([category])
+}
+
+model Setting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  type      String   @default("string")
+  updatedAt DateTime @updatedAt
+
+  @@index([key])
+}
+
+model StateFee {
+  id              String   @id @default(cuid())
+  stateCode       String   @unique
+  stateName       String
+  llcFee          Decimal  @db.Decimal(10, 2)
+  annualFee       Decimal? @db.Decimal(10, 2)
+  processingTime  String?
+  isPopular       Boolean  @default(false)
+  metaTitle       String?
+  metaDescription String?
+  content         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([stateCode])
+  @@index([isPopular])
+}
+
+model Location {
+  id        String        @id @default(cuid())
+  code      String        @unique
+  name      String
+  country   String
+  type      LocationType  @default(STATE)
+  isPopular Boolean       @default(false)
+  isActive  Boolean       @default(true)
+  sortOrder Int           @default(0)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  fees      LocationFee[]
+
+  @@index([country])
+  @@index([type])
+  @@index([isActive, isPopular])
+  @@index([country, type])
+}
+
+model LocationFee {
+  id             String   @id @default(cuid())
+  serviceId      String
+  locationId     String
+  feeType        FeeType  @default(FILING)
+  label          String?
+  amountUSD      Decimal  @db.Decimal(10, 2)
+  amountBDT      Decimal? @db.Decimal(10, 2)
+  processingTime String?
+  isActive       Boolean  @default(true)
+  isRequired     Boolean  @default(true)
+  expeditedFee   Decimal? @db.Decimal(10, 2)
+  expeditedTime  String?
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  location       Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  service        Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([serviceId, locationId, feeType])
+  @@index([serviceId])
+  @@index([locationId])
+  @@index([feeType])
+  @@index([isActive])
+}
+
+model Coupon {
+  id          String     @id @default(cuid())
+  code        String     @unique
+  description String?
+  type        CouponType @default(PERCENTAGE)
+  value       Decimal    @db.Decimal(10, 2)
+  minOrder    Decimal?   @db.Decimal(10, 2)
+  maxDiscount Decimal?   @db.Decimal(10, 2)
+  usageLimit  Int?
+  usedCount   Int        @default(0)
+  isActive    Boolean    @default(true)
+  expiresAt   DateTime?
+  createdAt   DateTime   @default(now())
+  orders      Order[]
+
+  @@index([code])
+  @@index([isActive])
+}
+
+model PaymentMethod {
+  id                    String   @id @default(cuid())
+  userId                String
+  type                  String   @default("card")
+  brand                 String?
+  last4                 String
+  expiryMonth           Int?
+  expiryYear            Int?
+  cardholderName        String?
+  stripePaymentMethodId String?  @unique
+  stripeCustomerId      String?
+  isDefault             Boolean  @default(false)
+  isActive              Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([stripePaymentMethodId])
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  entity    String
+  entityId  String?
+  metadata  Json?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([entity])
+  @@index([createdAt])
+}
+
+model LegalPage {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  title           String
+  content         String
+  isActive        Boolean  @default(true)
+  metaTitle       String?
+  metaDescription String?
+  version         Int      @default(1)
+  lastUpdatedBy   String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([slug])
+  @@index([isActive])
+}
+
+model ServiceFormTemplate {
+  id        String    @id @default(cuid())
+  serviceId String    @unique
+  version   Int       @default(1)
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  tabs      FormTab[]
+  service   Service   @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+}
+
+model FormTab {
+  id          String              @id @default(cuid())
+  templateId  String
+  name        String
+  description String?
+  icon        String?
+  order       Int
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  fields      FormField[]
+  template    ServiceFormTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@index([templateId, order])
+}
+
+model FormField {
+  id               String          @id @default(cuid())
+  tabId            String
+  name             String
+  label            String
+  type             FieldType
+  placeholder      String?
+  helpText         String?
+  order            Int
+  width            FieldWidth      @default(FULL)
+  required         Boolean         @default(false)
+  validation       Json?
+  options          Json?
+  dataSourceType   DataSourceType?
+  dataSourceKey    String?
+  dependsOn        String?
+  conditionalLogic Json?
+  accept           String?
+  maxSize          Int?
+  defaultValue     String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  tab              FormTab         @relation(fields: [tabId], references: [id], onDelete: Cascade)
+
+  @@index([tabId, order])
+}
+
+model SystemList {
+  id             String           @id @default(cuid())
+  key            String           @unique
+  name           String
+  description    String?
+  type           String
+  isEditable     Boolean          @default(false)
+  isHierarchical Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  items          SystemListItem[]
+}
+
+model SystemListItem {
+  id        String           @id @default(cuid())
+  listId    String
+  value     String
+  label     String
+  code      String?
+  icon      String?
+  metadata  Json?
+  parentId  String?
+  order     Int              @default(0)
+  isPopular Boolean          @default(false)
+  isActive  Boolean          @default(true)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  list      SystemList       @relation(fields: [listId], references: [id], onDelete: Cascade)
+  parent    SystemListItem?  @relation("ItemHierarchy", fields: [parentId], references: [id])
+  children  SystemListItem[] @relation("ItemHierarchy")
+
+  @@unique([listId, value])
+  @@index([listId, parentId])
+  @@index([listId, isPopular])
+}
+
+model CustomList {
+  id          String           @id @default(cuid())
+  key         String           @unique
+  name        String
+  description String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  items       CustomListItem[]
+}
+
+model CustomListItem {
+  id          String     @id @default(cuid())
+  listId      String
+  value       String
+  label       String
+  description String?
+  metadata    Json?
+  order       Int        @default(0)
+  isActive    Boolean    @default(true)
+  list        CustomList @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  @@index([listId, order])
+}
+
+model FormSubmission {
+  id              String               @id @default(cuid())
+  orderId         String
+  templateId      String
+  templateVersion Int
+  data            Json
+  status          SubmissionStatus     @default(DRAFT)
+  submittedAt     DateTime?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  order           Order                @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  files           FormSubmissionFile[]
+
+  @@index([orderId])
+  @@index([templateId])
+}
+
+model FormSubmissionFile {
+  id           String         @id @default(cuid())
+  submissionId String
+  fieldName    String
+  fileName     String
+  fileUrl      String
+  fileSize     Int
+  mimeType     String
+  createdAt    DateTime       @default(now())
+  submission   FormSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@index([submissionId])
+}
+
+model HeaderConfig {
+  id               String       @id @default(cuid())
+  name             String       @default("Default Header")
+  isActive         Boolean      @default(true)
+  layout           HeaderLayout @default(DEFAULT)
+  sticky           Boolean      @default(true)
+  transparent      Boolean      @default(false)
+  topBarEnabled    Boolean      @default(false)
+  topBarContent    Json?
+  topBarBgColor    String?
+  topBarTextColor  String?
+  logoPosition     LogoPosition @default(LEFT)
+  logoMaxHeight    Int          @default(56)
+  ctaButtons       Json?
+  showAuthButtons  Boolean      @default(true)
+  loginText        String       @default("Sign In")
+  registerText     String       @default("Get Started")
+  registerUrl      String       @default("/services/llc-formation")
+  searchEnabled    Boolean      @default(false)
+  mobileBreakpoint Int          @default(1024)
+  bgColor          String?
+  textColor        String?
+  accentColor      String?
+  borderColor      String?
+  height           Int          @default(64)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  loginStyle       Json?
+  loginUrl         String       @default("/login")
+  registerStyle    Json?
+  hoverColor       String?
+  menuItems        MenuItem[]
+}
+
+model MenuItem {
+  id              String        @id @default(cuid())
+  label           String
+  url             String?
+  target          String        @default("_self")
+  icon            String?
+  parentId        String?
+  isMegaMenu      Boolean       @default(false)
+  megaMenuColumns Int?          @default(4)
+  megaMenuContent Json?
+  isVisible       Boolean       @default(true)
+  visibleOnMobile Boolean       @default(true)
+  requiredRole    String?
+  badge           String?
+  badgeColor      String?
+  categoryName    String?
+  categoryIcon    String?
+  categoryDesc    String?
+  sortOrder       Int           @default(0)
+  headerId        String?
+  footerWidgetId  String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  footerWidget    FooterWidget? @relation(fields: [footerWidgetId], references: [id], onDelete: Cascade)
+  header          HeaderConfig? @relation(fields: [headerId], references: [id], onDelete: Cascade)
+  parent          MenuItem?     @relation("MenuHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children        MenuItem[]    @relation("MenuHierarchy")
+
+  @@index([parentId])
+  @@index([headerId])
+  @@index([footerWidgetId])
+  @@index([sortOrder])
+}
+
+model FooterConfig {
+  id                   String         @id @default(cuid())
+  name                 String         @default("Default Footer")
+  isActive             Boolean        @default(true)
+  layout               FooterLayout   @default(MULTI_COLUMN)
+  columns              Int            @default(4)
+  newsletterEnabled    Boolean        @default(true)
+  newsletterTitle      String         @default("Subscribe to our newsletter")
+  newsletterSubtitle   String?
+  newsletterProvider   String?
+  newsletterFormAction String?
+  showSocialLinks      Boolean        @default(true)
+  socialPosition       String         @default("brand")
+  showContactInfo      Boolean        @default(true)
+  contactPosition      String         @default("brand")
+  bottomBarEnabled     Boolean        @default(true)
+  copyrightText        String?
+  showDisclaimer       Boolean        @default(true)
+  disclaimerText       String?
+  bottomLinks          Json?
+  showTrustBadges      Boolean        @default(false)
+  trustBadges          Json?
+  bgColor              String?
+  textColor            String?
+  accentColor          String?
+  borderColor          String?
+  paddingTop           Int            @default(48)
+  paddingBottom        Int            @default(32)
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+  animationDuration    Int            @default(300)
+  bgGradient           Json?
+  bgImage              String?
+  bgImageOverlay       String?
+  bgPattern            String?
+  bgPatternColor       String?
+  bgPatternOpacity     Float?         @default(0.1)
+  bgType               String         @default("solid")
+  bodyFont             String?
+  borderRadius         Int            @default(0)
+  bottomBarLayout      String         @default("split")
+  containerStyle       String         @default("sharp")
+  containerWidth       String         @default("full")
+  cornerRadiusBL       Int            @default(0)
+  cornerRadiusBR       Int            @default(0)
+  cornerRadiusTL       Int            @default(0)
+  cornerRadiusTR       Int            @default(0)
+  customCSS            String?
+  customJS             String?
+  dividerColor         String?
+  dividerStyle         String         @default("solid")
+  enableAnimations     Boolean        @default(false)
+  entranceAnimation    String?
+  headingColor         String?
+  headingFont          String?
+  headingSize          String         @default("sm")
+  headingStyle         String         @default("normal")
+  headingWeight        String         @default("semibold")
+  linkColor            String?
+  linkHoverColor       String?
+  linkHoverEffect      String         @default("color")
+  presetId             String?
+  responsiveColumns    Json?
+  sectionOrder         String[]       @default(["widgets", "newsletter", "trust", "bottom"])
+  shadow               String         @default("none")
+  socialBgStyle        String         @default("subtle")
+  socialColorMode      String         @default("brand")
+  socialHoverEffect    String         @default("scale")
+  socialShape          String         @default("circle")
+  socialSize           String         @default("md")
+  topBorderColor       String?
+  topBorderHeight      Int            @default(4)
+  topBorderStyle       String         @default("none")
+  preset               FooterPreset?  @relation(fields: [presetId], references: [id])
+  widgets              FooterWidget[]
+}
+
+model FooterPreset {
+  id           String         @id @default(cuid())
+  name         String
+  description  String?
+  category     String         @default("professional")
+  thumbnail    String?
+  config       Json
+  isBuiltIn    Boolean        @default(false)
+  isPublic     Boolean        @default(true)
+  usageCount   Int            @default(0)
+  tags         String[]
+  colorPalette Json?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  footers      FooterConfig[]
+
+  @@index([category])
+  @@index([isBuiltIn])
+  @@index([isPublic])
+}
+
+model FooterWidget {
+  id          String           @id @default(cuid())
+  footerId    String
+  type        FooterWidgetType
+  title       String?
+  showTitle   Boolean          @default(true)
+  content     Json?
+  column      Int              @default(1)
+  sortOrder   Int              @default(0)
+  customClass String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  footer      FooterConfig     @relation(fields: [footerId], references: [id], onDelete: Cascade)
+  menuItems   MenuItem[]
+
+  @@index([footerId])
+  @@index([column, sortOrder])
+}
+
+model NewsletterSubscriber {
+  id             String                     @id @default(cuid())
+  email          String                     @unique
+  name           String?
+  status         NewsletterSubscriberStatus @default(ACTIVE)
+  source         String?
+  subscribedAt   DateTime                   @default(now())
+  unsubscribedAt DateTime?
+  confirmedAt    DateTime?
+  metadata       Json?
+  createdAt      DateTime                   @default(now())
+  updatedAt      DateTime                   @updatedAt
+
+  @@index([status])
+  @@index([subscribedAt])
+}
+
+model LandingPage {
+  id               String             @id @default(cuid())
+  slug             String             @unique
+  name             String
+  isActive         Boolean            @default(true)
+  isDefault        Boolean            @default(false)
+  metaTitle        String?
+  metaDescription  String?
+  ogImage          String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  publishedAt      DateTime?
+  version          Int                @default(1)
+  isTemplateActive Boolean            @default(false)
+  templateType     PageTemplateType?
+  isSystem         Boolean            @default(false)
+  blocks           LandingPageBlock[]
+
+  @@index([slug])
+  @@index([isActive, isDefault])
+  @@index([templateType, isTemplateActive])
+}
+
+model LandingPageBlock {
+  id            String      @id @default(cuid())
+  landingPageId String
+  type          String
+  name          String?
+  sortOrder     Int         @default(0)
+  isActive      Boolean     @default(true)
+  settings      Json
+  hideOnMobile  Boolean     @default(false)
+  hideOnDesktop Boolean     @default(false)
+  variant       String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  landingPage   LandingPage @relation(fields: [landingPageId], references: [id], onDelete: Cascade)
+
+  @@index([landingPageId, sortOrder])
+  @@index([landingPageId, isActive])
+}
+
+model BlockTemplate {
+  id        String   @id @default(cuid())
+  name      String
+  category  String
+  type      String
+  settings  Json
+  thumbnail String?
+  isBuiltIn Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+  @@index([type])
+}
+
+model Plugin {
+  id                String           @id @default(cuid())
+  slug              String           @unique
+  name              String
+  description       String?
+  version           String
+  author            String?
+  authorUrl         String?
+  icon              String?
+  status            PluginStatus     @default(INSTALLED)
+  manifest          Json?
+  adminMenuLabel    String?
+  adminMenuIcon     String?
+  adminMenuPosition Int?
+  hasAdminPages     Boolean          @default(false)
+  hasPublicPages    Boolean          @default(false)
+  hasWidgets        Boolean          @default(false)
+  hasApiRoutes      Boolean          @default(false)
+  installedAt       DateTime         @default(now())
+  installedBy       String?
+  lastActivatedAt   DateTime?
+  lastError         String?
+  errorAt           DateTime?
+  updatedAt         DateTime         @updatedAt
+  licenseExpiresAt  DateTime?
+  licenseKey        String?
+  licensePublicKey  String?
+  licenseTier       String?
+  licenseToken      String?
+  licenseType       String?
+  licenseVerifiedAt DateTime?
+  licensedDomain    String?
+  pluginPath        String?
+  requiresLicense   Boolean          @default(true)
+  menuItems         PluginMenuItem[]
+  settings          PluginSetting[]
+
+  @@index([slug])
+  @@index([status])
+}
+
+model PluginSetting {
+  id        String   @id @default(cuid())
+  pluginId  String
+  key       String
+  value     String
+  type      String   @default("string")
+  updatedAt DateTime @updatedAt
+  plugin    Plugin   @relation(fields: [pluginId], references: [id], onDelete: Cascade)
+
+  @@unique([pluginId, key])
+  @@index([pluginId])
+}
+
+model PluginMenuItem {
+  id          String  @id @default(cuid())
+  pluginId    String
+  label       String
+  path        String
+  icon        String?
+  parentLabel String?
+  sortOrder   Int     @default(0)
+  isActive    Boolean @default(true)
+  plugin      Plugin  @relation(fields: [pluginId], references: [id], onDelete: Cascade)
+
+  @@index([pluginId])
+  @@index([isActive])
+}
+
+model KnowledgeDocument {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  category  String
+  tags      String[]
+  embedding Float[]
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+  @@index([isActive])
+}
+
+model AIResponse {
+  id         String        @id @default(cuid())
+  ticketId   String
+  content    String
+  confidence Float         @default(0)
+  sources    String[]
+  wasUsed    Boolean       @default(false)
+  wasEdited  Boolean       @default(false)
+  usedAt     DateTime?
+  createdAt  DateTime      @default(now())
+  ticket     SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
+  @@index([wasUsed])
+  @@index([createdAt])
+}
+
+model Lead {
+  id               String            @id @default(cuid())
+  firstName        String
+  lastName         String?
+  email            String
+  phone            String?
+  company          String?
+  country          String?
+  city             String?
+  status           LeadStatus        @default(NEW)
+  source           LeadSource        @default(WEBSITE)
+  sourceDetail     String?
+  score            Int               @default(0)
+  scoreHistory     Json?
+  scoreDecayDays   Int               @default(0)
+  priority         LeadPriority      @default(MEDIUM)
+  pageViews        Int               @default(0)
+  lastPageViewed   String?
+  visitCount       Int               @default(1)
+  lastActivityAt   DateTime          @default(now())
+  assignedToId     String?
+  assignedAt       DateTime?
+  interestedIn     String[]
+  budget           String?
+  timeline         String?
+  customFields     Json?
+  utmSource        String?
+  utmMedium        String?
+  utmCampaign      String?
+  utmTerm          String?
+  utmContent       String?
+  convertedAt      DateTime?
+  convertedToId    String?
+  notes            String?
+  ipAddress        String?
+  userAgent        String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  formTemplateId   String?
+  formTemplateName String?
+  assignedTo       User?             @relation("AssignedLeads", fields: [assignedToId], references: [id])
+  formTemplate     LeadFormTemplate? @relation(fields: [formTemplateId], references: [id])
+  activities       LeadActivity[]
+  leadNotes        LeadNote[]
+
+  @@index([email])
+  @@index([status])
+  @@index([source])
+  @@index([assignedToId])
+  @@index([score])
+  @@index([createdAt])
+  @@index([priority])
+  @@index([formTemplateId])
+}
+
+model LeadActivity {
+  id            String   @id @default(cuid())
+  leadId        String
+  type          String
+  description   String
+  metadata      Json?
+  performedById String?
+  createdAt     DateTime @default(now())
+  lead          Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  performedBy   User?    @relation("PerformedActivities", fields: [performedById], references: [id])
+
+  @@index([leadId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model LeadNote {
+  id        String   @id @default(cuid())
+  leadId    String
+  content   String
+  isPinned  Boolean  @default(false)
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  author    User     @relation("AuthoredLeadNotes", fields: [authorId], references: [id])
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([authorId])
+}
+
+model LeadFormTemplate {
+  id              String    @id @default(cuid())
+  name            String
+  description     String?
+  fields          Json
+  defaultStyling  Json?
+  isActive        Boolean   @default(true)
+  isSystem        Boolean   @default(false)
+  usageCount      Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  autoAssignToId  String?
+  lastSubmission  DateTime?
+  submissionCount Int       @default(0)
+  successMessage  String?
+  successRedirect String?
+  leads           Lead[]
+
+  @@index([isActive])
+}
+
+model TrackingSettings {
+  id                  String   @id @default(cuid())
+  gtmEnabled          Boolean  @default(false)
+  gtmContainerId      String?
+  gtmTrackForms       Boolean  @default(true)
+  gtmTrackPages       Boolean  @default(true)
+  fbPixelEnabled      Boolean  @default(false)
+  fbPixelId           String?
+  fbTrackLead         Boolean  @default(true)
+  fbTrackPageView     Boolean  @default(true)
+  fbTrackContent      Boolean  @default(false)
+  gadsEnabled         Boolean  @default(false)
+  gadsConversionId    String?
+  gadsConversionLabel String?
+  gadsDefaultValue    Float?
+  tiktokEnabled       Boolean  @default(false)
+  tiktokPixelId       String?
+  updatedAt           DateTime @updatedAt
+}
+
+model ActiveTheme {
+  id                   String   @id @default(cuid())
+  themeId              String   @unique
+  themeName            String
+  activatedAt          DateTime @default(now())
+  colorPalette         Json?
+  fontConfig           Json?
+  originalColorPalette Json?
+
+  @@index([themeId])
+}
+
+enum UserRole {
+  CUSTOMER
+  ADMIN
+  CONTENT_MANAGER
+  SALES_AGENT
+  SUPPORT_AGENT
+}
+
+enum FeatureValueType {
+  BOOLEAN
+  TEXT
+  ADDON
+  DASH
 }
 
 enum OrderStatus {
@@ -365,71 +1347,6 @@ enum PaymentStatus {
   PARTIALLY_REFUNDED
 }
 
-model OrderItem {
-  id          String   @id @default(cuid())
-  orderId     String
-  serviceId   String?
-  packageId   String?
-
-  name        String
-  description String?
-  quantity    Int      @default(1)
-  priceUSD    Decimal  @db.Decimal(10, 2)
-  stateFee    Decimal? @db.Decimal(10, 2) // Kept for backward compat
-
-  // Location-Based Pricing (denormalized for historical accuracy)
-  locationId       String?
-  locationCode     String?  // "US-WY"
-  locationName     String?  // "Wyoming"
-  locationFeeLabel String?  // "State Filing Fee"
-
-  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  service     Service? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
-  package     Package? @relation(fields: [packageId], references: [id], onDelete: SetNull)
-
-  createdAt   DateTime @default(now())
-
-  @@index([orderId])
-}
-
-model OrderNote {
-  id          String   @id @default(cuid())
-  orderId     String
-  authorId    String?
-  content     String   @db.Text
-  isInternal  Boolean  @default(false)
-
-  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-
-  createdAt   DateTime @default(now())
-
-  @@index([orderId])
-}
-
-// ============ DOCUMENTS ============
-model Document {
-  id          String         @id @default(cuid())
-  orderId     String?
-  userId      String
-  type        DocumentType
-  name        String
-  fileName    String
-  fileUrl     String
-  fileSize    Int
-  mimeType    String
-  status      DocumentStatus @default(PENDING)
-
-  order       Order?         @relation(fields: [orderId], references: [id])
-  user        User           @relation(fields: [userId], references: [id])
-
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-
-  @@index([orderId])
-  @@index([userId])
-  @@index([status])
-}
-
 enum DocumentType {
   PASSPORT
   ID_CARD
@@ -448,45 +1365,6 @@ enum DocumentStatus {
   EXPIRED
 }
 
-// ============ INVOICES ============
-model Invoice {
-  id              String        @id @default(cuid())
-  invoiceNumber   String        @unique
-  orderId         String?       // Optional — null for standalone invoices
-  userId          String        // Customer (required)
-
-  // Denormalized customer info
-  customerName    String
-  customerEmail   String
-  customerPhone   String?
-  customerCountry String?
-
-  // Items snapshot (JSON array)
-  items           Json?         // [{ name, description, quantity, price }]
-  serviceName     String?       // Primary service name (for filtering)
-
-  subtotal        Decimal       @db.Decimal(10, 2)
-  discount        Decimal       @default(0) @db.Decimal(10, 2)
-  total           Decimal       @db.Decimal(10, 2)
-  currency        String        @default("USD")
-
-  notes           String?       @db.Text
-  status          InvoiceStatus @default(DRAFT)
-  dueDate         DateTime?
-  paidAt          DateTime?
-
-  order           Order?        @relation(fields: [orderId], references: [id])
-  user            User          @relation(fields: [userId], references: [id])
-
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-
-  @@index([orderId])
-  @@index([userId])
-  @@index([status])
-  @@index([serviceName])
-}
-
 enum InvoiceStatus {
   DRAFT
   SENT
@@ -495,62 +1373,13 @@ enum InvoiceStatus {
   CANCELLED
 }
 
-// ============ SUPPORT TICKETS ============
-model SupportTicket {
-  id              String         @id @default(cuid())
-  ticketNumber    String         @unique // TKT-001, TKT-002
-  subject         String
-  status          TicketStatus   @default(OPEN)
-  priority        TicketPriority @default(MEDIUM)
-  category        String?
-
-  // Customer (registered or guest)
-  customerId      String?
-  customer        User?          @relation("CustomerTickets", fields: [customerId], references: [id])
-  guestName       String?
-  guestEmail      String?
-  guestPhone      String?
-
-  // Assignment
-  assignedToId    String?
-  assignedTo      User?          @relation("AssignedTickets", fields: [assignedToId], references: [id])
-
-  // Related order
-  orderId         String?
-  order           Order?         @relation(fields: [orderId], references: [id])
-
-  // Source & metadata
-  source          TicketSource   @default(LIVE_CHAT)
-  ipAddress       String?
-  userAgent       String?
-
-  // Timestamps
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  firstResponseAt DateTime?
-  resolvedAt      DateTime?
-  closedAt        DateTime?
-
-  // Relations
-  messages        SupportMessage[]
-  internalNotes   InternalNote[]
-  aiResponses     AIResponse[]
-
-  @@index([customerId])
-  @@index([assignedToId])
-  @@index([status])
-  @@index([priority])
-  @@index([ticketNumber])
-  @@index([createdAt])
-}
-
 enum TicketStatus {
   OPEN
   IN_PROGRESS
   WAITING_FOR_CUSTOMER
-  WAITING_FOR_AGENT
   RESOLVED
   CLOSED
+  WAITING_FOR_AGENT
 }
 
 enum TicketPriority {
@@ -567,38 +1396,6 @@ enum TicketSource {
   API
 }
 
-model SupportMessage {
-  id          String      @id @default(cuid())
-  ticketId    String
-  ticket      SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-
-  // Message content
-  content     String      @db.Text
-  contentHtml String?     @db.Text
-
-  // Sender info
-  senderId    String?
-  sender      User?       @relation("SentMessages", fields: [senderId], references: [id])
-  senderType  SenderType  // CUSTOMER, AGENT, SYSTEM
-  senderName  String      // Display name (for guests)
-
-  // Message type
-  type        MessageType @default(TEXT)
-
-  // Attachments
-  attachments MessageAttachment[]
-
-  // Status
-  isRead      Boolean     @default(false)
-  readAt      DateTime?
-
-  createdAt   DateTime    @default(now())
-
-  @@index([ticketId])
-  @@index([senderId])
-  @@index([createdAt])
-}
-
 enum SenderType {
   CUSTOMER
   AGENT
@@ -613,112 +1410,10 @@ enum MessageType {
   SYSTEM
 }
 
-model MessageAttachment {
-  id          String         @id @default(cuid())
-  messageId   String
-  message     SupportMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
-
-  fileName    String
-  fileUrl     String
-  fileType    String         // image/jpeg, application/pdf, etc.
-  fileSize    Int            // in bytes
-
-  createdAt   DateTime       @default(now())
-
-  @@index([messageId])
-}
-
-model InternalNote {
-  id          String        @id @default(cuid())
-  ticketId    String
-  ticket      SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-
-  content     String        @db.Text
-  authorId    String
-  author      User          @relation("AuthoredNotes", fields: [authorId], references: [id])
-
-  // Mentions (array of user IDs)
-  mentions    String[]
-
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-
-  @@index([ticketId])
-  @@index([authorId])
-}
-
-model CannedResponse {
-  id          String   @id @default(cuid())
-  title       String
-  content     String   @db.Text
-  category    String?
-
-  // Usage tracking
-  useCount    Int      @default(0)
-
-  // Ownership
-  createdById String
-  createdBy   User     @relation("CreatedCannedResponses", fields: [createdById], references: [id])
-  isPublic    Boolean  @default(true) // Available to all agents
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([category])
-  @@index([createdById])
-}
-
-// ============ CONTENT ============
-model BlogPost {
-  id            String      @id @default(cuid())
-  title         String
-  slug          String      @unique
-  excerpt       String?     @db.Text
-  content       String      @db.Text
-  coverImage    String?
-  authorId      String?
-  status        PostStatus  @default(DRAFT)
-  publishedAt   DateTime?
-
-  categories    BlogCategory[]
-  tags          String[]
-
-  // SEO
-  metaTitle       String?
-  metaDescription String?
-
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-
-  @@index([slug])
-  @@index([status])
-  @@index([publishedAt])
-}
-
 enum PostStatus {
   DRAFT
   PUBLISHED
   ARCHIVED
-}
-
-model BlogCategory {
-  id          String     @id @default(cuid())
-  name        String
-  slug        String     @unique
-  description String?
-
-  // Hierarchical relationship
-  parentId    String?
-  parent      BlogCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
-  children    BlogCategory[] @relation("CategoryHierarchy")
-
-  posts       BlogPost[]
-
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @default(now()) @updatedAt
-
-  @@index([slug])
-  @@index([parentId])
 }
 
 enum TestimonialType {
@@ -726,341 +1421,24 @@ enum TestimonialType {
   VIDEO
 }
 
-model Testimonial {
-  id          String   @id @default(cuid())
-  name        String
-  company     String?
-  country     String?
-  avatar      String?
-  content     String   @db.Text
-  rating      Int      @default(5)
-  isActive    Boolean  @default(true)
-  sortOrder   Int      @default(0)
-
-  // Video testimonial support
-  type          TestimonialType @default(PHOTO)
-  videoUrl      String?
-  thumbnailUrl  String?
-
-  // Tags for optional filtering
-  tags          String[]
-
-  createdAt   DateTime @default(now())
-
-  @@index([isActive])
-  @@index([type])
-}
-
-model FAQ {
-  id          String   @id @default(cuid())
-  question    String
-  answer      String   @db.Text
-  category    String?
-  isActive    Boolean  @default(true)
-  sortOrder   Int      @default(0)
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([isActive])
-  @@index([category])
-}
-
-// ============ SETTINGS ============
-model Setting {
-  id        String   @id @default(cuid())
-  key       String   @unique
-  value     String   @db.Text
-  type      String   @default("string")
-
-  updatedAt DateTime @updatedAt
-
-  @@index([key])
-}
-
-// ============ STATE FEES (DEPRECATED - kept for backward compat) ============
-model StateFee {
-  id              String   @id @default(cuid())
-  stateCode       String   @unique
-  stateName       String
-  llcFee          Decimal  @db.Decimal(10, 2)
-  annualFee       Decimal? @db.Decimal(10, 2)
-  processingTime  String?
-  isPopular       Boolean  @default(false)
-
-  // SEO for state landing pages
-  metaTitle       String?
-  metaDescription String?
-  content         String?  @db.Text
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([stateCode])
-  @@index([isPopular])
-}
-
-// ============ LOCATION-BASED PRICING ============
-
 enum LocationType {
-  STATE       // US state
-  PROVINCE    // Canadian province, etc.
-  COUNTRY     // Entire country
-  TERRITORY   // US territory (PR, GU), etc.
+  STATE
+  PROVINCE
+  COUNTRY
+  TERRITORY
 }
 
 enum FeeType {
-  FILING      // One-time formation/filing fee
-  ANNUAL      // Annual report/renewal fee
-  EXPEDITED   // Expedited processing upcharge
-  FRANCHISE   // Franchise tax
-  CUSTOM      // Custom fee type
-}
-
-model Location {
-  id              String       @id @default(cuid())
-  code            String       @unique        // "US-WY", "US-DE", "CA-ON", "UK"
-  name            String                      // "Wyoming", "Delaware", "Ontario"
-  country         String                      // "US", "CA", "UK" (ISO country code)
-  type            LocationType @default(STATE)
-
-  isPopular       Boolean      @default(false)
-  isActive        Boolean      @default(true)
-  sortOrder       Int          @default(0)
-
-  // Relations
-  fees            LocationFee[]
-
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
-
-  @@index([country])
-  @@index([type])
-  @@index([isActive, isPopular])
-  @@index([country, type])
-}
-
-model LocationFee {
-  id              String   @id @default(cuid())
-
-  // Which service this fee applies to
-  serviceId       String
-  service         Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
-
-  // Which location
-  locationId      String
-  location        Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
-
-  // Fee details
-  feeType         FeeType  @default(FILING)
-  label           String?  // Custom display label: "State Filing Fee", "Annual Report Fee"
-
-  amountUSD       Decimal  @db.Decimal(10, 2)
-  amountBDT       Decimal? @db.Decimal(10, 2)
-
-  processingTime  String?  // "3-5 business days"
-
-  isActive        Boolean  @default(true)
-  isRequired      Boolean  @default(true)  // Required fees are always added
-
-  // Expedited option
-  expeditedFee    Decimal? @db.Decimal(10, 2)
-  expeditedTime   String?  // "24 hours"
-
-  notes           String?  @db.Text
-
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  // One fee of each type per service+location combo
-  @@unique([serviceId, locationId, feeType])
-  @@index([serviceId])
-  @@index([locationId])
-  @@index([feeType])
-  @@index([isActive])
-}
-
-// ============ COUPONS ============
-model Coupon {
-  id          String      @id @default(cuid())
-  code        String      @unique
-  description String?
-  type        CouponType  @default(PERCENTAGE)
-  value       Decimal     @db.Decimal(10, 2)
-  minOrder    Decimal?    @db.Decimal(10, 2)
-  maxDiscount Decimal?    @db.Decimal(10, 2)
-  usageLimit  Int?
-  usedCount   Int         @default(0)
-  isActive    Boolean     @default(true)
-  expiresAt   DateTime?
-
-  orders      Order[]
-
-  createdAt   DateTime    @default(now())
-
-  @@index([code])
-  @@index([isActive])
+  FILING
+  ANNUAL
+  EXPEDITED
+  FRANCHISE
+  CUSTOM
 }
 
 enum CouponType {
   PERCENTAGE
   FIXED
-}
-
-// ============ PAYMENT METHODS ============
-model PaymentMethod {
-  id              String   @id @default(cuid())
-  userId          String
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Card details (stored securely - only last 4 digits)
-  type            String   @default("card") // card, bank, paypal
-  brand           String?  // visa, mastercard, amex
-  last4           String   // last 4 digits of card
-  expiryMonth     Int?
-  expiryYear      Int?
-  cardholderName  String?
-
-  // Stripe/Payment provider ID
-  stripePaymentMethodId String?  @unique
-  stripeCustomerId      String?
-
-  // Status
-  isDefault       Boolean  @default(false)
-  isActive        Boolean  @default(true)
-
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  @@index([userId])
-  @@index([stripePaymentMethodId])
-}
-
-// ============ ACTIVITY LOG ============
-model ActivityLog {
-  id          String   @id @default(cuid())
-  userId      String?
-  action      String
-  entity      String
-  entityId    String?
-  metadata    Json?
-  ipAddress   String?
-
-  createdAt   DateTime @default(now())
-
-  @@index([userId])
-  @@index([entity])
-  @@index([createdAt])
-}
-
-// ============ LEGAL PAGES ============
-model LegalPage {
-  id          String   @id @default(cuid())
-  slug        String   @unique // "terms", "privacy", "refund-policy", "disclaimer"
-  title       String   // "Terms of Service"
-  content     String   @db.Text // Rich HTML content (Sun Editor)
-  isActive    Boolean  @default(true)
-
-  // SEO
-  metaTitle       String?
-  metaDescription String?
-
-  // Version tracking
-  version     Int      @default(1)
-  lastUpdatedBy String?
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([slug])
-  @@index([isActive])
-}
-
-// ============================================
-// DYNAMIC FORM BUILDER
-// ============================================
-
-// Form template for each service
-model ServiceFormTemplate {
-  id          String   @id @default(cuid())
-  serviceId   String   @unique
-  service     Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
-
-  // Template metadata
-  version     Int      @default(1)
-  isActive    Boolean  @default(true)
-
-  // Relations
-  tabs        FormTab[]
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-// Form tabs (steps)
-model FormTab {
-  id          String   @id @default(cuid())
-  templateId  String
-  template    ServiceFormTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
-
-  // Tab configuration
-  name        String       // "Personal Information"
-  description String?      // "Your basic personal details"
-  icon        String?      // "user", "map-pin", "file-text"
-  order       Int          // 1, 2, 3...
-
-  // Relations
-  fields      FormField[]
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([templateId, order])
-}
-
-// Individual form fields
-model FormField {
-  id              String   @id @default(cuid())
-  tabId           String
-  tab             FormTab  @relation(fields: [tabId], references: [id], onDelete: Cascade)
-
-  // Field identity
-  name            String       // "firstName", "dateOfBirth"
-  label           String       // "First Name", "Date of Birth"
-  type            FieldType
-
-  // Display
-  placeholder     String?
-  helpText        String?      // Tooltip/info text
-  order           Int
-  width           FieldWidth   @default(FULL)
-
-  // Validation
-  required        Boolean      @default(false)
-  validation      Json?        // { minLength, maxLength, pattern, min, max }
-
-  // Options (for select, radio, checkbox)
-  options         Json?        // [{ value, label, description? }]
-
-  // Data source (for dynamic options)
-  dataSourceType  DataSourceType?
-  dataSourceKey   String?      // "countries", "states", "custom:business_types"
-  dependsOn       String?      // Field name this depends on (e.g., state depends on country)
-
-  // Conditional rendering
-  conditionalLogic Json?       // { show: true, when: "fieldName", operator: "equals", value: "X" }
-
-  // File upload settings
-  accept          String?      // ".pdf,.jpg,.png"
-  maxSize         Int?         // Max file size in MB
-
-  // Default value
-  defaultValue    String?
-
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  @@index([tabId, order])
 }
 
 enum FieldType {
@@ -1103,137 +1481,6 @@ enum DataSourceType {
   API_ENDPOINT
 }
 
-// ============================================
-// DYNAMIC DATA LISTS
-// ============================================
-
-// System-managed lists (countries, currencies, etc.)
-model SystemList {
-  id             String   @id @default(cuid())
-  key            String   @unique  // "countries", "currencies", "us_states"
-  name           String            // "Countries", "Currencies"
-  description    String?
-  type           String            // "country", "state", "currency", "general"
-
-  // Settings
-  isEditable     Boolean  @default(false)  // Can admin edit?
-  isHierarchical Boolean  @default(false)  // Has parent-child relationship?
-
-  // Relations
-  items          SystemListItem[]
-
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-}
-
-// Items in system lists
-model SystemListItem {
-  id          String   @id @default(cuid())
-  listId      String
-  list        SystemList @relation(fields: [listId], references: [id], onDelete: Cascade)
-
-  // Item data
-  value       String       // "US", "BD", "USD"
-  label       String       // "United States", "Bangladesh"
-  code        String?      // ISO code or short code
-  icon        String?      // Flag emoji or icon name
-
-  // Additional data
-  metadata    Json?        // { phoneCode: "+1", symbol: "$", etc. }
-
-  // Hierarchy (for states -> country relationship)
-  parentId    String?
-  parent      SystemListItem? @relation("ItemHierarchy", fields: [parentId], references: [id])
-  children    SystemListItem[] @relation("ItemHierarchy")
-
-  // Display
-  order       Int          @default(0)
-  isPopular   Boolean      @default(false)  // Show in quick select
-  isActive    Boolean      @default(true)
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@unique([listId, value])
-  @@index([listId, parentId])
-  @@index([listId, isPopular])
-}
-
-// Custom lists created by admin
-model CustomList {
-  id          String   @id @default(cuid())
-  key         String   @unique  // "business_types", "industry_types"
-  name        String
-  description String?
-
-  items       CustomListItem[]
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model CustomListItem {
-  id          String   @id @default(cuid())
-  listId      String
-  list        CustomList @relation(fields: [listId], references: [id], onDelete: Cascade)
-
-  value       String
-  label       String
-  description String?
-  metadata    Json?
-  order       Int          @default(0)
-  isActive    Boolean      @default(true)
-
-  @@index([listId, order])
-}
-
-// ============================================
-// FORM SUBMISSIONS
-// ============================================
-
-// Store form submission data
-model FormSubmission {
-  id              String   @id @default(cuid())
-  orderId         String
-  order           Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-
-  // Form template reference
-  templateId      String
-  templateVersion Int      // Which version of form was used
-
-  // Submission data
-  data            Json     // All form field values as JSON
-
-  // Status tracking
-  status          SubmissionStatus @default(DRAFT)
-
-  // Files
-  files           FormSubmissionFile[]
-
-  submittedAt     DateTime?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  @@index([orderId])
-  @@index([templateId])
-}
-
-model FormSubmissionFile {
-  id              String   @id @default(cuid())
-  submissionId    String
-  submission      FormSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
-
-  fieldName       String   // Which form field
-  fileName        String
-  fileUrl         String
-  fileSize        Int
-  mimeType        String
-
-  createdAt       DateTime @default(now())
-
-  @@index([submissionId])
-}
-
 enum SubmissionStatus {
   DRAFT
   SUBMITTED
@@ -1243,70 +1490,12 @@ enum SubmissionStatus {
   NEEDS_REVISION
 }
 
-// ============================================
-// DYNAMIC HEADER & FOOTER BUILDER
-// ============================================
-
-// Header Configuration
-model HeaderConfig {
-  id              String       @id @default(cuid())
-  name            String       @default("Default Header")
-  isActive        Boolean      @default(true)
-
-  // Layout Settings
-  layout          HeaderLayout @default(DEFAULT)
-  sticky          Boolean      @default(true)
-  transparent     Boolean      @default(false)
-
-  // Top Bar
-  topBarEnabled   Boolean      @default(false)
-  topBarContent   Json?        // { text, links, showSocial }
-  topBarBgColor   String?
-  topBarTextColor String?
-
-  // Logo Settings
-  logoPosition    LogoPosition @default(LEFT)
-  logoMaxHeight   Int          @default(56)
-
-  // CTA Buttons
-  ctaButtons      Json?        // [{ text, url, variant, icon }]
-
-  // Auth Buttons
-  showAuthButtons Boolean      @default(true)
-  loginText       String       @default("Sign In")
-  loginUrl        String       @default("/login")
-  loginStyle      Json?        // ButtonCustomStyle
-  registerText    String       @default("Get Started")
-  registerUrl     String       @default("/services/llc-formation")
-  registerStyle   Json?        // ButtonCustomStyle
-
-  // Search
-  searchEnabled   Boolean      @default(false)
-
-  // Mobile Settings
-  mobileBreakpoint Int         @default(1024)
-
-  // Styling
-  bgColor         String?
-  textColor       String?
-  hoverColor      String?      // Menu hover color
-  accentColor     String?
-  borderColor     String?
-  height          Int          @default(64)
-
-  // Relations
-  menuItems       MenuItem[]
-
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
-}
-
 enum HeaderLayout {
-  DEFAULT       // Logo left, Nav center, CTA right
-  CENTERED      // Logo center, Nav below
-  SPLIT         // Logo center, Nav split left/right
-  MINIMAL       // Logo left, Hamburger right
-  MEGA          // Full mega menu style
+  DEFAULT
+  CENTERED
+  SPLIT
+  MINIMAL
+  MEGA
 }
 
 enum LogoPosition {
@@ -1315,550 +1504,70 @@ enum LogoPosition {
   RIGHT
 }
 
-// Navigation Menu Items (for both Header and Footer)
-model MenuItem {
-  id              String     @id @default(cuid())
-
-  // Basic Info
-  label           String
-  url             String?
-  target          String     @default("_self") // _self, _blank
-  icon            String?    // Lucide icon name
-
-  // Hierarchy
-  parentId        String?
-  parent          MenuItem?  @relation("MenuHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
-  children        MenuItem[] @relation("MenuHierarchy")
-
-  // Mega Menu Content (for parent items)
-  isMegaMenu      Boolean    @default(false)
-  megaMenuColumns Int?       @default(4)
-  megaMenuContent Json?      // Custom content blocks
-
-  // Visibility
-  isVisible       Boolean    @default(true)
-  visibleOnMobile Boolean    @default(true)
-  requiredRole    String?    // null = public, CUSTOMER, ADMIN
-
-  // Badge/Label
-  badge           String?    // "New", "Popular", "Sale"
-  badgeColor      String?
-
-  // Category grouping (for mega menu)
-  categoryName    String?    // "Formation & Legal"
-  categoryIcon    String?    // "building-2"
-  categoryDesc    String?    // "Start your US business"
-
-  // Ordering
-  sortOrder       Int        @default(0)
-
-  // Relations
-  headerId        String?
-  header          HeaderConfig? @relation(fields: [headerId], references: [id], onDelete: Cascade)
-
-  footerWidgetId  String?
-  footerWidget    FooterWidget? @relation(fields: [footerWidgetId], references: [id], onDelete: Cascade)
-
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
-
-  @@index([parentId])
-  @@index([headerId])
-  @@index([footerWidgetId])
-  @@index([sortOrder])
-}
-
-// Footer Configuration
-model FooterConfig {
-  id                   String       @id @default(cuid())
-  name                 String       @default("Default Footer")
-  isActive             Boolean      @default(true)
-
-  // Layout
-  layout               FooterLayout @default(MULTI_COLUMN)
-  columns              Int          @default(4)
-
-  // Responsive Columns (Phase 3)
-  responsiveColumns    Json?        // { mobile: 1, tablet: 2, desktop: 4 }
-  sectionOrder         String[]     @default(["widgets", "newsletter", "trust", "bottom"])
-
-  // Newsletter
-  newsletterEnabled    Boolean      @default(true)
-  newsletterTitle      String       @default("Subscribe to our newsletter")
-  newsletterSubtitle   String?
-  newsletterProvider   String?      // mailchimp, convertkit, brevo, custom
-  newsletterFormAction String?
-
-  // Social Links (override from business config)
-  showSocialLinks      Boolean      @default(true)
-  socialPosition       String       @default("brand") // brand, bottom, separate-column
-
-  // Contact Info
-  showContactInfo      Boolean      @default(true)
-  contactPosition      String       @default("brand") // brand, separate-column
-
-  // Bottom Bar
-  bottomBarEnabled     Boolean      @default(true)
-  bottomBarLayout      String       @default("split") // split, centered, stacked
-  copyrightText        String?
-  showDisclaimer       Boolean      @default(true)
-  disclaimerText       String?
-  bottomLinks          Json?        // [{ label, url }]
-
-  // Trust Badges
-  showTrustBadges      Boolean      @default(false)
-  trustBadges          Json?        // [{ image, alt, url }]
-
-  // Background Styling (Phase 3)
-  bgType               String       @default("solid") // solid, gradient, pattern, image
-  bgColor              String?
-  bgGradient           Json?        // { type, colors: [{color, position}], angle }
-  bgPattern            String?      // dots, grid, waves, geometric
-  bgPatternColor       String?
-  bgPatternOpacity     Float?       @default(0.1)
-  bgImage              String?
-  bgImageOverlay       String?
-
-  // Text Styling
-  textColor            String?
-  headingColor         String?
-  linkColor            String?
-  linkHoverColor       String?
-  accentColor          String?
-  borderColor          String?
-
-  // Typography (Phase 3)
-  headingFont          String?
-  bodyFont             String?
-  headingSize          String       @default("sm") // sm, base, lg, xl
-  headingWeight        String       @default("semibold") // medium, semibold, bold
-  headingStyle         String       @default("normal") // normal, uppercase, capitalize
-
-  // Divider Styling
-  dividerStyle         String       @default("solid") // none, solid, dashed, gradient
-  dividerColor         String?
-
-  // Social Icon Styling (Phase 3)
-  socialShape          String       @default("circle") // circle, square, rounded, pill
-  socialSize           String       @default("md") // sm, md, lg, xl
-  socialColorMode      String       @default("brand") // brand, monochrome, accent
-  socialHoverEffect    String       @default("scale") // scale, lift, glow, rotate
-  socialBgStyle        String       @default("subtle") // none, subtle, solid, outline
-
-  // Effects & Animation (Phase 3)
-  enableAnimations     Boolean      @default(false)
-  entranceAnimation    String?      // fade-up, fade-in, slide-up, stagger
-  animationDuration    Int          @default(300)
-  linkHoverEffect      String       @default("color") // underline, color, arrow, highlight
-  topBorderStyle       String       @default("none") // none, solid, gradient, wave
-  topBorderHeight      Int          @default(4)
-  topBorderColor       String?
-
-  // Shadow
-  shadow               String       @default("none") // none, sm, md, lg, xl
-  borderRadius         Int          @default(0)
-
-  // Container Width & Style
-  containerWidth       String       @default("full") // full, boxed
-  containerStyle       String       @default("sharp") // sharp, round
-  cornerRadiusTL       Int          @default(0) // top-left
-  cornerRadiusTR       Int          @default(0) // top-right
-  cornerRadiusBL       Int          @default(0) // bottom-left
-  cornerRadiusBR       Int          @default(0) // bottom-right
-
-  // Spacing
-  paddingTop           Int          @default(48)
-  paddingBottom        Int          @default(32)
-
-  // Advanced (Phase 6)
-  customCSS            String?      @db.Text
-  customJS             String?      @db.Text
-
-  // Preset Reference
-  presetId             String?
-  preset               FooterPreset? @relation(fields: [presetId], references: [id])
-
-  // Relations
-  widgets              FooterWidget[]
-
-  createdAt            DateTime     @default(now())
-  updatedAt            DateTime     @updatedAt
-}
-
-// Footer Preset (Phase 1)
-model FooterPreset {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  category    String   @default("professional") // minimal, professional, modern, creative, industry
-  thumbnail   String?  // Preview image URL
-
-  // Preset Configuration
-  config      Json     // Full footer configuration snapshot
-
-  // Metadata
-  isBuiltIn   Boolean  @default(false) // System presets
-  isPublic    Boolean  @default(true)  // Available to all users
-  usageCount  Int      @default(0)
-
-  // Feature tags
-  tags        String[] // ["dark-mode", "animated", "minimal", "responsive"]
-
-  // Color palette preview
-  colorPalette Json?   // { primary, secondary, accent, text, bg }
-
-  // Relation
-  footers     FooterConfig[]
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([category])
-  @@index([isBuiltIn])
-  @@index([isPublic])
-}
-
 enum FooterLayout {
-  MULTI_COLUMN   // Traditional multi-column
-  CENTERED       // Centered stacked
-  MINIMAL        // Just copyright and links
-  MEGA           // Full sitemap style
-  // New layouts (Phase 2)
-  STACKED        // Full-width vertical sections
-  ASYMMETRIC     // 2:1 ratio split layout
-  MEGA_PLUS      // Mega with featured CTA
-  APP_FOCUSED    // Prominent app download section
-  NEWSLETTER_HERO // Large newsletter signup as hero
-}
-
-// Footer Widgets
-model FooterWidget {
-  id              String           @id @default(cuid())
-  footerId        String
-  footer          FooterConfig     @relation(fields: [footerId], references: [id], onDelete: Cascade)
-
-  // Widget Type
-  type            FooterWidgetType
-
-  // Basic Settings
-  title           String?
-  showTitle       Boolean          @default(true)
-
-  // Content based on type
-  content         Json?            // Varies by widget type
-
-  // Position
-  column          Int              @default(1) // 1-6
-  sortOrder       Int              @default(0)
-
-  // Styling
-  customClass     String?
-
-  // Relations (for LINKS type)
-  menuItems       MenuItem[]
-
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-
-  @@index([footerId])
-  @@index([column, sortOrder])
+  MULTI_COLUMN
+  CENTERED
+  MINIMAL
+  MEGA
+  STACKED
+  ASYMMETRIC
+  MEGA_PLUS
+  APP_FOCUSED
+  NEWSLETTER_HERO
 }
 
 enum FooterWidgetType {
-  BRAND           // Logo + description
-  LINKS           // Link list
-  CONTACT         // Contact info
-  NEWSLETTER      // Email subscription
-  SOCIAL          // Social icons
-  TEXT            // Custom text/HTML
-  RECENT_POSTS    // Latest blog posts
-  SERVICES        // Services list (auto-populated)
-  STATES          // Popular states (auto-populated)
-  CUSTOM_HTML     // Raw HTML
-  // New widget types (Phase 4)
-  APP_DOWNLOAD    // App store badges with QR code
-  PAYMENT_METHODS // Payment provider icons
-  AWARDS          // Certifications and badges
-  MAP             // Embedded location map
-  WORKING_HOURS   // Business hours display
-  LANGUAGE_SELECT // Multi-language dropdown
-  THEME_TOGGLE    // Dark/light mode switcher
-  FEATURED_PRODUCT // Highlighted product card
-  TESTIMONIAL     // Single rotating testimonial
-  COUNTDOWN       // Event countdown timer
-  CTA_BANNER      // Call-to-action banner
-  BUTTON          // Custom styled button widget
-}
-
-// Newsletter Subscriber
-model NewsletterSubscriber {
-  id           String                   @id @default(cuid())
-  email        String                   @unique
-  name         String?
-  status       NewsletterSubscriberStatus @default(ACTIVE)
-  source       String?                  // website, import, api
-  subscribedAt DateTime                 @default(now())
-  unsubscribedAt DateTime?
-  confirmedAt  DateTime?                // For double opt-in
-  metadata     Json?                    // Additional data (IP, user agent, etc.)
-  createdAt    DateTime                 @default(now())
-  updatedAt    DateTime                 @updatedAt
-
-  @@index([status])
-  @@index([subscribedAt])
+  BRAND
+  LINKS
+  CONTACT
+  NEWSLETTER
+  SOCIAL
+  TEXT
+  RECENT_POSTS
+  SERVICES
+  STATES
+  CUSTOM_HTML
+  APP_DOWNLOAD
+  PAYMENT_METHODS
+  AWARDS
+  MAP
+  WORKING_HOURS
+  LANGUAGE_SELECT
+  THEME_TOGGLE
+  FEATURED_PRODUCT
+  TESTIMONIAL
+  COUNTDOWN
+  CTA_BANNER
+  BUTTON
 }
 
 enum NewsletterSubscriberStatus {
-  PENDING     // Awaiting confirmation (double opt-in)
-  ACTIVE      // Confirmed and active
+  PENDING
+  ACTIVE
   UNSUBSCRIBED
   BOUNCED
 }
 
-// ============================================
-// LANDING PAGE BUILDER
-// ============================================
-
-// Page template types - which page type this template serves
 enum PageTemplateType {
-  HOME              // Main homepage (/)
-  SERVICE_DETAILS   // Individual service pages (/services/[slug])
-  SERVICES_LIST     // Services listing page (/services)
-  BLOG_POST         // Individual blog posts (/blog/[slug])
-  BLOG_LIST         // Blog listing page (/blog)
-  ABOUT             // About page (/about)
-  CONTACT           // Contact page (/contact)
-  FAQ               // FAQ page (/faq)
-  CHECKOUT          // Checkout pages (/checkout/*)
-  PRICING           // Pricing page (/pricing)
-  CUSTOM            // Custom standalone pages
+  HOME
+  SERVICE_DETAILS
+  SERVICES_LIST
+  BLOG_POST
+  BLOG_LIST
+  ABOUT
+  CONTACT
+  CHECKOUT
+  CUSTOM
+  FAQ
+  PRICING
 }
 
-// Landing page definition
-model LandingPage {
-  id              String   @id @default(cuid())
-  slug            String   @unique // "homepage", "llc-landing", etc.
-  name            String   // "Homepage", "LLC Landing Page"
-  isActive        Boolean  @default(true)
-  isDefault       Boolean  @default(false) // Is this the main homepage? (deprecated, use templateType)
-  isSystem        Boolean  @default(false) // System pages cannot be deleted or have slug changed
-
-  // Template assignment (null = regular page, non-null = template for that page type)
-  templateType    PageTemplateType?  // Which page type this template serves
-  isTemplateActive Boolean @default(false) // Is this the active template for the page type?
-
-  // SEO
-  metaTitle       String?
-  metaDescription String?
-  ogImage         String?
-
-  // Page blocks
-  blocks          LandingPageBlock[]
-
-  // Timestamps
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  publishedAt     DateTime?
-
-  // Versioning
-  version         Int      @default(1)
-
-  @@index([slug])
-  @@index([isActive, isDefault])
-  @@index([templateType, isTemplateActive])
-}
-
-// Individual block on a landing page
-model LandingPageBlock {
-  id            String      @id @default(cuid())
-  landingPageId String
-  landingPage   LandingPage @relation(fields: [landingPageId], references: [id], onDelete: Cascade)
-
-  // Block identity
-  type          String      // "hero", "services-grid", "testimonials", etc.
-  name          String?     // Optional custom name for admin reference
-  sortOrder     Int         @default(0)
-  isActive      Boolean     @default(true)
-
-  // Block settings (JSON)
-  settings      Json        // Type-specific settings
-
-  // Responsive visibility
-  hideOnMobile  Boolean     @default(false)
-  hideOnDesktop Boolean     @default(false)
-
-  // A/B Testing (future)
-  variant       String?     // "A", "B", "C" for A/B testing
-
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-
-  @@index([landingPageId, sortOrder])
-  @@index([landingPageId, isActive])
-}
-
-// Reusable block templates
-model BlockTemplate {
-  id          String   @id @default(cuid())
-  name        String   // "Bizee-style Hero", "Minimal CTA"
-  category    String   // "hero", "cta", "testimonials"
-  type        String   // Block type this template is for
-  settings    Json     // Pre-configured settings
-  thumbnail   String?  // Preview image URL
-  isBuiltIn   Boolean  @default(false) // System template vs user-created
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([category])
-  @@index([type])
-}
-
-// ============================================
-// PLUGIN SYSTEM
-// ============================================
-
-// Plugin status enum
 enum PluginStatus {
-  INSTALLED    // Plugin is installed but not active
-  ACTIVE       // Plugin is installed and active
-  DISABLED     // Plugin is temporarily disabled
-  ERROR        // Plugin has an error
+  INSTALLED
+  ACTIVE
+  DISABLED
+  ERROR
 }
-
-// Installed plugins
-model Plugin {
-  id              String       @id @default(cuid())
-  slug            String       @unique // "livesupport-pro", "seo-tools"
-  name            String       // "LiveSupport Pro"
-  description     String?      @db.Text
-  version         String       // "1.0.0"
-  author          String?
-  authorUrl       String?
-  icon            String?      // Icon URL or emoji
-  status          PluginStatus @default(INSTALLED)
-
-  // Plugin manifest data (from plugin.json)
-  manifest        Json?        // Full plugin.json content
-
-  // Menu configuration
-  adminMenuLabel  String?      // "Support"
-  adminMenuIcon   String?      // "MessageSquare"
-  adminMenuPosition Int?       // Position in sidebar
-
-  // Feature flags
-  hasAdminPages   Boolean      @default(false)
-  hasPublicPages  Boolean      @default(false)
-  hasWidgets      Boolean      @default(false)
-  hasApiRoutes    Boolean      @default(false)
-
-  // Installation info
-  installedAt     DateTime     @default(now())
-  installedBy     String?      // User ID who installed
-  lastActivatedAt DateTime?
-  lastError       String?      @db.Text
-  errorAt         DateTime?
-
-  // License info
-  requiresLicense   Boolean    @default(true)
-  licenseKey        String?    // Encrypted license key
-  licensedDomain    String?    // Domain this license is bound to
-  licenseType       String?    // "regular" | "extended"
-  licenseVerifiedAt DateTime?  // Last successful verification
-  licenseExpiresAt  DateTime?  // Support expiry date
-  licenseToken      String?    @db.Text // JWT token from license server
-  licensePublicKey  String?    @db.Text // RSA public key for token verification
-  licenseTier       String?    // "basic" | "pro" | "enterprise"
-
-  // Plugin files location
-  pluginPath        String?    // Path to extracted plugin files
-
-  // Relations
-  settings        PluginSetting[]
-  menuItems       PluginMenuItem[]
-
-  updatedAt       DateTime     @updatedAt
-
-  @@index([slug])
-  @@index([status])
-}
-
-// Plugin-specific settings
-model PluginSetting {
-  id        String   @id @default(cuid())
-  pluginId  String
-  plugin    Plugin   @relation(fields: [pluginId], references: [id], onDelete: Cascade)
-
-  key       String   // "chat.enabled", "widget.position"
-  value     String   @db.Text
-  type      String   @default("string") // string, boolean, number, json
-
-  updatedAt DateTime @updatedAt
-
-  @@unique([pluginId, key])
-  @@index([pluginId])
-}
-
-// Plugin admin menu items (dynamic sidebar entries)
-model PluginMenuItem {
-  id          String   @id @default(cuid())
-  pluginId    String
-  plugin      Plugin   @relation(fields: [pluginId], references: [id], onDelete: Cascade)
-
-  label       String   // "All Tickets"
-  path        String   // "/admin/plugins/livesupport-pro/tickets"
-  icon        String?  // "Ticket"
-  parentLabel String?  // For nested items: "Support"
-  sortOrder   Int      @default(0)
-  isActive    Boolean  @default(true)
-
-  @@index([pluginId])
-  @@index([isActive])
-}
-
-// ============ AI SUPPORT SYSTEM ============
-
-// Knowledge Base Documents
-model KnowledgeDocument {
-  id        String   @id @default(cuid())
-  title     String
-  content   String   @db.Text
-  category  String   // "faq", "service", "policy", etc.
-  tags      String[] // For keyword matching
-  embedding Float[]  // Vector embedding for semantic search
-
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([category])
-  @@index([isActive])
-}
-
-// AI Generated Responses (for review/tracking)
-model AIResponse {
-  id         String   @id @default(cuid())
-  ticketId   String
-  ticket     SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-
-  content    String   @db.Text
-  confidence Float    @default(0)
-  sources    String[] // Knowledge base document titles used
-
-  wasUsed    Boolean  @default(false)
-  wasEdited  Boolean  @default(false)
-  usedAt     DateTime?
-
-  createdAt  DateTime @default(now())
-
-  @@index([ticketId])
-  @@index([wasUsed])
-  @@index([createdAt])
-}
-
-// ============================================
-// LEAD MANAGEMENT SYSTEM
-// ============================================
 
 enum LeadStatus {
   NEW
@@ -1887,204 +1596,4 @@ enum LeadPriority {
   MEDIUM
   HIGH
   URGENT
-}
-
-// Main Lead model
-model Lead {
-  id              String       @id @default(cuid())
-
-  // Contact Information
-  firstName       String
-  lastName        String?
-  email           String
-  phone           String?
-  company         String?
-  country         String?
-  city            String?
-
-  // Lead Qualification
-  status          LeadStatus   @default(NEW)
-  source          LeadSource   @default(WEBSITE)
-  sourceDetail    String?      // e.g., specific landing page URL, campaign name
-  score           Int          @default(0)    // 0-100 lead score
-  scoreHistory    Json?        // Track score changes over time
-  scoreDecayDays  Int          @default(0)    // Days since last activity for decay
-  priority        LeadPriority @default(MEDIUM)
-
-  // Engagement Tracking (for scoring)
-  pageViews       Int          @default(0)
-  lastPageViewed  String?
-  visitCount      Int          @default(1)
-  lastActivityAt  DateTime     @default(now())
-
-  // Assignment
-  assignedToId    String?
-  assignedTo      User?        @relation("AssignedLeads", fields: [assignedToId], references: [id])
-  assignedAt      DateTime?
-
-  // Service Interest
-  interestedIn    String[]     // Array of service slugs
-  budget          String?
-  timeline        String?
-
-  // Custom Fields (dynamic form fields)
-  customFields    Json?
-
-  // UTM Tracking
-  utmSource       String?
-  utmMedium       String?
-  utmCampaign     String?
-  utmTerm         String?
-  utmContent      String?
-
-  // Conversion Tracking
-  convertedAt     DateTime?
-  convertedToId   String?      // User ID if converted to customer
-
-  // Form Template Reference
-  formTemplateId    String?
-  formTemplate      LeadFormTemplate? @relation(fields: [formTemplateId], references: [id], onDelete: SetNull)
-  formTemplateName  String?      // Denormalized — preserved if template deleted
-
-  // Notes & Communication
-  notes           String?      @db.Text
-
-  // IP & Metadata
-  ipAddress       String?
-  userAgent       String?
-
-  // Relations
-  activities      LeadActivity[]
-  leadNotes       LeadNote[]
-
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
-
-  @@index([email])
-  @@index([status])
-  @@index([source])
-  @@index([assignedToId])
-  @@index([score])
-  @@index([createdAt])
-  @@index([priority])
-  @@index([formTemplateId])
-}
-
-// Lead Activity Log
-model LeadActivity {
-  id          String   @id @default(cuid())
-  leadId      String
-  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
-
-  // Activity details
-  type        String   // status_change, note_added, email_sent, call_made, meeting_scheduled, score_updated
-  description String
-  metadata    Json?    // Additional data (old/new status, score change, etc.)
-
-  // Who performed the action
-  performedById String?
-  performedBy   User?  @relation("PerformedActivities", fields: [performedById], references: [id])
-
-  createdAt   DateTime @default(now())
-
-  @@index([leadId])
-  @@index([type])
-  @@index([createdAt])
-}
-
-// Lead Notes (separate from activity log for longer notes)
-model LeadNote {
-  id          String   @id @default(cuid())
-  leadId      String
-  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
-
-  content     String   @db.Text
-  isPinned    Boolean  @default(false)
-
-  // Author
-  authorId    String
-  author      User     @relation("AuthoredLeadNotes", fields: [authorId], references: [id])
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([leadId])
-  @@index([authorId])
-}
-
-// Lead Form Templates (reusable field definitions)
-model LeadFormTemplate {
-  id                String   @id @default(cuid())
-  name              String   // "LLC Lead Form"
-  description       String?
-  fields            Json     // Field definitions array
-
-  // Settings
-  successMessage    String?
-  successRedirect   String?
-  autoAssignToId    String?
-
-  // Styling defaults
-  defaultStyling    Json?
-
-  // Management
-  isActive          Boolean  @default(true)
-  isSystem          Boolean  @default(false) // System templates can't be deleted
-  usageCount        Int      @default(0)
-
-  // Stats
-  submissionCount   Int      @default(0)
-  lastSubmission    DateTime?
-
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  // Relations
-  leads             Lead[]
-
-  @@index([isActive])
-}
-
-
-// Global Tracking Settings (GTM, FB Pixel, Google Ads)
-model TrackingSettings {
-  id              String   @id @default(cuid())
-
-  // Google Tag Manager
-  gtmEnabled      Boolean  @default(false)
-  gtmContainerId  String?
-  gtmTrackForms   Boolean  @default(true)
-  gtmTrackPages   Boolean  @default(true)
-
-  // Facebook Pixel
-  fbPixelEnabled  Boolean  @default(false)
-  fbPixelId       String?
-  fbTrackLead     Boolean  @default(true)
-  fbTrackPageView Boolean  @default(true)
-  fbTrackContent  Boolean  @default(false)
-
-  // Google Ads
-  gadsEnabled         Boolean  @default(false)
-  gadsConversionId    String?
-  gadsConversionLabel String?
-  gadsDefaultValue    Float?
-
-  // TikTok (Future)
-  tiktokEnabled   Boolean  @default(false)
-  tiktokPixelId   String?
-
-  updatedAt       DateTime @updatedAt
-}
-
-// ============ THEME SYSTEM ============
-model ActiveTheme {
-  id                   String   @id @default(cuid())
-  themeId              String   @unique // "legal", "agency", "cleaning", etc.
-  themeName            String
-  activatedAt          DateTime @default(now())
-  colorPalette         Json?    // Current (possibly customized) color palette
-  originalColorPalette Json?    // Original palette from theme file (for reset)
-  fontConfig           Json?    // { headingFont: string, bodyFont: string }
-
-  @@index([themeId])
 }
