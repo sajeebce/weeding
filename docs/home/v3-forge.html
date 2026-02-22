@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LLCPad — Your US Business, Built Right | FORGE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --cream:#faf8f4; --cream-2:#f0ede5; --cream-3:#e6e1d6;
+  --forest:#1b3a2d; --forest-2:#0f2318; --forest-3:#253d30;
+  --forest-light:rgba(27,58,45,0.07);
+  --coral:#e84c1e; --coral-2:#ff6a3d; --coral-dim:rgba(232,76,30,0.1);
+  --white:#ffffff;
+  --ink:#0e1109; --ink-2:#1c2117;
+  --text-dark:#1a1f16; --text-mid:#4b5249; --text-faint:#8a9086;
+  --border-light:rgba(14,17,9,0.1); --border-forest:rgba(27,58,45,0.15);
+  --nav-h:72px;
+}
+html{scroll-behavior:smooth;overflow-x:hidden}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--cream);color:var(--text-dark);line-height:1.65;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button{cursor:pointer;font-family:inherit}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--cream)}
+::-webkit-scrollbar-thumb{background:var(--forest);border-radius:3px}
+.container{max-width:1160px;margin:0 auto;padding:0 28px}
+
+/* ===== TYPOGRAPHY ===== */
+.display{font-family:'Outfit',sans-serif;font-weight:800;letter-spacing:-0.03em;line-height:1.05}
+
+/* ===== BUTTONS ===== */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:13px 26px;border-radius:8px;font-size:14px;font-weight:600;border:none;cursor:pointer;transition:all .22s ease;font-family:inherit;white-space:nowrap}
+.btn--forest{background:var(--forest);color:#fff}
+.btn--forest:hover{background:var(--forest-2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(27,58,45,0.3)}
+.btn--coral{background:var(--coral);color:#fff}
+.btn--coral:hover{background:#d13d10;transform:translateY(-2px);box-shadow:0 8px 24px rgba(232,76,30,0.35)}
+.btn--outline-dark{background:transparent;color:var(--text-dark);border:1.5px solid var(--border-light)}
+.btn--outline-dark:hover{border-color:var(--text-dark);background:var(--forest-light)}
+.btn--outline-cream{background:transparent;color:var(--cream);border:1.5px solid rgba(250,248,244,0.3)}
+.btn--outline-cream:hover{background:rgba(250,248,244,0.1);border-color:rgba(250,248,244,0.6)}
+.btn--lg{padding:16px 34px;font-size:15px;border-radius:10px}
+.btn svg{width:16px;height:16px;flex-shrink:0}
+
+/* ===== ANIMATIONS ===== */
+@keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideRight{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:translateX(0)}}
+@keyframes slideLeft{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:translateX(0)}}
+@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+
+.r{opacity:0;transform:translateY(24px);transition:opacity .65s cubic-bezier(.16,1,.3,1),transform .65s cubic-bezier(.16,1,.3,1)}
+.r.on{opacity:1;transform:none}
+.r-right{opacity:0;transform:translateX(-20px);transition:opacity .65s cubic-bezier(.16,1,.3,1),transform .65s cubic-bezier(.16,1,.3,1)}
+.r-right.on{opacity:1;transform:none}
+.r-left{opacity:0;transform:translateX(20px);transition:opacity .65s cubic-bezier(.16,1,.3,1),transform .65s cubic-bezier(.16,1,.3,1)}
+.r-left.on{opacity:1;transform:none}
+.d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}.d4{transition-delay:.32s}.d5{transition-delay:.40s}
+
+/* ===== ANNOUNCEMENT BAR ===== */
+.announce{background:var(--forest);color:var(--cream);text-align:center;padding:10px 24px;font-size:13px;font-weight:500;position:relative;z-index:201}
+.announce a{color:var(--coral-2);text-decoration:underline;font-weight:600}
+.announce__close{position:absolute;right:16px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--cream);opacity:.6;cursor:pointer;font-size:18px;line-height:1}
+
+/* ===== HEADER ===== */
+.header{position:sticky;top:0;z-index:200;background:rgba(250,248,244,0.92);backdrop-filter:blur(20px) saturate(1.5);border-bottom:1px solid var(--border-light);height:var(--nav-h);display:flex;align-items:center}
+.header__inner{max-width:1160px;margin:0 auto;width:100%;padding:0 28px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+.header__logo{display:flex;align-items:center;gap:10px;font-family:'Outfit',sans-serif;font-size:21px;font-weight:800;letter-spacing:-0.02em;color:var(--ink)}
+.header__logo-badge{width:36px;height:36px;background:var(--forest);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.header__logo-badge svg{width:20px;height:20px;color:var(--cream-2)}
+.header__logo span{color:var(--coral)}
+
+.header__nav{display:flex;gap:2px;list-style:none}
+.header__nav a{padding:7px 14px;border-radius:7px;font-size:14px;font-weight:500;color:var(--text-mid);transition:color .2s,background .2s;display:block}
+.header__nav a:hover{color:var(--text-dark);background:var(--forest-light)}
+
+.header__right{display:flex;gap:10px;align-items:center}
+.header__right .btn{padding:9px 20px;font-size:13px}
+
+.header__burger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:4px}
+.header__burger span{display:block;width:22px;height:2px;background:var(--ink);border-radius:2px;transition:all .3s}
+
+/* Mobile nav */
+.mob{position:fixed;inset:0;z-index:199;background:var(--cream);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;opacity:0;pointer-events:none;transition:opacity .3s}
+.mob.open{opacity:1;pointer-events:auto}
+.mob a{font-family:'Outfit',sans-serif;font-size:24px;font-weight:700;color:var(--text-mid);transition:color .2s}
+.mob a:hover{color:var(--ink)}
+.mob__x{position:absolute;top:20px;right:24px;background:none;border:none;cursor:pointer}
+.mob__x svg{width:26px;height:26px;color:var(--ink)}
+
+/* ===== HERO — LIGHT ===== */
+.hero{background:var(--cream);padding:80px 0 0;position:relative;overflow:hidden}
+.hero__decor{position:absolute;top:-60px;right:-80px;width:500px;height:500px;border-radius:50%;border:1px solid var(--border-forest);opacity:.4;pointer-events:none}
+.hero__decor-2{position:absolute;bottom:-120px;left:-100px;width:400px;height:400px;border-radius:50%;border:1px solid var(--border-forest);opacity:.25}
+
+.hero__layout{display:grid;grid-template-columns:1fr 420px;gap:64px;align-items:flex-end;padding-bottom:0}
+.hero__left{padding-bottom:80px}
+
+.hero__tag{display:inline-flex;align-items:center;gap:8px;padding:6px 14px 6px 8px;background:var(--white);border:1px solid var(--border-light);border-radius:999px;font-size:13px;font-weight:500;color:var(--text-mid);margin-bottom:28px;box-shadow:0 2px 8px rgba(0,0,0,0.05)}
+.hero__tag-dot{width:8px;height:8px;border-radius:50%;background:var(--coral);animation:pulse 2s ease-in-out infinite}
+
+.hero__title{font-family:'Outfit',sans-serif;font-size:clamp(44px,6vw,76px);font-weight:900;letter-spacing:-0.04em;line-height:1.0;color:var(--ink);margin-bottom:28px}
+.hero__title .line2{color:var(--forest)}
+.hero__title .underline-coral{position:relative;display:inline-block}
+.hero__title .underline-coral::after{content:'';position:absolute;bottom:-4px;left:0;right:0;height:6px;background:var(--coral);border-radius:3px;opacity:.7}
+
+.hero__sub{font-size:18px;color:var(--text-mid);line-height:1.75;max-width:480px;margin-bottom:40px}
+.hero__actions{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:44px}
+.hero__proof{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.hero__avatars{display:flex}
+.hero__avatars span{width:36px;height:36px;border-radius:50%;border:2px solid var(--cream);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;margin-left:-10px}
+.hero__avatars span:first-child{margin-left:0}
+.hero__avatars span:nth-child(1){background:#059669}
+.hero__avatars span:nth-child(2){background:#7c3aed}
+.hero__avatars span:nth-child(3){background:#dc2626}
+.hero__avatars span:nth-child(4){background:#d97706}
+.hero__avatars span:nth-child(5){background:#0284c7}
+.hero__proof-text{font-size:13px;color:var(--text-mid)}
+.hero__proof-text strong{color:var(--ink);font-weight:700}
+
+/* Hero right: Visual card */
+.hero__right{position:relative;align-self:flex-end}
+.hero__card{background:var(--forest);border-radius:24px 24px 0 0;padding:32px;color:var(--cream);position:relative;overflow:hidden}
+.hero__card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--coral),var(--coral-2),transparent)}
+.hero__card-title{font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(250,248,244,0.5);margin-bottom:20px}
+.hero__steps{display:flex;flex-direction:column;gap:12px;margin-bottom:24px}
+.hstep{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08)}
+.hstep--active{background:rgba(232,76,30,0.15);border-color:rgba(232,76,30,0.3)}
+.hstep__num{width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;font-family:'Outfit',sans-serif;flex-shrink:0}
+.hstep--active .hstep__num{background:var(--coral);color:#fff}
+.hstep__label{font-size:14px;font-weight:600;color:var(--cream);flex:1}
+.hstep__status{font-size:11px;font-weight:600;color:rgba(250,248,244,0.4)}
+.hstep--active .hstep__status{color:var(--coral-2)}
+.hstep--done .hstep__status{color:#4ade80}
+.hero__card-footer{padding-top:20px;border-top:1px solid rgba(255,255,255,0.08);display:flex;justify-content:space-between;align-items:center}
+.hero__card-footer-stat{text-align:center}
+.hero__card-footer-stat strong{font-family:'Outfit',sans-serif;font-size:22px;font-weight:800;color:var(--cream);display:block}
+.hero__card-footer-stat span{font-size:11px;color:rgba(250,248,244,0.45);text-transform:uppercase;letter-spacing:.5px}
+
+/* ===== TICKER — DARK ===== */
+.ticker{background:var(--forest-2);padding:16px 0;overflow:hidden;border-top:1px solid rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.06)}
+.ticker__track{display:flex;gap:0;width:max-content;animation:marquee 28s linear infinite}
+.ticker__item{display:flex;align-items:center;gap:10px;padding:0 36px;font-size:13px;font-weight:600;color:rgba(250,248,244,0.5);white-space:nowrap;border-right:1px solid rgba(255,255,255,0.07)}
+.ticker__item .sep{color:var(--coral);margin:0 4px;opacity:.7}
+.ticker__item strong{color:rgba(250,248,244,0.85)}
+
+/* ===== STATS — DARK FOREST ===== */
+.stats-section{background:var(--forest);padding:80px 0;position:relative;overflow:hidden}
+.stats-section::before{content:'LLC';position:absolute;right:-40px;top:50%;transform:translateY(-50%) rotate(90deg);font-family:'Outfit',sans-serif;font-size:240px;font-weight:900;color:rgba(255,255,255,0.025);pointer-events:none;white-space:nowrap;letter-spacing:-8px}
+.stats-layout{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+.stats-left h2{font-family:'Outfit',sans-serif;font-size:clamp(32px,4vw,48px);font-weight:800;color:var(--cream);line-height:1.15;letter-spacing:-0.025em;margin-bottom:20px}
+.stats-left h2 em{color:var(--coral-2);font-style:normal}
+.stats-left p{font-size:16px;color:rgba(250,248,244,0.55);line-height:1.75;max-width:380px;margin-bottom:32px}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(255,255,255,0.07);border-radius:20px;overflow:hidden}
+.stat-box{padding:32px 28px;background:rgba(255,255,255,0.04)}
+.stat-box__num{font-family:'Outfit',sans-serif;font-size:48px;font-weight:900;color:var(--cream);letter-spacing:-0.04em;line-height:1}
+.stat-box__num em{color:var(--coral-2);font-style:normal}
+.stat-box__label{font-size:13px;color:rgba(250,248,244,0.45);margin-top:8px;font-weight:500;letter-spacing:.3px}
+
+/* ===== SERVICES — WHITE ===== */
+.services-section{background:var(--white);padding:100px 0}
+.services-header{display:flex;justify-content:space-between;align-items:flex-end;gap:32px;margin-bottom:56px}
+.services-header__left .eyebrow{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--coral);margin-bottom:12px}
+.services-header__left h2{font-family:'Outfit',sans-serif;font-size:clamp(30px,4vw,46px);font-weight:800;letter-spacing:-0.025em;line-height:1.1;color:var(--ink)}
+.services-header__right{font-size:15px;color:var(--text-mid);max-width:340px;line-height:1.7;flex-shrink:0}
+
+.services-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:20px}
+.svc{border-radius:16px;padding:32px 28px;border:1.5px solid var(--border-light);transition:all .35s cubic-bezier(.16,1,.3,1);position:relative;overflow:hidden;background:var(--white)}
+.svc:hover{border-color:var(--forest);box-shadow:0 16px 48px rgba(27,58,45,0.1);transform:translateY(-4px)}
+.svc::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--forest);transform:scaleX(0);transform-origin:left;transition:transform .35s ease}
+.svc:hover::after{transform:scaleX(1)}
+.svc--coral:hover{border-color:var(--coral)}
+.svc--coral::after{background:var(--coral)}
+
+.svc--a{grid-column:span 5}.svc--b{grid-column:span 3}.svc--c{grid-column:span 4}
+.svc--d{grid-column:span 4}.svc--e{grid-column:span 4}.svc--f{grid-column:span 4}
+.svc--g{grid-column:span 6}.svc--h{grid-column:span 6}
+
+.svc__meta{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:18px}
+.svc__tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:3px 9px;border-radius:100px;white-space:nowrap}
+.svc__tag--f{background:rgba(232,76,30,0.1);color:var(--coral)}
+.svc__tag--e{background:rgba(0,100,220,0.1);color:#0064dc}
+.svc__tag--c{background:rgba(42,94,62,0.1);color:var(--forest)}
+.svc__tag--p{background:rgba(124,58,237,0.1);color:#7c3aed}
+.svc__badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:100px;white-space:nowrap;letter-spacing:0.3px}
+.svc__badge--popular{background:var(--coral);color:#fff}
+.svc__badge--trending{background:#0064dc;color:#fff}
+.svc__badge--demand{background:var(--forest);color:#fff}
+.svc__badge--emergency{background:#dc2626;color:#fff}
+
+.svc__icon{width:52px;height:52px;border-radius:14px;background:var(--forest-light);display:flex;align-items:center;justify-content:center;margin-bottom:18px;transition:all .3s}
+.svc:hover .svc__icon{background:var(--forest)}
+.svc__icon svg{width:24px;height:24px;color:var(--forest);transition:color .3s}
+.svc:hover .svc__icon svg{color:var(--cream)}
+.svc--coral .svc__icon{background:var(--coral-dim)}
+.svc--coral:hover .svc__icon{background:var(--coral)}
+.svc--coral .svc__icon svg{color:var(--coral)}
+.svc--coral:hover .svc__icon svg{color:#fff}
+.svc--blue:hover{border-color:#0064dc}
+.svc--blue::after{background:#0064dc}
+.svc--blue .svc__icon{background:rgba(0,100,220,0.08)}
+.svc--blue .svc__icon svg{color:#0064dc}
+.svc--blue:hover .svc__icon{background:#0064dc}
+.svc--blue:hover .svc__icon svg{color:#fff}
+.svc--blue .svc__price{color:#0064dc}
+.svc--blue:hover .svc__link{color:#0064dc}
+.svc--purple:hover{border-color:#7c3aed}
+.svc--purple::after{background:#7c3aed}
+.svc--purple .svc__icon{background:rgba(124,58,237,0.08)}
+.svc--purple .svc__icon svg{color:#7c3aed}
+.svc--purple:hover .svc__icon{background:#7c3aed}
+.svc--purple:hover .svc__icon svg{color:#fff}
+.svc--purple .svc__price{color:#7c3aed}
+.svc--purple:hover .svc__link{color:#7c3aed}
+
+.svc h3{font-family:'Outfit',sans-serif;font-size:18px;font-weight:700;color:var(--ink);margin-bottom:8px;letter-spacing:-0.01em}
+.svc p{font-size:13px;color:var(--text-mid);line-height:1.65;margin-bottom:16px}
+.svc__foot{display:flex;align-items:center;justify-content:space-between;padding-top:16px;border-top:1px solid var(--border-light)}
+.svc__price{font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;color:var(--forest)}
+.svc--coral .svc__price{color:var(--coral)}
+.svc__link{font-size:13px;font-weight:600;color:var(--text-faint);display:flex;align-items:center;gap:4px;transition:color .2s}
+.svc:hover .svc__link{color:var(--forest)}
+.svc--coral:hover .svc__link{color:var(--coral)}
+.svc__link svg{width:14px;height:14px}
+
+/* ===== PROCESS — GRAY ===== */
+.process-section{background:var(--cream-2);padding:100px 0;position:relative;overflow:hidden}
+.process-section::after{content:'04';position:absolute;right:-20px;bottom:20px;font-family:'Outfit',sans-serif;font-size:200px;font-weight:900;color:rgba(27,58,45,0.04);pointer-events:none;line-height:1}
+.process-header{text-align:center;margin-bottom:60px}
+.process-header .eyebrow{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--forest);margin-bottom:12px}
+.process-header h2{font-family:'Outfit',sans-serif;font-size:clamp(30px,4vw,46px);font-weight:800;letter-spacing:-0.025em;color:var(--ink)}
+
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:0;position:relative}
+.steps::before{content:'';position:absolute;top:40px;left:12%;right:12%;height:1px;border-top:2px dashed var(--border-forest);pointer-events:none}
+.step-card{padding:0 20px;text-align:center;position:relative}
+.step-card__circle{width:80px;height:80px;border-radius:50%;margin:0 auto 24px;background:var(--white);border:2px solid var(--border-light);display:flex;align-items:center;justify-content:center;position:relative;z-index:2;transition:all .4s;box-shadow:0 4px 16px rgba(0,0,0,0.05)}
+.step-card:hover .step-card__circle{border-color:var(--forest);background:var(--forest);box-shadow:0 8px 28px rgba(27,58,45,0.2)}
+.step-card__circle svg{width:30px;height:30px;color:var(--forest);transition:color .3s}
+.step-card:hover .step-card__circle svg{color:var(--cream)}
+.step-card__n{position:absolute;top:-8px;right:calc(50% - 50px);width:24px;height:24px;border-radius:50%;background:var(--coral);color:#fff;font-family:'Outfit',sans-serif;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.step-card h3{font-family:'Outfit',sans-serif;font-size:17px;font-weight:700;color:var(--ink);margin-bottom:10px}
+.step-card p{font-size:13px;color:var(--text-mid);line-height:1.65}
+
+/* ===== WHY US — DARK ===== */
+.why-section{background:var(--forest-2);padding:100px 0;position:relative;overflow:hidden}
+.why-section::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,0.03) 1px,transparent 1px);background-size:36px 36px}
+.why-layout{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+.why-left h2{font-family:'Outfit',sans-serif;font-size:clamp(30px,4vw,46px);font-weight:800;color:var(--cream);letter-spacing:-0.025em;line-height:1.15;margin-bottom:20px}
+.why-left h2 em{color:var(--coral-2);font-style:normal}
+.why-left p{font-size:16px;color:rgba(250,248,244,0.55);line-height:1.75;margin-bottom:36px}
+.why-reasons{display:flex;flex-direction:column;gap:16px}
+.reason{display:flex;gap:16px;align-items:flex-start;padding:20px;border-radius:14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);transition:all .3s}
+.reason:hover{background:rgba(255,255,255,0.07);border-color:rgba(232,76,30,0.2)}
+.reason__icon{width:42px;height:42px;border-radius:12px;background:rgba(232,76,30,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.reason__icon svg{width:20px;height:20px;color:var(--coral-2)}
+.reason h4{font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;color:var(--cream);margin-bottom:4px}
+.reason p{font-size:13px;color:rgba(250,248,244,0.5);line-height:1.6}
+
+/* Right: large number visual */
+.why-right{display:flex;flex-direction:column;gap:20px}
+.why-metric{padding:28px 32px;border-radius:20px;border:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.04);transition:all .3s}
+.why-metric:hover{background:rgba(255,255,255,0.08)}
+.why-metric__num{font-family:'Outfit',sans-serif;font-size:56px;font-weight:900;color:var(--cream);letter-spacing:-0.04em;line-height:1}
+.why-metric__num sub{font-size:28px;color:var(--coral-2)}
+.why-metric__label{font-size:13px;color:rgba(250,248,244,0.4);margin-top:8px;text-transform:uppercase;letter-spacing:.8px;font-weight:600}
+
+/* ===== PRICING — WHITE ===== */
+.pricing-section{background:var(--white);padding:100px 0}
+.pricing-top{text-align:center;margin-bottom:56px}
+.pricing-top .eyebrow{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--coral);margin-bottom:12px}
+.pricing-top h2{font-family:'Outfit',sans-serif;font-size:clamp(30px,4vw,46px);font-weight:800;letter-spacing:-0.025em;color:var(--ink);margin-bottom:14px}
+.pricing-top p{font-size:16px;color:var(--text-mid);max-width:480px;margin:0 auto}
+
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.pc{border-radius:20px;padding:36px 28px;border:1.5px solid var(--border-light);display:flex;flex-direction:column;position:relative;transition:all .4s cubic-bezier(.16,1,.3,1)}
+.pc:hover{transform:translateY(-6px);box-shadow:0 24px 64px rgba(0,0,0,0.08)}
+.pc--mid{border-color:var(--forest);box-shadow:0 0 0 1px var(--forest);background:linear-gradient(160deg,rgba(27,58,45,0.04),var(--white))}
+.pc--mid:hover{box-shadow:0 24px 64px rgba(27,58,45,0.15),0 0 0 1px var(--forest)}
+.pc__cap{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--forest);color:var(--cream);padding:5px 18px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;white-space:nowrap;font-family:'Outfit',sans-serif}
+.pc__tier{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-faint);margin-bottom:8px;font-family:'Outfit',sans-serif}
+.pc__name{font-family:'Outfit',sans-serif;font-size:26px;font-weight:800;color:var(--ink);margin-bottom:6px}
+.pc__tagline{font-size:14px;color:var(--text-mid);margin-bottom:28px;line-height:1.4}
+.pc__price{font-family:'Outfit',sans-serif;font-size:52px;font-weight:900;color:var(--ink);letter-spacing:-0.04em;line-height:1;margin-bottom:6px}
+.pc__price sup{font-size:26px;vertical-align:top;margin-top:12px}
+.pc__price sub{font-size:16px;color:var(--text-mid);font-weight:500}
+.pc__note{font-size:12px;color:var(--text-faint);margin:8px 0 24px;padding-bottom:24px;border-bottom:1px solid var(--border-light)}
+.pc__list{list-style:none;flex:1;display:flex;flex-direction:column;gap:2px;margin-bottom:28px}
+.pc__list li{display:flex;align-items:flex-start;gap:10px;padding:7px 0;font-size:14px}
+.pc__list li svg{width:17px;height:17px;flex-shrink:0;margin-top:2px}
+.pc__list .y svg{color:var(--forest)}
+.pc__list .n{color:var(--text-faint);opacity:.6}
+.pc__list .n svg{color:var(--border-light)}
+.pc .btn{width:100%;justify-content:center}
+
+/* ===== TESTIMONIALS — FOREST ===== */
+.test-section{background:var(--forest);padding:100px 0;overflow:hidden}
+.test-top{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:56px;gap:32px}
+.test-top-left .eyebrow{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--coral-2);margin-bottom:12px}
+.test-top-left h2{font-family:'Outfit',sans-serif;font-size:clamp(28px,3.5vw,42px);font-weight:800;color:var(--cream);letter-spacing:-0.025em;line-height:1.15}
+.test-top-right{font-size:15px;color:rgba(250,248,244,0.45);max-width:320px;line-height:1.7;flex-shrink:0}
+.test-top-right strong{color:rgba(250,248,244,0.8)}
+
+.test-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.tc{padding:28px;border-radius:20px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.07);transition:all .3s;position:relative}
+.tc:hover{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.12);transform:translateY(-4px)}
+.tc__quote{font-family:'Outfit',sans-serif;font-size:42px;color:var(--coral-2);opacity:.4;line-height:1;margin-bottom:-10px}
+.tc__stars{display:flex;gap:3px;margin-bottom:14px}
+.tc__stars svg{width:14px;height:14px;fill:var(--coral-2);color:var(--coral-2)}
+.tc__text{font-size:14px;color:rgba(250,248,244,0.65);line-height:1.75;margin-bottom:20px;font-style:italic}
+.tc__hr{height:1px;background:rgba(255,255,255,0.08);margin-bottom:16px}
+.tc__author{display:flex;align-items:center;gap:12px}
+.tc__av{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Outfit',sans-serif;font-size:14px;font-weight:800;color:#fff;flex-shrink:0}
+.tc:nth-child(1) .tc__av{background:rgba(232,76,30,0.6)}
+.tc:nth-child(2) .tc__av{background:rgba(5,150,105,0.6)}
+.tc:nth-child(3) .tc__av{background:rgba(124,58,237,0.6)}
+.tc__name{font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;color:var(--cream)}
+.tc__role{font-size:12px;color:rgba(250,248,244,0.4);margin-top:2px}
+.tc__flag{font-size:12px;color:rgba(250,248,244,0.3);margin-top:2px}
+
+/* ===== CONTACT FORM — CREAM ===== */
+.contact-section{background:var(--cream-2);padding:100px 0}
+.contact-layout{display:grid;grid-template-columns:1fr 1.1fr;gap:80px;align-items:flex-start}
+
+.contact-left{position:sticky;top:calc(var(--nav-h)+24px)}
+.contact-left .eyebrow{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--coral);margin-bottom:14px}
+.contact-left h2{font-family:'Outfit',sans-serif;font-size:clamp(28px,3.5vw,42px);font-weight:800;color:var(--ink);letter-spacing:-0.025em;line-height:1.15;margin-bottom:18px}
+.contact-left p{font-size:16px;color:var(--text-mid);line-height:1.75;margin-bottom:36px}
+.contact-perks{display:flex;flex-direction:column;gap:14px}
+.cperk{display:flex;align-items:flex-start;gap:12px}
+.cperk__icon{width:36px;height:36px;border-radius:10px;background:var(--white);border:1px solid var(--border-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.05)}
+.cperk__icon svg{width:18px;height:18px;color:var(--forest)}
+.cperk__text h4{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:2px}
+.cperk__text p{font-size:13px;color:var(--text-mid)}
+
+/* Form */
+.contact-form{background:var(--white);border-radius:24px;padding:40px 36px;border:1.5px solid var(--border-light);box-shadow:0 8px 40px rgba(0,0,0,0.06)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.field{position:relative;margin-bottom:16px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--text-mid);text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px}
+.field input,.field select,.field textarea{
+  width:100%;padding:13px 16px;border-radius:10px;
+  border:1.5px solid var(--border-light);background:var(--cream);
+  font-size:14px;font-family:inherit;color:var(--ink);
+  transition:border-color .2s,box-shadow .2s;outline:none;
+  -webkit-appearance:none;appearance:none;
+}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--forest);box-shadow:0 0 0 3px rgba(27,58,45,0.08);background:var(--white)}
+.field textarea{resize:vertical;min-height:120px;line-height:1.6}
+.field select{background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' fill='none' stroke='%234b5249' stroke-width='2' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;background-size:18px;padding-right:42px;cursor:pointer}
+.field input::placeholder,.field textarea::placeholder{color:var(--text-faint)}
+.form-submit{margin-top:4px}
+.form-submit .btn{width:100%;justify-content:center;padding:16px;font-size:15px}
+.form-note{font-size:12px;color:var(--text-faint);text-align:center;margin-top:14px;line-height:1.5}
+.form-trust{display:flex;gap:16px;justify-content:center;margin-top:16px}
+.form-trust span{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-faint);font-weight:600}
+.form-trust span svg{width:13px;height:13px;color:var(--forest)}
+
+/* ===== FOOTER — DARK ===== */
+.footer{background:var(--forest-2);color:var(--cream);padding:80px 0 0}
+.footer__top{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:56px;padding-bottom:60px;border-bottom:1px solid rgba(255,255,255,0.07)}
+
+.footer__brand{}
+.footer__wordmark{font-family:'Outfit',sans-serif;font-size:32px;font-weight:900;letter-spacing:-0.04em;color:var(--cream);margin-bottom:14px;line-height:1}
+.footer__wordmark span{color:var(--coral-2)}
+.footer__tagline{font-size:15px;color:rgba(250,248,244,0.45);line-height:1.7;max-width:280px;margin-bottom:28px}
+.footer__social{display:flex;gap:10px}
+.footer__social a{width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;transition:all .2s}
+.footer__social a:hover{background:rgba(255,255,255,0.14);border-color:rgba(255,255,255,0.15)}
+.footer__social svg{width:16px;height:16px;color:rgba(250,248,244,0.6)}
+
+.footer__col h5{font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:rgba(250,248,244,0.35);margin-bottom:18px}
+.footer__col ul{list-style:none;display:flex;flex-direction:column;gap:10px}
+.footer__col a{font-size:14px;color:rgba(250,248,244,0.5);transition:color .2s}
+.footer__col a:hover{color:var(--cream)}
+
+.footer__newsletter{margin-top:24px}
+.footer__newsletter p{font-size:13px;color:rgba(250,248,244,0.4);margin-bottom:12px}
+.newsletter-form{display:flex;gap:8px}
+.newsletter-form input{flex:1;padding:10px 14px;border-radius:8px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);color:var(--cream);font-size:13px;font-family:inherit;outline:none;transition:border-color .2s}
+.newsletter-form input:focus{border-color:rgba(255,255,255,0.25)}
+.newsletter-form input::placeholder{color:rgba(250,248,244,0.3)}
+.newsletter-form button{padding:10px 16px;border-radius:8px;background:var(--coral);border:none;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .2s}
+.newsletter-form button:hover{background:var(--coral-2)}
+
+.footer__mid{display:flex;align-items:center;justify-content:space-between;padding:28px 0;border-bottom:1px solid rgba(255,255,255,0.07);flex-wrap:wrap;gap:16px}
+.footer__badges{display:flex;gap:10px;flex-wrap:wrap}
+.footer__badge{padding:5px 12px;border-radius:6px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);font-size:11px;color:rgba(250,248,244,0.4);font-weight:600}
+.footer__countries{font-size:13px;color:rgba(250,248,244,0.35);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.footer__countries span{background:rgba(255,255,255,0.05);padding:3px 10px;border-radius:5px;font-size:12px}
+
+.footer__bottom{padding:24px 0;display:flex;justify-content:space-between;align-items:flex-start;gap:24px;flex-wrap:wrap}
+.footer__copy{font-size:13px;color:rgba(250,248,244,0.3)}
+.footer__legal{display:flex;gap:20px;flex-wrap:wrap}
+.footer__legal a{font-size:13px;color:rgba(250,248,244,0.3);transition:color .2s}
+.footer__legal a:hover{color:rgba(250,248,244,0.6)}
+.footer__disclaimer{font-size:11px;color:rgba(250,248,244,0.2);max-width:700px;line-height:1.6;margin-top:4px}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:1024px){
+  .header__nav{display:none}
+  .header__right .btn:first-child{display:none}
+  .header__burger{display:flex}
+  .hero__layout{grid-template-columns:1fr;gap:40px}
+  .hero__right{display:none}
+  .stats-layout{grid-template-columns:1fr}
+  .stats-grid{grid-template-columns:repeat(4,1fr)}
+  .services-header{flex-direction:column;align-items:flex-start}
+  .services-grid{grid-template-columns:repeat(6,1fr)}
+  .svc--a,.svc--b,.svc--c,.svc--d,.svc--e,.svc--f{grid-column:span 3}
+  .svc--g,.svc--h{grid-column:span 6}
+  .steps{grid-template-columns:repeat(2,1fr);gap:40px}
+  .steps::before{display:none}
+  .why-layout{grid-template-columns:1fr}
+  .pricing-grid{grid-template-columns:1fr;max-width:420px;margin:0 auto}
+  .test-cards{grid-template-columns:1fr 1fr}
+  .test-cards .tc:last-child{display:none}
+  .contact-layout{grid-template-columns:1fr;gap:48px}
+  .contact-left{position:static}
+  .footer__top{grid-template-columns:1fr 1fr;gap:36px}
+}
+@media(max-width:640px){
+  .hero__title{font-size:42px}
+  .form-row{grid-template-columns:1fr}
+  .steps{grid-template-columns:1fr;max-width:280px;margin:0 auto}
+  .services-grid{grid-template-columns:1fr}
+  .svc--a,.svc--b,.svc--c,.svc--d,.svc--e,.svc--f,.svc--g,.svc--h{grid-column:span 1}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .test-cards{grid-template-columns:1fr}
+  .test-cards .tc:last-child{display:block}
+  .footer__top{grid-template-columns:1fr}
+  .hero__actions{flex-direction:column}
+  .hero__actions .btn{width:100%;justify-content:center}
+  .why-right{display:none}
+  .contact-form{padding:28px 20px}
+  .footer__bottom{flex-direction:column}
+}
+@media(prefers-reduced-motion:reduce){
+  *,.r,.r-right,.r-left{animation-duration:.01ms!important;transition-duration:.01ms!important}
+  .r,.r-right,.r-left{opacity:1;transform:none}
+}
+
+/* ===== HERO LEAD FORM ===== */
+.hero__lead-form{background:var(--white);border-radius:22px;padding:30px 26px;box-shadow:0 20px 60px rgba(27,58,45,0.14);border:1.5px solid var(--border-light);position:relative;overflow:hidden}
+.hero__lead-form::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--coral),var(--coral-2))}
+.hlf-head{margin-bottom:18px}
+.hlf-title{font-family:'Outfit',sans-serif;font-size:18px;font-weight:800;color:var(--ink);margin-bottom:4px;letter-spacing:-0.02em}
+.hlf-sub{font-size:12px;color:var(--text-mid)}
+.hlf-row{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.hlf-field{margin-bottom:9px}
+.hlf-field input,.hlf-field select{width:100%;padding:10px 13px;border-radius:9px;border:1.5px solid var(--border-light);background:var(--cream);font-size:13px;font-family:inherit;color:var(--ink);outline:none;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none;appearance:none}
+.hlf-field input:focus,.hlf-field select:focus{border-color:var(--forest);box-shadow:0 0 0 3px rgba(27,58,45,0.08);background:var(--white)}
+.hlf-field input::placeholder{color:var(--text-faint)}
+.hlf-field select{background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' fill='none' stroke='%234b5249' stroke-width='2' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-size:15px;padding-right:34px;cursor:pointer;color:var(--text-mid)}
+.hlf-btn{width:100%;justify-content:center;margin-bottom:10px;margin-top:4px}
+.hlf-trust{display:flex;justify-content:center;gap:14px;font-size:11px;color:var(--text-faint);font-weight:600;flex-wrap:wrap}
+
+/* ===== ALL SERVICES ===== */
+.allsvc-sec{background:var(--cream-2);padding:100px 0}
+.allsvc-top{text-align:center;margin-bottom:52px}
+.allsvc-top .eyebrow{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--coral);margin-bottom:12px}
+.allsvc-top h2{font-family:'Outfit',sans-serif;font-size:clamp(28px,4vw,44px);font-weight:800;letter-spacing:-0.025em;color:var(--ink)}
+.allsvc-top p{font-size:16px;color:var(--text-mid);margin-top:10px}
+.allsvc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.svc-cat{background:var(--white);border-radius:18px;padding:26px 22px;border:1.5px solid var(--border-light)}
+.svc-cat__hd{display:flex;align-items:flex-start;gap:12px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border-light)}
+.svc-cat__icon{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.svc-cat__icon svg{width:20px;height:20px}
+.svc-cat:nth-child(1) .svc-cat__icon{background:rgba(232,76,30,0.08)}.svc-cat:nth-child(1) .svc-cat__icon svg{color:var(--coral)}
+.svc-cat:nth-child(2) .svc-cat__icon{background:rgba(27,58,45,0.08)}.svc-cat:nth-child(2) .svc-cat__icon svg{color:var(--forest)}
+.svc-cat:nth-child(3) .svc-cat__icon{background:rgba(0,100,220,0.08)}.svc-cat:nth-child(3) .svc-cat__icon svg{color:#0064dc}
+.svc-cat:nth-child(4) .svc-cat__icon{background:rgba(124,58,237,0.08)}.svc-cat:nth-child(4) .svc-cat__icon svg{color:#7c3aed}
+.svc-cat__name{font-family:'Outfit',sans-serif;font-size:15px;font-weight:800;color:var(--ink);margin-bottom:3px}
+.svc-cat__desc{font-size:11px;color:var(--text-faint);line-height:1.4}
+.svc-cat__list{list-style:none;display:flex;flex-direction:column}
+.svc-cat__row{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;margin:0 -10px;border-bottom:1px solid rgba(14,17,9,0.06);font-size:13px;border-radius:7px;position:relative;overflow:hidden;transition:background .2s ease,padding-left .25s cubic-bezier(.16,1,.3,1)}
+.svc-cat__row:last-child{border-bottom:none}
+.svc-cat__row::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:0 2px 2px 0;transform:scaleY(0);transform-origin:center;transition:transform .3s cubic-bezier(.16,1,.3,1)}
+.svc-cat__row:hover{padding-left:18px}
+.svc-cat__row:hover::before{transform:scaleY(1)}
+.svc-cat:nth-child(1) .svc-cat__row::before{background:var(--coral)}
+.svc-cat:nth-child(1) .svc-cat__row:hover{background:rgba(232,76,30,0.06)}
+.svc-cat:nth-child(2) .svc-cat__row::before{background:var(--forest)}
+.svc-cat:nth-child(2) .svc-cat__row:hover{background:rgba(42,94,62,0.06)}
+.svc-cat:nth-child(3) .svc-cat__row::before{background:#0064dc}
+.svc-cat:nth-child(3) .svc-cat__row:hover{background:rgba(0,100,220,0.06)}
+.svc-cat:nth-child(4) .svc-cat__row::before{background:#7c3aed}
+.svc-cat:nth-child(4) .svc-cat__row:hover{background:rgba(124,58,237,0.06)}
+.svc-cat__rname{color:var(--text-dark);font-weight:500;transition:color .2s ease,font-weight .2s ease}
+.svc-cat__row:hover .svc-cat__rname{color:var(--ink);font-weight:600}
+.svc-cat:nth-child(1) .svc-cat__rprice{color:var(--coral);font-weight:700;font-family:'Outfit',sans-serif;white-space:nowrap;margin-left:8px;transition:transform .2s ease}
+.svc-cat:nth-child(2) .svc-cat__rprice{color:var(--forest);font-weight:700;font-family:'Outfit',sans-serif;white-space:nowrap;margin-left:8px;transition:transform .2s ease}
+.svc-cat:nth-child(3) .svc-cat__rprice{color:#0064dc;font-weight:700;font-family:'Outfit',sans-serif;white-space:nowrap;margin-left:8px;transition:transform .2s ease}
+.svc-cat:nth-child(4) .svc-cat__rprice{color:#7c3aed;font-weight:700;font-family:'Outfit',sans-serif;white-space:nowrap;margin-left:8px;transition:transform .2s ease}
+.svc-cat__row:hover .svc-cat__rprice{transform:scale(1.06)}
+
+/* ===== CLIENTS MARQUEE ===== */
+.clients-sec{background:var(--white);padding:52px 0;border-top:1px solid var(--border-light);border-bottom:1px solid var(--border-light)}
+.clients-label{text-align:center;margin-bottom:24px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-faint)}
+.clients-mask{overflow:hidden;mask-image:linear-gradient(90deg,transparent,black 12%,black 88%,transparent);-webkit-mask-image:linear-gradient(90deg,transparent,black 12%,black 88%,transparent)}
+@keyframes marqueeRTL{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.clients-track{display:flex;gap:0;width:max-content;animation:marqueeRTL 35s linear infinite}
+.client-item{display:flex;align-items:center;gap:9px;padding:0 34px;font-family:'Outfit',sans-serif;font-size:16px;font-weight:800;color:rgba(14,17,9,0.18);white-space:nowrap;letter-spacing:-0.02em;border-right:1px solid var(--border-light)}
+.client-item:hover{color:var(--forest)}
+.client-item .ci-dot{width:5px;height:5px;border-radius:50%;background:var(--coral);opacity:.5;flex-shrink:0}
+
+/* ===== TESTIMONIALS CAROUSEL ===== */
+.tc-outer{position:relative}
+.tc-overflow{overflow:hidden}
+.tc-rail{display:flex;gap:20px;transition:transform .55s cubic-bezier(.16,1,.3,1);will-change:transform}
+.tc-rail .tc{min-width:calc(33.333% - 14px);flex-shrink:0}
+.tc-nav{display:flex;justify-content:center;gap:12px;margin-top:36px;align-items:center}
+.tc-arr{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.14);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .25s;color:var(--cream);flex-shrink:0;font-size:18px;font-family:inherit;line-height:1}
+.tc-arr:hover{background:rgba(255,255,255,0.18);border-color:rgba(255,255,255,0.28)}
+.tc-dots-row{display:flex;gap:6px;align-items:center}
+.tc-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.18);cursor:pointer;transition:all .3s}
+.tc-dot.on{background:var(--coral-2);width:22px;border-radius:4px}
+
+/* ===== PRE-FOOTER CTA ===== */
+.prefooter-cta{background:var(--forest);padding:100px 0;text-align:center;position:relative;overflow:hidden}
+.prefooter-cta::before{content:'';position:absolute;top:-120px;right:-100px;width:560px;height:560px;border-radius:50%;background:radial-gradient(circle,rgba(232,76,30,0.1),transparent 70%);pointer-events:none}
+.prefooter-cta::after{content:'';position:absolute;bottom:-80px;left:-80px;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(250,248,244,0.03),transparent 70%);pointer-events:none}
+.pfc-inner{position:relative;z-index:2;max-width:640px;margin:0 auto}
+.pfc-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 18px;background:rgba(232,76,30,0.15);border:1px solid rgba(232,76,30,0.25);border-radius:999px;font-size:13px;font-weight:600;color:var(--coral-2);margin-bottom:28px}
+.pfc-h2{font-family:'Outfit',sans-serif;font-size:clamp(38px,5.5vw,68px);font-weight:900;color:var(--cream);letter-spacing:-0.04em;line-height:1.0;margin-bottom:18px}
+.pfc-sub{font-size:18px;color:rgba(250,248,244,0.5);line-height:1.7;max-width:520px;margin:0 auto 40px}
+.pfc-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:32px}
+.pfc-trust{display:flex;justify-content:center;gap:28px;flex-wrap:wrap}
+.pfc-trust span{font-size:13px;color:rgba(250,248,244,0.35);font-weight:600;display:flex;align-items:center;gap:6px}
+.pfc-trust svg{width:14px;height:14px}
+
+/* ===== FOOTER ENHANCED ===== */
+.footer-top-bar{height:4px;background:linear-gradient(90deg,var(--coral),var(--coral-2),var(--forest-3))}
+.footer__brand-tagline-note{font-size:12px;color:rgba(250,248,244,0.25);margin-top:6px;line-height:1.5}
+
+@media(max-width:1024px){
+  .allsvc-grid{grid-template-columns:1fr 1fr}
+  .tc-rail .tc{min-width:calc(50% - 10px)}
+}
+@media(max-width:640px){
+  .allsvc-grid{grid-template-columns:1fr}
+  .tc-rail .tc{min-width:calc(100% - 0px)}
+  .pfc-h2{font-size:38px}
+  .pfc-actions{flex-direction:column;align-items:center}
+  .hlf-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ANNOUNCEMENT BAR -->
+<div class="announce" id="announce">
+  🎉 Limited offer: <a href="#pricing">Get a free Registered Agent year</a> with any Standard or Premium plan. Ends soon.
+  <button class="announce__close" onclick="document.getElementById('announce').remove()">×</button>
+</div>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header__inner">
+    <a href="#" class="header__logo">
+      <div class="header__logo-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 8v13M21 8v13M6 8V5a1 1 0 011-1h10a1 1 0 011 1v3M9 21v-5h4v5"/></svg>
+      </div>
+      LLC<span>Pad</span>
+    </a>
+    <ul class="header__nav">
+      <li><a href="#services">Services</a></li>
+      <li><a href="#process">Process</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#testimonials">Reviews</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <div class="header__right">
+      <a href="#" class="btn btn--outline-dark" style="padding:9px 18px;font-size:13px">Log In</a>
+      <a href="#pricing" class="btn btn--forest" style="padding:9px 20px;font-size:13px">Get Started →</a>
+    </div>
+    <button class="header__burger" id="hBurger"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<!-- MOBILE NAV -->
+<div class="mob" id="mobNav">
+  <button class="mob__x" id="mobX"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+  <a href="#services" onclick="closeMob()">Services</a>
+  <a href="#process" onclick="closeMob()">Process</a>
+  <a href="#pricing" onclick="closeMob()">Pricing</a>
+  <a href="#testimonials" onclick="closeMob()">Reviews</a>
+  <a href="#contact" onclick="closeMob()">Contact</a>
+  <a href="#pricing" class="btn btn--forest btn--lg" onclick="closeMob()" style="margin-top:12px">Get Started →</a>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero__decor"></div>
+  <div class="hero__decor-2"></div>
+  <div class="container">
+    <div class="hero__layout">
+      <div class="hero__left">
+        <div class="hero__tag" style="animation:slideUp .7s ease forwards">
+          <div class="hero__tag-dot"></div>
+          Now serving 50+ countries worldwide
+        </div>
+        <h1 class="hero__title" style="animation:slideUp .7s .1s ease both">
+          Form Your<br>
+          <span class="line2">US LLC</span><br>
+          <span class="underline-coral">in 24 Hours.</span>
+        </h1>
+        <p class="hero__sub" style="animation:slideUp .7s .2s ease both">
+          We handle every piece of paperwork — from state filing to EIN to business banking. You focus on building, we handle the bureaucracy.
+        </p>
+        <div class="hero__actions" style="animation:slideUp .7s .3s ease both">
+          <a href="#pricing" class="btn btn--coral btn--lg">Start My LLC — Free Consultation</a>
+          <a href="#process" class="btn btn--outline-dark btn--lg">How It Works</a>
+        </div>
+        <div class="hero__proof" style="animation:slideUp .7s .4s ease both">
+          <div class="hero__avatars">
+            <span>RM</span><span>PS</span><span>AK</span><span>FH</span><span>CO</span>
+          </div>
+          <div class="hero__proof-text">
+            <strong>12,000+ entrepreneurs</strong> already launched their US business
+          </div>
+        </div>
+      </div>
+      <div class="hero__right" style="animation:slideLeft .8s .4s ease both">
+        <div class="hero__lead-form">
+          <div class="hlf-head">
+            <div class="hlf-title">Get a Free Consultation</div>
+            <div class="hlf-sub">Tell us your goals — we'll recommend the perfect plan.</div>
+          </div>
+          <form onsubmit="handleHeroForm(event)">
+            <div class="hlf-row">
+              <div class="hlf-field"><input type="text" placeholder="First Name" required></div>
+              <div class="hlf-field"><input type="text" placeholder="Last Name" required></div>
+            </div>
+            <div class="hlf-field"><input type="email" placeholder="Email Address" required></div>
+            <div class="hlf-field"><input type="tel" placeholder="Phone / WhatsApp"></div>
+            <div class="hlf-field">
+              <select required>
+                <option value="">I'm interested in...</option>
+                <option>LLC Formation (Free + state fee)</option>
+                <option>Standard Package ($299)</option>
+                <option>Premium Package ($620)</option>
+                <option>Amazon Seller Account</option>
+                <option>Business Banking Setup</option>
+                <option>Trademark Registration</option>
+                <option>Not sure — need advice</option>
+              </select>
+            </div>
+            <div class="hlf-field">
+              <select>
+                <option value="">Your Country</option>
+                <option>Bangladesh</option><option>India</option><option>Pakistan</option>
+                <option>UAE</option><option>Nigeria</option><option>Philippines</option>
+                <option>Turkey</option><option>Egypt</option><option>Other</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn--coral btn--lg hlf-btn">
+              Start Free Consultation →
+            </button>
+            <div class="hlf-trust">
+              <span>🔒 SSL Secured</span>
+              <span>✓ No Spam</span>
+              <span>⭐ 4.9/5 Rated</span>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker__track">
+    <div class="ticker__item"><strong>Bangladesh</strong> <span class="sep">·</span> 3,200+ clients</div>
+    <div class="ticker__item"><strong>India</strong> <span class="sep">·</span> 2,800+ clients</div>
+    <div class="ticker__item"><strong>Pakistan</strong> <span class="sep">·</span> 1,900+ clients</div>
+    <div class="ticker__item"><strong>UAE</strong> <span class="sep">·</span> 1,400+ clients</div>
+    <div class="ticker__item"><strong>Nigeria</strong> <span class="sep">·</span> 900+ clients</div>
+    <div class="ticker__item"><strong>Philippines</strong> <span class="sep">·</span> 700+ clients</div>
+    <div class="ticker__item"><strong>Turkey</strong> <span class="sep">·</span> 560+ clients</div>
+    <div class="ticker__item"><strong>Egypt</strong> <span class="sep">·</span> 480+ clients</div>
+    <div class="ticker__item"><strong>Bangladesh</strong> <span class="sep">·</span> 3,200+ clients</div>
+    <div class="ticker__item"><strong>India</strong> <span class="sep">·</span> 2,800+ clients</div>
+    <div class="ticker__item"><strong>Pakistan</strong> <span class="sep">·</span> 1,900+ clients</div>
+    <div class="ticker__item"><strong>UAE</strong> <span class="sep">·</span> 1,400+ clients</div>
+    <div class="ticker__item"><strong>Nigeria</strong> <span class="sep">·</span> 900+ clients</div>
+    <div class="ticker__item"><strong>Philippines</strong> <span class="sep">·</span> 700+ clients</div>
+    <div class="ticker__item"><strong>Turkey</strong> <span class="sep">·</span> 560+ clients</div>
+    <div class="ticker__item"><strong>Egypt</strong> <span class="sep">·</span> 480+ clients</div>
+  </div>
+</div>
+
+<!-- STATS — DARK -->
+<section class="stats-section">
+  <div class="container">
+    <div class="stats-layout">
+      <div class="stats-left r r-right">
+        <h2>Numbers that speak<br>for <em>themselves</em></h2>
+        <p>We've helped over 12,000 international entrepreneurs navigate the US business formation process — from first-time founders to serial entrepreneurs scaling globally.</p>
+        <a href="#contact" class="btn btn--coral btn--lg">Talk to Our Team</a>
+      </div>
+      <div class="stats-grid r r-left d2">
+        <div class="stat-box"><div class="stat-box__num"><span class="ctr" data-target="12" data-decimals="0" data-suffix="K">12K</span><em>+</em></div><div class="stat-box__label">US LLCs Formed</div></div>
+        <div class="stat-box"><div class="stat-box__num"><span class="ctr" data-target="50" data-decimals="0" data-suffix="">50</span><em>+</em></div><div class="stat-box__label">Countries Served</div></div>
+        <div class="stat-box"><div class="stat-box__num"><span class="ctr" data-target="4.9" data-decimals="1" data-suffix="">4.9</span><em>★</em></div><div class="stat-box__label">Avg. Rating</div></div>
+        <div class="stat-box"><div class="stat-box__num"><span class="ctr" data-target="24" data-decimals="0" data-suffix="">24</span><em>h</em></div><div class="stat-box__label">Processing Time</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ALL SERVICES — CREAM -->
+<section class="allsvc-sec" id="all-services">
+  <div class="container">
+    <div class="allsvc-top r">
+      <div class="eyebrow">All Services</div>
+      <h2>Explore our complete range of business services</h2>
+      <p>Transparent pricing — no hidden fees, no surprises.</p>
+    </div>
+    <div class="allsvc-grid">
+      <div class="svc-cat r d1">
+        <div class="svc-cat__hd">
+          <div class="svc-cat__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 8v13M21 8v13M6 8V5a1 1 0 011-1h10a1 1 0 011 1v3M9 21v-5h4v5"/></svg></div>
+          <div><div class="svc-cat__name">Formation & Legal</div><div class="svc-cat__desc">Start and maintain your US business entity</div></div>
+        </div>
+        <ul class="svc-cat__list">
+          <li class="svc-cat__row"><span class="svc-cat__rname">LLC Formation</span><span class="svc-cat__rprice">$0 + state fee</span></li>
+          <li class="svc-cat__row"><span class="svc-cat__rname">EIN Application</span><span class="svc-cat__rprice">$99</span></li>
+          <li class="svc-cat__row"><span class="svc-cat__rname">Operating Agreement</span><span class="svc-cat__rprice">$79</span></li>
+          <li class="svc-cat__row"><span class="svc-cat__rname">DBA / Trade Name</span><span class="svc-cat__rprice">$99</span></li>
+          <li class="svc-cat__row"><span class="svc-cat__rname">Trademark Registration</span><span class="svc-cat__rprice">$599</span></li>
+        </ul>
+      </div>
+      <div class="svc-cat r d2">
+        <div class="svc-cat__hd">
+          <div class="svc-cat__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h4"/></svg></div>
+          <div><div class="svc-cat__name">Compliance & Documents</div><div class="svc-cat__desc">Keep your business in good standing</div></div>
+        </div>
+        <ul class="svc-cat__list">
+          <li class="svc-cat__row"><span class="svc-cat__rname">Registered Agent</span><span class="svc-cat__rprice">$99/yr</span></li>
+          <li class="svc-cat__row"><span class="svc-cat__rname">Certificate of Good Standing</span><span class="svc-cat__rprice">$75</span></li>
+          <li class="svc-cat__row"><span class="svc-cat__rname">Amendment Filing</span><span class="svc-cat__rprice">$99</span></li>
+          <li class="svc-cat__row"><span class="svc-cat__rname">LLC Dissolution</span><span class="svc-cat__rprice">$149</span></li>
+          <li class="svc-cat__row"><span class="svc-cat__rname">Virtual Business Address</span><span class="svc-cat__rprice">$149/yr</span></li>
+          <li class="svc-cat__row"><span class="svc-cat__rname">Annual Report Filing</span><span class="svc-cat__rprice">$75</span></li>
+          <li class="svc-cat__row"><span class="svc-cat__rname">BOI Ownership Filing</span><span class="svc-cat__rprice">$49</span></li>
+          <li class="svc-cat__row"><span class="svc-cat__rname">Apostille Service</span><span class="svc-cat__rprice">$149</span></li>
+          <li class="svc-cat__row"><span class="svc-cat__rname">Form 5472 Preparation</span><span class="svc-cat__rprice">$149</span></li>
+          <li class="svc-cat__row"><span class="svc-cat__rname">S-Corp Election</span><span class="svc-cat__rprice">$149</span></li>
+          <li class="svc-cat__row"><span class="svc-cat__rname">Sales Tax Registration</span><span class="svc-cat__rprice">$149/state</span></li>
+        </ul>
+      </div>
+      <div class="svc-cat r d3">
+        <div class="svc-cat__hd">
+          <div class="svc-cat__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg></div>
+          <div><div class="svc-cat__name">E-Commerce Setup</div><div class="svc-cat__desc">Launch & grow your online store</div></div>
+        </div>
+        <ul class="svc-cat__list">
+          <li class="svc-cat__row"><span class="svc-cat__rname">Amazon Seller Account</span><span class="svc-cat__rprice">$299</span></li>
+          <li class="svc-cat__row"><span class="svc-cat__rname">Amazon Brand Registry</span><span class="svc-cat__rprice">$199</span></li>
+          <li class="svc-cat__row"><span class="svc-cat__rname">Product Listing Optimization</span><span class="svc-cat__rprice">$149</span></li>
+          <li class="svc-cat__row"><span class="svc-cat__rname">Amazon PPC Setup</span><span class="svc-cat__rprice">$349</span></li>
+          <li class="svc-cat__row"><span class="svc-cat__rname">Category Ungating</span><span class="svc-cat__rprice">$199</span></li>
+          <li class="svc-cat__row"><span class="svc-cat__rname">A+ Content Creation</span><span class="svc-cat__rprice">$299</span></li>
+          <li class="svc-cat__row"><span class="svc-cat__rname">Account Reinstatement</span><span class="svc-cat__rprice">$499</span></li>
+          <li class="svc-cat__row"><span class="svc-cat__rname">TikTok Shop US Setup</span><span class="svc-cat__rprice">$199</span></li>
+          <li class="svc-cat__row"><span class="svc-cat__rname">Walmart Seller Account</span><span class="svc-cat__rprice">$199</span></li>
+          <li class="svc-cat__row"><span class="svc-cat__rname">Shopify Store Setup</span><span class="svc-cat__rprice">$399</span></li>
+        </ul>
+      </div>
+      <div class="svc-cat r d4">
+        <div class="svc-cat__hd">
+          <div class="svc-cat__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></div>
+          <div><div class="svc-cat__name">Tax & Finance</div><div class="svc-cat__desc">Financial and tax services for your business</div></div>
+        </div>
+        <ul class="svc-cat__list">
+          <li class="svc-cat__row"><span class="svc-cat__rname">Business Bank Account</span><span class="svc-cat__rprice">$199</span></li>
+          <li class="svc-cat__row"><span class="svc-cat__rname">Bookkeeping Services</span><span class="svc-cat__rprice">$149/mo</span></li>
+          <li class="svc-cat__row"><span class="svc-cat__rname">ITIN Application</span><span class="svc-cat__rprice">$299</span></li>
+          <li class="svc-cat__row"><span class="svc-cat__rname">Tax Filing Service</span><span class="svc-cat__rprice">$299</span></li>
+          <li class="svc-cat__row"><span class="svc-cat__rname">Reseller Certificate</span><span class="svc-cat__rprice">$99</span></li>
+          <li class="svc-cat__row"><span class="svc-cat__rname">Stripe / PayPal Setup</span><span class="svc-cat__rprice">$99</span></li>
+          <li class="svc-cat__row"><span class="svc-cat__rname">Financial Report Preparation</span><span class="svc-cat__rprice">$99/mo</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES — WHITE -->
+<section class="services-section" id="services">
+  <div class="container">
+    <div class="services-header">
+      <div class="services-header__left r r-right">
+        <div class="eyebrow">What We Do</div>
+        <h2>Every service your<br>US business needs</h2>
+      </div>
+      <div class="services-header__right r r-left d2">From LLC formation to Amazon launch — 8 core services, 30+ total. Everything your US business needs, delivered 100% remotely.</div>
+    </div>
+
+    <div class="services-grid">
+      <div class="svc svc--a svc--coral r d1">
+        <div class="svc__meta">
+          <span class="svc__tag svc__tag--f">Formation & Legal</span>
+          <span class="svc__badge svc__badge--popular">Most Popular</span>
+        </div>
+        <div class="svc__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 8v13M21 8v13M6 8V5a1 1 0 011-1h10a1 1 0 011 1v3M9 21v-5h4v5"/></svg></div>
+        <h3>LLC Formation</h3>
+        <p>Start your US LLC in any state — 100% remote. We prepare, file, and deliver Articles of Organization, operating agreement, and full compliance documents in 24 hours.</p>
+        <div class="svc__foot">
+          <div class="svc__price">From $0 + state fee</div>
+          <div class="svc__link">Learn more <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        </div>
+      </div>
+      <div class="svc svc--b svc--coral r d2">
+        <div class="svc__meta">
+          <span class="svc__tag svc__tag--f">Formation & Legal</span>
+        </div>
+        <div class="svc__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h4"/></svg></div>
+        <h3>EIN for Non-US Residents</h3>
+        <p>IRS Employer ID Number — required for US banking, Amazon, Stripe & Payoneer. We file directly with the IRS. No SSN needed.</p>
+        <div class="svc__foot"><div class="svc__price">From $99</div><div class="svc__link">Learn more <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
+      </div>
+      <div class="svc svc--c svc--blue r d3">
+        <div class="svc__meta">
+          <span class="svc__tag svc__tag--e">E-Commerce</span>
+          <span class="svc__badge svc__badge--emergency">Emergency</span>
+        </div>
+        <div class="svc__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+        <h3>Amazon Account Reinstatement</h3>
+        <p>Suspended? We write your Plan of Action and submit within 24 hours. 90%+ success rate across 500+ reinstated accounts.</p>
+        <div class="svc__foot"><div class="svc__price">From $499</div><div class="svc__link">Learn more <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
+      </div>
+      <div class="svc svc--d svc--blue r d1">
+        <div class="svc__meta">
+          <span class="svc__tag svc__tag--e">E-Commerce</span>
+          <span class="svc__badge svc__badge--demand">High Demand</span>
+        </div>
+        <div class="svc__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg></div>
+        <h3>Amazon Seller Account Setup</h3>
+        <p>Professional US Amazon seller account — fully verified, compliant, and ready to sell. Includes identity check, tax interview, and post-setup support.</p>
+        <div class="svc__foot"><div class="svc__price">From $299</div><div class="svc__link">Learn more <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
+      </div>
+      <div class="svc svc--e svc--blue r d2">
+        <div class="svc__meta">
+          <span class="svc__tag svc__tag--e">E-Commerce</span>
+          <span class="svc__badge svc__badge--trending">Trending 2025</span>
+        </div>
+        <div class="svc__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
+        <h3>TikTok Shop US Setup</h3>
+        <p>Get approved as a US TikTok Shop seller. Fastest-growing marketplace right now — low competition window, high buyer intent. Full registration and listing included.</p>
+        <div class="svc__foot"><div class="svc__price">From $199</div><div class="svc__link">Learn more <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
+      </div>
+      <div class="svc svc--f r d3">
+        <div class="svc__meta">
+          <span class="svc__tag svc__tag--c">Compliance</span>
+        </div>
+        <div class="svc__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 10h2l1 4 2-7 2 3h2"/></svg></div>
+        <h3>Sales Tax Registration</h3>
+        <p>Register for a sales tax permit in any US state. Required for all Amazon FBA and Shopify sellers with nexus. We handle all 50 states online.</p>
+        <div class="svc__foot"><div class="svc__price">$149 / state</div><div class="svc__link">Learn more <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
+      </div>
+      <div class="svc svc--g r d2">
+        <div class="svc__meta">
+          <span class="svc__tag svc__tag--p">Finance</span>
+        </div>
+        <div class="svc__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V7a2 2 0 012-2h14a2 2 0 012 2v14"/><path d="M3 10h18M7 15h.01M12 15h.01"/></svg></div>
+        <h3>US Business Bank Account</h3>
+        <p>Open a real US business bank account 100% remotely — no SSN, no US visit required. Compatible with Stripe, PayPal, Wise, and Payoneer. ACH transfers and debit card included through our trusted banking partners.</p>
+        <div class="svc__foot"><div class="svc__price">From $199</div><div class="svc__link">Learn more <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
+      </div>
+      <div class="svc svc--h svc--purple r d3">
+        <div class="svc__meta">
+          <span class="svc__tag svc__tag--p">Legal Protection</span>
+        </div>
+        <div class="svc__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></div>
+        <h3>USPTO Trademark Registration</h3>
+        <p>Protect your brand name and logo with federal trademark registration — required for Amazon Brand Registry. Covers all 50 states and gives you exclusive nationwide rights.</p>
+        <div class="svc__foot"><div class="svc__price">From $599</div><div class="svc__link">Learn more <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS — CREAM/GRAY -->
+<section class="process-section" id="process">
+  <div class="container">
+    <div class="process-header r">
+      <div class="eyebrow">How It Works</div>
+      <h2>From order to operational<br>in 4 clean steps</h2>
+    </div>
+    <div class="steps">
+      <div class="step-card r d1">
+        <div class="step-card__circle">
+          <span class="step-card__n">1</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        </div>
+        <h3>Tell Us Your Goal</h3>
+        <p>LLC formation, Amazon launch, TikTok Shop, tax compliance — fill our 5-minute intake form and pick exactly the services you need.</p>
+      </div>
+      <div class="step-card r d2">
+        <div class="step-card__circle">
+          <span class="step-card__n">2</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h3>We Handle Every Detail</h3>
+        <p>Our team prepares and submits every document with 100% accuracy — state filing, IRS, BOI report, Amazon account, sales tax registration, and more.</p>
+      </div>
+      <div class="step-card r d3">
+        <div class="step-card__circle">
+          <span class="step-card__n">3</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        </div>
+        <h3>Live Updates, Zero Chasing</h3>
+        <p>Track every milestone in your client dashboard. Get notified via email and WhatsApp the moment each service step is completed.</p>
+      </div>
+      <div class="step-card r d4">
+        <div class="step-card__circle">
+          <span class="step-card__n">4</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 00-2.91-.09zM12 15l-3-3a22 22 0 012-3.95A12.88 12.88 0 0122 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 01-4 2z"/></svg>
+        </div>
+        <h3>Launch, Sell & Scale</h3>
+        <p>Receive all documents digitally. Activate your US bank account, go live on Amazon, TikTok Shop, or Shopify — and start building your US revenue.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY US — DARK -->
+<section class="why-section">
+  <div class="container">
+    <div class="why-layout">
+      <div class="why-left r r-right">
+        <h2>Why 12,000 founders<br>chose <em>LLCPad</em></h2>
+        <p>We're not a generic incorporation service. We specialize exclusively in helping international entrepreneurs — we know every pain point, every requirement, every workaround.</p>
+        <div class="why-reasons">
+          <div class="reason"><div class="reason__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div><h4>100% Compliance Guaranteed</h4><p>If we make an error, we fix it at zero cost — no questions asked.</p></div></div>
+          <div class="reason"><div class="reason__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div><h4>24-Hour Processing</h4><p>Industry-leading speed — from order to delivered documents in one day.</p></div></div>
+          <div class="reason"><div class="reason__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div><div><h4>Dedicated Support Team</h4><p>A real human assigned to your case — not a chatbot, not a ticket queue.</p></div></div>
+          <div class="reason"><div class="reason__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg></div><div><h4>International Specialist</h4><p>We handle the unique EIN, banking, and compliance challenges non-US owners face.</p></div></div>
+        </div>
+      </div>
+      <div class="why-right r r-left d2">
+        <div class="why-metric"><div class="why-metric__num">30<sub>-day</sub></div><div class="why-metric__label">Money-back guarantee</div></div>
+        <div class="why-metric"><div class="why-metric__num">100<sub>%</sub></div><div class="why-metric__label">Remote — zero US travel</div></div>
+        <div class="why-metric"><div class="why-metric__num">50<sub>+</sub></div><div class="why-metric__label">Countries successfully served</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING — WHITE -->
+<section class="pricing-section" id="pricing">
+  <div class="container">
+    <div class="pricing-top r">
+      <div class="eyebrow">Pricing</div>
+      <h2>Simple. Transparent. No surprises.</h2>
+      <p>One-time fees. No subscriptions. State filing fees are disclosed upfront and billed separately.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="pc r d1">
+        <div class="pc__tier">Starter</div>
+        <div class="pc__name">Essential</div>
+        <div class="pc__tagline">Get your LLC filed and start building</div>
+        <div class="pc__amount"><div class="pc__price"><sup>$</sup>0 <sub>+ state fee</sub></div></div>
+        <div class="pc__note">No service fee — just the government filing cost</div>
+        <ul class="pc__list">
+          <li class="y"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Articles of Organization</li>
+          <li class="y"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Operating Agreement</li>
+          <li class="y"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Compliance checklist</li>
+          <li class="n"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>Registered Agent — add $99/yr</li>
+          <li class="n"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>EIN Application — add $99</li>
+          <li class="n"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>US Banking Setup</li>
+        </ul>
+        <a href="#" class="btn btn--outline-dark">Get Started</a>
+      </div>
+      <div class="pc pc--mid r d2">
+        <div class="pc__cap">Most Popular</div>
+        <div class="pc__tier">Standard</div>
+        <div class="pc__name">Professional</div>
+        <div class="pc__tagline">Everything international entrepreneurs need</div>
+        <div class="pc__amount"><div class="pc__price"><sup>$</sup>299 <sub>+ state fee</sub></div></div>
+        <div class="pc__note">One-time fee · No recurring charges</div>
+        <ul class="pc__list">
+          <li class="y"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Articles of Organization</li>
+          <li class="y"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Operating Agreement</li>
+          <li class="y"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Registered Agent (1 year free)</li>
+          <li class="y"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>EIN / Tax ID Application</li>
+          <li class="y"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>BOI Beneficial Ownership Filing</li>
+          <li class="n"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>US Banking Setup — add $99</li>
+        </ul>
+        <a href="#" class="btn btn--forest">Get Started →</a>
+      </div>
+      <div class="pc r d3">
+        <div class="pc__tier">Premium</div>
+        <div class="pc__name">Complete</div>
+        <div class="pc__tagline">Full US business setup, done in 48 hours</div>
+        <div class="pc__amount"><div class="pc__price"><sup>$</sup>620 <sub>+ state fee</sub></div></div>
+        <div class="pc__note">All-inclusive · Priority 24h processing</div>
+        <ul class="pc__list">
+          <li class="y"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>All Professional features</li>
+          <li class="y"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Virtual US Address (1 year)</li>
+          <li class="y"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>US Business Bank Account</li>
+          <li class="y"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Stripe + PayPal Setup</li>
+          <li class="y"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Priority 24h processing</li>
+          <li class="y"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Dedicated account manager</li>
+        </ul>
+        <a href="#" class="btn btn--coral">Get Started →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CLIENTS MARQUEE — WHITE -->
+<section class="clients-sec">
+  <div class="clients-label">Trusted by 12,000+ entrepreneurs from companies worldwide</div>
+  <div class="clients-mask">
+    <div class="clients-track">
+      <div class="client-item"><div class="ci-dot"></div>ShopNest BD</div>
+      <div class="client-item"><div class="ci-dot"></div>Apex Apparel</div>
+      <div class="client-item"><div class="ci-dot"></div>TechBridge Inc</div>
+      <div class="client-item"><div class="ci-dot"></div>NovaMart Global</div>
+      <div class="client-item"><div class="ci-dot"></div>Horizon Traders</div>
+      <div class="client-item"><div class="ci-dot"></div>SwiftLogix</div>
+      <div class="client-item"><div class="ci-dot"></div>BlueStar Exports</div>
+      <div class="client-item"><div class="ci-dot"></div>EagleEcom</div>
+      <div class="client-item"><div class="ci-dot"></div>Zara Ventures</div>
+      <div class="client-item"><div class="ci-dot"></div>Pinnacle Goods</div>
+      <div class="client-item"><div class="ci-dot"></div>Orion Commerce</div>
+      <div class="client-item"><div class="ci-dot"></div>RapidShip Co</div>
+      <div class="client-item"><div class="ci-dot"></div>DeltaStore</div>
+      <div class="client-item"><div class="ci-dot"></div>Kazi Digital</div>
+      <div class="client-item"><div class="ci-dot"></div>ShopNest BD</div>
+      <div class="client-item"><div class="ci-dot"></div>Apex Apparel</div>
+      <div class="client-item"><div class="ci-dot"></div>TechBridge Inc</div>
+      <div class="client-item"><div class="ci-dot"></div>NovaMart Global</div>
+      <div class="client-item"><div class="ci-dot"></div>Horizon Traders</div>
+      <div class="client-item"><div class="ci-dot"></div>SwiftLogix</div>
+      <div class="client-item"><div class="ci-dot"></div>BlueStar Exports</div>
+      <div class="client-item"><div class="ci-dot"></div>EagleEcom</div>
+      <div class="client-item"><div class="ci-dot"></div>Zara Ventures</div>
+      <div class="client-item"><div class="ci-dot"></div>Pinnacle Goods</div>
+      <div class="client-item"><div class="ci-dot"></div>Orion Commerce</div>
+      <div class="client-item"><div class="ci-dot"></div>RapidShip Co</div>
+      <div class="client-item"><div class="ci-dot"></div>DeltaStore</div>
+      <div class="client-item"><div class="ci-dot"></div>Kazi Digital</div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS — DARK FOREST -->
+<section class="test-section" id="testimonials">
+  <div class="container">
+    <div class="test-top">
+      <div class="test-top-left r r-right">
+        <div class="eyebrow">Client Stories</div>
+        <h2>Real founders,<br>real businesses</h2>
+      </div>
+      <div class="test-top-right r r-left d2">Verified reviews from entrepreneurs across <strong>50+ countries</strong> who built their US businesses with LLCPad.</div>
+    </div>
+    <div class="tc-outer">
+    <div class="tc-overflow">
+    <div class="tc-rail" id="forgeRail">
+      <div class="tc r d1">
+        <div class="tc__quote">"</div>
+        <div class="tc__stars"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+        <p class="tc__text">My Wyoming LLC, EIN, and bank account were all set up in 3 days. As someone from Dhaka with zero experience in US business, LLCPad made this process feel completely manageable. Unreal service.</p>
+        <div class="tc__hr"></div>
+        <div class="tc__author"><div class="tc__av">RM</div><div><div class="tc__name">Rahim Miah</div><div class="tc__role">Amazon FBA Seller</div><div class="tc__flag">🇧🇩 Dhaka, Bangladesh</div></div></div>
+      </div>
+      <div class="tc r d2">
+        <div class="tc__quote">"</div>
+        <div class="tc__stars"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+        <p class="tc__text">The Premium package was worth every penny. Delaware LLC, EIN, US bank, Stripe — everything set up in 48 hours. My SaaS is now selling to US customers with a proper legal entity behind it. Couldn't be happier.</p>
+        <div class="tc__hr"></div>
+        <div class="tc__author"><div class="tc__av">PS</div><div><div class="tc__name">Priya Sharma</div><div class="tc__role">SaaS Founder</div><div class="tc__flag">🇮🇳 Mumbai, India</div></div></div>
+      </div>
+      <div class="tc r d3">
+        <div class="tc__quote">"</div>
+        <div class="tc__stars"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+        <p class="tc__text">From Karachi, getting a US company with a real bank account felt impossible. LLCPad proved me wrong. The team handled my Amazon seller verification too — after two previous failed attempts with other services.</p>
+        <div class="tc__hr"></div>
+        <div class="tc__author"><div class="tc__av">AK</div><div><div class="tc__name">Ahmed Khan</div><div class="tc__role">E-commerce Entrepreneur</div><div class="tc__flag">🇵🇰 Karachi, Pakistan</div></div></div>
+      </div>
+      <div class="tc">
+        <div class="tc__quote">"</div>
+        <div class="tc__stars"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+        <p class="tc__text">The trademark registration was seamless. LLCPad handled everything from USPTO application to Amazon Brand Registry enrollment. My brand is now fully protected in the US market. Worth every dollar.</p>
+        <div class="tc__hr"></div>
+        <div class="tc__author"><div class="tc__av" style="background:rgba(5,150,105,0.6)">FA</div><div><div class="tc__name">Fatima Al-Rashid</div><div class="tc__role">Brand Owner</div><div class="tc__flag">🇦🇪 Dubai, UAE</div></div></div>
+      </div>
+      <div class="tc">
+        <div class="tc__quote">"</div>
+        <div class="tc__stars"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+        <p class="tc__text">I was skeptical about remote LLC formation but LLCPad's team walked me through every step. My Lagos-based clothing brand now has a Wyoming LLC, US bank account, and I'm processing international payments via Stripe.</p>
+        <div class="tc__hr"></div>
+        <div class="tc__author"><div class="tc__av" style="background:rgba(220,38,38,0.6)">CO</div><div><div class="tc__name">Chioma Obi</div><div class="tc__role">Fashion Entrepreneur</div><div class="tc__flag">🇳🇬 Lagos, Nigeria</div></div></div>
+      </div>
+      <div class="tc">
+        <div class="tc__quote">"</div>
+        <div class="tc__stars"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+        <p class="tc__text">My Amazon category ungating issue was resolved in 5 days. Other services told me it was impossible. LLCPad's Amazon specialists know exactly what documentation Amazon needs. Highly recommend.</p>
+        <div class="tc__hr"></div>
+        <div class="tc__author"><div class="tc__av" style="background:rgba(217,119,6,0.6)">MH</div><div><div class="tc__name">Mohammad Hassan</div><div class="tc__role">Amazon Seller</div><div class="tc__flag">🇵🇭 Manila, Philippines</div></div></div>
+      </div>
+    </div>
+    </div><!-- tc-overflow -->
+    <div class="tc-nav">
+      <button class="tc-arr" id="forgePrev">&#8592;</button>
+      <div class="tc-dots-row" id="forgeDots">
+        <div class="tc-dot on"></div>
+        <div class="tc-dot"></div>
+      </div>
+      <button class="tc-arr" id="forgeNext">&#8594;</button>
+    </div>
+    </div><!-- tc-outer -->
+  </div>
+</section>
+
+<!-- CONTACT FORM — CREAM -->
+<section class="contact-section" id="contact">
+  <div class="container">
+    <div class="contact-layout">
+      <div class="contact-left r r-right">
+        <div class="eyebrow">Get in Touch</div>
+        <h2>Start your US business journey today</h2>
+        <p>Tell us about your goals and we'll recommend the right services. Most clients hear back within 2 business hours.</p>
+        <div class="contact-perks">
+          <div class="cperk">
+            <div class="cperk__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+            <div class="cperk__text"><h4>Response in &lt;2 business hours</h4><p>Our team is available Mon–Sat, 9am–9pm (GMT+6)</p></div>
+          </div>
+          <div class="cperk">
+            <div class="cperk__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+            <div class="cperk__text"><h4>100% confidential</h4><p>Your information is never shared with third parties</p></div>
+          </div>
+          <div class="cperk">
+            <div class="cperk__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+            <div class="cperk__text"><h4>Expert consultation</h4><p>Speak directly with a formation specialist, not a bot</p></div>
+          </div>
+          <div class="cperk">
+            <div class="cperk__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+            <div class="cperk__text"><h4>4.9/5 from 2,000+ reviews</h4><p>One of the highest-rated LLC services for international founders</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="r r-left d2">
+        <div class="contact-form">
+          <div style="margin-bottom:24px">
+            <div style="font-family:'Outfit',sans-serif;font-size:20px;font-weight:800;color:var(--ink);margin-bottom:6px">Request a Free Consultation</div>
+            <div style="font-size:14px;color:var(--text-mid)">We'll review your goals and recommend the best plan — no commitment required.</div>
+          </div>
+          <form onsubmit="handleForm(event)">
+            <div class="form-row">
+              <div class="field"><label>First Name</label><input type="text" placeholder="e.g. Rahim" required></div>
+              <div class="field"><label>Last Name</label><input type="text" placeholder="e.g. Miah" required></div>
+            </div>
+            <div class="field"><label>Email Address</label><input type="email" placeholder="your@email.com" required></div>
+            <div class="form-row">
+              <div class="field"><label>Phone / WhatsApp</label><input type="tel" placeholder="+880 1700 000000"></div>
+              <div class="field"><label>Your Country</label>
+                <select>
+                  <option value="">Select country...</option>
+                  <option>Bangladesh</option><option>India</option><option>Pakistan</option>
+                  <option>UAE</option><option>Nigeria</option><option>Philippines</option>
+                  <option>Turkey</option><option>Egypt</option><option>Other</option>
+                </select>
+              </div>
+            </div>
+            <div class="field"><label>Service I'm Interested In</label>
+              <select required>
+                <option value="">Select a service...</option>
+                <option>LLC Formation</option>
+                <option>LLC + EIN Bundle</option>
+                <option>Standard Package ($299)</option>
+                <option>Premium Package ($620)</option>
+                <option>Amazon Seller Account</option>
+                <option>Business Banking Setup</option>
+                <option>Trademark Registration</option>
+                <option>Not sure — need advice</option>
+              </select>
+            </div>
+            <div class="field"><label>Tell us about your business goals (optional)</label><textarea placeholder="e.g. I want to sell on Amazon from Bangladesh and need an LLC with a bank account..."></textarea></div>
+            <div class="form-submit">
+              <button type="submit" class="btn btn--coral btn--lg">
+                Send My Request
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+            <p class="form-note">By submitting this form you agree to our Privacy Policy. We'll never spam you.</p>
+            <div class="form-trust">
+              <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg> SSL Secured</span>
+              <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Privacy Protected</span>
+              <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> 4.9/5 Rated</span>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRE-FOOTER CTA -->
+<section class="prefooter-cta">
+  <div class="container">
+    <div class="pfc-inner r">
+      <div class="pfc-badge">
+        <div style="width:7px;height:7px;border-radius:50%;background:var(--coral-2);animation:pulse 2s ease-in-out infinite"></div>
+        Limited Offer — Free Registered Agent for 1 Year
+      </div>
+      <h2 class="pfc-h2">Your US business<br>starts today.</h2>
+      <p class="pfc-sub">Join 12,000+ international founders who launched their US LLC with LLCPad. No US travel, no confusion — just results delivered in 24 hours.</p>
+      <div class="pfc-actions">
+        <a href="#contact" class="btn btn--coral btn--lg">Start My LLC — Free Consultation</a>
+        <a href="#pricing" class="btn btn--outline-cream btn--lg">See Pricing →</a>
+      </div>
+      <div class="pfc-trust">
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>30-Day Money-Back</span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>No Hidden Fees</span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>24-Hour Processing</span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>4.9/5 Rating</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<div class="footer-top-bar"></div>
+<footer class="footer">
+  <div class="container">
+    <div class="footer__top">
+      <div class="footer__brand">
+        <div class="footer__wordmark">LLC<span>Pad</span></div>
+        <div class="footer__tagline">The world's simplest way for international entrepreneurs to form and run a US business.</div>
+        <div class="footer__social">
+          <a href="#" aria-label="Twitter"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+          <a href="#" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></a>
+          <a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></a>
+          <a href="#" aria-label="YouTube"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+        </div>
+        <div class="footer__newsletter" style="margin-top:24px">
+          <p>Get LLC tips & US business insights</p>
+          <div class="newsletter-form">
+            <input type="email" placeholder="your@email.com">
+            <button type="button">Subscribe</button>
+          </div>
+        </div>
+      </div>
+      <div class="footer__col">
+        <h5>Services</h5>
+        <ul>
+          <li><a href="#">LLC Formation</a></li>
+          <li><a href="#">EIN Application</a></li>
+          <li><a href="#">Registered Agent</a></li>
+          <li><a href="#">Amazon Seller</a></li>
+          <li><a href="#">Brand Registry</a></li>
+          <li><a href="#">Trademark</a></li>
+          <li><a href="#">Business Banking</a></li>
+          <li><a href="#">Virtual Address</a></li>
+        </ul>
+      </div>
+      <div class="footer__col">
+        <h5>Resources</h5>
+        <ul>
+          <li><a href="#">How to Form an LLC</a></li>
+          <li><a href="#">Wyoming vs Delaware</a></li>
+          <li><a href="#">EIN Guide for Non-US</a></li>
+          <li><a href="#">Amazon Seller Guide</a></li>
+          <li><a href="#">US Banking Guide</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">FAQ</a></li>
+        </ul>
+      </div>
+      <div class="footer__col">
+        <h5>Company</h5>
+        <ul>
+          <li><a href="#">About LLCPad</a></li>
+          <li><a href="#">Our Team</a></li>
+          <li><a href="#">Reviews</a></li>
+          <li><a href="#">Affiliates</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms of Service</a></li>
+          <li><a href="#">Refund Policy</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer__mid">
+      <div class="footer__badges">
+        <div class="footer__badge">🔒 SSL Secured</div>
+        <div class="footer__badge">✓ GDPR Compliant</div>
+        <div class="footer__badge">⭐ 4.9/5 Rated</div>
+        <div class="footer__badge">🛡 SOC 2</div>
+        <div class="footer__badge">💰 30-Day Guarantee</div>
+      </div>
+      <div class="footer__countries">
+        <span>🇧🇩 BD</span><span>🇮🇳 IN</span><span>🇵🇰 PK</span><span>🇦🇪 AE</span><span>🇳🇬 NG</span><span>🇵🇭 PH</span><span>🇹🇷 TR</span><span>🇪🇬 EG</span>
+      </div>
+    </div>
+
+    <div class="footer__bottom">
+      <div>
+        <div class="footer__copy">© 2026 LLCPad. All rights reserved. Not a law firm.</div>
+        <div class="footer__disclaimer">LLCPad is not a law firm and does not provide legal, tax, or financial advice. Formation services are document preparation services only. State filing fees are separate. All prices are in USD.</div>
+      </div>
+      <div class="footer__legal">
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+        <a href="#">Refunds</a>
+        <a href="#">Disclaimer</a>
+        <a href="#">Sitemap</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Mobile nav
+document.getElementById('hBurger').addEventListener('click',()=>document.getElementById('mobNav').classList.add('open'));
+document.getElementById('mobX').addEventListener('click',()=>document.getElementById('mobNav').classList.remove('open'));
+function closeMob(){document.getElementById('mobNav').classList.remove('open')}
+
+// Reveal
+const io=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('on')})},{threshold:0.1});
+document.querySelectorAll('.r,.r-right,.r-left').forEach(el=>io.observe(el));
+
+// Form
+function handleForm(e){
+  e.preventDefault();
+  const btn=e.target.querySelector('button[type="submit"]');
+  btn.textContent='✓ Request Sent!';
+  btn.style.background='#1b3a2d';
+  btn.disabled=true;
+}
+
+// Counter animation
+(function(){
+  const counters = document.querySelectorAll('.ctr');
+  if(!counters.length) return;
+
+  function animateCounter(el) {
+    const target   = parseFloat(el.dataset.target);
+    const decimals = parseInt(el.dataset.decimals) || 0;
+    const suffix   = el.dataset.suffix || '';
+    const duration = 1800; // ms
+    const start    = performance.now();
+
+    function easeOutQuart(t){ return 1 - Math.pow(1 - t, 4); }
+
+    function tick(now) {
+      const elapsed  = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const value    = target * easeOutQuart(progress);
+      el.textContent = value.toFixed(decimals) + suffix;
+      if(progress < 1) requestAnimationFrame(tick);
+      else el.textContent = target.toFixed(decimals) + suffix; // exact final value
+    }
+
+    requestAnimationFrame(tick);
+  }
+
+  const counterIO = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting) {
+        animateCounter(entry.target);
+        counterIO.unobserve(entry.target); // run once only
+      }
+    });
+  }, { threshold: 0.4 });
+
+  counters.forEach(el => counterIO.observe(el));
+})();
+
+// Hero lead form
+function handleHeroForm(e){
+  e.preventDefault();
+  const btn=e.target.querySelector('button[type="submit"]');
+  btn.textContent='✓ We\'ll be in touch!';
+  btn.style.background='#1b3a2d';
+  btn.disabled=true;
+}
+
+// Testimonials Carousel
+(function(){
+  const rail=document.getElementById('forgeRail');
+  if(!rail)return;
+  const cards=[...rail.querySelectorAll('.tc')];
+  const dotsEl=document.getElementById('forgeDots');
+  let cur=0;
+  const perView=()=>window.innerWidth<640?1:window.innerWidth<1024?2:3;
+
+  function getOffset(){
+    const pv=perView();
+    const pages=Math.ceil(cards.length/pv);
+    const cardW=cards[0].offsetWidth+20;
+    return {pages,cardW,pv};
+  }
+
+  function goTo(idx){
+    const {pages,cardW,pv}=getOffset();
+    cur=Math.max(0,Math.min(idx,pages-1));
+    rail.style.transform=`translateX(-${cur*pv*cardW}px)`;
+    [...dotsEl.querySelectorAll('.tc-dot')].forEach((d,i)=>d.classList.toggle('on',i===cur));
+  }
+
+  document.getElementById('forgeNext').onclick=()=>goTo(cur+1);
+  document.getElementById('forgePrev').onclick=()=>goTo(cur-1);
+  dotsEl.querySelectorAll('.tc-dot').forEach((d,i)=>d.onclick=()=>goTo(i));
+
+  window.addEventListener('resize',()=>goTo(0));
+})();
+</script>
+</body>
+</html>
