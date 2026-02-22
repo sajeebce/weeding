@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LLCPad — Form Your US LLC in 24 Hours | Eclipse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;0,14..32,900;1,14..32,400&family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ===== ECLIPSE DESIGN SYSTEM ===== */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  /* Palette */
+  --bg: #060608;
+  --bg-1: #0b0c13;
+  --bg-2: #0f1022;
+  --surface: rgba(255,255,255,0.04);
+  --surface-hover: rgba(255,255,255,0.07);
+  --border: rgba(255,255,255,0.07);
+  --border-bright: rgba(255,255,255,0.14);
+
+  /* Brand */
+  --violet: #7c3aed;
+  --violet-light: #a78bfa;
+  --violet-dim: rgba(124,58,237,0.18);
+  --violet-glow: rgba(124,58,237,0.35);
+  --amber: #f59e0b;
+  --amber-light: #fcd34d;
+  --amber-dim: rgba(245,158,11,0.15);
+  --amber-glow: rgba(245,158,11,0.3);
+  --green: #34d399;
+  --red: #f87171;
+
+  /* Text */
+  --text: #f4f4f6;
+  --text-muted: #8b8d9e;
+  --text-faint: rgba(244,244,246,0.35);
+
+  /* Layout */
+  --nav-h: 70px;
+  --radius-sm: 10px;
+  --radius: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+}
+
+html { scroll-behavior: smooth; overflow-x: hidden; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; font-family: inherit; }
+img { max-width: 100%; display: block; }
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.3); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(124,58,237,0.5); }
+
+/* ===== LAYOUT ===== */
+.container { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
+
+/* ===== BUTTONS ===== */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 13px 28px; border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 600; border: none;
+  cursor: pointer; transition: all 0.25s ease; position: relative; overflow: hidden;
+  font-family: inherit; white-space: nowrap;
+}
+.btn--primary {
+  background: var(--violet);
+  color: #fff;
+  box-shadow: 0 0 0 0 var(--violet-glow);
+}
+.btn--primary:hover {
+  background: #6d28d9;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px var(--violet-glow);
+}
+.btn--amber {
+  background: var(--amber);
+  color: #000;
+  font-weight: 700;
+}
+.btn--amber:hover {
+  background: var(--amber-light);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px var(--amber-glow);
+}
+.btn--ghost {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn--ghost:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-bright);
+  transform: translateY(-2px);
+}
+.btn--outline-violet {
+  background: transparent;
+  color: var(--violet-light);
+  border: 1px solid rgba(124,58,237,0.4);
+}
+.btn--outline-violet:hover {
+  background: var(--violet-dim);
+  border-color: var(--violet);
+}
+.btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+.btn--lg { padding: 16px 36px; font-size: 15px; border-radius: 12px; }
+
+/* ===== BADGE ===== */
+.badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 14px; border-radius: 999px;
+  font-size: 12px; font-weight: 600; letter-spacing: 0.3px;
+}
+.badge--violet { background: var(--violet-dim); color: var(--violet-light); border: 1px solid rgba(124,58,237,0.25); }
+.badge--amber { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(245,158,11,0.25); }
+.badge--ghost { background: var(--surface); color: var(--text-muted); border: 1px solid var(--border); }
+.badge .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: blink 2s ease-in-out infinite; }
+
+@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(32px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes scaleIn { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
+@keyframes rotateGrad { 0% { --angle: 0deg; } 100% { --angle: 360deg; } }
+@keyframes pulse { 0%,100% { opacity: 0.4; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.05); } }
+@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
+@keyframes shimmer { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+@keyframes countUp { from { opacity: 0; } to { opacity: 1; } }
+
+.reveal { opacity: 0; transform: translateY(36px); transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1); }
+.reveal.vis { opacity: 1; transform: none; }
+.reveal-d1 { transition-delay: 0.08s; }
+.reveal-d2 { transition-delay: 0.16s; }
+.reveal-d3 { transition-delay: 0.24s; }
+.reveal-d4 { transition-delay: 0.32s; }
+.reveal-d5 { transition-delay: 0.40s; }
+.reveal-d6 { transition-delay: 0.48s; }
+
+/* ===== NAV ===== */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  height: var(--nav-h); display: flex; align-items: center;
+  padding: 0 32px; transition: background 0.4s, border-color 0.4s;
+}
+.nav.scrolled {
+  background: rgba(6,6,8,0.85);
+  backdrop-filter: blur(24px) saturate(1.5);
+  border-bottom: 1px solid var(--border);
+}
+.nav__inner {
+  max-width: 1160px; margin: 0 auto; width: 100%;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.nav__logo {
+  display: flex; align-items: center; gap: 10px;
+  font-family: 'Sora', sans-serif; font-size: 20px; font-weight: 800;
+}
+.nav__logo-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--violet), #4f46e5);
+  display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+}
+.nav__logo-icon::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.2));
+}
+.nav__logo-icon svg { width: 20px; height: 20px; color: #fff; position: relative; z-index: 1; }
+.nav__logo span { color: var(--violet-light); }
+
+.nav__links { display: flex; gap: 8px; list-style: none; }
+.nav__links a {
+  padding: 7px 14px; border-radius: 8px;
+  font-size: 14px; font-weight: 500; color: var(--text-muted);
+  transition: color 0.2s, background 0.2s;
+}
+.nav__links a:hover { color: var(--text); background: var(--surface); }
+
+.nav__actions { display: flex; gap: 8px; align-items: center; }
+.nav__actions .btn { padding: 8px 18px; font-size: 13px; }
+
+.nav__burger { display: none; background: none; border: none; padding: 6px; flex-direction: column; gap: 5px; cursor: pointer; }
+.nav__burger span { display: block; width: 22px; height: 2px; background: var(--text); border-radius: 2px; transition: all 0.3s; }
+
+/* ===== MOBILE MENU ===== */
+.mobile-nav {
+  position: fixed; inset: 0; z-index: 199;
+  background: rgba(6,6,8,0.97); backdrop-filter: blur(24px);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
+  opacity: 0; pointer-events: none; transition: opacity 0.35s;
+}
+.mobile-nav.open { opacity: 1; pointer-events: auto; }
+.mobile-nav a { font-size: 22px; font-weight: 600; color: var(--text-muted); transition: color 0.2s; }
+.mobile-nav a:hover { color: var(--text); }
+.mobile-nav__close {
+  position: absolute; top: 20px; right: 24px;
+  background: none; border: none; color: var(--text); cursor: pointer;
+}
+.mobile-nav__close svg { width: 26px; height: 26px; }
+
+/* ===== HERO ===== */
+.hero {
+  position: relative; min-height: 100vh;
+  display: flex; align-items: center;
+  padding: calc(var(--nav-h) + 60px) 0 80px;
+  overflow: hidden;
+}
+
+/* Background */
+.hero__bg { position: absolute; inset: 0; z-index: 0; }
+.hero__noise {
+  position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity: 0.4;
+}
+.hero__grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(124,58,237,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124,58,237,0.06) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 30%, black 20%, transparent 80%);
+}
+.hero__orb {
+  position: absolute; border-radius: 50%; filter: blur(120px);
+  pointer-events: none; animation: pulse 8s ease-in-out infinite;
+}
+.hero__orb--1 { width: 700px; height: 700px; background: var(--violet); opacity: 0.2; top: -300px; right: -200px; }
+.hero__orb--2 { width: 500px; height: 500px; background: #312e81; opacity: 0.25; bottom: -200px; left: -150px; animation-delay: 3s; }
+.hero__orb--3 { width: 300px; height: 300px; background: var(--amber); opacity: 0.1; top: 50%; left: 55%; animation-delay: 1.5s; }
+
+/* Gradient line at top */
+.hero__line {
+  position: absolute; top: var(--nav-h); left: 50%; transform: translateX(-50%);
+  width: 60%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--violet), var(--amber), transparent);
+  opacity: 0.5;
+}
+
+.hero__content { position: relative; z-index: 2; text-align: center; max-width: 900px; margin: 0 auto; }
+
+.hero__eyebrow {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  margin-bottom: 28px;
+  animation: fadeUp 0.8s ease forwards;
+}
+
+.hero__pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 16px 8px 8px;
+  background: var(--surface);
+  border: 1px solid var(--border-bright);
+  border-radius: 999px; font-size: 13px; font-weight: 500; color: var(--text-muted);
+}
+.hero__pill-tag {
+  background: var(--violet); color: #fff;
+  padding: 3px 10px; border-radius: 999px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;
+}
+
+.hero__title {
+  font-family: 'Sora', sans-serif;
+  font-size: clamp(42px, 7vw, 80px);
+  font-weight: 800; line-height: 1.05; letter-spacing: -0.03em;
+  margin-bottom: 28px;
+  animation: fadeUp 0.8s ease 0.1s both;
+}
+.hero__title .line { display: block; }
+.hero__title .gradient {
+  background: linear-gradient(135deg, #a78bfa 0%, var(--violet-light) 30%, var(--amber) 70%, #fcd34d 100%);
+  background-size: 200% 200%;
+  animation: shimmer 4s linear infinite;
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero__sub {
+  font-size: clamp(16px, 2.2vw, 20px); color: var(--text-muted);
+  max-width: 600px; margin: 0 auto 36px; line-height: 1.75;
+  animation: fadeUp 0.8s ease 0.2s both;
+}
+
+.hero__ctas {
+  display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+  animation: fadeUp 0.8s ease 0.3s both;
+  margin-bottom: 48px;
+}
+
+.hero__proof {
+  display: flex; align-items: center; justify-content: center; gap: 24px; flex-wrap: wrap;
+  animation: fadeUp 0.8s ease 0.4s both;
+  margin-bottom: 56px;
+}
+.hero__proof-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted); }
+.hero__proof-item svg { width: 16px; height: 16px; color: var(--green); flex-shrink: 0; }
+.hero__proof-sep { width: 1px; height: 16px; background: var(--border-bright); }
+
+/* Trust Grid */
+.hero__trust {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+  max-width: 720px; margin: 0 auto;
+  animation: fadeUp 0.8s ease 0.5s both;
+}
+.trust-tile {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  padding: 20px 16px; border-radius: var(--radius);
+  background: var(--surface); border: 1px solid var(--border);
+  backdrop-filter: blur(12px); transition: all 0.3s ease;
+  position: relative; overflow: hidden;
+}
+.trust-tile::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, var(--violet-dim) 0%, transparent 60%);
+  opacity: 0; transition: opacity 0.3s;
+}
+.trust-tile:hover { border-color: rgba(124,58,237,0.3); transform: translateY(-4px); }
+.trust-tile:hover::before { opacity: 1; }
+.trust-tile__icon {
+  width: 38px; height: 38px; border-radius: 10px;
+  background: var(--violet-dim); display: flex; align-items: center; justify-content: center;
+  position: relative; z-index: 1;
+}
+.trust-tile__icon svg { width: 20px; height: 20px; color: var(--violet-light); }
+.trust-tile__num { font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; position: relative; z-index: 1; }
+.trust-tile__label { font-size: 11px; color: var(--text-muted); font-weight: 500; position: relative; z-index: 1; text-align: center; }
+
+/* ===== LOGOS / MARQUEE ===== */
+.logos { padding: 40px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); overflow: hidden; }
+.logos__label { text-align: center; font-size: 12px; color: var(--text-faint); font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 24px; }
+.logos__track { display: flex; gap: 0; width: max-content; animation: marquee 30s linear infinite; }
+.logos__track:hover { animation-play-state: paused; }
+.logos__item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 0 40px; font-size: 14px; font-weight: 600;
+  color: var(--text-faint); white-space: nowrap;
+  border-right: 1px solid var(--border);
+}
+.logos__item svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+/* ===== STATS ===== */
+.stats { padding: 80px 0; position: relative; }
+.stats__grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+.stat-item {
+  padding: 40px 32px; background: var(--bg-1);
+  text-align: center; transition: background 0.3s;
+  position: relative;
+}
+.stat-item::after {
+  content: '';
+  position: absolute; bottom: 0; left: 20%; right: 20%; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--violet), transparent);
+  opacity: 0; transition: opacity 0.3s;
+}
+.stat-item:hover { background: var(--surface); }
+.stat-item:hover::after { opacity: 1; }
+.stat-item__num {
+  font-family: 'Sora', sans-serif;
+  font-size: clamp(36px, 4vw, 52px); font-weight: 800;
+  letter-spacing: -0.03em;
+  background: linear-gradient(135deg, var(--text) 0%, var(--violet-light) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.stat-item__label { font-size: 14px; color: var(--text-muted); margin-top: 6px; font-weight: 500; }
+
+/* ===== SECTION HEADER ===== */
+.sh { text-align: center; margin-bottom: 64px; }
+.sh__badge { margin-bottom: 16px; }
+.sh__title {
+  font-family: 'Sora', sans-serif;
+  font-size: clamp(30px, 4.5vw, 48px);
+  font-weight: 800; line-height: 1.1; letter-spacing: -0.025em;
+  margin-bottom: 16px;
+}
+.sh__sub { font-size: clamp(15px, 1.8vw, 18px); color: var(--text-muted); max-width: 540px; margin: 0 auto; line-height: 1.7; }
+
+/* ===== BENTO SERVICES ===== */
+.services { padding: 80px 0; }
+.bento { display: grid; grid-template-columns: repeat(12, 1fr); grid-auto-rows: minmax(200px, auto); gap: 16px; }
+.bento-cell {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 32px; overflow: hidden;
+  position: relative; transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
+}
+.bento-cell:hover { border-color: var(--border-bright); background: var(--surface-hover); transform: translateY(-4px); box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+.bento-cell--1 { grid-column: span 5; }
+.bento-cell--2 { grid-column: span 4; }
+.bento-cell--3 { grid-column: span 3; }
+.bento-cell--4 { grid-column: span 4; }
+.bento-cell--5 { grid-column: span 4; }
+.bento-cell--6 { grid-column: span 4; }
+.bento-cell--7 { grid-column: span 6; }
+.bento-cell--8 { grid-column: span 6; }
+
+.bento-cell--featured {
+  background: linear-gradient(135deg, rgba(124,58,237,0.15) 0%, rgba(79,70,229,0.08) 50%, var(--surface) 100%);
+  border-color: rgba(124,58,237,0.25);
+}
+.bento-cell--featured:hover { border-color: rgba(124,58,237,0.5); }
+
+.bento-cell--amber {
+  background: linear-gradient(135deg, rgba(245,158,11,0.1) 0%, var(--surface) 60%);
+  border-color: rgba(245,158,11,0.2);
+}
+.bento-cell--amber:hover { border-color: rgba(245,158,11,0.4); }
+
+.bento-cell__glow {
+  position: absolute; top: -80px; right: -80px; width: 200px; height: 200px;
+  border-radius: 50%; filter: blur(80px); opacity: 0; transition: opacity 0.5s;
+  pointer-events: none;
+}
+.bento-cell--featured .bento-cell__glow { background: var(--violet); }
+.bento-cell--amber .bento-cell__glow { background: var(--amber); }
+.bento-cell:hover .bento-cell__glow { opacity: 0.15; }
+
+.bento-cell__tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 6px; background: var(--violet-dim);
+  color: var(--violet-light); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 20px;
+}
+.bento-cell--amber .bento-cell__tag { background: var(--amber-dim); color: var(--amber); }
+
+.bento-cell__icon {
+  width: 52px; height: 52px; border-radius: 14px; margin-bottom: 20px;
+  background: var(--violet-dim); display: flex; align-items: center; justify-content: center;
+  transition: all 0.3s;
+}
+.bento-cell:hover .bento-cell__icon { background: var(--violet); transform: scale(1.05); }
+.bento-cell__icon svg { width: 26px; height: 26px; color: var(--violet-light); transition: color 0.3s; }
+.bento-cell:hover .bento-cell__icon svg { color: #fff; }
+
+.bento-cell--amber .bento-cell__icon { background: var(--amber-dim); }
+.bento-cell--amber:hover .bento-cell__icon { background: var(--amber); }
+.bento-cell--amber .bento-cell__icon svg { color: var(--amber); }
+.bento-cell--amber:hover .bento-cell__icon svg { color: #000; }
+
+.bento-cell h3 { font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+.bento-cell p { font-size: 14px; color: var(--text-muted); line-height: 1.65; }
+.bento-cell__price {
+  display: inline-block; margin-top: 16px;
+  font-size: 15px; font-weight: 700; color: var(--violet-light);
+}
+.bento-cell--amber .bento-cell__price { color: var(--amber); }
+.bento-cell__arrow {
+  position: absolute; bottom: 24px; right: 24px;
+  width: 36px; height: 36px; border-radius: 10px;
+  border: 1px solid var(--border); display: flex; align-items: center; justify-content: center;
+  transition: all 0.3s;
+}
+.bento-cell:hover .bento-cell__arrow { background: var(--violet); border-color: var(--violet); }
+.bento-cell--amber:hover .bento-cell__arrow { background: var(--amber); border-color: var(--amber); }
+.bento-cell__arrow svg { width: 16px; height: 16px; color: var(--text-muted); transition: all 0.3s; }
+.bento-cell:hover .bento-cell__arrow svg { color: #fff; transform: translate(2px,-2px); }
+.bento-cell--amber:hover .bento-cell__arrow svg { color: #000; }
+
+/* Featured large card extra elements */
+.bento-cell__stat { margin-top: 24px; }
+.bento-cell__stat-num { font-family: 'Sora', sans-serif; font-size: 40px; font-weight: 800; color: var(--violet-light); }
+.bento-cell__stat-label { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+
+/* ===== PROCESS ===== */
+.process { padding: 80px 0; position: relative; overflow: hidden; }
+.process__bg {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 70% 50% at 50% 50%, rgba(124,58,237,0.04), transparent);
+}
+.process__grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; position: relative; }
+.process__connector {
+  position: absolute; top: 52px; left: calc(12.5% + 26px); right: calc(12.5% + 26px); height: 2px;
+  background: linear-gradient(90deg, var(--violet), var(--amber));
+  opacity: 0.25;
+}
+.process__connector::before, .process__connector::after {
+  content: '';
+  position: absolute; top: -4px; width: 10px; height: 10px; border-radius: 50%; background: var(--violet);
+}
+.process__connector::before { left: 0; }
+.process__connector::after { right: 0; background: var(--amber); }
+
+.step {
+  text-align: center; padding: 0 24px; position: relative;
+}
+.step__node {
+  width: 104px; height: 104px; border-radius: 50%; margin: 0 auto 28px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg-1); border: 1px solid var(--border);
+  position: relative; z-index: 2; transition: all 0.5s;
+}
+.step__node::before {
+  content: ''; position: absolute; inset: -4px; border-radius: 50%;
+  border: 2px dashed var(--border); opacity: 0.5;
+  transition: all 0.5s;
+}
+.step:hover .step__node {
+  border-color: var(--violet);
+  box-shadow: 0 0 40px var(--violet-glow);
+  background: rgba(124,58,237,0.08);
+}
+.step:hover .step__node::before { border-color: var(--violet); opacity: 1; transform: rotate(45deg); }
+.step__node svg { width: 36px; height: 36px; color: var(--violet-light); transition: transform 0.3s; }
+.step:hover .step__node svg { transform: scale(1.1); }
+.step__badge {
+  position: absolute; top: -4px; right: calc(50% - 62px);
+  width: 28px; height: 28px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--violet), #4f46e5);
+  color: #fff; font-size: 12px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+}
+.step h3 { font-family: 'Sora', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 10px; }
+.step p { font-size: 14px; color: var(--text-muted); line-height: 1.65; }
+
+/* ===== PRICING ===== */
+.pricing { padding: 80px 0; position: relative; }
+.pricing__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 0; }
+.price-card {
+  border-radius: var(--radius-xl); padding: 36px 28px; background: var(--surface);
+  border: 1px solid var(--border); display: flex; flex-direction: column;
+  position: relative; transition: all 0.5s cubic-bezier(0.16,1,0.3,1); overflow: hidden;
+}
+.price-card:hover { transform: translateY(-8px); box-shadow: 0 24px 80px rgba(0,0,0,0.4); border-color: var(--border-bright); }
+
+.price-card--featured {
+  background: linear-gradient(160deg, rgba(124,58,237,0.18) 0%, rgba(79,70,229,0.08) 40%, var(--surface) 80%);
+  border-color: rgba(124,58,237,0.35);
+  box-shadow: 0 0 0 1px rgba(124,58,237,0.2), inset 0 1px 0 rgba(255,255,255,0.08);
+}
+.price-card--featured:hover { box-shadow: 0 24px 80px rgba(124,58,237,0.2), 0 0 0 1px rgba(124,58,237,0.4); border-color: rgba(124,58,237,0.5); }
+
+/* Shimmer top border */
+.price-card--featured::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--violet), var(--amber), var(--violet), transparent);
+}
+
+.price-card__crown {
+  position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+  background: linear-gradient(135deg, var(--violet), var(--amber));
+  color: #fff; padding: 5px 18px; border-radius: 999px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; white-space: nowrap;
+}
+
+.price-card__name { font-family: 'Sora', sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+.price-card__desc { font-size: 14px; color: var(--text-muted); margin-bottom: 24px; line-height: 1.5; }
+.price-card__amount { font-family: 'Sora', sans-serif; font-size: clamp(40px, 4vw, 52px); font-weight: 800; letter-spacing: -0.03em; }
+.price-card__amount sup { font-size: 24px; vertical-align: top; margin-top: 12px; font-weight: 600; }
+.price-card__amount sub { font-size: 16px; color: var(--text-muted); font-weight: 500; }
+.price-card__note { font-size: 13px; color: var(--text-muted); margin: 6px 0 28px; padding-bottom: 28px; border-bottom: 1px solid var(--border); }
+.price-card__features { list-style: none; flex: 1; margin-bottom: 28px; }
+.price-card__features li { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; font-size: 14px; }
+.price-card__features li svg { width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; }
+.price-card__features .ok svg { color: var(--green); }
+.price-card__features .no { color: var(--text-muted); opacity: 0.5; }
+.price-card__features .no svg { color: var(--text-faint); }
+.price-card .btn { width: 100%; justify-content: center; }
+
+/* ===== TESTIMONIALS ===== */
+.testimonials { padding: 80px 0; overflow: hidden; position: relative; }
+.testimonials__bg { position: absolute; inset: 0; background: radial-gradient(ellipse 60% 40% at 50% 0%, rgba(245,158,11,0.04), transparent); }
+.test-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; position: relative; }
+.test-card {
+  padding: 28px; border-radius: var(--radius-lg);
+  background: var(--surface); border: 1px solid var(--border);
+  transition: all 0.4s; position: relative; overflow: hidden;
+}
+.test-card:hover { border-color: var(--border-bright); transform: translateY(-4px); background: var(--surface-hover); }
+.test-card__accent {
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  opacity: 0; transition: opacity 0.3s;
+}
+.test-card:hover .test-card__accent { opacity: 1; }
+.test-card:nth-child(1) .test-card__accent { background: linear-gradient(90deg, var(--violet), #a78bfa); }
+.test-card:nth-child(2) .test-card__accent { background: linear-gradient(90deg, var(--amber), #fcd34d); }
+.test-card:nth-child(3) .test-card__accent { background: linear-gradient(90deg, var(--green), #6ee7b7); }
+
+.test-card__stars { display: flex; gap: 3px; margin-bottom: 16px; }
+.test-card__stars svg { width: 14px; height: 14px; fill: var(--amber); color: var(--amber); }
+.test-card__quote { font-size: 14px; color: var(--text-muted); line-height: 1.75; margin-bottom: 20px; font-style: italic; }
+.test-card__author { display: flex; align-items: center; gap: 12px; }
+.test-card__avatar {
+  width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700; color: #fff;
+}
+.test-card:nth-child(1) .test-card__avatar { background: linear-gradient(135deg, var(--violet), #4f46e5); }
+.test-card:nth-child(2) .test-card__avatar { background: linear-gradient(135deg, var(--amber), #f97316); color: #000; }
+.test-card:nth-child(3) .test-card__avatar { background: linear-gradient(135deg, var(--green), #059669); }
+.test-card__name { font-size: 14px; font-weight: 600; }
+.test-card__role { font-size: 12px; color: var(--text-muted); }
+.test-card__country { font-size: 12px; color: var(--text-faint); margin-top: 2px; }
+
+/* ===== FAQ ===== */
+.faq { padding: 80px 0; }
+.faq__layout { display: grid; grid-template-columns: 1fr 2fr; gap: 64px; }
+.faq__sidebar { position: sticky; top: calc(var(--nav-h) + 24px); align-self: start; }
+.faq__sidebar-title { font-family: 'Sora', sans-serif; font-size: 28px; font-weight: 800; line-height: 1.2; margin-bottom: 16px; }
+.faq__sidebar-sub { font-size: 15px; color: var(--text-muted); line-height: 1.7; margin-bottom: 28px; }
+.faq__contact {
+  display: flex; gap: 10px; align-items: center;
+  padding: 16px 20px; border-radius: var(--radius);
+  background: var(--violet-dim); border: 1px solid rgba(124,58,237,0.25);
+  font-size: 14px; color: var(--violet-light); font-weight: 500;
+  transition: all 0.3s;
+}
+.faq__contact:hover { background: rgba(124,58,237,0.2); }
+.faq__contact svg { width: 18px; height: 18px; }
+
+.faq__list { display: flex; flex-direction: column; gap: 10px; }
+.faq-item {
+  border-radius: var(--radius); border: 1px solid var(--border);
+  overflow: hidden; transition: border-color 0.3s;
+}
+.faq-item.open { border-color: rgba(124,58,237,0.3); }
+.faq-item__q {
+  width: 100%; text-align: left; background: none; border: none; color: var(--text);
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 20px 22px; font-size: 15px; font-weight: 600;
+  cursor: pointer; transition: background 0.2s;
+}
+.faq-item__q:hover { background: var(--surface); }
+.faq-item.open .faq-item__q { background: var(--surface); }
+.faq-item__icon {
+  width: 26px; height: 26px; border-radius: 8px;
+  background: var(--surface); display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: all 0.3s;
+}
+.faq-item.open .faq-item__icon { background: var(--violet); transform: rotate(45deg); }
+.faq-item__icon svg { width: 14px; height: 14px; color: var(--text-muted); transition: color 0.3s; }
+.faq-item.open .faq-item__icon svg { color: #fff; }
+.faq-item__a { max-height: 0; overflow: hidden; transition: max-height 0.45s cubic-bezier(0.16,1,0.3,1); }
+.faq-item.open .faq-item__a { max-height: 320px; }
+.faq-item__a-inner { padding: 0 22px 20px; font-size: 14px; color: var(--text-muted); line-height: 1.75; }
+
+/* ===== CTA ===== */
+.cta { padding: 80px 0; }
+.cta__box {
+  position: relative; border-radius: 28px; padding: 80px 40px;
+  text-align: center; overflow: hidden;
+  background: linear-gradient(135deg, rgba(124,58,237,0.15) 0%, rgba(79,70,229,0.08) 30%, rgba(245,158,11,0.05) 70%, rgba(124,58,237,0.1) 100%);
+  border: 1px solid rgba(124,58,237,0.2);
+}
+/* Animated gradient border */
+.cta__box::before {
+  content: '';
+  position: absolute; inset: 0; border-radius: 28px; padding: 1px;
+  background: linear-gradient(135deg, var(--violet), var(--amber), var(--violet));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: destination-out;
+  mask-composite: exclude;
+  opacity: 0.5;
+}
+.cta__orbs { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.cta__orb { position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; }
+.cta__orb--1 { width: 400px; height: 400px; background: var(--violet); opacity: 0.1; top: -200px; right: -100px; }
+.cta__orb--2 { width: 350px; height: 350px; background: var(--amber); opacity: 0.08; bottom: -150px; left: -80px; }
+
+.cta__content { position: relative; z-index: 2; }
+.cta__box h2 { font-family: 'Sora', sans-serif; font-size: clamp(30px, 4vw, 44px); font-weight: 800; line-height: 1.1; margin-bottom: 16px; }
+.cta__box p { font-size: 18px; color: var(--text-muted); max-width: 500px; margin: 0 auto 36px; }
+.cta__btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-bottom: 32px; }
+.cta__perks { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
+.cta__perk { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--text-muted); }
+.cta__perk svg { width: 15px; height: 15px; color: var(--green); }
+.cta__note { font-size: 13px; color: var(--text-faint); margin-top: 20px; }
+
+/* ===== FOOTER ===== */
+.footer { padding: 64px 0 32px; border-top: 1px solid var(--border); }
+.footer__top { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; padding-bottom: 48px; }
+.footer__brand p { font-size: 14px; color: var(--text-muted); margin-top: 14px; max-width: 280px; line-height: 1.7; }
+.footer__brand-logo { display: flex; align-items: center; gap: 10px; font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 800; }
+.footer__brand-logo span { color: var(--violet-light); }
+.footer__col h5 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-faint); margin-bottom: 16px; }
+.footer__col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.footer__col a { font-size: 14px; color: var(--text-muted); transition: color 0.2s; }
+.footer__col a:hover { color: var(--text); }
+.footer__bottom { padding-top: 28px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+.footer__copy { font-size: 13px; color: var(--text-faint); }
+.footer__badges { display: flex; gap: 12px; }
+.footer__badge { padding: 4px 12px; border-radius: 6px; background: var(--surface); border: 1px solid var(--border); font-size: 11px; color: var(--text-faint); font-weight: 600; }
+.footer__disclaimer { font-size: 12px; color: var(--text-faint); max-width: 700px; margin: 16px auto 0; text-align: center; line-height: 1.6; opacity: 0.7; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+  .nav__links { display: none; }
+  .nav__actions .btn:first-child { display: none; }
+  .nav__burger { display: flex; }
+  .bento { grid-template-columns: repeat(6, 1fr); }
+  .bento-cell--1 { grid-column: span 6; }
+  .bento-cell--2, .bento-cell--3 { grid-column: span 3; }
+  .bento-cell--4, .bento-cell--5, .bento-cell--6 { grid-column: span 3; }
+  .bento-cell--7, .bento-cell--8 { grid-column: span 6; }
+  .process__grid { grid-template-columns: repeat(2, 1fr); gap: 40px; }
+  .process__connector { display: none; }
+  .pricing__grid { grid-template-columns: 1fr; max-width: 440px; margin: 0 auto; }
+  .test-grid { grid-template-columns: 1fr 1fr; }
+  .test-grid > *:last-child { display: none; }
+  .faq__layout { grid-template-columns: 1fr; gap: 40px; }
+  .faq__sidebar { position: static; }
+  .footer__top { grid-template-columns: 1fr 1fr; }
+  .hero__trust { grid-template-columns: repeat(2, 1fr); max-width: 400px; }
+  .stats__grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+  .hero__ctas { flex-direction: column; align-items: center; }
+  .hero__ctas .btn { width: 100%; max-width: 300px; justify-content: center; }
+  .bento { grid-template-columns: 1fr; }
+  .bento-cell--1, .bento-cell--2, .bento-cell--3, .bento-cell--4, .bento-cell--5, .bento-cell--6, .bento-cell--7, .bento-cell--8 { grid-column: span 1; }
+  .process__grid { grid-template-columns: 1fr; max-width: 300px; margin-left: auto; margin-right: auto; }
+  .test-grid { grid-template-columns: 1fr; }
+  .test-grid > *:last-child { display: block; }
+  .footer__top { grid-template-columns: 1fr; }
+  .footer__bottom { flex-direction: column; text-align: center; }
+  .cta__box { padding: 60px 24px; }
+  .hero__proof { gap: 12px; }
+  .hero__proof-sep { display: none; }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, .reveal { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  .reveal { opacity: 1; transform: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== NAV ===== -->
+<nav class="nav" id="nav">
+  <div class="nav__inner">
+    <a href="#" class="nav__logo">
+      <div class="nav__logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 21h18M3 8v13M21 8v13M6 8V5a1 1 0 011-1h10a1 1 0 011 1v3"/><path d="M10 21v-5h4v5"/></svg>
+      </div>
+      LLC<span>Pad</span>
+    </a>
+    <ul class="nav__links">
+      <li><a href="#services">Services</a></li>
+      <li><a href="#process">Process</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#testimonials">Reviews</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ul>
+    <div class="nav__actions">
+      <a href="#" class="btn btn--ghost" style="padding:8px 16px;font-size:13px">Log In</a>
+      <a href="#pricing" class="btn btn--primary" style="padding:8px 18px;font-size:13px">Get Started</a>
+    </div>
+    <button class="nav__burger" id="burger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="mobile-nav" id="mobileNav">
+  <button class="mobile-nav__close" id="menuClose">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+  </button>
+  <a href="#services" onclick="closeMob()">Services</a>
+  <a href="#process" onclick="closeMob()">Process</a>
+  <a href="#pricing" onclick="closeMob()">Pricing</a>
+  <a href="#testimonials" onclick="closeMob()">Reviews</a>
+  <a href="#faq" onclick="closeMob()">FAQ</a>
+  <a href="#pricing" class="btn btn--primary btn--lg" onclick="closeMob()" style="margin-top:12px">Get Started →</a>
+</div>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div class="hero__bg">
+    <div class="hero__noise"></div>
+    <div class="hero__grid"></div>
+    <div class="hero__orb hero__orb--1"></div>
+    <div class="hero__orb hero__orb--2"></div>
+    <div class="hero__orb hero__orb--3"></div>
+  </div>
+  <div class="hero__line"></div>
+  <div class="container">
+    <div class="hero__content">
+
+      <div class="hero__eyebrow">
+        <div class="hero__pill">
+          <span class="hero__pill-tag">New</span>
+          24-hour expedited processing now available
+        </div>
+      </div>
+
+      <h1 class="hero__title">
+        <span class="line">Launch Your</span>
+        <span class="line gradient">US Business</span>
+        <span class="line">From Anywhere</span>
+      </h1>
+
+      <p class="hero__sub">
+        Form your US LLC, get your EIN, open a business bank account, and start selling on Amazon — all from your home country. We handle 100% of the paperwork.
+      </p>
+
+      <div class="hero__ctas">
+        <a href="#pricing" class="btn btn--primary btn--lg">
+          Start My LLC — $0 Down
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a href="#process" class="btn btn--ghost btn--lg">
+          See How It Works
+        </a>
+      </div>
+
+      <div class="hero__proof">
+        <div class="hero__proof-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+          No US address required
+        </div>
+        <div class="hero__proof-sep"></div>
+        <div class="hero__proof-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+          100% remote process
+        </div>
+        <div class="hero__proof-sep"></div>
+        <div class="hero__proof-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+          Guaranteed compliance
+        </div>
+        <div class="hero__proof-sep"></div>
+        <div class="hero__proof-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+          Money-back guarantee
+        </div>
+      </div>
+
+      <div class="hero__trust">
+        <div class="trust-tile">
+          <div class="trust-tile__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+          <div class="trust-tile__num">12K+</div>
+          <div class="trust-tile__label">LLCs Formed</div>
+        </div>
+        <div class="trust-tile">
+          <div class="trust-tile__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg></div>
+          <div class="trust-tile__num">50+</div>
+          <div class="trust-tile__label">Countries Served</div>
+        </div>
+        <div class="trust-tile">
+          <div class="trust-tile__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+          <div class="trust-tile__num">4.9★</div>
+          <div class="trust-tile__label">Avg. Rating</div>
+        </div>
+        <div class="trust-tile">
+          <div class="trust-tile__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+          <div class="trust-tile__num">24h</div>
+          <div class="trust-tile__label">Avg. Processing</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===== LOGOS ===== -->
+<div class="logos">
+  <p class="logos__label">Trusted by entrepreneurs from</p>
+  <div style="overflow:hidden">
+    <div class="logos__track">
+      <div class="logos__item"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>Bangladesh</div>
+      <div class="logos__item"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>India</div>
+      <div class="logos__item"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>Pakistan</div>
+      <div class="logos__item"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>UAE</div>
+      <div class="logos__item"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>Nigeria</div>
+      <div class="logos__item"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>Philippines</div>
+      <div class="logos__item"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>Turkey</div>
+      <div class="logos__item"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>Egypt</div>
+      <!-- Duplicate for seamless loop -->
+      <div class="logos__item"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>Bangladesh</div>
+      <div class="logos__item"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>India</div>
+      <div class="logos__item"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>Pakistan</div>
+      <div class="logos__item"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>UAE</div>
+      <div class="logos__item"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>Nigeria</div>
+      <div class="logos__item"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>Philippines</div>
+      <div class="logos__item"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>Turkey</div>
+      <div class="logos__item"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>Egypt</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== STATS ===== -->
+<section class="stats">
+  <div class="container">
+    <div class="stats__grid">
+      <div class="stat-item reveal">
+        <div class="stat-item__num" data-target="12000" data-suffix="+">12,000+</div>
+        <div class="stat-item__label">US LLCs Successfully Formed</div>
+      </div>
+      <div class="stat-item reveal reveal-d1">
+        <div class="stat-item__num" data-target="50" data-suffix="+">50+</div>
+        <div class="stat-item__label">Countries Represented</div>
+      </div>
+      <div class="stat-item reveal reveal-d2">
+        <div class="stat-item__num">4.9★</div>
+        <div class="stat-item__label">Customer Satisfaction Score</div>
+      </div>
+      <div class="stat-item reveal reveal-d3">
+        <div class="stat-item__num">24h</div>
+        <div class="stat-item__label">Average Processing Time</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SERVICES BENTO ===== -->
+<section class="services" id="services">
+  <div class="container">
+    <div class="sh">
+      <div class="sh__badge reveal"><span class="badge badge--ghost">Services</span></div>
+      <h2 class="sh__title reveal reveal-d1">Everything to Run Your<br>US Business Remotely</h2>
+      <p class="sh__sub reveal reveal-d2">From formation to expansion — our complete suite covers every aspect of your US business needs.</p>
+    </div>
+
+    <div class="bento">
+      <!-- Cell 1: Large featured — LLC Formation -->
+      <div class="bento-cell bento-cell--1 bento-cell--featured reveal reveal-d1">
+        <div class="bento-cell__glow"></div>
+        <div class="bento-cell__tag">Most Popular</div>
+        <div class="bento-cell__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 8v13M21 8v13M6 8V5a1 1 0 011-1h10a1 1 0 011 1v3M9 21v-5h4v5"/></svg>
+        </div>
+        <h3>LLC Formation</h3>
+        <p>Form your US LLC in any of 50 states. We prepare, file, and deliver your Articles of Organization, Operating Agreement, and all necessary documents.</p>
+        <div class="bento-cell__stat">
+          <div class="bento-cell__stat-num">24h</div>
+          <div class="bento-cell__stat-label">Average delivery time</div>
+        </div>
+        <div class="bento-cell__price">From $199 + state fee</div>
+        <div class="bento-cell__arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+      </div>
+
+      <!-- Cell 2 -->
+      <div class="bento-cell bento-cell--2 reveal reveal-d2">
+        <div class="bento-cell__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h4"/></svg>
+        </div>
+        <h3>EIN Application</h3>
+        <p>Get your US Employer Identification Number (Tax ID) — required to open bank accounts, hire employees, and file taxes.</p>
+        <div class="bento-cell__price">From $99</div>
+        <div class="bento-cell__arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+      </div>
+
+      <!-- Cell 3 -->
+      <div class="bento-cell bento-cell--3 reveal reveal-d3">
+        <div class="bento-cell__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h3>Registered Agent</h3>
+        <p>Maintain compliance with our reliable registered agent service in all 50 states.</p>
+        <div class="bento-cell__price">$99/year</div>
+        <div class="bento-cell__arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+      </div>
+
+      <!-- Cell 4: Amazon Seller -->
+      <div class="bento-cell bento-cell--4 bento-cell--amber reveal reveal-d1">
+        <div class="bento-cell__glow"></div>
+        <div class="bento-cell__tag">High Demand</div>
+        <div class="bento-cell__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+        </div>
+        <h3>Amazon Seller Account</h3>
+        <p>Full Amazon Professional Seller account setup with identity verification and compliance support.</p>
+        <div class="bento-cell__price">From $349</div>
+        <div class="bento-cell__arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+      </div>
+
+      <!-- Cell 5 -->
+      <div class="bento-cell bento-cell--5 reveal reveal-d2">
+        <div class="bento-cell__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+        </div>
+        <h3>Amazon Brand Registry</h3>
+        <p>Protect your brand on Amazon and unlock powerful brand-building tools with registry enrollment.</p>
+        <div class="bento-cell__price">From $299</div>
+        <div class="bento-cell__arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+      </div>
+
+      <!-- Cell 6 -->
+      <div class="bento-cell bento-cell--6 reveal reveal-d3">
+        <div class="bento-cell__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        </div>
+        <h3>Trademark Registration</h3>
+        <p>Protect your brand nationwide with USPTO federal trademark registration.</p>
+        <div class="bento-cell__price">From $599</div>
+        <div class="bento-cell__arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+      </div>
+
+      <!-- Cell 7: Banking -->
+      <div class="bento-cell bento-cell--7 reveal reveal-d2">
+        <div class="bento-cell__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V7a2 2 0 012-2h14a2 2 0 012 2v14"/><path d="M3 10h18M7 15h.01M12 15h.01M7 19h.01M12 19h.01"/></svg>
+        </div>
+        <h3>US Business Banking</h3>
+        <p>Open a real US business bank account remotely with our partner banks. Accept USD payments, issue debit cards, and integrate with Stripe, PayPal, and more — without ever visiting the US.</p>
+        <div class="bento-cell__price">From $199</div>
+        <div class="bento-cell__arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+      </div>
+
+      <!-- Cell 8: Virtual Address -->
+      <div class="bento-cell bento-cell--8 reveal reveal-d3">
+        <div class="bento-cell__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <h3>Virtual US Address</h3>
+        <p>Get a real US business mailing address for your LLC. Mail scanning, forwarding, and professional presence for your business — essential for banking and Amazon.</p>
+        <div class="bento-cell__price">From $149/year</div>
+        <div class="bento-cell__arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PROCESS ===== -->
+<section class="process" id="process">
+  <div class="process__bg"></div>
+  <div class="container">
+    <div class="sh">
+      <div class="sh__badge reveal"><span class="badge badge--ghost">How It Works</span></div>
+      <h2 class="sh__title reveal reveal-d1">Start Your US Business in<br>4 Simple Steps</h2>
+      <p class="sh__sub reveal reveal-d2">We've eliminated every obstacle. Our streamlined process gets you operational in 24-48 hours.</p>
+    </div>
+
+    <div class="process__grid">
+      <div class="process__connector"></div>
+
+      <div class="step reveal reveal-d1">
+        <div class="step__node">
+          <span class="step__badge">1</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+        </div>
+        <h3>Choose Your Package</h3>
+        <p>Select your state, pick a service bundle that fits your goals, and complete our simple online form in under 5 minutes.</p>
+      </div>
+
+      <div class="step reveal reveal-d2">
+        <div class="step__node">
+          <span class="step__badge">2</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h3>We File Everything</h3>
+        <p>Our compliance experts prepare and file all state documents, IRS applications, and legal paperwork with 100% accuracy.</p>
+      </div>
+
+      <div class="step reveal reveal-d3">
+        <div class="step__node">
+          <span class="step__badge">3</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M9 15l2 2 4-4"/></svg>
+        </div>
+        <h3>Receive Your Documents</h3>
+        <p>Get your LLC certificate, Articles of Organization, Operating Agreement, and EIN delivered digitally within 24-48 hours.</p>
+      </div>
+
+      <div class="step reveal reveal-d4">
+        <div class="step__node">
+          <span class="step__badge">4</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 00-2.91-.09zM12 15l-3-3a22 22 0 012-3.95A12.88 12.88 0 0122 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 01-4 2z"/></svg>
+        </div>
+        <h3>Launch & Scale</h3>
+        <p>Open your bank account, activate Stripe payments, launch your Amazon store, and start growing your global business.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PRICING ===== -->
+<section class="pricing" id="pricing">
+  <div class="container">
+    <div class="sh">
+      <div class="sh__badge reveal"><span class="badge badge--ghost">Pricing</span></div>
+      <h2 class="sh__title reveal reveal-d1">Simple, Transparent<br>Pricing</h2>
+      <p class="sh__sub reveal reveal-d2">One-time service fees. State filing fees are extra and vary by state. No annual subscription. No hidden charges.</p>
+    </div>
+
+    <div class="pricing__grid">
+      <!-- Basic -->
+      <div class="price-card reveal reveal-d1">
+        <div class="price-card__name">Starter</div>
+        <div class="price-card__desc">Essential LLC formation to get you started</div>
+        <div class="price-card__amount"><sup>$</sup>0 <sub>+ state fee</sub></div>
+        <div class="price-card__note">State government fee applies separately</div>
+        <ul class="price-card__features">
+          <li class="ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>LLC Articles of Organization</li>
+          <li class="ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Operating Agreement</li>
+          <li class="ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Compliance checklist</li>
+          <li class="no"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>Registered Agent — +$99/yr</li>
+          <li class="no"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>EIN Application — +$99</li>
+          <li class="no"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>Business Banking Setup</li>
+        </ul>
+        <a href="#" class="btn btn--ghost">Get Started <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+      </div>
+
+      <!-- Standard (Featured) -->
+      <div class="price-card price-card--featured reveal reveal-d2">
+        <div class="price-card__crown">Most Popular</div>
+        <div class="price-card__name">Standard</div>
+        <div class="price-card__desc">Everything an international entrepreneur needs</div>
+        <div class="price-card__amount"><sup>$</sup>299 <sub>+ state fee</sub></div>
+        <div class="price-card__note">One-time fee · No recurring charges</div>
+        <ul class="price-card__features">
+          <li class="ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>LLC Articles of Organization</li>
+          <li class="ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Operating Agreement</li>
+          <li class="ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Registered Agent (1 year)</li>
+          <li class="ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>EIN / Tax ID Application</li>
+          <li class="ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>BOI Beneficial Ownership Filing</li>
+          <li class="no"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>US Banking Setup — +$99</li>
+        </ul>
+        <a href="#" class="btn btn--primary">Get Started <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+      </div>
+
+      <!-- Premium -->
+      <div class="price-card reveal reveal-d3">
+        <div class="price-card__name">Premium</div>
+        <div class="price-card__desc">Complete US business setup in one package</div>
+        <div class="price-card__amount"><sup>$</sup>620 <sub>+ state fee</sub></div>
+        <div class="price-card__note">Includes everything · Fastest processing</div>
+        <ul class="price-card__features">
+          <li class="ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>All Standard features</li>
+          <li class="ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Virtual US Address (1 year)</li>
+          <li class="ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>US Business Bank Account</li>
+          <li class="ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Stripe + Payment Gateway</li>
+          <li class="ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Priority 24h processing</li>
+          <li class="ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Dedicated account manager</li>
+        </ul>
+        <a href="#" class="btn btn--amber">Get Started <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TESTIMONIALS ===== -->
+<section class="testimonials" id="testimonials">
+  <div class="testimonials__bg"></div>
+  <div class="container">
+    <div class="sh">
+      <div class="sh__badge reveal"><span class="badge badge--ghost">Testimonials</span></div>
+      <h2 class="sh__title reveal reveal-d1">Entrepreneurs Worldwide<br>Trust LLCPad</h2>
+      <p class="sh__sub reveal reveal-d2">From Dhaka to Dubai — real people who built real US businesses with us.</p>
+    </div>
+
+    <div class="test-grid">
+      <div class="test-card reveal reveal-d1">
+        <div class="test-card__accent"></div>
+        <div class="test-card__stars">
+          <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </div>
+        <p class="test-card__quote">"I had my LLC, EIN, and bank account set up within 3 days of signing up. As a Bangladeshi entrepreneur, I never thought starting a US business would be this simple. The team guided me through every step."</p>
+        <div class="test-card__author">
+          <div class="test-card__avatar">RM</div>
+          <div>
+            <div class="test-card__name">Rahim Miah</div>
+            <div class="test-card__role">Amazon FBA Seller</div>
+            <div class="test-card__country">🇧🇩 Bangladesh</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="test-card reveal reveal-d2">
+        <div class="test-card__accent"></div>
+        <div class="test-card__stars">
+          <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </div>
+        <p class="test-card__quote">"LLCPad made my American dream a reality from Mumbai. The Standard package was perfect — got my Delaware LLC, EIN, and everything I needed to launch my SaaS business in the US market."</p>
+        <div class="test-card__author">
+          <div class="test-card__avatar">PS</div>
+          <div>
+            <div class="test-card__name">Priya Sharma</div>
+            <div class="test-card__role">SaaS Founder</div>
+            <div class="test-card__country">🇮🇳 India</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="test-card reveal reveal-d3">
+        <div class="test-card__accent"></div>
+        <div class="test-card__stars">
+          <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </div>
+        <p class="test-card__quote">"Absolutely seamless. I'm based in Karachi and was skeptical about setting up a US company remotely. LLCPad's Premium package had everything — banking, Stripe, address. My business was ready in 48 hours."</p>
+        <div class="test-card__author">
+          <div class="test-card__avatar">AK</div>
+          <div>
+            <div class="test-card__name">Ahmed Khan</div>
+            <div class="test-card__role">E-commerce Entrepreneur</div>
+            <div class="test-card__country">🇵🇰 Pakistan</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FAQ ===== -->
+<section class="faq" id="faq">
+  <div class="container">
+    <div class="faq__layout">
+      <div class="faq__sidebar reveal">
+        <div class="sh__badge" style="text-align:left;margin-bottom:16px"><span class="badge badge--ghost">FAQ</span></div>
+        <h2 class="faq__sidebar-title">Answers to Your Questions</h2>
+        <p class="faq__sidebar-sub">Can't find what you're looking for? Our team is ready to help you navigate the process.</p>
+        <a href="mailto:support@llcpad.com" class="faq__contact">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          Chat with Support
+        </a>
+      </div>
+
+      <div class="faq__list">
+        <div class="faq-item reveal">
+          <button class="faq-item__q" onclick="toggleFaq(this)">
+            Can I form a US LLC without being a US citizen or resident?
+            <div class="faq-item__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></div>
+          </button>
+          <div class="faq-item__a"><div class="faq-item__a-inner">Yes, absolutely. There is no requirement to be a US citizen or resident to form a US LLC. Non-US residents can legally own and operate a US LLC. This is one of the main advantages of the US business structure — it's fully accessible to international entrepreneurs from any country.</div></div>
+        </div>
+
+        <div class="faq-item reveal reveal-d1">
+          <button class="faq-item__q" onclick="toggleFaq(this)">
+            Which US state should I choose for my LLC?
+            <div class="faq-item__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></div>
+          </button>
+          <div class="faq-item__a"><div class="faq-item__a-inner">For most international entrepreneurs, Wyoming and Delaware are the most popular choices. Wyoming offers no state income tax, low annual fees ($60/year), and the strongest privacy protections. Delaware is preferred if you plan to raise venture capital or do significant business in the US. We'll help you choose the right state based on your specific situation.</div></div>
+        </div>
+
+        <div class="faq-item reveal reveal-d2">
+          <button class="faq-item__q" onclick="toggleFaq(this)">
+            What is an EIN and why do I need it?
+            <div class="faq-item__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></div>
+          </button>
+          <div class="faq-item__a"><div class="faq-item__a-inner">An EIN (Employer Identification Number) is your US business Tax ID number, assigned by the IRS. It's required to open a US business bank account, hire employees, file US taxes, set up payment processors like Stripe and PayPal, and apply for business credit. As a non-US resident, obtaining an EIN requires specific paperwork — we handle this entire process for you.</div></div>
+        </div>
+
+        <div class="faq-item reveal reveal-d3">
+          <button class="faq-item__q" onclick="toggleFaq(this)">
+            Do I need to pay US taxes if I form a US LLC?
+            <div class="faq-item__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></div>
+          </button>
+          <div class="faq-item__a"><div class="faq-item__a-inner">For single-member LLCs owned by non-US residents with no US-based operations or customers, there is generally no US income tax liability. The LLC is treated as a "disregarded entity" for US tax purposes. However, you must file an annual informational return (Form 5472). We strongly recommend consulting a US CPA familiar with international tax for your specific situation. Note: LLCPad is not a law firm and this is not legal or tax advice.</div></div>
+        </div>
+
+        <div class="faq-item reveal reveal-d4">
+          <button class="faq-item__q" onclick="toggleFaq(this)">
+            How long does LLC formation take?
+            <div class="faq-item__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></div>
+          </button>
+          <div class="faq-item__a"><div class="faq-item__a-inner">Processing times vary by state. With our Standard and Premium packages, Wyoming LLCs are typically approved within 24-48 hours. Delaware takes 3-5 business days for standard filing, or 24 hours with expedited processing. EIN processing takes an additional 1-2 business days for non-US residents. We'll provide real-time status updates throughout the entire process.</div></div>
+        </div>
+
+        <div class="faq-item reveal reveal-d5">
+          <button class="faq-item__q" onclick="toggleFaq(this)">
+            Can I open a US bank account without visiting the US?
+            <div class="faq-item__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></div>
+          </button>
+          <div class="faq-item__a"><div class="faq-item__a-inner">Yes! Through our banking partners, you can open a fully functional US business bank account 100% remotely. You'll get a US routing number, account number, debit card, and the ability to receive ACH transfers, wire transfers, and integrate with payment platforms. This is included in our Standard and Premium packages.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CTA ===== -->
+<section class="cta">
+  <div class="container">
+    <div class="cta__box">
+      <div class="cta__orbs">
+        <div class="cta__orb cta__orb--1"></div>
+        <div class="cta__orb cta__orb--2"></div>
+      </div>
+      <div class="cta__content">
+        <div class="sh__badge" style="margin-bottom:20px"><span class="badge badge--violet"><span class="dot"></span> Limited Slots Available</span></div>
+        <h2>Ready to Launch Your<br>US Business Today?</h2>
+        <p>Join 12,000+ international entrepreneurs who already built their US companies with LLCPad.</p>
+        <div class="cta__btns">
+          <a href="#pricing" class="btn btn--primary btn--lg">
+            Start My LLC Now
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+          <a href="mailto:support@llcpad.com" class="btn btn--ghost btn--lg">Talk to an Expert</a>
+        </div>
+        <div class="cta__perks">
+          <div class="cta__perk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>30-day money-back guarantee</div>
+          <div class="cta__perk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>No hidden fees</div>
+          <div class="cta__perk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Dedicated support team</div>
+          <div class="cta__perk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>100% compliance guaranteed</div>
+        </div>
+        <p class="cta__note">LLCPad is not a law firm. Services are provided for informational and document preparation purposes only.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer__top">
+      <div class="footer__brand">
+        <div class="footer__brand-logo">
+          <div class="nav__logo-icon" style="width:32px;height:32px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:18px;height:18px;color:#fff;position:relative;z-index:1"><path d="M3 21h18M3 8v13M21 8v13M6 8V5a1 1 0 011-1h10a1 1 0 011 1v3M9 21v-5h4v5"/></svg>
+          </div>
+          LLC<span>Pad</span>
+        </div>
+        <p>The easiest way for international entrepreneurs to form and run a US business — from anywhere in the world.</p>
+      </div>
+      <div class="footer__col">
+        <h5>Services</h5>
+        <ul>
+          <li><a href="#">LLC Formation</a></li>
+          <li><a href="#">EIN Application</a></li>
+          <li><a href="#">Registered Agent</a></li>
+          <li><a href="#">Amazon Seller</a></li>
+          <li><a href="#">Business Banking</a></li>
+        </ul>
+      </div>
+      <div class="footer__col">
+        <h5>Company</h5>
+        <ul>
+          <li><a href="#">About</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Reviews</a></li>
+          <li><a href="#">Contact</a></li>
+          <li><a href="#">Affiliates</a></li>
+        </ul>
+      </div>
+      <div class="footer__col">
+        <h5>Legal</h5>
+        <ul>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms of Service</a></li>
+          <li><a href="#">Refund Policy</a></li>
+          <li><a href="#">Disclaimer</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer__bottom">
+      <div class="footer__copy">© 2026 LLCPad. All rights reserved.</div>
+      <div class="footer__badges">
+        <div class="footer__badge">SSL Secured</div>
+        <div class="footer__badge">GDPR Compliant</div>
+        <div class="footer__badge">SOC 2</div>
+      </div>
+    </div>
+    <p class="footer__disclaimer">
+      LLCPad is not a law firm and does not provide legal, tax, or financial advice. The information provided is for informational purposes only. Use of our services is subject to our Terms of Service. State filing fees are not included unless stated.
+    </p>
+  </div>
+</footer>
+
+<script>
+// Nav scroll
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 20);
+});
+
+// Mobile menu
+const burger = document.getElementById('burger');
+const mobileNav = document.getElementById('mobileNav');
+const menuClose = document.getElementById('menuClose');
+burger.addEventListener('click', () => mobileNav.classList.add('open'));
+menuClose.addEventListener('click', () => mobileNav.classList.remove('open'));
+function closeMob() { mobileNav.classList.remove('open'); }
+
+// FAQ
+function toggleFaq(btn) {
+  const item = btn.closest('.faq-item');
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+}
+
+// Reveal on scroll
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('vis'); } });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// Counter animation
+function animateCounters() {
+  document.querySelectorAll('[data-target]').forEach(el => {
+    const target = parseFloat(el.dataset.target);
+    const suffix = el.dataset.suffix || '';
+    const decimal = el.dataset.decimal;
+    let start = 0;
+    const duration = 2000;
+    const step = (timestamp) => {
+      if (!start) start = timestamp;
+      const progress = Math.min((timestamp - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = eased * target;
+      el.textContent = (decimal ? current.toFixed(1) : Math.floor(current).toLocaleString()) + suffix;
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  });
+}
+
+const statsObserver = new IntersectionObserver((entries) => {
+  if (entries[0].isIntersecting) { animateCounters(); statsObserver.disconnect(); }
+}, { threshold: 0.5 });
+const statsEl = document.querySelector('.stats__grid');
+if (statsEl) statsObserver.observe(statsEl);
+</script>
+</body>
+</html>

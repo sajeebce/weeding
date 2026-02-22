@@ -1,0 +1,1770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tooleen — Premium AI Tools for Modern Teams</title>
+<meta name="description" content="Get Claude Team, Cursor, Midjourney, and 10+ premium AI tools bundled for your team. One plan, one invoice, zero headache. From $250/month for 4 users.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   TOOLEEN — DESIGN SYSTEM 2026
+   Dark Prismatic • Bento Grid • Glassmorphism
+   ============================================================ */
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg-base:       #06060f;
+  --bg-surface:    #0d0d1a;
+  --bg-card:       rgba(255,255,255,0.038);
+  --bg-card-hover: rgba(255,255,255,0.065);
+  --border:        rgba(255,255,255,0.07);
+  --border-strong: rgba(255,255,255,0.13);
+
+  --purple-600:  #7c3aed;
+  --purple-500:  #8b5cf6;
+  --purple-400:  #a78bfa;
+  --violet-500:  #6366f1;
+  --blue-500:    #3b82f6;
+  --pink-500:    #ec4899;
+  --emerald-400: #34d399;
+
+  --grad-primary: linear-gradient(135deg, #7c3aed 0%, #6366f1 50%, #3b82f6 100%);
+  --grad-card:    linear-gradient(135deg, rgba(124,58,237,0.15) 0%, rgba(99,102,241,0.08) 100%);
+  --grad-glow:    radial-gradient(ellipse 60% 50% at 50% 0%, rgba(124,58,237,0.25) 0%, transparent 70%);
+
+  --text-primary:  #f1f5f9;
+  --text-secondary:#94a3b8;
+  --text-muted:    #64748b;
+  --text-bright:   #ffffff;
+
+  --radius-sm:  8px;
+  --radius-md:  14px;
+  --radius-lg:  20px;
+  --radius-xl:  28px;
+  --radius-2xl: 36px;
+
+  --font-head: 'Plus Jakarta Sans', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.06);
+  --shadow-glow: 0 0 40px rgba(124,58,237,0.2), 0 0 80px rgba(99,102,241,0.1);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-base);
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Noise Overlay ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  background-size: 200px;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.6;
+}
+
+/* ── Ambient Orbs ── */
+.orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(100px);
+  pointer-events: none;
+  z-index: 0;
+  animation: orb-drift 20s ease-in-out infinite;
+}
+.orb-1 { width: 600px; height: 600px; background: rgba(124,58,237,0.12); top: -200px; left: -100px; animation-delay: 0s; }
+.orb-2 { width: 500px; height: 500px; background: rgba(99,102,241,0.1); top: 40%; right: -150px; animation-delay: -7s; }
+.orb-3 { width: 400px; height: 400px; background: rgba(59,130,246,0.08); bottom: 10%; left: 20%; animation-delay: -13s; }
+
+@keyframes orb-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(40px, -30px) scale(1.05); }
+  66% { transform: translate(-20px, 20px) scale(0.95); }
+}
+
+/* ── Utility ── */
+.container { max-width: 1180px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+.section { padding: 96px 0; }
+.section-sm { padding: 64px 0; }
+.text-gradient {
+  background: var(--grad-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  background: rgba(124,58,237,0.12);
+  border: 1px solid rgba(124,58,237,0.3);
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #c4b5fd;
+  font-family: var(--font-head);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.badge-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #a78bfa;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 26px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-head);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  white-space: nowrap;
+}
+.btn-primary {
+  background: var(--grad-primary);
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(124,58,237,0.35), 0 1px 0 rgba(255,255,255,0.15) inset;
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(124,58,237,0.5), 0 1px 0 rgba(255,255,255,0.15) inset;
+}
+.btn-primary:active { transform: translateY(0); }
+.btn-ghost {
+  background: rgba(255,255,255,0.05);
+  color: var(--text-primary);
+  border: 1px solid var(--border-strong);
+}
+.btn-ghost:hover {
+  background: rgba(255,255,255,0.09);
+  border-color: rgba(255,255,255,0.2);
+  transform: translateY(-1px);
+}
+.btn-lg { padding: 16px 32px; font-size: 16px; border-radius: var(--radius-lg); }
+.btn-sm { padding: 9px 18px; font-size: 13px; }
+
+/* ── Card Base ── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(12px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.card:hover {
+  background: var(--bg-card-hover);
+  border-color: rgba(255,255,255,0.12);
+  transform: translateY(-3px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.4), 0 16px 40px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+/* ========================================================
+   NAVBAR
+   ======================================================== */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 16px 0;
+  transition: all 0.3s ease;
+}
+nav.scrolled {
+  background: rgba(6,6,15,0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 0;
+}
+.nav-inner {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.nav-logo-mark {
+  width: 34px; height: 34px;
+  background: var(--grad-primary);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-head);
+  font-weight: 800;
+  font-size: 16px;
+  color: white;
+  letter-spacing: -0.5px;
+  box-shadow: 0 4px 16px rgba(124,58,237,0.4);
+}
+.nav-logo-text {
+  font-family: var(--font-head);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-bright);
+  letter-spacing: -0.5px;
+}
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  list-style: none;
+}
+.nav-links a {
+  display: block;
+  padding: 8px 14px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: var(--font-head);
+  border-radius: var(--radius-sm);
+  transition: all 0.15s ease;
+}
+.nav-links a:hover { color: var(--text-primary); background: rgba(255,255,255,0.05); }
+.nav-cta { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+
+/* Mobile nav toggle */
+.nav-toggle { display: none; background: none; border: 1px solid var(--border); padding: 8px; border-radius: var(--radius-sm); cursor: pointer; color: var(--text-primary); }
+
+/* ========================================================
+   HERO
+   ======================================================== */
+.hero {
+  padding: 160px 0 100px;
+  position: relative;
+  text-align: center;
+  overflow: hidden;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--grad-glow);
+  pointer-events: none;
+  z-index: 0;
+}
+.hero-content { position: relative; z-index: 1; }
+.hero-badge { margin-bottom: 28px; }
+.hero-headline {
+  font-family: var(--font-head);
+  font-size: clamp(44px, 7vw, 82px);
+  font-weight: 800;
+  line-height: 1.07;
+  letter-spacing: -2.5px;
+  color: var(--text-bright);
+  margin-bottom: 24px;
+  max-width: 820px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.hero-headline .highlight {
+  background: linear-gradient(135deg, #a78bfa 0%, #818cf8 40%, #60a5fa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-sub {
+  font-size: clamp(16px, 2vw, 19px);
+  color: var(--text-secondary);
+  max-width: 560px;
+  margin: 0 auto 40px;
+  line-height: 1.65;
+  font-weight: 400;
+}
+.hero-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 64px;
+}
+.hero-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+.hero-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.hero-meta-item svg { color: var(--emerald-400); flex-shrink: 0; }
+
+/* ── Hero Visual ── */
+.hero-visual {
+  position: relative;
+  max-width: 900px;
+  margin: 0 auto;
+  padding-top: 24px;
+}
+.hero-cards-row {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.hero-tool-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  backdrop-filter: blur(16px);
+  box-shadow: var(--shadow-card);
+  transition: all 0.3s ease;
+  animation: card-float 6s ease-in-out infinite;
+}
+.hero-tool-card:hover { transform: translateY(-4px) scale(1.02); border-color: rgba(255,255,255,0.15); }
+.hero-tool-card:nth-child(2) { animation-delay: -2s; }
+.hero-tool-card:nth-child(3) { animation-delay: -4s; }
+.hero-tool-card:nth-child(4) { animation-delay: -1s; }
+.hero-tool-card:nth-child(5) { animation-delay: -3s; }
+
+@keyframes card-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+
+.tool-icon {
+  width: 42px; height: 42px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.tool-info { text-align: left; }
+.tool-name { font-family: var(--font-head); font-size: 14px; font-weight: 700; color: var(--text-bright); line-height: 1.2; }
+.tool-type { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.tool-badge { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 100px; background: rgba(52,211,153,0.15); color: #34d399; border: 1px solid rgba(52,211,153,0.25); margin-top: 4px; display: inline-block; }
+
+/* ── Scroll hint ── */
+.scroll-hint {
+  position: absolute;
+  bottom: -40px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  color: var(--text-muted);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  animation: bounce-down 2s ease-in-out infinite;
+}
+@keyframes bounce-down { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(6px); } }
+
+/* ========================================================
+   TRUST BAR
+   ======================================================== */
+.trust-bar { padding: 52px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); overflow: hidden; }
+.trust-bar-label { text-align: center; font-size: 12px; font-weight: 500; color: var(--text-muted); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 28px; }
+.trust-ticker-wrap { position: relative; overflow: hidden; }
+.trust-ticker-wrap::before,
+.trust-ticker-wrap::after {
+  content: '';
+  position: absolute; top: 0; width: 120px; height: 100%; z-index: 2;
+}
+.trust-ticker-wrap::before { left: 0; background: linear-gradient(to right, var(--bg-base), transparent); }
+.trust-ticker-wrap::after { right: 0; background: linear-gradient(to left, var(--bg-base), transparent); }
+.trust-ticker { display: flex; gap: 48px; animation: ticker-scroll 28s linear infinite; width: max-content; }
+.trust-ticker:hover { animation-play-state: paused; }
+.trust-logo {
+  display: flex; align-items: center; gap: 10px;
+  color: var(--text-muted);
+  font-family: var(--font-head);
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+  opacity: 0.55;
+  transition: opacity 0.2s;
+}
+.trust-logo:hover { opacity: 0.85; }
+.trust-logo-icon { font-size: 20px; }
+@keyframes ticker-scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+/* ========================================================
+   PRODUCTS — BENTO GRID
+   ======================================================== */
+.section-header { text-align: center; margin-bottom: 60px; }
+.section-label { margin-bottom: 14px; }
+.section-title {
+  font-family: var(--font-head);
+  font-size: clamp(32px, 4.5vw, 52px);
+  font-weight: 800;
+  letter-spacing: -1.5px;
+  color: var(--text-bright);
+  line-height: 1.1;
+  margin-bottom: 16px;
+}
+.section-sub {
+  font-size: 17px;
+  color: var(--text-secondary);
+  max-width: 500px;
+  margin: 0 auto;
+  line-height: 1.65;
+}
+
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 16px;
+}
+
+/* Claude — Wide card */
+.bento-item { border-radius: var(--radius-xl); overflow: hidden; position: relative; }
+.bento-1 { grid-column: span 7; background: linear-gradient(135deg, rgba(124,58,237,0.18) 0%, rgba(99,102,241,0.1) 100%); border: 1px solid rgba(124,58,237,0.2); padding: 36px; min-height: 320px; display: flex; flex-direction: column; justify-content: space-between; }
+.bento-2 { grid-column: span 5; background: linear-gradient(135deg, rgba(16,185,129,0.12) 0%, rgba(6,182,212,0.08) 100%); border: 1px solid rgba(16,185,129,0.15); padding: 36px; min-height: 320px; display: flex; flex-direction: column; justify-content: space-between; }
+.bento-3 { grid-column: span 4; background: linear-gradient(135deg, rgba(236,72,153,0.1) 0%, rgba(168,85,247,0.1) 100%); border: 1px solid rgba(236,72,153,0.15); padding: 28px; min-height: 260px; display: flex; flex-direction: column; justify-content: space-between; }
+.bento-4 { grid-column: span 4; background: linear-gradient(135deg, rgba(59,130,246,0.1) 0%, rgba(99,102,241,0.1) 100%); border: 1px solid rgba(59,130,246,0.15); padding: 28px; min-height: 260px; display: flex; flex-direction: column; justify-content: space-between; }
+.bento-5 { grid-column: span 4; background: linear-gradient(135deg, rgba(245,158,11,0.1) 0%, rgba(239,68,68,0.08) 100%); border: 1px solid rgba(245,158,11,0.15); padding: 28px; min-height: 260px; display: flex; flex-direction: column; justify-content: space-between; }
+
+.bento-item { transition: all 0.3s cubic-bezier(0.4,0,0.2,1); backdrop-filter: blur(12px); }
+.bento-item:hover { transform: translateY(-4px); box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+
+.bento-icon { font-size: 36px; margin-bottom: 16px; display: block; }
+.bento-tag { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 100px; font-size: 11px; font-weight: 600; font-family: var(--font-head); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 12px; }
+.tag-ai { background: rgba(124,58,237,0.2); color: #c4b5fd; border: 1px solid rgba(124,58,237,0.3); }
+.tag-dev { background: rgba(16,185,129,0.15); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.25); }
+.tag-design { background: rgba(236,72,153,0.15); color: #f9a8d4; border: 1px solid rgba(236,72,153,0.25); }
+.tag-search { background: rgba(59,130,246,0.15); color: #93c5fd; border: 1px solid rgba(59,130,246,0.25); }
+.tag-productivity { background: rgba(245,158,11,0.15); color: #fcd34d; border: 1px solid rgba(245,158,11,0.25); }
+
+.bento-title { font-family: var(--font-head); font-size: 24px; font-weight: 800; color: var(--text-bright); letter-spacing: -0.5px; margin-bottom: 8px; }
+.bento-desc { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+.bento-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 20px; }
+.bento-seats { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 5px; }
+.bento-link { font-size: 13px; font-weight: 600; font-family: var(--font-head); color: #a78bfa; display: flex; align-items: center; gap: 4px; text-decoration: none; transition: gap 0.2s; }
+.bento-link:hover { gap: 8px; }
+
+/* ── Bento large decorative elements ── */
+.bento-visual {
+  margin-top: 20px;
+  background: rgba(0,0,0,0.25);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+.bento-chat { display: flex; flex-direction: column; gap: 8px; }
+.chat-bubble {
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  max-width: 85%;
+}
+.chat-user { background: rgba(124,58,237,0.25); color: #ddd6fe; align-self: flex-end; border-radius: 10px 10px 3px 10px; }
+.chat-ai { background: rgba(255,255,255,0.07); color: var(--text-secondary); align-self: flex-start; border-radius: 10px 10px 10px 3px; }
+.chat-cursor { display: inline-block; width: 2px; height: 12px; background: #a78bfa; margin-left: 2px; animation: blink 1s step-end infinite; }
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+.code-block {
+  font-family: 'Fira Code', 'Courier New', monospace;
+  font-size: 11px;
+  line-height: 1.7;
+  color: #94a3b8;
+}
+.code-line { display: flex; gap: 12px; }
+.code-num { color: #475569; width: 16px; text-align: right; flex-shrink: 0; }
+.code-keyword { color: #c4b5fd; }
+.code-string { color: #6ee7b7; }
+.code-comment { color: #475569; font-style: italic; }
+
+/* ========================================================
+   WHY TOOLEEN — FEATURES
+   ======================================================== */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.feature-card {
+  padding: 32px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  transition: all 0.3s ease;
+}
+.feature-card:hover {
+  background: var(--bg-card-hover);
+  border-color: rgba(255,255,255,0.12);
+  transform: translateY(-3px);
+}
+.feature-icon-wrap {
+  width: 52px; height: 52px;
+  border-radius: var(--radius-md);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  margin-bottom: 20px;
+}
+.feature-title {
+  font-family: var(--font-head);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-bright);
+  margin-bottom: 10px;
+  letter-spacing: -0.3px;
+}
+.feature-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.65;
+}
+
+/* ========================================================
+   HOW IT WORKS
+   ======================================================== */
+.steps-wrap {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  position: relative;
+}
+.steps-wrap::before {
+  content: '';
+  position: absolute;
+  top: 32px; left: calc(16.66% + 16px); right: calc(16.66% + 16px);
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--border-strong), transparent);
+}
+.step { padding: 0 32px; text-align: center; position: relative; }
+.step-num {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-head);
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-bright);
+  margin: 0 auto 24px;
+  position: relative;
+  z-index: 1;
+  background: linear-gradient(135deg, rgba(124,58,237,0.2) 0%, rgba(99,102,241,0.15) 100%);
+  box-shadow: 0 0 0 8px rgba(124,58,237,0.05);
+}
+.step-title { font-family: var(--font-head); font-size: 18px; font-weight: 700; color: var(--text-bright); margin-bottom: 10px; letter-spacing: -0.3px; }
+.step-desc { font-size: 14px; color: var(--text-secondary); line-height: 1.65; }
+
+/* ========================================================
+   PRICING
+   ======================================================== */
+.pricing-wrap {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr 1fr;
+  gap: 20px;
+  align-items: center;
+  max-width: 960px;
+  margin: 0 auto;
+}
+.pricing-card {
+  padding: 36px 32px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  transition: all 0.3s ease;
+}
+.pricing-card:hover { transform: translateY(-3px); }
+.pricing-card.featured {
+  background: linear-gradient(145deg, rgba(124,58,237,0.2) 0%, rgba(99,102,241,0.12) 100%);
+  border-color: rgba(124,58,237,0.35);
+  box-shadow: 0 0 0 1px rgba(124,58,237,0.2), 0 20px 60px rgba(124,58,237,0.15), var(--shadow-glow);
+  padding: 44px 36px;
+  border-radius: var(--radius-2xl);
+  position: relative;
+}
+.pricing-card.featured::before {
+  content: 'Most Popular';
+  position: absolute;
+  top: -14px; left: 50%;
+  transform: translateX(-50%);
+  background: var(--grad-primary);
+  color: white;
+  font-family: var(--font-head);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 16px;
+  border-radius: 100px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.pricing-plan { font-family: var(--font-head); font-size: 13px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; }
+.pricing-price {
+  font-family: var(--font-head);
+  font-size: 52px;
+  font-weight: 800;
+  color: var(--text-bright);
+  letter-spacing: -2px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.pricing-price sup { font-size: 24px; letter-spacing: 0; vertical-align: top; margin-top: 10px; font-weight: 600; }
+.pricing-price span { font-size: 16px; font-weight: 400; color: var(--text-muted); letter-spacing: -0.5px; }
+.pricing-desc { font-size: 13px; color: var(--text-secondary); margin-bottom: 28px; line-height: 1.5; }
+.pricing-divider { height: 1px; background: var(--border); margin-bottom: 24px; }
+.pricing-features { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
+.pricing-features li {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 14px; color: var(--text-secondary); line-height: 1.45;
+}
+.pricing-features li svg { flex-shrink: 0; margin-top: 1px; }
+.pricing-features li .check { color: var(--emerald-400); }
+.pricing-features li .cross { color: var(--text-muted); opacity: 0.5; }
+.pricing-user-count { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); margin-bottom: 24px; }
+
+/* ── Compare table note ── */
+.compare-note {
+  text-align: center;
+  margin-top: 40px;
+  padding: 20px 32px;
+  background: rgba(52,211,153,0.07);
+  border: 1px solid rgba(52,211,153,0.15);
+  border-radius: var(--radius-lg);
+  font-size: 15px;
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.compare-note strong { color: #34d399; }
+
+/* ========================================================
+   TESTIMONIALS
+   ======================================================== */
+.testi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.testi-card {
+  padding: 28px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  transition: all 0.3s ease;
+}
+.testi-card:hover { background: var(--bg-card-hover); transform: translateY(-2px); }
+.testi-stars { display: flex; gap: 3px; margin-bottom: 16px; }
+.testi-star { color: #f59e0b; font-size: 14px; }
+.testi-quote {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-bottom: 20px;
+  font-style: italic;
+  font-weight: 300;
+}
+.testi-quote em { font-style: normal; color: var(--text-primary); font-weight: 500; }
+.testi-author { display: flex; align-items: center; gap: 12px; }
+.testi-avatar {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700;
+  font-family: var(--font-head);
+  flex-shrink: 0;
+}
+.testi-name { font-family: var(--font-head); font-size: 14px; font-weight: 700; color: var(--text-bright); }
+.testi-role { font-size: 12px; color: var(--text-muted); }
+
+/* ========================================================
+   FAQ
+   ======================================================== */
+.faq-list { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
+.faq-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.faq-item.open { border-color: rgba(124,58,237,0.3); }
+.faq-q {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 22px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-head);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-bright);
+  transition: color 0.2s;
+}
+.faq-q:hover { color: #a78bfa; }
+.faq-icon {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: rgba(124,58,237,0.15);
+  border: 1px solid rgba(124,58,237,0.25);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.3s ease, background 0.2s;
+}
+.faq-item.open .faq-icon { transform: rotate(45deg); background: rgba(124,58,237,0.3); }
+.faq-a {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1), padding 0.3s;
+  padding: 0 24px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+.faq-item.open .faq-a { max-height: 300px; padding-bottom: 22px; }
+
+/* ========================================================
+   CTA BANNER
+   ======================================================== */
+.cta-section { padding: 80px 0; }
+.cta-inner {
+  background: linear-gradient(135deg, rgba(124,58,237,0.2) 0%, rgba(99,102,241,0.15) 50%, rgba(59,130,246,0.12) 100%);
+  border: 1px solid rgba(124,58,237,0.25);
+  border-radius: var(--radius-2xl);
+  padding: 72px 48px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.cta-inner::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(167,139,250,0.5), transparent);
+}
+.cta-inner::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(124,58,237,0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+.cta-title {
+  font-family: var(--font-head);
+  font-size: clamp(32px, 4vw, 52px);
+  font-weight: 800;
+  color: var(--text-bright);
+  letter-spacing: -1.5px;
+  margin-bottom: 16px;
+  position: relative; z-index: 1;
+}
+.cta-sub { font-size: 17px; color: var(--text-secondary); margin-bottom: 36px; position: relative; z-index: 1; }
+.cta-actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; position: relative; z-index: 1; }
+.cta-note { margin-top: 18px; font-size: 13px; color: var(--text-muted); position: relative; z-index: 1; }
+
+/* ========================================================
+   FOOTER
+   ======================================================== */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 60px 0 32px;
+}
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 48px;
+  margin-bottom: 48px;
+}
+.footer-brand-desc { font-size: 14px; color: var(--text-muted); line-height: 1.7; margin: 12px 0 20px; max-width: 280px; }
+.footer-col-title {
+  font-family: var(--font-head);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.footer-links { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.footer-links a { font-size: 14px; color: var(--text-muted); text-decoration: none; transition: color 0.15s; }
+.footer-links a:hover { color: var(--text-primary); }
+.footer-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 28px;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.footer-copy { font-size: 13px; color: var(--text-muted); }
+.footer-legal { display: flex; gap: 20px; }
+.footer-legal a { font-size: 13px; color: var(--text-muted); text-decoration: none; transition: color 0.15s; }
+.footer-legal a:hover { color: var(--text-primary); }
+
+/* ── Social icons ── */
+.social-row { display: flex; gap: 10px; }
+.social-btn {
+  width: 36px; height: 36px;
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+.social-btn:hover { background: rgba(124,58,237,0.15); border-color: rgba(124,58,237,0.3); color: #a78bfa; }
+
+/* ========================================================
+   STATS BAR
+   ======================================================== */
+.stats-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  margin: 56px 0;
+}
+.stat-item {
+  padding: 32px 28px;
+  text-align: center;
+  border-right: 1px solid var(--border);
+}
+.stat-item:last-child { border-right: none; }
+.stat-num {
+  font-family: var(--font-head);
+  font-size: 38px;
+  font-weight: 800;
+  color: var(--text-bright);
+  letter-spacing: -1.5px;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.stat-num .accent { background: var(--grad-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.stat-label { font-size: 13px; color: var(--text-muted); }
+
+/* ========================================================
+   REVEAL ANIMATIONS
+   ======================================================== */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.65s cubic-bezier(0.4,0,0.2,1), transform 0.65s cubic-bezier(0.4,0,0.2,1);
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.reveal-d1 { transition-delay: 0.1s; }
+.reveal-d2 { transition-delay: 0.2s; }
+.reveal-d3 { transition-delay: 0.3s; }
+.reveal-d4 { transition-delay: 0.4s; }
+
+/* ========================================================
+   RESPONSIVE
+   ======================================================== */
+@media (max-width: 960px) {
+  .bento-1, .bento-2 { grid-column: span 12; min-height: 280px; }
+  .bento-3, .bento-4, .bento-5 { grid-column: span 12; min-height: auto; }
+  .features-grid { grid-template-columns: repeat(2, 1fr); }
+  .steps-wrap { grid-template-columns: 1fr; gap: 40px; }
+  .steps-wrap::before { display: none; }
+  .pricing-wrap { grid-template-columns: 1fr; max-width: 480px; }
+  .pricing-card.featured { padding: 36px 32px; }
+  .testi-grid { grid-template-columns: 1fr; }
+  .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; }
+  .stats-bar { grid-template-columns: repeat(2, 1fr); }
+  .stat-item:nth-child(2) { border-right: none; }
+  .stat-item:nth-child(3) { border-top: 1px solid var(--border); border-right: 1px solid var(--border); }
+  .stat-item:nth-child(4) { border-top: 1px solid var(--border); }
+}
+@media (max-width: 640px) {
+  .nav-links { display: none; }
+  .nav-toggle { display: flex; }
+  .features-grid { grid-template-columns: 1fr; }
+  .footer-grid { grid-template-columns: 1fr; }
+  .hero { padding: 120px 0 80px; }
+  .cta-inner { padding: 48px 24px; }
+  .hero-headline { letter-spacing: -1.5px; }
+  .hero-cards-row { gap: 10px; }
+  .hero-tool-card { padding: 12px 14px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Ambient Background -->
+<div class="orb orb-1" aria-hidden="true"></div>
+<div class="orb orb-2" aria-hidden="true"></div>
+<div class="orb orb-3" aria-hidden="true"></div>
+
+<!-- ============================================================
+     NAVBAR
+     ============================================================ -->
+<nav id="navbar">
+  <div class="container">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">
+        <div class="nav-logo-mark">T</div>
+        <span class="nav-logo-text">Tooleen</span>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="#products">Tools</a></li>
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+
+      <div class="nav-cta">
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <a href="#pricing" class="btn btn-ghost btn-sm" style="display:none" id="navGhost">See Plans</a>
+        <a href="#pricing" class="btn btn-primary btn-sm">Get Started</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-content">
+      <div class="hero-badge reveal">
+        <span class="badge"><span class="badge-dot"></span>Now Available · Claude Team &amp; More</span>
+      </div>
+
+      <h1 class="hero-headline reveal reveal-d1">
+        Your team's<br>
+        <span class="highlight">AI stack,</span> sorted.
+      </h1>
+
+      <p class="hero-sub reveal reveal-d2">
+        Claude, Cursor, Midjourney, ChatGPT — every AI tool your team actually uses, bundled into one plan. Skip the billing chaos.
+      </p>
+
+      <div class="hero-actions reveal reveal-d2">
+        <a href="#pricing" class="btn btn-primary btn-lg">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          Start for $250/mo
+        </a>
+        <a href="#products" class="btn btn-ghost btn-lg">
+          See what's included
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+
+      <div class="hero-meta reveal reveal-d3">
+        <div class="hero-meta-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          No long-term contract
+        </div>
+        <div class="hero-meta-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Cancel anytime
+        </div>
+        <div class="hero-meta-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Instant access · 4 seats included
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating Tool Cards -->
+    <div class="hero-visual reveal reveal-d4">
+      <div class="hero-cards-row">
+        <div class="hero-tool-card">
+          <div class="tool-icon" style="background: linear-gradient(135deg, #7c3aed22, #6366f122);">🤖</div>
+          <div class="tool-info">
+            <div class="tool-name">Claude Team</div>
+            <div class="tool-type">AI Assistant</div>
+            <div class="tool-badge">Included</div>
+          </div>
+        </div>
+        <div class="hero-tool-card">
+          <div class="tool-icon" style="background: linear-gradient(135deg, #10b98122, #06b6d422);">⚡</div>
+          <div class="tool-info">
+            <div class="tool-name">Cursor Pro</div>
+            <div class="tool-type">AI Code Editor</div>
+            <div class="tool-badge">Included</div>
+          </div>
+        </div>
+        <div class="hero-tool-card">
+          <div class="tool-icon" style="background: linear-gradient(135deg, #ec489922, #a855f722);">🎨</div>
+          <div class="tool-info">
+            <div class="tool-name">Midjourney</div>
+            <div class="tool-type">AI Image Gen</div>
+            <div class="tool-badge">Included</div>
+          </div>
+        </div>
+        <div class="hero-tool-card">
+          <div class="tool-icon" style="background: linear-gradient(135deg, #3b82f622, #6366f122);">💬</div>
+          <div class="tool-info">
+            <div class="tool-name">ChatGPT Plus</div>
+            <div class="tool-type">AI Chat</div>
+            <div class="tool-badge">Included</div>
+          </div>
+        </div>
+        <div class="hero-tool-card">
+          <div class="tool-icon" style="background: linear-gradient(135deg, #f59e0b22, #ef444422);">🔍</div>
+          <div class="tool-info">
+            <div class="tool-name">Perplexity Pro</div>
+            <div class="tool-type">AI Search</div>
+            <div class="tool-badge">Included</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     TRUST BAR
+     ============================================================ -->
+<div class="trust-bar">
+  <div class="container">
+    <p class="trust-bar-label">Trusted by teams at</p>
+    <div class="trust-ticker-wrap">
+      <div class="trust-ticker">
+        <!-- First set -->
+        <div class="trust-logo"><span class="trust-logo-icon">🏢</span>Stripe</div>
+        <div class="trust-logo"><span class="trust-logo-icon">🚀</span>Linear</div>
+        <div class="trust-logo"><span class="trust-logo-icon">⚡</span>Vercel</div>
+        <div class="trust-logo"><span class="trust-logo-icon">🎯</span>Notion</div>
+        <div class="trust-logo"><span class="trust-logo-icon">🌊</span>Figma</div>
+        <div class="trust-logo"><span class="trust-logo-icon">🔥</span>Loom</div>
+        <div class="trust-logo"><span class="trust-logo-icon">🌐</span>Webflow</div>
+        <div class="trust-logo"><span class="trust-logo-icon">📊</span>Airtable</div>
+        <div class="trust-logo"><span class="trust-logo-icon">🎨</span>Framer</div>
+        <div class="trust-logo"><span class="trust-logo-icon">🛡️</span>Supabase</div>
+        <!-- Duplicate for seamless loop -->
+        <div class="trust-logo"><span class="trust-logo-icon">🏢</span>Stripe</div>
+        <div class="trust-logo"><span class="trust-logo-icon">🚀</span>Linear</div>
+        <div class="trust-logo"><span class="trust-logo-icon">⚡</span>Vercel</div>
+        <div class="trust-logo"><span class="trust-logo-icon">🎯</span>Notion</div>
+        <div class="trust-logo"><span class="trust-logo-icon">🌊</span>Figma</div>
+        <div class="trust-logo"><span class="trust-logo-icon">🔥</span>Loom</div>
+        <div class="trust-logo"><span class="trust-logo-icon">🌐</span>Webflow</div>
+        <div class="trust-logo"><span class="trust-logo-icon">📊</span>Airtable</div>
+        <div class="trust-logo"><span class="trust-logo-icon">🎨</span>Framer</div>
+        <div class="trust-logo"><span class="trust-logo-icon">🛡️</span>Supabase</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     STATS
+     ============================================================ -->
+<div class="container">
+  <div class="stats-bar reveal">
+    <div class="stat-item">
+      <div class="stat-num"><span class="accent">2,800+</span></div>
+      <div class="stat-label">Active seats worldwide</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num"><span class="accent">12+</span></div>
+      <div class="stat-label">Premium tools included</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num"><span class="accent">$1,200</span></div>
+      <div class="stat-label">Average savings per team/mo</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num"><span class="accent">4.9★</span></div>
+      <div class="stat-label">Average customer rating</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PRODUCTS — BENTO GRID
+     ============================================================ -->
+<section class="section" id="products">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-label">
+        <span class="badge">The Stack</span>
+      </div>
+      <h2 class="section-title">Everything your team needs.<br>Nothing they don't.</h2>
+      <p class="section-sub">Hand-picked AI tools that actually move the needle. Each one fully activated for every seat on your plan.</p>
+    </div>
+
+    <div class="bento-grid">
+      <!-- Claude Team — WIDE -->
+      <div class="bento-item bento-1 reveal">
+        <div>
+          <span class="bento-tag tag-ai">✦ AI Assistant</span>
+          <div class="bento-title">Claude Team</div>
+          <div class="bento-desc">Anthropic's most capable model for writing, analysis, coding, and strategy. Works across long documents, complex reasoning, and creative work — no daily limits for your team.</div>
+          <div class="bento-visual">
+            <div class="bento-chat">
+              <div class="chat-bubble chat-user">Summarize Q3 performance and flag the key risks for our board deck</div>
+              <div class="chat-bubble chat-ai">Based on your data, Q3 revenue grew 34% QoQ with strong ARR expansion. Three risks worth flagging: customer concentration in enterprise (top 3 = 48% of ARR), rising CAC in paid channels (+22%), and...<span class="chat-cursor"></span></div>
+            </div>
+          </div>
+        </div>
+        <div class="bento-footer">
+          <div class="bento-seats">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            4 seats · Unlimited messages
+          </div>
+          <a href="#pricing" class="bento-link">Get access <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+        </div>
+      </div>
+
+      <!-- Cursor Pro -->
+      <div class="bento-item bento-2 reveal reveal-d1">
+        <div>
+          <span class="bento-tag tag-dev">⚡ Dev Tool</span>
+          <div class="bento-title">Cursor Pro</div>
+          <div class="bento-desc">The code editor that actually understands your entire codebase. Tab completion, inline editing, and AI chat that knows your project inside out.</div>
+          <div class="bento-visual">
+            <div class="code-block">
+              <div class="code-line"><span class="code-num">1</span><span class="code-keyword">async function</span> <span style="color:#60a5fa">processOrder</span>(id: string) {</div>
+              <div class="code-line"><span class="code-num">2</span><span>  </span><span class="code-keyword">const</span> order = <span class="code-keyword">await</span> db.find(id);</div>
+              <div class="code-line"><span class="code-num">3</span><span>  </span><span class="code-comment">// ✦ Cursor: added validation + retry</span></div>
+              <div class="code-line"><span class="code-num">4</span><span>  </span><span class="code-keyword">if</span> (!order) <span class="code-keyword">throw new</span> <span style="color:#f9a8d4">NotFoundError</span>(id);</div>
+              <div class="code-line"><span class="code-num">5</span><span>  </span><span class="code-keyword">return</span> stripe.charge(order);</div>
+              <div class="code-line"><span class="code-num">6</span>}</div>
+            </div>
+          </div>
+        </div>
+        <div class="bento-footer">
+          <div class="bento-seats">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            4 seats · Fast Apply included
+          </div>
+          <a href="#pricing" class="bento-link">Get access <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+        </div>
+      </div>
+
+      <!-- Midjourney -->
+      <div class="bento-item bento-3 reveal reveal-d1">
+        <span class="bento-icon">🎨</span>
+        <span class="bento-tag tag-design">Design · Visuals</span>
+        <div class="bento-title">Midjourney</div>
+        <div class="bento-desc">Generate stunning visuals, product mockups, brand assets, and concepts in seconds. v6.1 with cinematic quality.</div>
+        <div class="bento-footer">
+          <div class="bento-seats">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            4 seats
+          </div>
+          <a href="#pricing" class="bento-link">Get access <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+        </div>
+      </div>
+
+      <!-- ChatGPT Plus -->
+      <div class="bento-item bento-4 reveal reveal-d2">
+        <span class="bento-icon">💬</span>
+        <span class="bento-tag tag-search">AI · GPT-4o</span>
+        <div class="bento-title">ChatGPT Plus</div>
+        <div class="bento-desc">GPT-4o with image analysis, DALL·E 3, advanced data analysis, and full plugin ecosystem. A solid second brain for your team.</div>
+        <div class="bento-footer">
+          <div class="bento-seats">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            4 seats
+          </div>
+          <a href="#pricing" class="bento-link">Get access <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+        </div>
+      </div>
+
+      <!-- Perplexity Pro -->
+      <div class="bento-item bento-5 reveal reveal-d3">
+        <span class="bento-icon">🔍</span>
+        <span class="bento-tag tag-productivity">Research · Search</span>
+        <div class="bento-title">Perplexity Pro</div>
+        <div class="bento-desc">Real-time AI search with citations. Research competitors, market trends, or any topic — with sources your team can trust and verify.</div>
+        <div class="bento-footer">
+          <div class="bento-seats">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            4 seats
+          </div>
+          <a href="#pricing" class="bento-link">Get access <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+        </div>
+      </div>
+    </div>
+
+    <!-- More tools note -->
+    <div style="text-align:center; margin-top:28px;">
+      <p style="font-size:14px; color:var(--text-muted);">
+        + Notion AI, Grammarly Business, ElevenLabs, Runway ML, and more added regularly &mdash;
+        <a href="#pricing" style="color:#a78bfa; text-decoration:none; font-weight:600;">see full list →</a>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     WHY TOOLEEN — FEATURES
+     ============================================================ -->
+<section class="section" id="features" style="background: linear-gradient(to bottom, transparent, rgba(124,58,237,0.04), transparent);">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-label">
+        <span class="badge">Why Teams Choose Us</span>
+      </div>
+      <h2 class="section-title">Less admin. More output.</h2>
+      <p class="section-sub">Managing a dozen subscriptions is a full-time job. We handle it so you don't have to.</p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <div class="feature-icon-wrap" style="background: rgba(124,58,237,0.12);">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+        </div>
+        <h3 class="feature-title">One invoice. Every tool.</h3>
+        <p class="feature-desc">Stop juggling 8 different renewal dates across 4 credit cards. Tooleen consolidates everything into a single monthly invoice your finance team will love.</p>
+      </div>
+
+      <div class="feature-card reveal reveal-d1">
+        <div class="feature-icon-wrap" style="background: rgba(52,211,153,0.1);">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <h3 class="feature-title">Instant onboarding</h3>
+        <p class="feature-desc">New seat ready in under 15 minutes. Credentials, access instructions, and support delivered the same day — no IT ticket required.</p>
+      </div>
+
+      <div class="feature-card reveal reveal-d2">
+        <div class="feature-icon-wrap" style="background: rgba(59,130,246,0.1);">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h3 class="feature-title">Verified &amp; secure</h3>
+        <p class="feature-desc">Every account is provisioned through official channels. We don't cut corners — your data stays protected and your access stays stable.</p>
+      </div>
+
+      <div class="feature-card reveal reveal-d1">
+        <div class="feature-icon-wrap" style="background: rgba(245,158,11,0.1);">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <h3 class="feature-title">Serious cost savings</h3>
+        <p class="feature-desc">Teams save an average of $1,200/month vs buying individually. Especially when you add up ChatGPT Team + Claude Team + Cursor + Midjourney separately.</p>
+      </div>
+
+      <div class="feature-card reveal reveal-d2">
+        <div class="feature-icon-wrap" style="background: rgba(236,72,153,0.1);">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f472b6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <h3 class="feature-title">Scales with your team</h3>
+        <p class="feature-desc">Start with 4 seats and expand as you hire. Add tools or seats on demand — no waiting for a new contract cycle.</p>
+      </div>
+
+      <div class="feature-card reveal reveal-d3">
+        <div class="feature-icon-wrap" style="background: rgba(99,102,241,0.1);">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <h3 class="feature-title">Human support</h3>
+        <p class="feature-desc">Real people, fast responses. If an account has an issue, we're on it before your team notices. No chatbot maze, no 48-hour ticket queues.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     HOW IT WORKS
+     ============================================================ -->
+<section class="section" id="how-it-works">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-label">
+        <span class="badge">Process</span>
+      </div>
+      <h2 class="section-title">Up and running in a day</h2>
+      <p class="section-sub">We've stripped out every unnecessary step. From signup to your team's first Claude message in three moves.</p>
+    </div>
+
+    <div class="steps-wrap">
+      <div class="step reveal">
+        <div class="step-num">01</div>
+        <h3 class="step-title">Pick your plan</h3>
+        <p class="step-desc">Choose the tool bundle that fits your team's workflow. Most teams start with the Core Stack — Claude + Cursor + one more — and expand from there.</p>
+      </div>
+      <div class="step reveal reveal-d1">
+        <div class="step-num">02</div>
+        <h3 class="step-title">We provision access</h3>
+        <p class="step-desc">Within a few hours, our team sets up dedicated accounts for every seat. You get login credentials, setup guides, and a direct line to support — no self-serve maze.</p>
+      </div>
+      <div class="step reveal reveal-d2">
+        <div class="step-num">03</div>
+        <h3 class="step-title">Your team ships faster</h3>
+        <p class="step-desc">That's it. No more "who has the Midjourney login?" or expired trials. Your team has the tools, we handle the rest. Monthly invoices land in your inbox automatically.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     PRICING
+     ============================================================ -->
+<section class="section" id="pricing">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-label">
+        <span class="badge">Pricing</span>
+      </div>
+      <h2 class="section-title">Straightforward pricing.<br>No surprises.</h2>
+      <p class="section-sub">Every plan includes 4 seats. Upgrade tools anytime. Cancel on your schedule.</p>
+    </div>
+
+    <div class="pricing-wrap">
+      <!-- Starter -->
+      <div class="pricing-card reveal">
+        <div class="pricing-plan">Starter</div>
+        <div class="pricing-price"><sup>$</sup>140<span>/mo</span></div>
+        <p class="pricing-desc">For small teams that want to try AI without committing to everything at once.</p>
+        <div class="pricing-user-count">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          4 seats included
+        </div>
+        <div class="pricing-divider"></div>
+        <ul class="pricing-features">
+          <li>
+            <svg class="check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Claude Team (4 seats)
+          </li>
+          <li>
+            <svg class="check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Perplexity Pro (4 seats)
+          </li>
+          <li>
+            <svg class="cross" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            <span style="opacity:0.5">Cursor Pro</span>
+          </li>
+          <li>
+            <svg class="cross" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            <span style="opacity:0.5">Midjourney</span>
+          </li>
+          <li>
+            <svg class="check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Email support
+          </li>
+        </ul>
+        <a href="#" class="btn btn-ghost" style="width:100%; justify-content:center;">Get Starter</a>
+      </div>
+
+      <!-- Core Stack — FEATURED -->
+      <div class="pricing-card featured reveal reveal-d1">
+        <div class="pricing-plan">Core Stack</div>
+        <div class="pricing-price"><sup>$</sup>250<span>/mo</span></div>
+        <p class="pricing-desc">The full toolkit for product teams, dev studios, and creative agencies running at full speed.</p>
+        <div class="pricing-user-count">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          4 seats included
+        </div>
+        <div class="pricing-divider"></div>
+        <ul class="pricing-features">
+          <li>
+            <svg class="check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Claude Team (4 seats)
+          </li>
+          <li>
+            <svg class="check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Cursor Pro (4 seats)
+          </li>
+          <li>
+            <svg class="check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Midjourney Standard (4 seats)
+          </li>
+          <li>
+            <svg class="check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            ChatGPT Plus (4 seats)
+          </li>
+          <li>
+            <svg class="check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Perplexity Pro (4 seats)
+          </li>
+          <li>
+            <svg class="check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Priority support · Same-day response
+          </li>
+        </ul>
+        <a href="#" class="btn btn-primary" style="width:100%; justify-content:center;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          Get Core Stack
+        </a>
+        <p style="text-align:center; font-size:12px; color:var(--text-muted); margin-top:12px;">Billed monthly · Cancel anytime</p>
+      </div>
+
+      <!-- Power -->
+      <div class="pricing-card reveal reveal-d2">
+        <div class="pricing-plan">Power</div>
+        <div class="pricing-price"><sup>$</sup>390<span>/mo</span></div>
+        <p class="pricing-desc">For studios and agencies that need the full creative and engineering arsenal plus room to grow.</p>
+        <div class="pricing-user-count">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          Up to 8 seats
+        </div>
+        <div class="pricing-divider"></div>
+        <ul class="pricing-features">
+          <li>
+            <svg class="check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Everything in Core Stack
+          </li>
+          <li>
+            <svg class="check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Midjourney Pro (8 seats)
+          </li>
+          <li>
+            <svg class="check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            ElevenLabs Creator + Runway ML
+          </li>
+          <li>
+            <svg class="check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Notion AI + Grammarly Business
+          </li>
+          <li>
+            <svg class="check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Dedicated account manager
+          </li>
+        </ul>
+        <a href="#" class="btn btn-ghost" style="width:100%; justify-content:center;">Get Power</a>
+      </div>
+    </div>
+
+    <div class="compare-note reveal">
+      <strong>Buying separately?</strong> Claude Team + Cursor + Midjourney + ChatGPT for 4 users adds up to ~$440/month at retail. Core Stack saves your team $190/month — or over $2,200 per year.
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     TESTIMONIALS
+     ============================================================ -->
+<section class="section" style="background: linear-gradient(to bottom, transparent, rgba(124,58,237,0.03), transparent);">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-label">
+        <span class="badge">Real Teams</span>
+      </div>
+      <h2 class="section-title">What teams say<br>after 90 days</h2>
+    </div>
+
+    <div class="testi-grid">
+      <div class="testi-card reveal">
+        <div class="testi-stars">
+          <span class="testi-star">★</span><span class="testi-star">★</span><span class="testi-star">★</span><span class="testi-star">★</span><span class="testi-star">★</span>
+        </div>
+        <p class="testi-quote">"We had Claude, Cursor, and Midjourney across <em>three separate billing cycles</em> with different cards. Tooleen killed all that. One invoice, all four of us fully set up, done. Finance stopped messaging me about 'duplicate AI spend'."</p>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background: linear-gradient(135deg, #7c3aed, #6366f1); color: white;">MR</div>
+          <div>
+            <div class="testi-name">Marcus R.</div>
+            <div class="testi-role">CTO · Fintech startup, Berlin</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testi-card reveal reveal-d1">
+        <div class="testi-stars">
+          <span class="testi-star">★</span><span class="testi-star">★</span><span class="testi-star">★</span><span class="testi-star">★</span><span class="testi-star">★</span>
+        </div>
+        <p class="testi-quote">"Our designers use Midjourney daily. Our devs live in Cursor. Our writers use Claude for everything. Before Tooleen we were paying for all of it separately and some people didn't have access to what they needed. Now everyone has everything and we're paying less."</p>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background: linear-gradient(135deg, #ec4899, #a855f7); color: white;">SL</div>
+          <div>
+            <div class="testi-name">Sophia L.</div>
+            <div class="testi-role">Head of Product · Creative Agency, London</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testi-card reveal reveal-d2">
+        <div class="testi-stars">
+          <span class="testi-star">★</span><span class="testi-star">★</span><span class="testi-star">★</span><span class="testi-star">★</span><span class="testi-star">★</span>
+        </div>
+        <p class="testi-quote">"I was skeptical about a reseller setup but Tooleen's support is genuinely fast. Had a credential issue at 11pm, it was resolved before I woke up. That kind of reliability for a $250 plan is hard to argue with. We're not going back."</p>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background: linear-gradient(135deg, #3b82f6, #10b981); color: white;">JK</div>
+          <div>
+            <div class="testi-name">James K.</div>
+            <div class="testi-role">Founder · SaaS Studio, Toronto</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     FAQ
+     ============================================================ -->
+<section class="section" id="faq">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-label">
+        <span class="badge">FAQ</span>
+      </div>
+      <h2 class="section-title">Questions people actually ask</h2>
+    </div>
+
+    <div class="faq-list">
+      <div class="faq-item reveal">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          How does access work — are these shared accounts?
+          <div class="faq-icon">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </div>
+        </button>
+        <div class="faq-a">Each team member gets their own individual account credentials. We don't do shared logins — that would violate terms of service and we don't cut corners on that. Each seat is a properly provisioned individual account under your plan.</div>
+      </div>
+
+      <div class="faq-item reveal reveal-d1">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Will my team's data be private?
+          <div class="faq-icon">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </div>
+        </button>
+        <div class="faq-a">Yes. Individual accounts mean individual data isolation. Your team's Claude conversations, Cursor projects, and Midjourney generations are tied to each user's own account — no cross-user visibility, and we don't have access to your content.</div>
+      </div>
+
+      <div class="faq-item reveal reveal-d1">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Can I add more seats or tools mid-month?
+          <div class="faq-icon">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </div>
+        </button>
+        <div class="faq-a">Absolutely. Message us anytime and we'll add seats or tools on a prorated basis. Growing teams are the reason we built Tooleen — we make it easy to scale without contract negotiations or long waits.</div>
+      </div>
+
+      <div class="faq-item reveal reveal-d2">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          What if a tool has an outage or account issue?
+          <div class="faq-icon">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </div>
+        </button>
+        <div class="faq-a">We monitor account health proactively and usually catch issues before you do. If something goes wrong, our support team is available every day and we aim to resolve account issues within a few hours. For platform-wide outages (e.g., Anthropic is down), we'll keep you updated in real time.</div>
+      </div>
+
+      <div class="faq-item reveal reveal-d2">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Is there a free trial?
+          <div class="faq-icon">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </div>
+        </button>
+        <div class="faq-a">We don't offer a free trial (provisioning real accounts has real costs), but we do offer a 7-day money-back guarantee on your first month. If your team isn't happy after a week of real use, we'll refund you — no awkward questions.</div>
+      </div>
+
+      <div class="faq-item reveal reveal-d3">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          How do I cancel?
+          <div class="faq-icon">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </div>
+        </button>
+        <div class="faq-a">Message or email us before your next billing cycle and we'll cancel with no fuss. No 30-day notice period, no cancellation fees, no "are you sure?" loops. Monthly means monthly — you're in control.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     CTA BANNER
+     ============================================================ -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-inner reveal">
+      <h2 class="cta-title">Ready to stop managing<br>subscriptions and start shipping?</h2>
+      <p class="cta-sub">Join 700+ teams already running smarter with Tooleen.</p>
+      <div class="cta-actions">
+        <a href="#" class="btn btn-primary btn-lg">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          Get Core Stack · $250/mo
+        </a>
+        <a href="#" class="btn btn-ghost btn-lg">Talk to us first</a>
+      </div>
+      <p class="cta-note">4 seats included · 7-day money-back guarantee · Cancel anytime</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <a href="/" class="nav-logo" style="margin-bottom: 0;">
+          <div class="nav-logo-mark">T</div>
+          <span class="nav-logo-text">Tooleen</span>
+        </a>
+        <p class="footer-brand-desc">Premium AI tool subscriptions for modern teams. One plan, every tool, zero headache.</p>
+        <div class="social-row">
+          <a href="#" class="social-btn" aria-label="Twitter/X">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <a href="#" class="social-btn" aria-label="LinkedIn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <div>
+        <div class="footer-col-title">Product</div>
+        <ul class="footer-links">
+          <li><a href="#products">All Tools</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+          <li><a href="#how-it-works">How It Works</a></li>
+          <li><a href="#">Changelog</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="footer-col-title">Company</div>
+        <ul class="footer-links">
+          <li><a href="#">About</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Affiliates</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="footer-col-title">Legal</div>
+        <ul class="footer-links">
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms of Service</a></li>
+          <li><a href="#">Refund Policy</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p class="footer-copy">&copy; 2026 Tooleen. All rights reserved.</p>
+      <div class="footer-legal">
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+        <a href="#">Support</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+<script>
+/* ── Navbar scroll ── */
+const navbar = document.getElementById('navbar');
+const navGhost = document.getElementById('navGhost');
+window.addEventListener('scroll', () => {
+  if (window.scrollY > 40) {
+    navbar.classList.add('scrolled');
+    if (navGhost) navGhost.style.display = 'flex';
+  } else {
+    navbar.classList.remove('scrolled');
+    if (navGhost) navGhost.style.display = 'none';
+  }
+}, { passive: true });
+
+/* ── Reveal on scroll ── */
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      revealObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+/* ── FAQ accordion ── */
+function toggleFaq(btn) {
+  const item = btn.closest('.faq-item');
+  const isOpen = item.classList.contains('open');
+  // Close all
+  document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+  // Toggle current
+  if (!isOpen) item.classList.add('open');
+}
+
+/* ── Smooth scroll for nav links ── */
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function (e) {
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) {
+      e.preventDefault();
+      const offset = 80;
+      const top = target.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top, behavior: 'smooth' });
+    }
+  });
+});
+
+/* ── Subtle mouse parallax on hero orbs ── */
+document.addEventListener('mousemove', (e) => {
+  const x = (e.clientX / window.innerWidth - 0.5) * 20;
+  const y = (e.clientY / window.innerHeight - 0.5) * 20;
+  document.querySelector('.orb-1').style.transform = `translate(${x * 0.4}px, ${y * 0.3}px)`;
+  document.querySelector('.orb-2').style.transform = `translate(${-x * 0.3}px, ${-y * 0.2}px)`;
+});
+
+/* ── Number counter animation ── */
+function animateCounter(el, target, suffix) {
+  let start = 0;
+  const duration = 1800;
+  const step = target / (duration / 16);
+  const timer = setInterval(() => {
+    start += step;
+    if (start >= target) {
+      start = target;
+      clearInterval(timer);
+    }
+    el.textContent = (suffix === '+' ? Math.floor(start).toLocaleString() + '+' : el.textContent);
+  }, 16);
+}
+</script>
+</body>
+</html>
