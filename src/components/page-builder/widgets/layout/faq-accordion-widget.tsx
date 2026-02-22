@@ -55,14 +55,24 @@ export function FaqAccordionWidget({
     alignment: "center" as const,
   };
 
+  const useTheme = settings?.colors?.useTheme !== false;
+  const accentColor = useTheme ? "var(--color-primary)" : (settings?.accentColor ?? "#3b82f6");
+  const accentBgLight = useTheme
+    ? "color-mix(in srgb, var(--color-primary) 8%, transparent)"
+    : `${settings?.accentColor ?? "#3b82f6"}15`;
+  const accentBorder = useTheme
+    ? "color-mix(in srgb, var(--color-primary) 25%, transparent)"
+    : `${settings?.accentColor ?? "#3b82f6"}40`;
+
   const s = {
     source: settings?.source ?? ("all" as const),
     categories: settings?.categories ?? ([] as string[]),
     maxItems: settings?.maxItems ?? 10,
     expandFirst: settings?.expandFirst ?? true,
     allowMultipleOpen: settings?.allowMultipleOpen ?? false,
-    style: settings?.style ?? ("cards" as const),
-    accentColor: settings?.accentColor ?? "#3b82f6",
+    // Normalize style: old saved data may have stored it as an object from a previous widget version
+    style: (typeof settings?.style === "string" ? settings.style : "cards") as "minimal" | "cards" | "bordered",
+    accentColor,
     showCategoryFilter: settings?.showCategoryFilter ?? false,
     header: { ...defaultHeader, ...settings?.header },
   };
@@ -324,6 +334,7 @@ export function FaqAccordionWidget({
                             isOpen={openItems.has(faq.id)}
                             onToggle={() => toggleItem(faq.id)}
                             accentColor={s.accentColor}
+                            accentBorder={accentBorder}
                             itemStyle={is}
                           />
                         ))}
@@ -476,6 +487,7 @@ export function FaqAccordionWidget({
                 isOpen={openItems.has(faq.id)}
                 onToggle={() => toggleItem(faq.id)}
                 accentColor={s.accentColor}
+                accentBorder={accentBorder}
                 itemStyle={is}
               />
             ))}
@@ -568,12 +580,14 @@ function FaqItemCard({
   isOpen,
   onToggle,
   accentColor,
+  accentBorder,
   itemStyle,
 }: {
   faq: FaqItem;
   isOpen: boolean;
   onToggle: () => void;
   accentColor: string;
+  accentBorder: string;
   itemStyle: FaqItemStyle;
 }) {
   return (
@@ -586,7 +600,7 @@ function FaqItemCard({
       )}
       style={{
         borderRadius: `${itemStyle.borderRadius}px`,
-        ...(isOpen ? { borderColor: `${accentColor}40` } : {}),
+        ...(isOpen ? { borderColor: accentBorder } : {}),
       }}
     >
       <button

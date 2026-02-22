@@ -125,13 +125,47 @@ export async function importThemeData(
       }
 
       // ---- 2. Color Palette + Active Theme ----
+      // Widget types that support colors.useTheme (theme color binding)
+      // Defined here so it's accessible both in widgetDefaults extraction and pages import (section 10)
+      const THEME_AWARE_WIDGETS = new Set([
+        "hero-content", "stats-section", "service-list",
+        "process-steps", "faq-accordion", "pricing-table",
+      ]);
+
       if (options?.themeId) {
+
+        // Extract widget defaults from home page sections
+        const widgetDefaults: Record<string, unknown> = {};
+        const homePage = data.pages?.find((p) => p.slug === "home");
+        if (homePage) {
+          for (const block of homePage.blocks ?? []) {
+            if (!Array.isArray(block.settings)) continue;
+            for (const section of block.settings as Array<{
+              columns?: Array<{ widgets?: Array<{ type: string; settings?: Record<string, unknown> }> }>;
+            }>) {
+              for (const col of section.columns ?? []) {
+                for (const widget of col.widgets ?? []) {
+                  // Store the first occurrence of each widget type as the theme default
+                  if (widget.type && widget.settings && !widgetDefaults[widget.type]) {
+                    // Always inject colors.useTheme: true for theme-aware widgets
+                    const settings = THEME_AWARE_WIDGETS.has(widget.type)
+                      ? { ...widget.settings, colors: { ...(widget.settings.colors as object ?? {}), useTheme: true } }
+                      : widget.settings;
+                    widgetDefaults[widget.type] = settings;
+                  }
+                }
+              }
+            }
+          }
+        }
+
         await tx.activeTheme.create({
           data: {
             themeId: options.themeId,
             themeName: options.themeName || options.themeId,
             colorPalette: data.colorPalette as unknown as Prisma.InputJsonValue,
             originalColorPalette: data.colorPalette as unknown as Prisma.InputJsonValue,
+            widgetDefaults: widgetDefaults as Prisma.InputJsonValue,
           },
         });
       }
@@ -386,6 +420,29 @@ export async function importThemeData(
           });
 
           for (const block of page.blocks ?? []) {
+            // Inject colors.useTheme: true into theme-aware widgets during import
+            let blockSettings: unknown = block.settings;
+            if (Array.isArray(blockSettings)) {
+              blockSettings = (blockSettings as Array<{
+                columns?: Array<{ widgets?: Array<{ type: string; settings?: Record<string, unknown> }> }>;
+              }>).map((section) => ({
+                ...section,
+                columns: section.columns?.map((col) => ({
+                  ...col,
+                  widgets: col.widgets?.map((widget) => {
+                    if (!THEME_AWARE_WIDGETS.has(widget.type) || !widget.settings) return widget;
+                    return {
+                      ...widget,
+                      settings: {
+                        ...widget.settings,
+                        colors: { ...(widget.settings.colors as object ?? {}), useTheme: true },
+                      },
+                    };
+                  }),
+                })),
+              }));
+            }
+
             await tx.landingPageBlock.create({
               data: {
                 landingPageId: createdPage.id,
@@ -393,7 +450,7 @@ export async function importThemeData(
                 name: block.name || null,
                 sortOrder: block.sortOrder ?? 0,
                 isActive: block.isActive ?? true,
-                settings: block.settings as Prisma.InputJsonValue,
+                settings: blockSettings as Prisma.InputJsonValue,
                 hideOnMobile: block.hideOnMobile ?? false,
                 hideOnDesktop: block.hideOnDesktop ?? false,
               },

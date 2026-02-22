@@ -195,6 +195,8 @@ export const DEFAULT_HERO_CONTENT_SETTINGS: HeroContentWidgetSettings = {
     starColor: "#facc15",
   },
   alignment: "center",
+  // Theme color binding
+  colors: { useTheme: true },
   // Container Style
   container: DEFAULT_WIDGET_CONTAINER,
 };
@@ -328,6 +330,8 @@ export const DEFAULT_STATS_SECTION_SETTINGS: StatsSectionWidgetSettings = {
   },
   centered: false,
   animateOnScroll: true,
+  // Theme color binding
+  colors: { useTheme: true },
   // Container Style
   container: DEFAULT_WIDGET_CONTAINER,
 };
@@ -1127,6 +1131,8 @@ export const DEFAULT_SERVICE_LIST_SETTINGS: ServiceListWidgetSettings = {
     tablet: { columns: 2 },
     mobile: { columns: 1 },
   },
+  // Theme color binding
+  colors: { useTheme: true },
   // Container Style
   container: DEFAULT_WIDGET_CONTAINER,
 };
@@ -1276,6 +1282,9 @@ export const DEFAULT_PROCESS_STEPS_SETTINGS: ProcessStepsWidgetSettings = {
     staggerDelay: 150,
     animateOnScroll: true,
   },
+
+  // Theme color binding
+  colors: { useTheme: true },
 };
 
 export const DEFAULT_PRICING_TABLE_SETTINGS: PricingTableWidgetSettings = {
@@ -1331,7 +1340,7 @@ export const DEFAULT_PRICING_TABLE_SETTINGS: PricingTableWidgetSettings = {
   // Data Source - binds to service
   dataSource: {
     type: "service",
-    mode: "auto",              // "auto" reads slug from ServiceContext
+    mode: "manual",            // "manual" requires selecting a service; "auto" reads from ServiceContext (use in Service Details templates)
     serviceSlug: undefined,    // Used when mode === "manual"
     manualPackages: undefined,
   },
@@ -1746,7 +1755,7 @@ export const DEFAULT_FAQ_ACCORDION_SETTINGS = {
     description: "Get answers to common questions about our services",
     alignment: "center" as const,
   },
-  source: "service" as const,
+  source: "all" as const,
   categories: [],
   maxItems: 10,
   expandFirst: true,
@@ -1754,6 +1763,7 @@ export const DEFAULT_FAQ_ACCORDION_SETTINGS = {
   style: "cards" as const,
   accentColor: "#3b82f6",
   showCategoryFilter: false,
+  colors: { useTheme: true },
   headerStyle: {
     headingSize: "lg" as const,
     headingColor: undefined,

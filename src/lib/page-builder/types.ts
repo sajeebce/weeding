@@ -350,6 +350,11 @@ export interface HeroContentWidgetSettings {
   // Alignment
   alignment: "left" | "center" | "right";
 
+  // Theme color binding
+  colors?: {
+    useTheme?: boolean; // When true, use CSS var(--color-primary) as accent color
+  };
+
   // Container Style
   container?: WidgetContainerStyle;
 }
@@ -919,6 +924,11 @@ export interface StatsSectionWidgetSettings {
   };
   centered: boolean;
   animateOnScroll: boolean;
+
+  // Theme color binding
+  colors?: {
+    useTheme?: boolean; // When true, use CSS var(--color-primary) as icon accent color
+  };
 
   // Container Style
   container?: WidgetContainerStyle;
@@ -1955,6 +1965,11 @@ export interface ServiceListWidgetSettings {
     };
   };
 
+  // Theme color binding
+  colors?: {
+    useTheme?: boolean; // When true, use CSS var(--color-primary) as accent color
+  };
+
   // Container Style
   container?: WidgetContainerStyle;
 }
@@ -2135,6 +2150,11 @@ export interface ProcessStepsWidgetSettings {
   animation: {
     staggerDelay: number;      // Delay between each step appearing (ms)
     animateOnScroll: boolean;
+  };
+
+  // Theme color binding
+  colors?: {
+    useTheme?: boolean; // When true, use CSS var(--color-primary) as accent color
   };
 }
 
@@ -2581,6 +2601,11 @@ export interface FaqAccordionWidgetSettings {
   style: "minimal" | "cards" | "bordered";
   accentColor: string;
   showCategoryFilter: boolean;
+
+  // Theme color binding
+  colors?: {
+    useTheme?: boolean; // When true, use CSS var(--color-primary) as accent color
+  };
 
   // Header Style
   headerStyle?: {

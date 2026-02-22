@@ -315,11 +315,15 @@ export function PricingTableWidgetSettingsPanel({
               { value: "manual", label: "Manual (select a service)" },
             ]}
           />
-          <p className="text-xs text-muted-foreground">
-            {s.dataSource.mode === "auto"
-              ? "Automatically shows packages from the current service page. Use this in Service Details templates."
-              : "Manually select a service to display its packages."}
-          </p>
+          {s.dataSource.mode === "auto" ? (
+            <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">
+              <strong>Service Details pages only.</strong> Auto mode reads the service from the current page context. For Homepage or other pages, use Manual mode and select a service below.
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              Select a service to display its pricing packages.
+            </p>
+          )}
 
           {s.dataSource.mode !== "auto" && (
             <div className="space-y-2">
@@ -331,6 +335,9 @@ export function PricingTableWidgetSettingsPanel({
                 onChange={(service) => updateDataSource({ serviceSlug: service?.slug || undefined })}
                 placeholder="Search and select a service..."
               />
+              {!s.dataSource.serviceSlug && (
+                <p className="text-xs text-amber-600">No service selected — the pricing table will not display until a service is chosen.</p>
+              )}
             </div>
           )}
         </div>

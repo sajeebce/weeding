@@ -284,6 +284,8 @@ function OrderSummary({
   currencySymbol = "$",
 }: OrderSummaryProps) {
   const { orderSummary, ctaButtons } = settings;
+  const useTheme = settings.colors?.useTheme !== false;
+  const effectiveBgColor = useTheme ? "var(--color-primary)" : (ctaButtons.defaultBgColor || "#f97316");
 
   if (!orderSummary.enabled) return null;
 
@@ -359,7 +361,7 @@ function OrderSummary({
             className="w-full font-semibold py-6"
             style={{
               backgroundColor:
-                orderSummary.ctaButton.bgColor || ctaButtons.defaultBgColor,
+                orderSummary.ctaButton.bgColor || effectiveBgColor,
               color:
                 orderSummary.ctaButton.textColor || ctaButtons.defaultTextColor,
             }}
@@ -410,6 +412,8 @@ function MobileOrderSummary({
   currencySymbol = "$",
 }: MobileOrderSummaryProps) {
   const { orderSummary, ctaButtons } = settings;
+  const useTheme = settings.colors?.useTheme !== false;
+  const effectiveBgColor = useTheme ? "var(--color-primary)" : (ctaButtons.defaultBgColor || "#f97316");
 
   if (!orderSummary.enabled) return null;
 
@@ -467,7 +471,7 @@ function MobileOrderSummary({
           className="w-full"
           style={{
             backgroundColor:
-              orderSummary.ctaButton.bgColor || ctaButtons.defaultBgColor,
+              orderSummary.ctaButton.bgColor || effectiveBgColor,
             color:
               orderSummary.ctaButton.textColor || ctaButtons.defaultTextColor,
           }}
@@ -521,9 +525,10 @@ function ComparisonTable({
   currencySymbol = "$",
 }: ComparisonTableProps) {
   const { tableStyle, tableHeader, featureRows, colors } = settings;
-  const accentColor = settings.ctaButtons?.defaultBgColor || "#f97316";
-  const accentBgLight = `${accentColor}15`;
-  const accentBgMedium = `${accentColor}25`;
+  const useTheme = settings.colors?.useTheme !== false;
+  const accentColor = useTheme ? "var(--color-primary)" : (settings.ctaButtons?.defaultBgColor || "#f97316");
+  const accentBgLight = useTheme ? "color-mix(in srgb, var(--color-primary) 8%, transparent)" : `${settings.ctaButtons?.defaultBgColor || "#f97316"}15`;
+  const accentBgBorder = useTheme ? "color-mix(in srgb, var(--color-primary) 50%, transparent)" : `${settings.ctaButtons?.defaultBgColor || "#f97316"}80`;
 
   const renderCellContent = (
     feature: ComparisonFeature,
@@ -565,7 +570,7 @@ function ComparisonTable({
                       borderColor: featureRows.addonStyle.selectedColor || accentColor,
                     }
                   : isSelectedColumn
-                    ? { borderColor: `${accentColor}80` }
+                    ? { borderColor: accentBgBorder }
                     : undefined
               }
               onClick={(e) => {
@@ -854,7 +859,7 @@ function ComparisonTable({
                         backgroundColor: isSelected
                           ? colors.highlightedColumnBg || accentBgLight
                           : isHighlighted
-                            ? `${tableHeader.highlightColor || accentBgLight}80`
+                            ? tableHeader.highlightColor || accentBgLight
                             : featureRows.alternateRowColors && index % 2 !== 0
                               ? "#f9fafb80"
                               : tableStyle.backgroundColor || "#ffffff",
@@ -898,8 +903,9 @@ function MobilePackageCards({
   currencySymbol = "$",
 }: MobilePackageCardsProps) {
   const { responsive } = settings;
-  const accentColor = settings.ctaButtons?.defaultBgColor || "#f97316";
-  const accentBgLight = `${accentColor}15`;
+  const useTheme = settings.colors?.useTheme !== false;
+  const accentColor = useTheme ? "var(--color-primary)" : (settings.ctaButtons?.defaultBgColor || "#f97316");
+  const accentBgLight = useTheme ? "color-mix(in srgb, var(--color-primary) 8%, transparent)" : `${settings.ctaButtons?.defaultBgColor || "#f97316"}15`;
 
   return (
     <div className="lg:hidden">
@@ -1183,6 +1189,7 @@ export function PricingTableWidget({
 
   // No service selected
   if (!resolvedSlug || !serviceData) {
+    const isAutoMode = settings.dataSource.mode === "auto";
     return (
       <WidgetContainer container={settings.container}>
       <div>
@@ -1194,7 +1201,9 @@ export function PricingTableWidget({
               No service selected
             </p>
             <p className="text-xs text-muted-foreground">
-              Select a service in the widget settings to display the pricing table.
+              {isAutoMode
+                ? 'Mode is set to "Auto" — this only works on Service Detail pages. Switch to "Manual" mode and select a service in the widget settings.'
+                : "Select a service in the widget settings to display the pricing table."}
             </p>
           </div>
         </div>

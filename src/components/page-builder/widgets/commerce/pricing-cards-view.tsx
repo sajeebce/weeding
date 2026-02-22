@@ -83,6 +83,8 @@ export function PricingCardsView({
   currencySymbol = "$",
 }: PricingCardsViewProps) {
   const { cardStyle, ctaButtons, colors } = settings;
+  const useTheme = settings.colors?.useTheme !== false;
+  const accentColor = useTheme ? "var(--color-primary)" : (ctaButtons.defaultBgColor || "#f97316");
 
   const getPackageSlug = (pkg: Package) => {
     return pkg.name.toLowerCase().replace(/\s+/g, "-");
@@ -205,7 +207,7 @@ export function PricingCardsView({
                 <Badge
                   className="px-4 py-1 text-xs font-semibold shadow-md"
                   style={{
-                    backgroundColor: pkg.badgeColor || colors.addonToggleActive || "#f97316",
+                    backgroundColor: pkg.badgeColor || colors.addonToggleActive || accentColor,
                     color: "#ffffff",
                   }}
                 >
@@ -329,8 +331,7 @@ export function PricingCardsView({
                 style={
                   pkg.isPopular
                     ? {
-                        backgroundColor:
-                          ctaButtons.defaultBgColor || "#f97316",
+                        backgroundColor: accentColor,
                         color: ctaButtons.defaultTextColor || "#ffffff",
                       }
                     : undefined

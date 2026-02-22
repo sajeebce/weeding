@@ -81,6 +81,12 @@ export function HeroContentWidget({ settings: rawSettings, isPreview = false }: 
     trustText: { ...DEFAULT_HERO_CONTENT_SETTINGS.trustText, ...rawSettings.trustText },
   };
 
+  // Theme-aware accent color
+  const useTheme = rawSettings.colors?.useTheme !== false;
+  const accentColor = useTheme ? "var(--color-primary)" : undefined;
+  const accentBgLight = useTheme ? "color-mix(in srgb, var(--color-primary) 10%, transparent)" : undefined;
+  const accentBorder = useTheme ? "color-mix(in srgb, var(--color-primary) 30%, transparent)" : undefined;
+
   // Helper to check if color is hex
   const isHexColor = (color?: string) => color?.startsWith("#");
 
@@ -117,11 +123,12 @@ export function HeroContentWidget({ settings: rawSettings, isPreview = false }: 
           );
 
           if (isHighlight) {
+            const effectiveHighlightColor = accentColor ?? highlightColor;
             return (
               <span
                 key={index}
-                className={!isHexColor(highlightColor) ? highlightColor : undefined}
-                style={isHexColor(highlightColor) ? { color: highlightColor } : undefined}
+                className={!isHexColor(effectiveHighlightColor) ? effectiveHighlightColor : undefined}
+                style={isHexColor(effectiveHighlightColor) || effectiveHighlightColor?.startsWith("var(") ? { color: effectiveHighlightColor } : undefined}
               >
                 {part}
               </span>
@@ -549,9 +556,9 @@ export function HeroContentWidget({ settings: rawSettings, isPreview = false }: 
             backgroundColor:
               settings.badge.style === "outline"
                 ? "transparent"
-                : settings.badge.bgColor || "#f9731933",
-            color: settings.badge.textColor || "#fb923c",
-            borderColor: settings.badge.borderColor || "#f9731980",
+                : (accentBgLight || settings.badge.bgColor || "#f9731933"),
+            color: accentColor || settings.badge.textColor || "#fb923c",
+            borderColor: accentBorder || settings.badge.borderColor || "#f9731980",
             borderWidth: settings.badge.style === "outline" ? "2px" : "1px",
           }}
         >

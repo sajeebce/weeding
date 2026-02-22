@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgencyX — Data-Driven Digital Marketing Agency</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+/* ========== RESET & BASE ========== */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#06080f;
+  --bg-card:rgba(255,255,255,0.03);
+  --bg-glass:rgba(255,255,255,0.05);
+  --border:rgba(255,255,255,0.06);
+  --border-hover:rgba(255,255,255,0.12);
+  --text:#f0f0f5;
+  --text-secondary:#8a8f9e;
+  --accent:#6366f1;
+  --accent-glow:rgba(99,102,241,0.25);
+  --accent2:#8b5cf6;
+  --green:#22c55e;
+  --radius:16px;
+  --nav-h:72px;
+}
+html{scroll-behavior:smooth;overflow-x:hidden}
+body{
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  background:var(--bg);color:var(--text);
+  line-height:1.6;overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:inherit;text-decoration:none}
+button{cursor:pointer;font-family:inherit}
+img{max-width:100%;display:block}
+
+/* ========== UTILITY ========== */
+.container{max-width:1200px;margin:0 auto;padding:0 24px}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:6px 16px;border-radius:999px;font-size:13px;font-weight:600;letter-spacing:.3px;border:1px solid var(--border)}
+.badge--accent{background:rgba(99,102,241,0.1);border-color:rgba(99,102,241,0.3);color:var(--accent)}
+.badge--secondary{background:var(--bg-glass);color:var(--text-secondary)}
+.section-label{text-align:center;margin-bottom:16px}
+.section-title{font-size:clamp(28px,4vw,44px);font-weight:800;text-align:center;letter-spacing:-.02em;line-height:1.15}
+.section-subtitle{font-size:clamp(15px,1.8vw,18px);color:var(--text-secondary);text-align:center;max-width:560px;margin:16px auto 0}
+.btn{
+  display:inline-flex;align-items:center;gap:8px;padding:14px 32px;border-radius:12px;
+  font-size:15px;font-weight:600;border:none;transition:all .3s ease;position:relative;overflow:hidden;
+}
+.btn--primary{background:var(--accent);color:#fff}
+.btn--primary:hover{background:#ea670c;transform:translateY(-2px);box-shadow:0 8px 30px var(--accent-glow)}
+.btn--outline{background:transparent;color:var(--text);border:1px solid var(--border)}
+.btn--outline:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-2px)}
+.btn svg{width:18px;height:18px;transition:transform .3s}
+.btn:hover svg{transform:translateX(4px)}
+
+/* ========== ANIMATIONS ========== */
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)}}
+@keyframes pulse-glow{0%,100%{opacity:.3}50%{opacity:.7}}
+@keyframes gradient-shift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes fade-up{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fade-in{from{opacity:0}to{opacity:1}}
+@keyframes scale-in{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+@keyframes slide-left{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:translateX(0)}}
+@keyframes slide-right{from{opacity:0;transform:translateX(-60px)}to{opacity:1;transform:translateX(0)}}
+@keyframes counter-glow{0%,100%{text-shadow:0 0 20px var(--accent-glow)}50%{text-shadow:0 0 40px var(--accent-glow)}}
+@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+.reveal{opacity:0;transform:translateY(40px);transition:all .8s cubic-bezier(.16,1,.3,1)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.reveal-delay-1{transition-delay:.1s}
+.reveal-delay-2{transition-delay:.2s}
+.reveal-delay-3{transition-delay:.3s}
+.reveal-delay-4{transition-delay:.4s}
+.reveal-delay-5{transition-delay:.5s}
+.reveal-delay-6{transition-delay:.6s}
+.reveal-delay-7{transition-delay:.7s}
+
+/* ========== NAV ========== */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  padding:0 24px;height:var(--nav-h);
+  display:flex;align-items:center;
+  transition:all .4s ease;
+}
+.nav.scrolled{
+  background:rgba(6,8,15,0.85);backdrop-filter:blur(20px) saturate(1.4);
+  border-bottom:1px solid var(--border);
+}
+.nav__inner{max-width:1200px;margin:0 auto;width:100%;display:flex;align-items:center;justify-content:space-between}
+.nav__logo{font-size:22px;font-weight:800;display:flex;align-items:center;gap:8px}
+.nav__logo span{color:var(--accent)}
+.nav__links{display:flex;gap:32px;list-style:none}
+.nav__links a{font-size:14px;font-weight:500;color:var(--text-secondary);transition:color .3s}
+.nav__links a:hover{color:var(--text)}
+.nav__cta{display:flex;gap:12px;align-items:center}
+.nav__cta .btn{padding:10px 24px;font-size:14px}
+.nav__burger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:4px}
+.nav__burger span{width:24px;height:2px;background:var(--text);border-radius:2px;transition:all .3s}
+
+/* ========== HERO ========== */
+.hero{
+  position:relative;min-height:100vh;display:flex;align-items:center;
+  padding:calc(var(--nav-h) + 40px) 0 80px;overflow:hidden;
+}
+.hero__bg{position:absolute;inset:0;z-index:0}
+.hero__grid{
+  position:absolute;inset:0;
+  background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),
+                    linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);
+  background-size:60px 60px;
+  mask-image:radial-gradient(ellipse 70% 60% at 50% 40%,black 30%,transparent 100%);
+}
+.hero__orb{position:absolute;border-radius:50%;filter:blur(100px);opacity:.4;pointer-events:none}
+.hero__orb--1{width:600px;height:600px;background:var(--accent);top:-200px;right:-150px;animation:pulse-glow 6s ease-in-out infinite}
+.hero__orb--2{width:500px;height:500px;background:var(--accent2);bottom:-200px;left:-150px;animation:pulse-glow 8s ease-in-out infinite 2s}
+.hero__orb--3{width:300px;height:300px;background:#06b6d4;top:40%;left:50%;animation:pulse-glow 7s ease-in-out infinite 1s}
+
+.hero__content{position:relative;z-index:2;text-align:center;max-width:800px;margin:0 auto}
+.hero__badge{animation:fade-up .8s ease forwards;opacity:0}
+.hero__title{
+  font-size:clamp(36px,6vw,72px);font-weight:900;letter-spacing:-.03em;line-height:1.05;
+  margin-top:24px;animation:fade-up .8s ease .15s forwards;opacity:0;
+}
+.hero__title .gradient-text{
+  background:linear-gradient(135deg,var(--accent),#8b5cf6,var(--accent2));
+  background-size:200% 200%;animation:gradient-shift 4s ease infinite;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.hero__desc{
+  font-size:clamp(16px,2vw,20px);color:var(--text-secondary);margin-top:24px;
+  max-width:600px;margin-left:auto;margin-right:auto;line-height:1.7;
+  animation:fade-up .8s ease .3s forwards;opacity:0;
+}
+.hero__features{
+  display:flex;flex-wrap:wrap;justify-content:center;gap:16px;margin-top:32px;
+  animation:fade-up .8s ease .4s forwards;opacity:0;
+}
+.hero__feature{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text-secondary)}
+.hero__feature svg{color:var(--green);flex-shrink:0}
+.hero__buttons{
+  display:flex;gap:16px;justify-content:center;margin-top:40px;flex-wrap:wrap;
+  animation:fade-up .8s ease .5s forwards;opacity:0;
+}
+.hero__rating{
+  display:flex;align-items:center;justify-content:center;gap:8px;margin-top:32px;
+  font-size:14px;color:var(--text-secondary);
+  animation:fade-up .8s ease .6s forwards;opacity:0;
+}
+.hero__stars{display:flex;gap:2px}
+.hero__stars svg{width:16px;height:16px;fill:#fbbf24;color:#fbbf24}
+
+/* Trust badges row */
+.hero__trust{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:56px;
+  max-width:700px;margin-left:auto;margin-right:auto;
+  animation:fade-up .8s ease .7s forwards;opacity:0;
+}
+.trust-card{
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  padding:20px 16px;border-radius:var(--radius);
+  background:var(--bg-glass);border:1px solid var(--border);
+  backdrop-filter:blur(12px);transition:all .4s ease;
+}
+.trust-card:hover{border-color:var(--accent);transform:translateY(-4px);box-shadow:0 8px 30px rgba(0,0,0,.3)}
+.trust-card svg{width:24px;height:24px;color:var(--accent)}
+.trust-card span{font-size:13px;font-weight:600;white-space:nowrap}
+
+/* ========== STATS BAR ========== */
+.stats{
+  position:relative;z-index:2;padding:60px 0;
+  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  background:linear-gradient(180deg,rgba(99,102,241,.02) 0%,transparent 100%);
+}
+.stats__grid{display:grid;grid-template-columns:repeat(4,1fr);gap:32px}
+.stat{text-align:center}
+.stat__number{
+  font-size:clamp(32px,4vw,48px);font-weight:900;color:var(--accent);
+  font-family:'JetBrains Mono','Inter',monospace;letter-spacing:-.02em;
+}
+.stat__label{font-size:14px;color:var(--text-secondary);margin-top:4px;font-weight:500}
+
+/* ========== SERVICES ========== */
+.services{padding:100px 0;position:relative}
+.services__grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:56px}
+.service-card{
+  position:relative;padding:32px 24px;border-radius:var(--radius);
+  background:var(--bg-card);border:1px solid var(--border);
+  transition:all .5s cubic-bezier(.16,1,.3,1);overflow:hidden;
+}
+.service-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);
+  opacity:0;transition:opacity .4s;
+}
+.service-card:hover{
+  border-color:var(--border-hover);transform:translateY(-8px);
+  box-shadow:0 20px 60px rgba(0,0,0,.3);
+}
+.service-card:hover::before{opacity:1}
+.service-card__icon{
+  width:48px;height:48px;border-radius:12px;
+  background:rgba(99,102,241,.1);display:flex;align-items:center;justify-content:center;
+  margin-bottom:20px;transition:all .4s;
+}
+.service-card:hover .service-card__icon{background:var(--accent);transform:scale(1.05)}
+.service-card__icon svg{width:24px;height:24px;color:var(--accent);transition:color .4s}
+.service-card:hover .service-card__icon svg{color:#fff}
+.service-card__popular{
+  position:absolute;top:16px;right:16px;
+  background:var(--accent);color:#fff;font-size:11px;font-weight:700;
+  padding:4px 10px;border-radius:6px;text-transform:uppercase;letter-spacing:.5px;
+}
+.service-card h3{font-size:17px;font-weight:700;margin-bottom:8px}
+.service-card p{font-size:14px;color:var(--text-secondary);line-height:1.6;margin-bottom:16px}
+.service-card__footer{display:flex;align-items:center;justify-content:space-between}
+.service-card__price{font-size:15px;font-weight:700;color:var(--accent)}
+.service-card__arrow{
+  width:32px;height:32px;border-radius:8px;border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;transition:all .3s;
+}
+.service-card:hover .service-card__arrow{background:var(--accent);border-color:var(--accent)}
+.service-card__arrow svg{width:16px;height:16px;color:var(--text-secondary);transition:all .3s}
+.service-card:hover .service-card__arrow svg{color:#fff;transform:translateX(2px)}
+
+/* ========== HOW IT WORKS ========== */
+.process{padding:100px 0;position:relative;overflow:hidden}
+.process__bg{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse 50% 50% at 50% 50%,rgba(99,102,241,.05),transparent);
+}
+.process__grid{display:grid;grid-template-columns:repeat(4,1fr);gap:32px;margin-top:56px;position:relative}
+.process__line{
+  position:absolute;top:60px;left:12.5%;right:12.5%;height:2px;
+  background:linear-gradient(90deg,transparent,var(--border),var(--border),transparent);
+}
+.step{text-align:center;position:relative}
+.step__circle{
+  width:96px;height:96px;border-radius:50%;margin:0 auto 24px;
+  background:var(--bg-glass);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;position:relative;
+  transition:all .5s;
+}
+.step:hover .step__circle{border-color:var(--accent);box-shadow:0 0 40px var(--accent-glow)}
+.step__circle svg{width:36px;height:36px;color:var(--accent)}
+.step__num{
+  position:absolute;top:-8px;right:-8px;width:32px;height:32px;border-radius:50%;
+  background:var(--accent);color:#fff;font-size:13px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+}
+.step h3{font-size:17px;font-weight:700;margin-bottom:8px}
+.step p{font-size:14px;color:var(--text-secondary);line-height:1.6;max-width:260px;margin:0 auto}
+
+/* ========== PRICING ========== */
+.pricing{padding:100px 0;position:relative}
+.pricing__grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:56px}
+.price-card{
+  position:relative;padding:40px 32px;border-radius:20px;
+  background:var(--bg-card);border:1px solid var(--border);
+  display:flex;flex-direction:column;transition:all .5s cubic-bezier(.16,1,.3,1);
+}
+.price-card--popular{
+  border-color:var(--accent);
+  background:linear-gradient(180deg,rgba(99,102,241,.06) 0%,var(--bg-card) 50%);
+  box-shadow:0 0 60px rgba(99,102,241,.08);transform:scale(1.03);
+}
+.price-card:hover{transform:translateY(-8px)}
+.price-card--popular:hover{transform:scale(1.03) translateY(-8px)}
+.price-card__badge{
+  position:absolute;top:-14px;left:50%;transform:translateX(-50%);
+  background:linear-gradient(135deg,var(--accent),#8b5cf6);color:#fff;
+  padding:6px 20px;border-radius:999px;font-size:12px;font-weight:700;
+  letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;
+}
+.price-card h3{font-size:22px;font-weight:800;margin-bottom:4px}
+.price-card__desc{font-size:14px;color:var(--text-secondary);margin-bottom:24px}
+.price-card__amount{
+  font-size:clamp(36px,4vw,48px);font-weight:900;margin-bottom:8px;
+  font-family:'JetBrains Mono','Inter',monospace;
+}
+.price-card__amount span{font-size:16px;font-weight:500;color:var(--text-secondary)}
+.price-card__time{font-size:13px;color:var(--text-secondary);margin-bottom:28px;padding-bottom:28px;border-bottom:1px solid var(--border)}
+.price-card__features{list-style:none;flex:1;margin-bottom:32px}
+.price-card__features li{
+  display:flex;align-items:flex-start;gap:12px;padding:8px 0;font-size:14px;
+}
+.price-card__features li svg{width:18px;height:18px;flex-shrink:0;margin-top:2px}
+.price-card__features li svg.check{color:var(--green)}
+.price-card__features li svg.x{color:rgba(255,255,255,.15)}
+.price-card__features li.disabled{color:var(--text-secondary);opacity:.5}
+.price-card .btn{width:100%;justify-content:center}
+
+/* ========== TESTIMONIALS ========== */
+.testimonials{padding:100px 0;position:relative;overflow:hidden}
+.testimonials__bg{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse 60% 40% at 50% 0%,rgba(99,102,241,.04),transparent);
+}
+.testimonials__grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:56px;position:relative}
+.testimonial-card{
+  padding:32px;border-radius:var(--radius);
+  background:var(--bg-card);border:1px solid var(--border);
+  transition:all .4s;position:relative;
+}
+.testimonial-card:hover{border-color:var(--border-hover);transform:translateY(-4px)}
+.testimonial-card__quote{
+  position:absolute;top:24px;right:24px;width:32px;height:32px;
+  color:rgba(99,102,241,.15);
+}
+.testimonial-card__stars{display:flex;gap:2px;margin-bottom:16px}
+.testimonial-card__stars svg{width:14px;height:14px;fill:#fbbf24;color:#fbbf24}
+.testimonial-card__text{font-size:14px;color:var(--text-secondary);line-height:1.7;margin-bottom:24px;font-style:italic}
+.testimonial-card__author{display:flex;align-items:center;gap:12px}
+.testimonial-card__avatar{
+  width:44px;height:44px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:700;color:#fff;flex-shrink:0;
+}
+.testimonial-card__name{font-size:14px;font-weight:600}
+.testimonial-card__role{font-size:12px;color:var(--text-secondary)}
+
+/* ========== FAQ ========== */
+.faq{padding:100px 0}
+.faq__layout{display:grid;grid-template-columns:1fr 2fr;gap:60px;margin-top:56px}
+.faq__sidebar{position:sticky;top:100px;align-self:start}
+.faq__sidebar h3{font-size:28px;font-weight:800;margin-bottom:12px;line-height:1.2}
+.faq__sidebar p{color:var(--text-secondary);font-size:15px;line-height:1.7;margin-bottom:24px}
+.faq__list{display:flex;flex-direction:column;gap:12px}
+.faq-item{
+  border:1px solid var(--border);border-radius:var(--radius);
+  overflow:hidden;transition:all .3s;
+}
+.faq-item.active{border-color:rgba(99,102,241,.3)}
+.faq-item__q{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:20px 24px;cursor:pointer;font-size:15px;font-weight:600;
+  background:transparent;border:none;color:var(--text);width:100%;text-align:left;
+  transition:all .3s;
+}
+.faq-item__q:hover{background:var(--bg-glass)}
+.faq-item__icon{
+  width:28px;height:28px;border-radius:8px;background:var(--bg-glass);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  transition:all .4s;
+}
+.faq-item.active .faq-item__icon{background:var(--accent);transform:rotate(45deg)}
+.faq-item__icon svg{width:14px;height:14px;color:var(--text-secondary);transition:color .3s}
+.faq-item.active .faq-item__icon svg{color:#fff}
+.faq-item__a{
+  max-height:0;overflow:hidden;transition:max-height .5s cubic-bezier(.16,1,.3,1);
+}
+.faq-item.active .faq-item__a{max-height:300px}
+.faq-item__a-inner{padding:0 24px 20px;font-size:14px;color:var(--text-secondary);line-height:1.7}
+
+/* ========== CTA ========== */
+.cta{padding:100px 0;position:relative;overflow:hidden}
+.cta__box{
+  position:relative;border-radius:24px;padding:80px 40px;text-align:center;
+  background:linear-gradient(135deg,rgba(99,102,241,.12),rgba(99,102,241,.08));
+  border:1px solid rgba(99,102,241,.15);overflow:hidden;
+}
+.cta__orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none}
+.cta__orb--1{width:400px;height:400px;background:var(--accent);opacity:.08;top:-200px;right:-100px}
+.cta__orb--2{width:300px;height:300px;background:var(--accent2);opacity:.08;bottom:-150px;left:-100px}
+.cta__box h2{font-size:clamp(28px,4vw,40px);font-weight:800;margin-bottom:16px;position:relative}
+.cta__box p{font-size:17px;color:var(--text-secondary);max-width:520px;margin:0 auto 32px;position:relative}
+.cta__benefits{display:flex;flex-wrap:wrap;justify-content:center;gap:20px;margin-bottom:40px;position:relative}
+.cta__benefit{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text-secondary)}
+.cta__benefit svg{color:var(--green);width:18px;height:18px}
+.cta__buttons{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;position:relative}
+.cta__secure{font-size:13px;color:var(--text-secondary);margin-top:24px;position:relative;opacity:.7}
+
+/* ========== FOOTER ========== */
+.footer{padding:60px 0 30px;border-top:1px solid var(--border)}
+.footer__top{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;padding-bottom:40px}
+.footer__brand p{color:var(--text-secondary);font-size:14px;margin-top:12px;line-height:1.7;max-width:300px}
+.footer__col h4{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-secondary);margin-bottom:16px}
+.footer__col ul{list-style:none}
+.footer__col li{margin-bottom:10px}
+.footer__col a{font-size:14px;color:var(--text-secondary);transition:color .3s}
+.footer__col a:hover{color:var(--accent)}
+.footer__bottom{
+  display:flex;justify-content:space-between;align-items:center;
+  padding-top:24px;border-top:1px solid var(--border);
+  font-size:13px;color:var(--text-secondary);
+}
+.footer__disclaimer{font-size:12px;color:var(--text-secondary);opacity:.6;margin-top:16px;text-align:center;max-width:700px;margin-left:auto;margin-right:auto;line-height:1.6}
+
+/* ========== MOBILE MENU ========== */
+.mobile-menu{
+  position:fixed;inset:0;z-index:99;background:rgba(6,8,15,.97);backdrop-filter:blur(20px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;
+  opacity:0;pointer-events:none;transition:opacity .4s;
+}
+.mobile-menu.open{opacity:1;pointer-events:auto}
+.mobile-menu a{font-size:24px;font-weight:600;transition:color .3s}
+.mobile-menu a:hover{color:var(--accent)}
+.mobile-menu__close{position:absolute;top:24px;right:24px;background:none;border:none;color:var(--text);cursor:pointer}
+.mobile-menu__close svg{width:28px;height:28px}
+
+/* ========== RESPONSIVE ========== */
+@media(max-width:1024px){
+  .nav__links{display:none}
+  .nav__cta .btn--outline{display:none}
+  .nav__burger{display:flex}
+  .services__grid{grid-template-columns:repeat(2,1fr)}
+  .process__grid{grid-template-columns:repeat(2,1fr);gap:48px}
+  .process__line{display:none}
+  .pricing__grid{grid-template-columns:1fr;max-width:420px;margin-left:auto;margin-right:auto}
+  .price-card--popular{transform:none}
+  .price-card--popular:hover{transform:translateY(-8px)}
+  .testimonials__grid{grid-template-columns:1fr 1fr}
+  .testimonials__grid .testimonial-card:last-child{display:none}
+  .faq__layout{grid-template-columns:1fr}
+  .faq__sidebar{position:static}
+  .footer__top{grid-template-columns:1fr 1fr}
+}
+@media(max-width:640px){
+  .hero__trust{grid-template-columns:repeat(2,1fr)}
+  .services__grid{grid-template-columns:1fr}
+  .process__grid{grid-template-columns:1fr;max-width:320px;margin-left:auto;margin-right:auto}
+  .stats__grid{grid-template-columns:repeat(2,1fr);gap:24px}
+  .testimonials__grid{grid-template-columns:1fr}
+  .testimonials__grid .testimonial-card:last-child{display:block}
+  .footer__top{grid-template-columns:1fr}
+  .footer__bottom{flex-direction:column;gap:12px;text-align:center}
+  .hero__buttons{flex-direction:column;align-items:center}
+  .hero__buttons .btn{width:100%;max-width:300px;justify-content:center}
+}
+
+/* ========== SCROLLBAR ========== */
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.2)}
+
+/* Reduced motion */
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:0.01ms!important;transition-duration:0.01ms!important}
+  .reveal{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== NAV ===== -->
+<nav class="nav" id="nav">
+  <div class="nav__inner">
+    <a href="#" class="nav__logo">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="8" fill="#6366f1"/><text x="14" y="20" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" font-weight="800" fill="#fff">AX</text></svg>
+      Agency<span>X</span>
+    </a>
+    <ul class="nav__links">
+      <li><a href="#services">Services</a></li>
+      <li><a href="#process">How It Works</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#testimonials">Reviews</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ul>
+    <div class="nav__cta">
+      <a href="#pricing" class="btn btn--outline" style="font-size:13px;padding:8px 18px">Log In</a>
+      <a href="#pricing" class="btn btn--primary" style="font-size:13px;padding:8px 18px">Get Started</a>
+    </div>
+    <button class="nav__burger" id="burger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- Mobile Menu -->
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-menu__close" id="menuClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+  <a href="#services" onclick="closeMenu()">Services</a>
+  <a href="#process" onclick="closeMenu()">How It Works</a>
+  <a href="#pricing" onclick="closeMenu()">Pricing</a>
+  <a href="#testimonials" onclick="closeMenu()">Reviews</a>
+  <a href="#faq" onclick="closeMenu()">FAQ</a>
+  <a href="#pricing" class="btn btn--primary" onclick="closeMenu()">Get Started</a>
+</div>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div class="hero__bg">
+    <div class="hero__grid"></div>
+    <div class="hero__orb hero__orb--1"></div>
+    <div class="hero__orb hero__orb--2"></div>
+    <div class="hero__orb hero__orb--3"></div>
+  </div>
+  <div class="container">
+    <div class="hero__content">
+      <div class="hero__badge">
+        <span class="badge badge--accent">Digital Marketing Agency</span>
+      </div>
+      <h1 class="hero__title">
+        We Grow Brands Through <span class="gradient-text">Digital Innovation</span>
+      </h1>
+      <p class="hero__desc">
+        Data-driven digital marketing agency helping ambitious brands achieve measurable growth through SEO, PPC, Social Media &amp; Content Marketing.
+      </p>
+      <div class="hero__features">
+        <div class="hero__feature">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><path d="M20 6L9 17l-5-5"/></svg>
+          Average 320% ROI for clients
+        </div>
+        <div class="hero__feature">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><path d="M20 6L9 17l-5-5"/></svg>
+          Dedicated account manager
+        </div>
+        <div class="hero__feature">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><path d="M20 6L9 17l-5-5"/></svg>
+          Monthly performance reports
+        </div>
+      </div>
+      <div class="hero__buttons">
+        <a href="#pricing" class="btn btn--primary">
+          Get Free Audit
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a href="#process" class="btn btn--outline">
+          See Our Results
+        </a>
+      </div>
+      <div class="hero__rating">
+        <div class="hero__stars">
+          <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </div>
+        4.9/5 from 500+ reviews
+      </div>
+      <div class="hero__trust">
+        <div class="trust-card">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          <span>Data-Driven</span>
+        </div>
+        <div class="trust-card">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          <span>Proven ROI</span>
+        </div>
+        <div class="trust-card">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+          <span>Expert Team</span>
+        </div>
+        <div class="trust-card">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <span>4.9/5 Rating</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== STATS ===== -->
+<section class="stats">
+  <div class="container">
+    <div class="stats__grid">
+      <div class="stat reveal">
+        <div class="stat__number" data-target="500" data-suffix="+">0</div>
+        <div class="stat__label">Clients Served</div>
+      </div>
+      <div class="stat reveal reveal-delay-1">
+        <div class="stat__number" data-target="320" data-suffix="%">0</div>
+        <div class="stat__label">Average ROI</div>
+      </div>
+      <div class="stat reveal reveal-delay-2">
+        <div class="stat__number" data-target="4.9" data-suffix="/5" data-decimal="true">0</div>
+        <div class="stat__label">Customer Rating</div>
+      </div>
+      <div class="stat reveal reveal-delay-3">
+        <div class="stat__number" data-target="50" data-suffix="M+">0</div>
+        <div class="stat__label">Revenue Generated</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SERVICES ===== -->
+<section class="services" id="services">
+  <div class="container">
+    <div class="section-label reveal"><span class="badge badge--secondary">Our Services</span></div>
+    <h2 class="section-title reveal reveal-delay-1">Everything You Need to<br>Grow Your Business Online</h2>
+    <p class="section-subtitle reveal reveal-delay-2">From search engine optimization to paid ads and social media, we provide full-stack digital marketing for growing brands.</p>
+
+    <div class="services__grid">
+      <div class="service-card reveal reveal-delay-1">
+        <span class="service-card__popular">Popular</span>
+        <div class="service-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        </div>
+        <h3>SEO Optimization</h3>
+        <p>Rank higher on Google with technical SEO, on-page optimization, and authoritative link building.</p>
+        <div class="service-card__footer">
+          <span class="service-card__price">From $499/mo</span>
+          <div class="service-card__arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        </div>
+      </div>
+
+      <div class="service-card reveal reveal-delay-2">
+        <span class="service-card__popular">Popular</span>
+        <div class="service-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        </div>
+        <h3>PPC Advertising</h3>
+        <p>Maximize ad spend with expertly managed Google Ads and Meta Ads campaigns that convert.</p>
+        <div class="service-card__footer">
+          <span class="service-card__price">From $699/mo</span>
+          <div class="service-card__arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        </div>
+      </div>
+
+      <div class="service-card reveal reveal-delay-3">
+        <span class="service-card__popular">Popular</span>
+        <div class="service-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+        </div>
+        <h3>Social Media Marketing</h3>
+        <p>Build an engaged audience and drive sales with strategic social media content and community management.</p>
+        <div class="service-card__footer">
+          <span class="service-card__price">From $399/mo</span>
+          <div class="service-card__arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        </div>
+      </div>
+
+      <div class="service-card reveal reveal-delay-4">
+        <div class="service-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+        </div>
+        <h3>Content Marketing</h3>
+        <p>Attract and convert prospects with high-quality blogs, videos, infographics, and lead magnets.</p>
+        <div class="service-card__footer">
+          <span class="service-card__price">From $599/mo</span>
+          <div class="service-card__arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        </div>
+      </div>
+
+      <div class="service-card reveal reveal-delay-5">
+        <div class="service-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </div>
+        <h3>Email Marketing</h3>
+        <p>Nurture leads and retain customers with automated email sequences that generate recurring revenue.</p>
+        <div class="service-card__footer">
+          <span class="service-card__price">From $299/mo</span>
+          <div class="service-card__arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        </div>
+      </div>
+
+      <div class="service-card reveal reveal-delay-6">
+        <span class="service-card__popular">Popular</span>
+        <div class="service-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        </div>
+        <h3>Web Design & Dev</h3>
+        <p>Conversion-optimized websites and landing pages that turn visitors into paying customers.</p>
+        <div class="service-card__footer">
+          <span class="service-card__price">From $1,499</span>
+          <div class="service-card__arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        </div>
+      </div>
+
+      <div class="service-card reveal reveal-delay-7">
+        <div class="service-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2m0 18v2m-9-11h2m18 0h2m-4.22-6.78l-1.42 1.42M5.64 18.36l-1.42 1.42m0-15.56l1.42 1.42m12.72 12.72l1.42 1.42"/></svg>
+        </div>
+        <h3>Brand Identity</h3>
+        <p>Build a memorable brand with logo design, visual identity systems, and brand strategy.</p>
+        <div class="service-card__footer">
+          <span class="service-card__price">From $799</span>
+          <div class="service-card__arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        </div>
+      </div>
+
+      <div class="service-card reveal reveal-delay-7">
+        <div class="service-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </div>
+        <h3>Analytics & Reporting</h3>
+        <p>Get clear monthly reports showing traffic, conversions, ROI, and actionable growth recommendations.</p>
+        <div class="service-card__footer">
+          <span class="service-card__price">From $199/mo</span>
+          <div class="service-card__arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== HOW IT WORKS ===== -->
+<section class="process" id="process">
+  <div class="process__bg"></div>
+  <div class="container">
+    <div class="section-label reveal"><span class="badge badge--secondary">How It Works</span></div>
+    <h2 class="section-title reveal reveal-delay-1">Launch Your Campaign in<br>4 Simple Steps</h2>
+    <p class="section-subtitle reveal reveal-delay-2">We make it easy to get started. Tell us your goals and we'll build a strategy that drives real, measurable results.</p>
+
+    <div class="process__grid">
+      <div class="process__line"></div>
+      <div class="step reveal reveal-delay-1">
+        <div class="step__circle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          <span class="step__num">1</span>
+        </div>
+        <h3>Discovery & Brief</h3>
+        <p>We learn about your business, target audience, and growth goals in a free strategy call.</p>
+      </div>
+      <div class="step reveal reveal-delay-2">
+        <div class="step__circle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          <span class="step__num">2</span>
+        </div>
+        <h3>Strategy & Planning</h3>
+        <p>We craft a custom data-driven marketing strategy aligned with your revenue targets.</p>
+      </div>
+      <div class="step reveal reveal-delay-3">
+        <div class="step__circle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 00-2.91-.09zM12 15l-3-3a22 22 0 012-3.95A12.88 12.88 0 0122 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 01-4 2z"/></svg>
+          <span class="step__num">3</span>
+        </div>
+        <h3>Launch & Execute</h3>
+        <p>Campaigns go live across all channels — SEO, ads, social, email — and we monitor daily.</p>
+      </div>
+      <div class="step reveal reveal-delay-4">
+        <div class="step__circle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          <span class="step__num">4</span>
+        </div>
+        <h3>Optimize & Scale</h3>
+        <p>We analyze results, double down on what works, and scale your campaigns for maximum growth.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PRICING ===== -->
+<section class="pricing" id="pricing">
+  <div class="container">
+    <div class="section-label reveal"><span class="badge badge--secondary">Pricing</span></div>
+    <h2 class="section-title reveal reveal-delay-1">Transparent Pricing,<br>No Hidden Fees</h2>
+    <p class="section-subtitle reveal reveal-delay-2">Choose the package that fits your growth goals. All plans include a dedicated account manager and monthly reports.</p>
+
+    <div class="pricing__grid">
+      <!-- Starter -->
+      <div class="price-card reveal reveal-delay-1">
+        <h3>Starter</h3>
+        <p class="price-card__desc">For small businesses just getting started</p>
+        <div class="price-card__amount">$799 <span>/mo</span></div>
+        <div class="price-card__time">Setup in 3–5 business days</div>
+        <ul class="price-card__features">
+          <li><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>SEO Audit & Optimization</li>
+          <li><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Social Media (2 platforms)</li>
+          <li><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Monthly Performance Report</li>
+          <li class="disabled"><svg class="x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>PPC Campaign Management</li>
+          <li class="disabled"><svg class="x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>Email Marketing Automation</li>
+        </ul>
+        <a href="#" class="btn btn--outline" style="width:100%;justify-content:center">Get Started <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+      </div>
+
+      <!-- Growth -->
+      <div class="price-card price-card--popular reveal reveal-delay-2">
+        <span class="price-card__badge">Most Popular</span>
+        <h3>Growth</h3>
+        <p class="price-card__desc">Full digital marketing suite for scaling brands</p>
+        <div class="price-card__amount">$1,499 <span>/mo</span></div>
+        <div class="price-card__time">Setup in 3–5 business days</div>
+        <ul class="price-card__features">
+          <li><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Advanced SEO Strategy</li>
+          <li><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>PPC Campaign Management</li>
+          <li><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Social Media (5 platforms)</li>
+          <li><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Email Marketing Automation</li>
+          <li class="disabled"><svg class="x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>Content Marketing (+$599)</li>
+        </ul>
+        <a href="#" class="btn btn--primary" style="width:100%;justify-content:center">Get Started <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+      </div>
+
+      <!-- Enterprise -->
+      <div class="price-card reveal reveal-delay-3">
+        <h3>Enterprise</h3>
+        <p class="price-card__desc">Complete agency partnership for rapid growth</p>
+        <div class="price-card__amount">$2,999 <span>/mo</span></div>
+        <div class="price-card__time">Setup in 3–5 business days</div>
+        <ul class="price-card__features">
+          <li><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Everything in Growth</li>
+          <li><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Full Content Marketing</li>
+          <li><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Web Design & CRO</li>
+          <li><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Brand Identity Package</li>
+          <li><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Priority Support & Weekly Calls</li>
+        </ul>
+        <a href="#" class="btn btn--outline" style="width:100%;justify-content:center">Get Started <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TESTIMONIALS ===== -->
+<section class="testimonials" id="testimonials">
+  <div class="testimonials__bg"></div>
+  <div class="container">
+    <div class="section-label reveal"><span class="badge badge--secondary">Testimonials</span></div>
+    <h2 class="section-title reveal reveal-delay-1">Trusted by 500+<br>Growing Businesses</h2>
+    <p class="section-subtitle reveal reveal-delay-2">See what our clients say about the results AgencyX has delivered for their businesses.</p>
+
+    <div class="testimonials__grid">
+      <div class="testimonial-card reveal reveal-delay-1">
+        <svg class="testimonial-card__quote" viewBox="0 0 24 24" fill="currentColor"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zM0 21v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151C7.563 6.068 6 8.789 6 11h4v10H0z"/></svg>
+        <div class="testimonial-card__stars"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+        <p class="testimonial-card__text">"AgencyX tripled our organic traffic in 6 months. Their SEO strategy and content marketing completely transformed our online presence and revenue."</p>
+        <div class="testimonial-card__author">
+          <div class="testimonial-card__avatar">RM</div>
+          <div>
+            <div class="testimonial-card__name">Rachel Martinez</div>
+            <div class="testimonial-card__role">E-commerce Founder &bull; USA</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card reveal reveal-delay-2">
+        <svg class="testimonial-card__quote" viewBox="0 0 24 24" fill="currentColor"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zM0 21v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151C7.563 6.068 6 8.789 6 11h4v10H0z"/></svg>
+        <div class="testimonial-card__stars"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+        <p class="testimonial-card__text">"Our PPC campaigns with AgencyX deliver 4x ROAS consistently. The team is proactive, transparent, and genuinely invested in our success."</p>
+        <div class="testimonial-card__author">
+          <div class="testimonial-card__avatar">AK</div>
+          <div>
+            <div class="testimonial-card__name">Arjun Kumar</div>
+            <div class="testimonial-card__role">SaaS CEO &bull; India</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card reveal reveal-delay-3">
+        <svg class="testimonial-card__quote" viewBox="0 0 24 24" fill="currentColor"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zM0 21v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151C7.563 6.068 6 8.789 6 11h4v10H0z"/></svg>
+        <div class="testimonial-card__stars"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+        <p class="testimonial-card__text">"We switched from two separate agencies to AgencyX and never looked back. The integrated approach means our SEO, social, and ads all work together perfectly."</p>
+        <div class="testimonial-card__author">
+          <div class="testimonial-card__avatar">ZA</div>
+          <div>
+            <div class="testimonial-card__name">Zara Ahmed</div>
+            <div class="testimonial-card__role">Retail Brand Owner &bull; UAE</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card reveal reveal-delay-4">
+        <svg class="testimonial-card__quote" viewBox="0 0 24 24" fill="currentColor"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zM0 21v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151C7.563 6.068 6 8.789 6 11h4v10H0z"/></svg>
+        <div class="testimonial-card__stars"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+        <p class="testimonial-card__text">"AgencyX's email marketing automation increased our revenue by 180% in just 90 days. The ROI is incredible and the team is always responsive and proactive."</p>
+        <div class="testimonial-card__author">
+          <div class="testimonial-card__avatar">JP</div>
+          <div>
+            <div class="testimonial-card__name">James Park</div>
+            <div class="testimonial-card__role">Subscription Business &bull; UK</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card reveal reveal-delay-5">
+        <svg class="testimonial-card__quote" viewBox="0 0 24 24" fill="currentColor"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zM0 21v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151C7.563 6.068 6 8.789 6 11h4v10H0z"/></svg>
+        <div class="testimonial-card__stars"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+        <p class="testimonial-card__text">"The new website AgencyX built converted 3x better than our old one from day one. Plus their SEO had us ranking page 1 for our main keywords within 4 months."</p>
+        <div class="testimonial-card__author">
+          <div class="testimonial-card__avatar">MN</div>
+          <div>
+            <div class="testimonial-card__name">Mia Nguyen</div>
+            <div class="testimonial-card__role">Beauty Brand CEO &bull; Australia</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card reveal reveal-delay-6">
+        <svg class="testimonial-card__quote" viewBox="0 0 24 24" fill="currentColor"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zM0 21v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151C7.563 6.068 6 8.789 6 11h4v10H0z"/></svg>
+        <div class="testimonial-card__stars"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+        <p class="testimonial-card__text">"As a B2B company, we struggled with lead gen. AgencyX's LinkedIn strategy and content marketing now brings us 30+ qualified leads every single month."</p>
+        <div class="testimonial-card__author">
+          <div class="testimonial-card__avatar">TR</div>
+          <div>
+            <div class="testimonial-card__name">Tom Richards</div>
+            <div class="testimonial-card__role">B2B Software Company &bull; Canada</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FAQ ===== -->
+<section class="faq" id="faq">
+  <div class="container">
+    <div class="faq__layout">
+      <div class="faq__sidebar reveal">
+        <span class="badge badge--secondary">FAQs</span>
+        <h3 style="margin-top:16px">Frequently Asked<br>Questions</h3>
+        <p>Get answers to common questions about our digital marketing services and what to expect when you partner with AgencyX.</p>
+        <a href="#" class="btn btn--outline">
+          View All FAQs
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+      <div class="faq__list reveal reveal-delay-1">
+        <div class="faq-item active">
+          <button class="faq-item__q" onclick="toggleFaq(this)">
+            What digital marketing services do you offer?
+            <span class="faq-item__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></span>
+          </button>
+          <div class="faq-item__a"><div class="faq-item__a-inner">We offer a full suite of digital marketing services including SEO, PPC advertising (Google & Meta Ads), social media marketing, content marketing, email automation, web design, brand identity, and analytics reporting.</div></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-item__q" onclick="toggleFaq(this)">
+            How long before I see results from SEO?
+            <span class="faq-item__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></span>
+          </button>
+          <div class="faq-item__a"><div class="faq-item__a-inner">SEO is a long-term strategy. Most clients see measurable improvements in rankings and traffic within 3–6 months. PPC campaigns typically show results within the first 2 weeks of launch.</div></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-item__q" onclick="toggleFaq(this)">
+            How do you measure and report ROI?
+            <span class="faq-item__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></span>
+          </button>
+          <div class="faq-item__a"><div class="faq-item__a-inner">Every client receives a comprehensive monthly report covering traffic, leads, conversions, revenue attribution, and campaign performance. We track every dollar spent and every result achieved.</div></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-item__q" onclick="toggleFaq(this)">
+            Do you work with small businesses and startups?
+            <span class="faq-item__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></span>
+          </button>
+          <div class="faq-item__a"><div class="faq-item__a-inner">Absolutely! Our Starter plan is designed for small businesses and startups. We scale our services to fit your budget and goals, and grow with you as your business expands.</div></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-item__q" onclick="toggleFaq(this)">
+            Is there a minimum contract period?
+            <span class="faq-item__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></span>
+          </button>
+          <div class="faq-item__a"><div class="faq-item__a-inner">We recommend a minimum 3-month engagement to see meaningful results, especially for SEO. Month-to-month plans are available with a 30-day notice period. No long-term lock-ins.</div></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-item__q" onclick="toggleFaq(this)">
+            How do I get started with AgencyX?
+            <span class="faq-item__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></span>
+          </button>
+          <div class="faq-item__a"><div class="faq-item__a-inner">Simply click "Get Started" and book a free 30-minute strategy call. We'll audit your current marketing, understand your goals, and recommend the best package for your business.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CTA ===== -->
+<section class="cta">
+  <div class="container">
+    <div class="cta__box reveal">
+      <div class="cta__orb cta__orb--1"></div>
+      <div class="cta__orb cta__orb--2"></div>
+      <h2>Ready to Grow Your<br>Business Faster?</h2>
+      <p>Join 500+ businesses that trust AgencyX to drive real, measurable growth through data-driven digital marketing.</p>
+      <div class="cta__benefits">
+        <div class="cta__benefit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Free strategy audit</div>
+        <div class="cta__benefit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Dedicated account manager</div>
+        <div class="cta__benefit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>No hidden fees</div>
+        <div class="cta__benefit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Results guaranteed</div>
+      </div>
+      <div class="cta__buttons">
+        <a href="#pricing" class="btn btn--primary">
+          Start Growing Now
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a href="#" class="btn btn--outline">Book a Free Call</a>
+      </div>
+      <p class="cta__secure">No commitment required. Cancel anytime. Results-focused since 2019.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer__top">
+      <div class="footer__brand">
+        <a href="#" class="nav__logo" style="font-size:20px">
+          <svg width="24" height="24" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="8" fill="#6366f1"/><text x="14" y="20" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" font-weight="800" fill="#fff">AX</text></svg>
+          Agency<span>X</span>
+        </a>
+        <p>Full-service digital marketing agency helping brands grow faster with data-driven strategies and measurable ROI.</p>
+      </div>
+      <div class="footer__col">
+        <h4>Services</h4>
+        <ul>
+          <li><a href="#">SEO Optimization</a></li>
+          <li><a href="#">PPC Advertising</a></li>
+          <li><a href="#">Social Media</a></li>
+          <li><a href="#">Content Marketing</a></li>
+          <li><a href="#">Email Marketing</a></li>
+        </ul>
+      </div>
+      <div class="footer__col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#">About Us</a></li>
+          <li><a href="#">Case Studies</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Contact</a></li>
+          <li><a href="#">Careers</a></li>
+        </ul>
+      </div>
+      <div class="footer__col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms of Service</a></li>
+          <li><a href="#">Refund Policy</a></li>
+          <li><a href="#">Cookie Policy</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <span>&copy; 2026 AgencyX. All rights reserved.</span>
+      <span>Results-focused digital marketing</span>
+    </div>
+    <p class="footer__disclaimer">AgencyX is a digital marketing agency. Results may vary based on industry, competition, budget, and campaign duration. Past results do not guarantee future performance.</p>
+  </div>
+</footer>
+
+<script>
+// ===== NAV SCROLL =====
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 50);
+});
+
+// ===== MOBILE MENU =====
+const burger = document.getElementById('burger');
+const mobileMenu = document.getElementById('mobileMenu');
+const menuClose = document.getElementById('menuClose');
+burger.addEventListener('click', () => mobileMenu.classList.add('open'));
+menuClose.addEventListener('click', () => mobileMenu.classList.remove('open'));
+function closeMenu() { mobileMenu.classList.remove('open'); }
+
+// ===== SCROLL REVEAL =====
+const reveals = document.querySelectorAll('.reveal');
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      revealObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+reveals.forEach(el => revealObserver.observe(el));
+
+// ===== COUNTER ANIMATION =====
+let countersAnimated = false;
+const counterObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting && !countersAnimated) {
+      countersAnimated = true;
+      animateCounters();
+    }
+  });
+}, { threshold: 0.3 });
+
+const statsSection = document.querySelector('.stats');
+if (statsSection) counterObserver.observe(statsSection);
+
+function animateCounters() {
+  const counters = document.querySelectorAll('.stat__number');
+  counters.forEach(counter => {
+    const target = parseFloat(counter.dataset.target);
+    const suffix = counter.dataset.suffix || '';
+    const isDecimal = counter.dataset.decimal === 'true';
+    const duration = 2000;
+    const startTime = performance.now();
+
+    function update(currentTime) {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      // Ease out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = eased * target;
+
+      if (isDecimal) {
+        counter.textContent = current.toFixed(1) + suffix;
+      } else {
+        counter.textContent = Math.floor(current).toLocaleString() + suffix;
+      }
+
+      if (progress < 1) {
+        requestAnimationFrame(update);
+      }
+    }
+    requestAnimationFrame(update);
+  });
+}
+
+// ===== FAQ ACCORDION =====
+function toggleFaq(btn) {
+  const item = btn.closest('.faq-item');
+  const wasActive = item.classList.contains('active');
+  // Close all
+  document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('active'));
+  // Toggle clicked
+  if (!wasActive) item.classList.add('active');
+}
+
+// ===== SMOOTH SCROLL FOR ANCHOR LINKS =====
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function(e) {
+    const href = this.getAttribute('href');
+    if (href === '#') return;
+    e.preventDefault();
+    const target = document.querySelector(href);
+    if (target) {
+      const offset = 80;
+      const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+      window.scrollTo({ top, behavior: 'smooth' });
+    }
+  });
+});
+
+// ===== PARALLAX ORB MOVEMENT =====
+let ticking = false;
+window.addEventListener('scroll', () => {
+  if (!ticking) {
+    requestAnimationFrame(() => {
+      const scrollY = window.scrollY;
+      const orbs = document.querySelectorAll('.hero__orb');
+      orbs.forEach((orb, i) => {
+        const speed = (i + 1) * 0.03;
+        orb.style.transform = `translateY(${scrollY * speed}px)`;
+      });
+      ticking = false;
+    });
+    ticking = true;
+  }
+});
+</script>
+</body>
+</html>

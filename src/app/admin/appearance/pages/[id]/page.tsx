@@ -102,6 +102,7 @@ export default function PageEditorPage({ params }: { params: Promise<{ id: strin
   const [page, setPage] = useState<PageData | null>(null);
   const [templates, setTemplates] = useState<TemplateInfo[]>([]);
   const [sections, setSections] = useState<Section[]>([]);
+  const [themeWidgetDefaults, setThemeWidgetDefaults] = useState<Record<string, unknown>>({});
   const sectionsRef = useRef<Section[]>([]);
   // Keep ref in sync with state to avoid stale closures in save handler
   sectionsRef.current = sections;
@@ -173,9 +174,10 @@ export default function PageEditorPage({ params }: { params: Promise<{ id: strin
   useEffect(() => {
     async function loadData() {
       try {
-        const [pageRes, templatesRes] = await Promise.all([
+        const [pageRes, templatesRes, widgetDefaultsRes] = await Promise.all([
           fetch(`/api/admin/pages/${id}`),
           fetch("/api/admin/pages/templates"),
+          fetch("/api/admin/themes/widget-defaults"),
         ]);
 
         if (!pageRes.ok) {
@@ -196,6 +198,11 @@ export default function PageEditorPage({ params }: { params: Promise<{ id: strin
         if (templatesRes.ok) {
           const templatesData = await templatesRes.json();
           setTemplates(templatesData.templates || []);
+        }
+
+        if (widgetDefaultsRes.ok) {
+          const defaults = await widgetDefaultsRes.json();
+          setThemeWidgetDefaults(defaults.widgetDefaults || {});
         }
       } catch (error) {
         console.error("Failed to load page data:", error);
@@ -232,7 +239,9 @@ export default function PageEditorPage({ params }: { params: Promise<{ id: strin
 
   // Add a widget to a column
   const handleAddWidget = useCallback((sectionId: string, columnId: string, widgetType: WidgetType) => {
-    const newWidget = createWidget(widgetType);
+    // Use theme's widget defaults if available, falling back to hardcoded defaults
+    const themeDefaults = themeWidgetDefaults[widgetType] as Record<string, unknown> | undefined;
+    const newWidget = createWidget(widgetType, themeDefaults);
 
     setSections((prev) =>
       prev.map((section) => {
@@ -258,7 +267,7 @@ export default function PageEditorPage({ params }: { params: Promise<{ id: strin
       columnId,
       widgetId: newWidget.id,
     });
-  }, []);
+  }, [themeWidgetDefaults]);
 
   // Update section settings
   const handleUpdateSection = useCallback((sectionId: string, settings: Section["settings"]) => {

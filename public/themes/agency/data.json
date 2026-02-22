@@ -768,6 +768,8 @@
       "isTemplateActive": true,
       "blocks": [
         {
+          "id": "cmlxbziqg006u80v5lav4xcsz",
+          "landingPageId": "cmlxbziq9006t80v518lee8py",
           "type": "widget-page-sections",
           "name": "Widget Page Sections",
           "sortOrder": 0,
@@ -789,31 +791,89 @@
                         "marginBottom": 0
                       },
                       "settings": {
-                        "hero": {
-                          "title": "We Grow Brands Through Digital Innovation",
-                          "subtitle": "Data-driven digital marketing agency helping ambitious brands achieve measurable growth through SEO, PPC, Social Media & Content Marketing.",
-                          "badge": "Digital Marketing Agency",
-                          "alignment": "center",
-                          "backgroundType": "gradient",
-                          "backgroundColor": "#6366F1",
-                          "backgroundGradient": "linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #6366F1 100%)",
-                          "textColor": "#ffffff",
-                          "subtitleColor": "#E0E7FF",
-                          "minHeight": "80vh",
-                          "ctaButtons": [
+                        "badge": {
+                          "icon": "TrendingUp",
+                          "show": true,
+                          "text": "Digital Marketing Agency",
+                          "style": "pill",
+                          "bgColor": "#6366F120",
+                          "textColor": "#6366F1",
+                          "borderColor": "#6366F140"
+                        },
+                        "colors": {
+                          "useTheme": true
+                        },
+                        "features": {
+                          "show": true,
+                          "items": [
                             {
-                              "text": "Get Free Audit",
-                              "url": "/free-audit",
-                              "variant": "secondary",
-                              "size": "lg"
+                              "id": "feat_1",
+                              "icon": "Search",
+                              "text": "SEO & Content Marketing"
                             },
                             {
-                              "text": "View Our Work",
-                              "url": "/portfolio",
-                              "variant": "outline",
-                              "size": "lg"
+                              "id": "feat_2",
+                              "icon": "Target",
+                              "text": "PPC & Paid Advertising"
+                            },
+                            {
+                              "id": "feat_3",
+                              "icon": "BarChart2",
+                              "text": "Analytics & Growth"
                             }
-                          ]
+                          ],
+                          "layout": "list",
+                          "columns": 3,
+                          "iconColor": "#818CF8",
+                          "iconPosition": "left"
+                        },
+                        "headline": {
+                          "size": "xl",
+                          "text": "We Grow Brands Through Digital Innovation",
+                          "color": "#0B1120",
+                          "highlightColor": "#818CF8",
+                          "highlightWords": "Digital Innovation"
+                        },
+                        "alignment": "center",
+                        "container": {
+                          "shadow": "none",
+                          "padding": 0,
+                          "borderWidth": 2,
+                          "borderRadius": 0,
+                          "backgroundType": "solid",
+                          "gradientBorder": {
+                            "angle": 135,
+                            "colors": [
+                              "#ec4899",
+                              "#8b5cf6"
+                            ],
+                            "enabled": false
+                          }
+                        },
+                        "trustText": {
+                          "show": true,
+                          "text": "4.9/5 from 500+ clients",
+                          "rating": 4.9,
+                          "starColor": "#eab308",
+                          "textColor": "#ffffff"
+                        },
+                        "subheadline": {
+                          "show": true,
+                          "size": "lg",
+                          "text": "Data-driven digital marketing agency helping ambitious brands achieve measurable growth through SEO, PPC, Social Media & Content Marketing.",
+                          "color": "#64748B"
+                        },
+                        "primaryButton": {
+                          "link": "/free-audit",
+                          "show": true,
+                          "text": "Get Free Audit",
+                          "openInNewTab": false
+                        },
+                        "secondaryButton": {
+                          "link": "/portfolio",
+                          "show": true,
+                          "text": "View Our Work",
+                          "openInNewTab": false
                         }
                       }
                     }
@@ -829,14 +889,14 @@
                 "maxWidth": "full",
                 "fullWidth": true,
                 "isVisible": true,
-                "paddingTop": 0,
-                "paddingLeft": 16,
-                "paddingRight": 16,
-                "paddingBottom": 0,
                 "background": {
                   "type": "solid",
                   "color": "transparent"
-                }
+                },
+                "paddingTop": 80,
+                "paddingLeft": 16,
+                "paddingRight": 16,
+                "paddingBottom": 60
               }
             },
             {
@@ -855,9 +915,11 @@
                         "marginBottom": 0
                       },
                       "settings": {
-                        "header": {
-                          "show": true,
-                          "text": "Trusted by 150+ Brands Worldwide"
+                        "style": {
+                          "bgColor": "transparent",
+                          "iconColor": "#6366F1",
+                          "textColor": "#0B1120",
+                          "borderRadius": 12
                         },
                         "badges": [
                           {
@@ -885,14 +947,12 @@
                             "description": "Top Digital Marketing Agency"
                           }
                         ],
+                        "header": {
+                          "show": true,
+                          "text": "Trusted by 150+ Brands Worldwide"
+                        },
                         "layout": "grid",
-                        "columns": 4,
-                        "style": {
-                          "iconColor": "#6366F1",
-                          "textColor": "#0B1120",
-                          "bgColor": "transparent",
-                          "borderRadius": 12
-                        }
+                        "columns": 4
                       }
                     }
                   ],
@@ -907,14 +967,14 @@
                 "maxWidth": "xl",
                 "fullWidth": false,
                 "isVisible": true,
-                "paddingTop": 48,
-                "paddingLeft": 16,
-                "paddingRight": 16,
-                "paddingBottom": 48,
                 "background": {
                   "type": "solid",
                   "color": "transparent"
-                }
+                },
+                "paddingTop": 40,
+                "paddingLeft": 16,
+                "paddingRight": 16,
+                "paddingBottom": 24
               }
             },
             {
@@ -933,39 +993,139 @@
                         "marginBottom": 0
                       },
                       "settings": {
+                        "cta": {
+                          "show": false,
+                          "text": "Not sure which services you need?",
+                          "alignment": "center",
+                          "marginTop": 48,
+                          "textColor": "#64748b",
+                          "primaryButton": {
+                            "link": "/services",
+                            "show": true,
+                            "text": "View All Services",
+                            "style": {
+                              "bgColor": "#f97316",
+                              "textColor": "#ffffff",
+                              "hoverEffect": "darken",
+                              "borderRadius": 6
+                            },
+                            "openInNewTab": false
+                          },
+                          "secondaryButton": {
+                            "link": "/contact",
+                            "show": true,
+                            "text": "Get Free Consultation",
+                            "style": {
+                              "bgColor": "transparent",
+                              "textColor": "#0f172a",
+                              "borderColor": "#e2e8f0",
+                              "borderWidth": 1,
+                              "hoverEffect": "darken",
+                              "borderRadius": 6,
+                              "hoverBgColor": "#f8fafc"
+                            },
+                            "openInNewTab": false
+                          }
+                        },
+                        "card": {
+                          "ctaText": "Learn More",
+                          "showCta": true,
+                          "showIcon": true,
+                          "showPrice": true,
+                          "showDescription": true
+                        },
+                        "colors": {
+                          "useTheme": true
+                        },
                         "header": {
                           "show": true,
                           "badge": {
                             "show": true,
-                            "text": "What We Do"
+                            "text": "What We Do",
+                            "style": "pill",
+                            "bgColor": "#f9731933",
+                            "textColor": "#fb923c",
+                            "borderColor": "#f9731980"
                           },
                           "heading": {
-                            "text": "Full-Spectrum Digital Marketing Services"
+                            "size": "lg",
+                            "text": "Full-Spectrum Digital Marketing Services",
+                            "color": "#0f172a",
+                            "highlightColor": "#f97316",
+                            "highlightWords": ""
                           },
+                          "alignment": "center",
                           "description": {
                             "show": true,
-                            "text": "From SEO to branding, we cover every aspect of your digital presence"
-                          }
+                            "size": "md",
+                            "text": "From SEO to branding, we cover every aspect of your digital presence",
+                            "color": "#64748b"
+                          },
+                          "marginBottom": 40
                         },
                         "layout": {
+                          "gap": 24,
                           "type": "grid",
-                          "columns": {
-                            "desktop": 3,
-                            "tablet": 2,
-                            "mobile": 1
-                          },
-                          "gap": 24
+                          "columns": 2,
+                          "cardStyle": "minimal"
                         },
-                        "card": {
-                          "showPrice": true,
-                          "showIcon": true,
-                          "showDescription": true,
-                          "showCta": true,
-                          "ctaText": "Learn More"
+                        "filters": {
+                          "activeOnly": true,
+                          "categories": [],
+                          "sortServicesBy": "sort-order",
+                          "showAllCategories": true,
+                          "limitServicesPerCategory": 0
+                        },
+                        "container": {
+                          "shadow": "none",
+                          "padding": 0,
+                          "borderWidth": 2,
+                          "borderRadius": 0,
+                          "backgroundType": "solid",
+                          "gradientBorder": {
+                            "angle": 135,
+                            "colors": [
+                              "#ec4899",
+                              "#8b5cf6"
+                            ],
+                            "enabled": false
+                          }
                         },
                         "dataSource": {
                           "limit": 8,
                           "sortBy": "sortOrder"
+                        },
+                        "responsive": {
+                          "mobile": {
+                            "columns": 1
+                          },
+                          "tablet": {
+                            "columns": 2
+                          }
+                        },
+                        "serviceItem": {
+                          "divider": false,
+                          "padding": 8,
+                          "fontSize": "sm",
+                          "nameColor": "#0f172a",
+                          "showPrice": true,
+                          "priceColor": "#64748b",
+                          "hoverEffect": "highlight",
+                          "dividerColor": "#e2e8f0"
+                        },
+                        "categoryCard": {
+                          "padding": 24,
+                          "iconSize": "sm",
+                          "showIcon": true,
+                          "iconColor": "#f97316",
+                          "iconStyle": "rounded",
+                          "titleSize": "md",
+                          "borderColor": "#e2e8f0",
+                          "borderWidth": 1,
+                          "iconBgColor": "#fff7ed",
+                          "showTagline": true,
+                          "borderRadius": 12,
+                          "backgroundColor": "#ffffff"
                         }
                       }
                     }
@@ -981,14 +1141,14 @@
                 "maxWidth": "xl",
                 "fullWidth": false,
                 "isVisible": true,
-                "paddingTop": 64,
-                "paddingLeft": 16,
-                "paddingRight": 16,
-                "paddingBottom": 64,
                 "background": {
                   "type": "solid",
                   "color": "transparent"
-                }
+                },
+                "paddingTop": 48,
+                "paddingLeft": 16,
+                "paddingRight": 16,
+                "paddingBottom": 48
               }
             },
             {
@@ -1003,50 +1163,76 @@
                       "id": "home_stats_w",
                       "type": "stats-section",
                       "spacing": {
-                        "marginTop": 0,
-                        "marginBottom": 0
+                        "marginTop": 24,
+                        "marginBottom": 24
                       },
                       "settings": {
                         "stats": [
                           {
                             "id": "home_stats_w_s0",
-                            "value": "500",
+                            "icon": "ClipboardCheck",
                             "label": "Projects Completed",
+                            "value": "500",
                             "suffix": "+",
                             "animate": true
                           },
                           {
                             "id": "home_stats_w_s1",
-                            "value": "150",
+                            "icon": "Users",
                             "label": "Happy Clients",
+                            "value": "150",
                             "suffix": "+",
                             "animate": true
                           },
                           {
                             "id": "home_stats_w_s2",
-                            "value": "98",
+                            "icon": "Heart",
                             "label": "Client Retention",
+                            "value": "98",
                             "suffix": "%",
                             "animate": true
                           },
                           {
                             "id": "home_stats_w_s3",
-                            "value": "50",
+                            "icon": "DollarSign",
                             "label": "Revenue Generated",
+                            "value": "50",
                             "prefix": "$",
                             "suffix": "M+",
                             "animate": true
                           }
                         ],
-                        "columns": 4,
                         "style": {
-                          "valueColor": "#ffffff",
-                          "labelColor": "#94A3B8",
-                          "valueSize": "lg",
+                          "layout": "horizontal",
                           "divider": false,
-                          "showTopBorder": false
+                          "iconSize": "lg",
+                          "iconColor": "#f97316",
+                          "valueSize": "lg",
+                          "labelColor": "#94A3B8",
+                          "valueColor": "#ffffff",
+                          "showTopBorder": false,
+                          "topBorderColor": "#334155"
                         },
+                        "colors": {
+                          "useTheme": true
+                        },
+                        "columns": 4,
                         "centered": true,
+                        "container": {
+                          "shadow": "none",
+                          "padding": 0,
+                          "borderWidth": 2,
+                          "borderRadius": 0,
+                          "backgroundType": "solid",
+                          "gradientBorder": {
+                            "angle": 135,
+                            "colors": [
+                              "#ec4899",
+                              "#8b5cf6"
+                            ],
+                            "enabled": false
+                          }
+                        },
                         "animateOnScroll": true
                       }
                     }
@@ -1062,14 +1248,14 @@
                 "maxWidth": "xl",
                 "fullWidth": false,
                 "isVisible": true,
-                "paddingTop": 64,
-                "paddingLeft": 16,
-                "paddingRight": 16,
-                "paddingBottom": 64,
                 "background": {
                   "type": "solid",
                   "color": "#0B1120"
-                }
+                },
+                "paddingTop": 48,
+                "paddingLeft": 16,
+                "paddingRight": 16,
+                "paddingBottom": 48
               }
             },
             {
@@ -1088,65 +1274,172 @@
                         "marginBottom": 0
                       },
                       "settings": {
-                        "header": {
-                          "show": true,
-                          "badge": {
-                            "show": true,
-                            "text": "Our Process"
-                          },
-                          "heading": {
-                            "text": "How We Work"
-                          },
-                          "description": {
-                            "show": true,
-                            "text": "Our proven 5-step process delivers consistent results"
-                          }
+                        "card": {
+                          "show": false,
+                          "shadow": "none",
+                          "padding": 0,
+                          "borderColor": "transparent",
+                          "borderWidth": 0,
+                          "hoverEffect": "none",
+                          "borderRadius": 0,
+                          "backgroundType": "solid",
+                          "backgroundColor": "transparent"
                         },
                         "steps": [
                           {
                             "id": "ps1",
-                            "number": "01",
+                            "icon": "Search",
                             "title": "Discovery",
-                            "description": "We dive deep into your business, audience, and goals to understand what success looks like.",
-                            "icon": "Search"
+                            "number": "01",
+                            "description": "We dive deep into your business, audience, and goals to understand what success looks like."
                           },
                           {
                             "id": "ps2",
-                            "number": "02",
+                            "icon": "Target",
                             "title": "Strategy",
-                            "description": "We develop a custom strategy tailored to your specific objectives and market position.",
-                            "icon": "Target"
+                            "number": "02",
+                            "description": "We develop a custom strategy tailored to your specific objectives and market position."
                           },
                           {
                             "id": "ps3",
-                            "number": "03",
+                            "icon": "Rocket",
                             "title": "Execution",
-                            "description": "Our expert team implements the strategy across all channels with precision.",
-                            "icon": "Rocket"
+                            "number": "03",
+                            "description": "Our expert team implements the strategy across all channels with precision."
                           },
                           {
                             "id": "ps4",
-                            "number": "04",
+                            "icon": "Settings",
                             "title": "Optimization",
-                            "description": "We continuously test, learn, and optimize to maximize your ROI.",
-                            "icon": "Settings"
+                            "number": "04",
+                            "description": "We continuously test, learn, and optimize to maximize your ROI."
                           },
                           {
                             "id": "ps5",
-                            "number": "05",
+                            "icon": "BarChart3",
                             "title": "Reporting",
-                            "description": "Transparent reporting keeps you informed of progress and results.",
-                            "icon": "BarChart3"
+                            "number": "05",
+                            "description": "Transparent reporting keeps you informed of progress and results."
                           }
                         ],
-                        "layout": "horizontal",
                         "style": {
-                          "numbered": true,
-                          "connectorStyle": "line",
                           "iconBg": "#EEF2FF",
+                          "numbered": true,
+                          "descColor": "#64748B",
                           "iconColor": "#6366F1",
                           "titleColor": "#0B1120",
-                          "descColor": "#64748B"
+                          "connectorStyle": "line"
+                        },
+                        "colors": {
+                          "useTheme": true
+                        },
+                        "header": {
+                          "show": true,
+                          "badge": {
+                            "show": true,
+                            "text": "Our Process",
+                            "style": "pill",
+                            "bgColor": "#1e3a5f",
+                            "textColor": "#ffffff",
+                            "borderColor": "#1e3a5f"
+                          },
+                          "heading": {
+                            "size": "xl",
+                            "text": "How We Work",
+                            "color": "#0f172a",
+                            "highlightColor": "#f97316",
+                            "highlightWords": ""
+                          },
+                          "alignment": "center",
+                          "description": {
+                            "show": true,
+                            "size": "md",
+                            "text": "Our proven 5-step process delivers consistent results",
+                            "color": "#64748b"
+                          },
+                          "marginBottom": 48
+                        },
+                        "layout": {
+                          "0": "h",
+                          "1": "o",
+                          "2": "r",
+                          "3": "i",
+                          "4": "z",
+                          "5": "o",
+                          "6": "n",
+                          "7": "t",
+                          "8": "a",
+                          "9": "l",
+                          "gap": 24,
+                          "type": "horizontal",
+                          "columns": 4,
+                          "verticalSpacing": 48
+                        },
+                        "stepIcon": {
+                          "show": true,
+                          "size": "lg",
+                          "style": "circle",
+                          "bgColor": "#fff7ed",
+                          "iconColor": "#f97316",
+                          "borderColor": "transparent",
+                          "hoverAnimation": "bounce"
+                        },
+                        "animation": {
+                          "staggerDelay": 150,
+                          "animateOnScroll": true
+                        },
+                        "connector": {
+                          "show": true,
+                          "color": "#fde8d7",
+                          "style": "solid",
+                          "dotSize": 8,
+                          "dotColor": "#f97316",
+                          "animation": "dot-travel",
+                          "thickness": 2,
+                          "animationSpeed": "medium",
+                          "secondaryColor": "#f97316",
+                          "animationDirection": "forward"
+                        },
+                        "container": {
+                          "shadow": "none",
+                          "padding": 0,
+                          "borderWidth": 2,
+                          "borderRadius": 16,
+                          "backgroundType": "solid",
+                          "gradientBorder": {
+                            "angle": 135,
+                            "colors": [
+                              "#ec4899",
+                              "#8b5cf6"
+                            ],
+                            "enabled": false
+                          }
+                        },
+                        "responsive": {
+                          "mobile": {
+                            "layout": "vertical",
+                            "columns": 1
+                          },
+                          "tablet": {
+                            "layout": "horizontal",
+                            "columns": 2
+                          }
+                        },
+                        "stepNumber": {
+                          "show": true,
+                          "size": "sm",
+                          "style": "circle",
+                          "bgColor": "#f97316",
+                          "position": "top-right",
+                          "textColor": "#ffffff",
+                          "borderColor": "#f97316"
+                        },
+                        "stepContent": {
+                          "alignment": "center",
+                          "titleSize": "md",
+                          "titleColor": "#0f172a",
+                          "descriptionSize": "sm",
+                          "descriptionColor": "#64748b"
                         }
                       }
                     }
@@ -1162,19 +1455,269 @@
                 "maxWidth": "xl",
                 "fullWidth": false,
                 "isVisible": true,
-                "paddingTop": 64,
-                "paddingLeft": 16,
-                "paddingRight": 16,
-                "paddingBottom": 64,
                 "background": {
                   "type": "solid",
                   "color": "transparent"
+                },
+                "paddingTop": 48,
+                "paddingLeft": 16,
+                "paddingRight": 16,
+                "paddingBottom": 48
+              }
+            },
+            {
+              "id": "section_1771739939362_jd0i51zkj",
+              "order": 5,
+              "layout": "1",
+              "columns": [
+                {
+                  "id": "col_1771739939362_srz948v20",
+                  "widgets": [
+                    {
+                      "id": "widget_1771739954292_rxeh852ay",
+                      "type": "pricing-table",
+                      "spacing": {
+                        "marginTop": 24,
+                        "marginBottom": 24
+                      },
+                      "settings": {
+                        "colors": {
+                          "useTheme": true
+                        },
+                        "header": {
+                          "show": true,
+                          "badge": {
+                            "show": true,
+                            "text": "Pricing",
+                            "style": "pill",
+                            "bgColor": "#f9731933",
+                            "textColor": "#fb923c",
+                            "borderColor": "#f9731980"
+                          },
+                          "heading": {
+                            "size": "xl",
+                            "text": "Transparent Pricing, No Hidden Fees Choose Your Package",
+                            "color": "#0f172a",
+                            "highlightColor": "#f97316",
+                            "highlightWords": "Package"
+                          },
+                          "alignment": "center",
+                          "description": {
+                            "show": true,
+                            "size": "md",
+                            "text": "Select the perfect plan for your business needs. All packages include our expert support.",
+                            "color": "#64748b"
+                          },
+                          "marginBottom": 48
+                        },
+                        "currency": {
+                          "format": "symbol",
+                          "primary": "USD",
+                          "showBoth": false
+                        },
+                        "stateFee": {
+                          "label": "Select Location",
+                          "sortBy": "popular",
+                          "enabled": true,
+                          "position": "above-table",
+                          "defaultState": "US-WY",
+                          "highlightSavings": true,
+                          "showFeeBreakdown": true
+                        },
+                        "viewMode": "cards",
+                        "animation": {
+                          "enabled": true,
+                          "rowStagger": true,
+                          "staggerDelay": 50,
+                          "tableEntrance": "fade",
+                          "highlightOnHover": true
+                        },
+                        "cardStyle": {
+                          "gap": 24,
+                          "layout": "standard",
+                          "columns": 3,
+                          "ctaStyle": "full-width",
+                          "priceSize": "lg",
+                          "cardShadow": "sm",
+                          "showTotalPrice": true,
+                          "cardBorderColor": "#e2e8f0",
+                          "cardBorderWidth": 1,
+                          "cardBorderRadius": 12,
+                          "featureListStyle": "compact",
+                          "popularCardStyle": "ring",
+                          "showProcessingTime": true,
+                          "cardBackgroundColor": "#ffffff"
+                        },
+                        "container": {
+                          "shadow": "none",
+                          "padding": 0,
+                          "borderWidth": 2,
+                          "borderRadius": 0,
+                          "backgroundType": "solid",
+                          "gradientBorder": {
+                            "angle": 135,
+                            "colors": [
+                              "#ec4899",
+                              "#8b5cf6"
+                            ],
+                            "enabled": false
+                          }
+                        },
+                        "ctaButtons": {
+                          "show": true,
+                          "position": "footer",
+                          "buttonSize": "lg",
+                          "buttonText": "Get Started",
+                          "buttonStyle": "solid",
+                          "defaultBgColor": "#f97316",
+                          "hoverAnimation": "lift",
+                          "defaultTextColor": "#ffffff",
+                          "usePackageColors": false
+                        },
+                        "dataSource": {
+                          "mode": "manual",
+                          "type": "service",
+                          "serviceSlug": "web-design"
+                        },
+                        "responsive": {
+                          "breakpoint": 768,
+                          "mobileCard": {
+                            "showAllFeatures": false,
+                            "expandButtonText": "Show all features",
+                            "keyFeaturesCount": 5
+                          },
+                          "mobileLayout": "stacked"
+                        },
+                        "tableStyle": {
+                          "layout": "modern",
+                          "shadow": "lg",
+                          "maxWidth": "7xl",
+                          "borderColor": "#e2e8f0",
+                          "borderWidth": 1,
+                          "borderRadius": 12,
+                          "backgroundColor": "#ffffff"
+                        },
+                        "featureRows": {
+                          "addonStyle": {
+                            "showPrice": true,
+                            "priceFormat": "inline",
+                            "toggleStyle": "switch",
+                            "selectedColor": "#f97316"
+                          },
+                          "booleanStyle": {
+                            "trueIcon": "checkCircle",
+                            "falseIcon": "x",
+                            "trueColor": "#22c55e",
+                            "falseColor": "#94a3b8"
+                          },
+                          "showTooltips": true,
+                          "rowHoverEffect": true,
+                          "tooltipPosition": "top",
+                          "alternateRowColors": true,
+                          "showFeatureDescriptions": false
+                        },
+                        "tableHeader": {
+                          "stickyHeader": true,
+                          "highlightColor": "#fff7ed",
+                          "highlightColumn": 1,
+                          "popularBadgeText": "Most Popular",
+                          "showPackageNames": true,
+                          "showPopularBadge": true,
+                          "popularBadgeColor": "#f97316",
+                          "showPackagePrices": true
+                        },
+                        "orderSummary": {
+                          "title": "Order Summary",
+                          "enabled": true,
+                          "position": "right",
+                          "ctaButton": {
+                            "text": "Proceed to Checkout",
+                            "style": "solid",
+                            "bgColor": "#f97316",
+                            "textColor": "#ffffff",
+                            "hoverBgColor": "#ea580c"
+                          },
+                          "showTotal": true,
+                          "showAddons": true,
+                          "mobileStyle": "sticky-bar",
+                          "showStateFee": true,
+                          "stickyOnScroll": true,
+                          "showPackageDetails": true
+                        },
+                        "featureGroups": {
+                          "enabled": true,
+                          "showGroupIcons": true,
+                          "defaultExpanded": true,
+                          "collapseAnimation": "slide"
+                        }
+                      }
+                    }
+                  ],
+                  "settings": {
+                    "padding": 0,
+                    "verticalAlign": "top"
+                  }
                 }
+              ],
+              "settings": {
+                "gap": 32,
+                "maxWidth": "xl",
+                "fullWidth": false,
+                "isVisible": true,
+                "marginTop": 0,
+                "background": {
+                  "type": "solid",
+                  "color": "#ffffff",
+                  "image": {
+                    "url": "",
+                    "size": "cover",
+                    "fixed": false,
+                    "repeat": "no-repeat",
+                    "position": "center"
+                  },
+                  "video": {
+                    "url": "",
+                    "loop": true,
+                    "muted": true
+                  },
+                  "overlay": {
+                    "color": "#000000",
+                    "enabled": false,
+                    "opacity": 0.5
+                  },
+                  "gradient": {
+                    "type": "linear",
+                    "angle": 180,
+                    "colors": [
+                      {
+                        "color": "#1e293b",
+                        "position": 0
+                      },
+                      {
+                        "color": "#0f172a",
+                        "position": 100
+                      }
+                    ]
+                  },
+                  "patternOverlay": {
+                    "type": "dots",
+                    "color": "#ffffff",
+                    "opacity": 0.1
+                  }
+                },
+                "paddingTop": 48,
+                "paddingLeft": 16,
+                "borderRadius": 0,
+                "marginBottom": 0,
+                "paddingRight": 16,
+                "paddingBottom": 48,
+                "visibleOnMobile": true,
+                "visibleOnDesktop": true
               }
             },
             {
               "id": "home_testimonials",
-              "order": 5,
+              "order": 6,
               "layout": "1",
               "columns": [
                 {
@@ -1204,14 +1747,14 @@
                         },
                         "layout": "carousel",
                         "autoplay": true,
-                        "showRating": true,
-                        "showAvatar": true,
-                        "showCompany": true,
                         "cardStyle": "default",
                         "dataSource": {
-                          "source": "database",
-                          "limit": 6
-                        }
+                          "limit": 6,
+                          "source": "database"
+                        },
+                        "showAvatar": true,
+                        "showRating": true,
+                        "showCompany": true
                       }
                     }
                   ],
@@ -1226,19 +1769,19 @@
                 "maxWidth": "xl",
                 "fullWidth": false,
                 "isVisible": true,
-                "paddingTop": 64,
-                "paddingLeft": 16,
-                "paddingRight": 16,
-                "paddingBottom": 64,
                 "background": {
                   "type": "solid",
                   "color": "#F8FAFC"
-                }
+                },
+                "paddingTop": 48,
+                "paddingLeft": 16,
+                "paddingRight": 16,
+                "paddingBottom": 48
               }
             },
             {
               "id": "home_blog",
-              "order": 6,
+              "order": 7,
               "layout": "1",
               "columns": [
                 {
@@ -1252,6 +1795,39 @@
                         "marginBottom": 0
                       },
                       "settings": {
+                        "card": {
+                          "meta": {
+                            "show": true,
+                            "items": [
+                              "date",
+                              "category"
+                            ],
+                            "dateFormat": "short"
+                          },
+                          "image": {
+                            "show": true,
+                            "aspectRatio": "16:9",
+                            "hoverEffect": "zoom",
+                            "borderRadius": 12
+                          },
+                          "title": {
+                            "show": true,
+                            "fontSize": "lg",
+                            "maxLines": 2
+                          },
+                          "excerpt": {
+                            "show": true,
+                            "fontSize": "sm",
+                            "maxLength": 120
+                          },
+                          "readMore": {
+                            "show": false
+                          },
+                          "categoryBadge": {
+                            "show": true,
+                            "style": "pill"
+                          }
+                        },
                         "header": {
                           "show": true,
                           "badge": {
@@ -1266,62 +1842,29 @@
                             "text": "Expert tips and strategies to grow your business"
                           }
                         },
-                        "dataSource": {
-                          "source": "database",
-                          "postCount": 3,
-                          "sortBy": "published-desc",
-                          "categories": []
-                        },
                         "layout": {
+                          "gap": 24,
                           "type": "grid",
                           "columns": {
-                            "desktop": 3,
+                            "mobile": 1,
                             "tablet": 2,
-                            "mobile": 1
+                            "desktop": 3
                           },
-                          "gap": 24,
                           "equalHeight": true
-                        },
-                        "card": {
-                          "image": {
-                            "show": true,
-                            "aspectRatio": "16:9",
-                            "borderRadius": 12,
-                            "hoverEffect": "zoom"
-                          },
-                          "categoryBadge": {
-                            "show": true,
-                            "style": "pill"
-                          },
-                          "title": {
-                            "show": true,
-                            "maxLines": 2,
-                            "fontSize": "lg"
-                          },
-                          "excerpt": {
-                            "show": true,
-                            "maxLength": 120,
-                            "fontSize": "sm"
-                          },
-                          "meta": {
-                            "show": true,
-                            "items": [
-                              "date",
-                              "category"
-                            ],
-                            "dateFormat": "short"
-                          },
-                          "readMore": {
-                            "show": false
-                          }
                         },
                         "animation": {
                           "entrance": {
-                            "enabled": true,
                             "type": "fade-up",
+                            "enabled": true,
                             "stagger": true,
                             "staggerDelay": 50
                           }
+                        },
+                        "dataSource": {
+                          "sortBy": "published-desc",
+                          "source": "database",
+                          "postCount": 3,
+                          "categories": []
                         }
                       }
                     }
@@ -1337,99 +1880,94 @@
                 "maxWidth": "xl",
                 "fullWidth": false,
                 "isVisible": true,
-                "paddingTop": 64,
-                "paddingLeft": 16,
-                "paddingRight": 16,
-                "paddingBottom": 64,
                 "background": {
                   "type": "solid",
                   "color": "transparent"
+                },
+                "paddingTop": 48,
+                "paddingLeft": 16,
+                "paddingRight": 16,
+                "paddingBottom": 40
+              }
+            },
+            {
+              "id": "section_1771743457574_k3koo24mn",
+              "order": 8,
+              "layout": "1",
+              "columns": [
+                {
+                  "id": "col_1771743457574_5zkzzswkt",
+                  "widgets": [],
+                  "settings": {
+                    "padding": 0,
+                    "verticalAlign": "top"
+                  }
                 }
+              ],
+              "settings": {
+                "gap": 32,
+                "maxWidth": "xl",
+                "fullWidth": false,
+                "isVisible": true,
+                "marginTop": 0,
+                "background": {
+                  "type": "solid",
+                  "color": "#ffffff",
+                  "image": {
+                    "url": "",
+                    "size": "cover",
+                    "fixed": false,
+                    "repeat": "no-repeat",
+                    "position": "center"
+                  },
+                  "video": {
+                    "url": "",
+                    "loop": true,
+                    "muted": true
+                  },
+                  "overlay": {
+                    "color": "#000000",
+                    "enabled": false,
+                    "opacity": 0.5
+                  },
+                  "gradient": {
+                    "type": "linear",
+                    "angle": 180,
+                    "colors": [
+                      {
+                        "color": "#1e293b",
+                        "position": 0
+                      },
+                      {
+                        "color": "#0f172a",
+                        "position": 100
+                      }
+                    ]
+                  },
+                  "patternOverlay": {
+                    "type": "dots",
+                    "color": "#ffffff",
+                    "opacity": 0.1
+                  }
+                },
+                "paddingTop": 0,
+                "paddingLeft": 16,
+                "borderRadius": 0,
+                "marginBottom": 0,
+                "paddingRight": 16,
+                "paddingBottom": 0,
+                "visibleOnMobile": true,
+                "visibleOnDesktop": true
               }
             },
             {
               "id": "home_faq",
-              "order": 7,
+              "order": 9,
               "layout": "1",
               "columns": [
                 {
                   "id": "home_faq_c1",
                   "widgets": [
-                    {
-                      "id": "home_faq_h",
-                      "type": "heading",
-                      "spacing": {
-                        "marginTop": 0,
-                        "marginBottom": 8
-                      },
-                      "settings": {
-                        "style": {
-                          "textFill": {
-                            "type": "solid",
-                            "color": "#0B1120"
-                          },
-                          "alignment": "center",
-                          "typography": {
-                            "fontSize": 32,
-                            "fontStyle": "normal",
-                            "fontWeight": 700,
-                            "lineHeight": 1.2,
-                            "fontSizeUnit": "px",
-                            "letterSpacing": -0.5,
-                            "textTransform": "none",
-                            "textDecoration": "none"
-                          }
-                        },
-                        "content": {
-                          "text": "Frequently Asked Questions",
-                          "htmlTag": "h2"
-                        },
-                        "responsive": {
-                          "mobile": {
-                            "fontSize": 21,
-                            "lineHeight": 1.3,
-                            "fontSizeUnit": "px"
-                          },
-                          "tablet": {
-                            "fontSize": 26,
-                            "lineHeight": 1.3,
-                            "fontSizeUnit": "px"
-                          },
-                          "desktop": {
-                            "fontSize": 32,
-                            "lineHeight": 1.2,
-                            "fontSizeUnit": "px",
-                            "letterSpacing": -0.5
-                          }
-                        }
-                      }
-                    },
-                    {
-                      "id": "home_faq_t",
-                      "type": "text-block",
-                      "spacing": {
-                        "marginTop": 0,
-                        "marginBottom": 16
-                      },
-                      "settings": {
-                        "editor": {
-                          "toolbar": "minimal",
-                          "minHeight": 60
-                        },
-                        "content": "<p style=\"text-align: center\">Everything you need to know about our services</p>",
-                        "container": {
-                          "padding": 0,
-                          "borderRadius": 0
-                        },
-                        "typography": {
-                          "color": "#64748b",
-                          "fontSize": 18,
-                          "linkColor": "#6366F1",
-                          "lineHeight": 1.6
-                        },
-                        "paragraphSpacing": 16
-                      }
-                    },
                     {
                       "id": "home_faq_w",
                       "type": "faq-accordion",
@@ -1438,17 +1976,61 @@
                         "marginBottom": 0
                       },
                       "settings": {
+                        "style": {
+                          "divider": true,
+                          "iconPosition": "right"
+                        },
+                        "colors": {
+                          "useTheme": true
+                        },
+                        "header": {
+                          "show": true,
+                          "heading": "Frequently Asked Questions",
+                          "alignment": "center",
+                          "description": "Get answers to common questions about our services"
+                        },
+                        "source": "all",
+                        "maxItems": 10,
+                        "container": {
+                          "shadow": "none",
+                          "padding": 0,
+                          "borderWidth": 2,
+                          "borderRadius": 0,
+                          "backgroundType": "solid",
+                          "gradientBorder": {
+                            "angle": 135,
+                            "colors": [
+                              "#ec4899",
+                              "#8b5cf6"
+                            ],
+                            "enabled": false
+                          }
+                        },
+                        "itemStyle": {
+                          "gap": 16,
+                          "padding": 20,
+                          "borderRadius": 12
+                        },
+                        "categories": [
+                          "general",
+                          "pricing",
+                          "international",
+                          "account"
+                        ],
                         "dataSource": {
+                          "limit": 6,
                           "source": "database",
                           "categories": [
                             "General"
-                          ],
-                          "limit": 6
+                          ]
                         },
-                        "style": {
-                          "iconPosition": "right",
-                          "divider": true
-                        }
+                        "accentColor": "#3b82f6",
+                        "expandFirst": true,
+                        "headerStyle": {
+                          "headingSize": "lg"
+                        },
+                        "allowMultipleOpen": false,
+                        "showCategoryFilter": false
                       }
                     }
                   ],
@@ -1463,121 +2045,352 @@
                 "maxWidth": "lg",
                 "fullWidth": false,
                 "isVisible": true,
-                "paddingTop": 64,
-                "paddingLeft": 16,
-                "paddingRight": 16,
-                "paddingBottom": 64,
                 "background": {
                   "type": "solid",
                   "color": "transparent"
-                }
+                },
+                "paddingTop": 40,
+                "paddingLeft": 16,
+                "paddingRight": 16,
+                "paddingBottom": 48
               }
             },
             {
-              "id": "home_cta",
-              "order": 8,
+              "id": "section_1771745530700_mejtkc2mr",
+              "order": 10,
               "layout": "1",
               "columns": [
                 {
-                  "id": "home_cta_c1",
+                  "id": "col_1771745530700_1cjqnct1z",
                   "widgets": [
                     {
-                      "id": "home_cta_h",
-                      "type": "heading",
-                      "spacing": {
-                        "marginTop": 0,
-                        "marginBottom": 16
-                      },
+                      "id": "widget_1771745542156_h9f7xhkhz",
+                      "type": "hero-content",
                       "settings": {
-                        "style": {
-                          "textFill": {
-                            "type": "solid",
-                            "color": "#ffffff"
-                          },
-                          "alignment": "center",
-                          "typography": {
-                            "fontSize": 32,
-                            "fontStyle": "normal",
-                            "fontWeight": 700,
-                            "lineHeight": 1.2,
-                            "fontSizeUnit": "px",
-                            "letterSpacing": -0.5,
-                            "textTransform": "none",
-                            "textDecoration": "none"
+                        "badge": {
+                          "icon": "TrendingUp",
+                          "show": false,
+                          "text": "Digital Marketing Agency",
+                          "style": "pill",
+                          "bgColor": "#6366F120",
+                          "textColor": "#6366F1",
+                          "borderColor": "#6366F140"
+                        },
+                        "colors": {
+                          "useTheme": true
+                        },
+                        "features": {
+                          "show": true,
+                          "items": [
+                            {
+                              "id": "feat_1",
+                              "icon": "Check",
+                              "text": "SEO & Content Marketing"
+                            },
+                            {
+                              "id": "feat_2",
+                              "icon": "Check",
+                              "text": "PPC & Paid Advertising"
+                            },
+                            {
+                              "id": "feat_3",
+                              "icon": "Check",
+                              "text": "Analytics & Growth"
+                            }
+                          ],
+                          "layout": "grid",
+                          "columns": 3,
+                          "iconColor": "#3b82f6",
+                          "iconPosition": "left"
+                        },
+                        "headline": {
+                          "size": "xl",
+                          "text": "Ready to Grow Brands Through?",
+                          "color": "#0B1120",
+                          "highlightColor": "#818CF8",
+                          "highlightWords": ""
+                        },
+                        "alignment": "center",
+                        "container": {
+                          "shadow": "none",
+                          "padding": 0,
+                          "borderWidth": 2,
+                          "borderRadius": 0,
+                          "backgroundType": "solid",
+                          "gradientBorder": {
+                            "angle": 135,
+                            "colors": [
+                              "#ec4899",
+                              "#8b5cf6"
+                            ],
+                            "enabled": false
                           }
                         },
-                        "content": {
-                          "text": "Ready to Grow Your Business?",
-                          "htmlTag": "h2"
+                        "trustText": {
+                          "show": false,
+                          "text": "4.9/5 from 500+ clients",
+                          "rating": 4.9,
+                          "starColor": "#818CF8",
+                          "textColor": "#E0E7FF"
                         },
-                        "responsive": {
-                          "mobile": {
-                            "fontSize": 21,
-                            "lineHeight": 1.3,
-                            "fontSizeUnit": "px"
+                        "subheadline": {
+                          "show": true,
+                          "size": "lg",
+                          "text": "Data-driven digital marketing agency helping ambitious brands achieve measurable growth through SEO, PPC, Social Media & Content Marketing.",
+                          "color": "#64748B"
+                        },
+                        "primaryButton": {
+                          "link": "/free-audit",
+                          "show": true,
+                          "text": "Get Free Audit",
+                          "style": {
+                            "shadow": "0 2px 8px rgba(0, 102, 255, 0.3)",
+                            "textColor": "#ffffff",
+                            "gradientTo": "#00D4FF",
+                            "borderWidth": 0,
+                            "hoverEffect": "shadow-lift",
+                            "hoverShadow": "0 8px 25px rgba(0, 102, 255, 0.4)",
+                            "useGradient": true,
+                            "borderRadius": 8,
+                            "gradientFrom": "#0066FF",
+                            "gradientDirection": "to-r"
                           },
-                          "tablet": {
-                            "fontSize": 26,
-                            "lineHeight": 1.3,
-                            "fontSizeUnit": "px"
-                          },
-                          "desktop": {
-                            "fontSize": 32,
-                            "lineHeight": 1.2,
-                            "fontSizeUnit": "px",
-                            "letterSpacing": -0.5
-                          }
+                          "openInNewTab": false
+                        },
+                        "secondaryButton": {
+                          "link": "/portfolio",
+                          "show": true,
+                          "text": "View Our Work",
+                          "openInNewTab": false
                         }
                       }
-                    },
+                    }
+                  ],
+                  "settings": {
+                    "padding": 0,
+                    "verticalAlign": "top"
+                  }
+                }
+              ],
+              "settings": {
+                "gap": 32,
+                "maxWidth": "xl",
+                "fullWidth": false,
+                "isVisible": true,
+                "marginTop": 0,
+                "background": {
+                  "type": "solid",
+                  "color": "#ffffff",
+                  "image": {
+                    "url": "",
+                    "size": "cover",
+                    "fixed": false,
+                    "repeat": "no-repeat",
+                    "position": "center"
+                  },
+                  "video": {
+                    "url": "",
+                    "loop": true,
+                    "muted": true
+                  },
+                  "overlay": {
+                    "color": "#000000",
+                    "enabled": false,
+                    "opacity": 0.5
+                  },
+                  "gradient": {
+                    "type": "linear",
+                    "angle": 180,
+                    "colors": [
+                      {
+                        "color": "#1e293b",
+                        "position": 0
+                      },
+                      {
+                        "color": "#0f172a",
+                        "position": 100
+                      }
+                    ]
+                  },
+                  "patternOverlay": {
+                    "type": "dots",
+                    "color": "#ffffff",
+                    "opacity": 0.1
+                  }
+                },
+                "paddingTop": 64,
+                "paddingLeft": 16,
+                "borderRadius": 0,
+                "marginBottom": 0,
+                "paddingRight": 16,
+                "paddingBottom": 0,
+                "visibleOnMobile": true,
+                "visibleOnDesktop": true
+              }
+            },
+            {
+              "id": "section_1771745802737_jkfi19aw1",
+              "order": 11,
+              "layout": "1",
+              "columns": [
+                {
+                  "id": "col_1771745802737_9ydtlcx3o",
+                  "widgets": [
                     {
-                      "id": "home_cta_t",
+                      "id": "widget_1771745809402_fvvhh8qgr",
                       "type": "text-block",
                       "spacing": {
                         "marginTop": 0,
                         "marginBottom": 0
                       },
                       "settings": {
+                        "lists": {
+                          "bulletColor": "#f97316",
+                          "bulletStyle": "disc",
+                          "indentation": 24,
+                          "numberStyle": "decimal"
+                        },
                         "editor": {
                           "toolbar": "minimal",
-                          "minHeight": 60
+                          "minHeight": 60,
+                          "placeholder": "Start writing..."
                         },
-                        "content": "<p style=\"text-align: center\">Get a free comprehensive digital audit of your online presence.</p>",
+                        "columns": {
+                          "gap": 32,
+                          "count": 1,
+                          "divider": {
+                            "show": false,
+                            "color": "#334155",
+                            "width": 1
+                          },
+                          "enabled": false
+                        },
+                        "content": "<p style=\"text-align: center;\"><span>Your information is secure and encrypted. We never share your data.</span></p>",
+                        "dropCap": {
+                          "size": 3,
+                          "color": "#f97316",
+                          "enabled": false
+                        },
+                        "advanced": {
+                          "hideOnMobile": false,
+                          "hideOnTablet": false,
+                          "hideOnDesktop": false
+                        },
+                        "animation": {
+                          "entrance": {
+                            "type": "none",
+                            "delay": 0,
+                            "enabled": false,
+                            "duration": 600
+                          }
+                        },
                         "container": {
+                          "shadow": "none",
                           "padding": 0,
-                          "borderRadius": 0
+                          "borderRadius": 0,
+                          "backgroundType": "solid"
+                        },
+                        "blockquote": {
+                          "padding": 16,
+                          "fontStyle": "italic",
+                          "borderColor": "#f97316",
+                          "borderWidth": 4,
+                          "backgroundColor": "#1e293b"
+                        },
+                        "responsive": {
+                          "mobile": {
+                            "columns": 1,
+                            "fontSize": 14,
+                            "lineHeight": 1.5
+                          },
+                          "tablet": {
+                            "columns": 1,
+                            "fontSize": 15,
+                            "lineHeight": 1.6
+                          }
                         },
                         "typography": {
-                          "color": "#E0E7FF",
+                          "color": "#64748b",
                           "fontSize": 18,
                           "linkColor": "#6366F1",
-                          "lineHeight": 1.6
+                          "lineHeight": 1.6,
+                          "linkUnderline": true,
+                          "linkHoverColor": "#93c5fd"
                         },
                         "paragraphSpacing": 16
                       }
-                    },
-                    {
-                      "id": "home_cta_btns",
-                      "type": "button-group",
-                      "spacing": {
-                        "marginTop": 16,
-                        "marginBottom": 0
-                      },
-                      "settings": {
-                        "buttons": [
-                          {
-                            "id": "home_cta_btns_b0",
-                            "text": "Get Your Free Audit",
-                            "url": "/free-audit",
-                            "variant": "secondary",
-                            "size": "lg"
-                          }
-                        ],
-                        "alignment": "center",
-                        "gap": 16
-                      }
                     }
                   ],
+                  "settings": {
+                    "padding": 0,
+                    "verticalAlign": "top"
+                  }
+                }
+              ],
+              "settings": {
+                "gap": 32,
+                "maxWidth": "xl",
+                "fullWidth": false,
+                "isVisible": true,
+                "marginTop": 0,
+                "background": {
+                  "type": "solid",
+                  "color": "#ffffff",
+                  "image": {
+                    "url": "",
+                    "size": "cover",
+                    "fixed": false,
+                    "repeat": "no-repeat",
+                    "position": "center"
+                  },
+                  "video": {
+                    "url": "",
+                    "loop": true,
+                    "muted": true
+                  },
+                  "overlay": {
+                    "color": "#000000",
+                    "enabled": false,
+                    "opacity": 0.5
+                  },
+                  "gradient": {
+                    "type": "linear",
+                    "angle": 180,
+                    "colors": [
+                      {
+                        "color": "#1e293b",
+                        "position": 0
+                      },
+                      {
+                        "color": "#0f172a",
+                        "position": 100
+                      }
+                    ]
+                  },
+                  "patternOverlay": {
+                    "type": "dots",
+                    "color": "#ffffff",
+                    "opacity": 0.1
+                  }
+                },
+                "paddingTop": 16,
+                "paddingLeft": 16,
+                "borderRadius": 0,
+                "marginBottom": 0,
+                "paddingRight": 16,
+                "paddingBottom": 40,
+                "visibleOnMobile": true,
+                "visibleOnDesktop": true
+              }
+            },
+            {
+              "id": "home_cta",
+              "order": 12,
+              "layout": "1",
+              "columns": [
+                {
+                  "id": "home_cta_c1",
+                  "widgets": [],
                   "settings": {
                     "padding": 0,
                     "verticalAlign": "top"
@@ -1589,17 +2402,19 @@
                 "maxWidth": "lg",
                 "fullWidth": false,
                 "isVisible": true,
-                "paddingTop": 64,
-                "paddingLeft": 16,
-                "paddingRight": 16,
-                "paddingBottom": 64,
                 "background": {
                   "type": "gradient",
                   "gradient": "linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)"
-                }
+                },
+                "paddingTop": 0,
+                "paddingLeft": 16,
+                "paddingRight": 16,
+                "paddingBottom": 0
               }
             }
-          ]
+          ],
+          "hideOnMobile": false,
+          "hideOnDesktop": false
         }
       ]
     },
@@ -2252,6 +3067,9 @@
                         "dataSource": {
                           "type": "service",
                           "mode": "auto"
+                        },
+                        "colors": {
+                          "useTheme": true
                         }
                       }
                     }
@@ -4826,17 +5644,72 @@
                         "marginBottom": 0
                       },
                       "settings": {
-                        "hero": {
-                          "title": "TechFlow Inc. Case Study",
-                          "subtitle": "How we increased organic traffic by 340% in 6 months",
-                          "badge": "SEO / Content Marketing",
-                          "alignment": "center",
+                        "badge": {
+                          "show": true,
+                          "icon": "TrendingUp",
+                          "text": "SEO / Content Marketing",
+                          "style": "pill",
+                          "bgColor": "#6366F133",
+                          "textColor": "#818CF8",
+                          "borderColor": "#6366F180"
+                        },
+                        "headline": {
+                          "text": "TechFlow Inc. Case Study",
+                          "highlightWords": "",
+                          "highlightColor": "#818CF8",
+                          "size": "xl",
+                          "color": "#ffffff"
+                        },
+                        "subheadline": {
+                          "text": "How we increased organic traffic by 340% in 6 months",
+                          "show": true,
+                          "size": "lg",
+                          "color": "#E0E7FF"
+                        },
+                        "features": {
+                          "show": false,
+                          "items": [],
+                          "columns": 3,
+                          "iconColor": "#818CF8",
+                          "iconPosition": "left",
+                          "layout": "list"
+                        },
+                        "primaryButton": {
+                          "show": false,
+                          "text": "Get Started",
+                          "link": "/",
+                          "openInNewTab": false
+                        },
+                        "secondaryButton": {
+                          "show": false,
+                          "text": "Learn More",
+                          "link": "/",
+                          "openInNewTab": false
+                        },
+                        "trustText": {
+                          "show": false,
+                          "rating": 4.9,
+                          "text": "4.9/5 from 500+ clients",
+                          "textColor": "#E0E7FF",
+                          "starColor": "#818CF8"
+                        },
+                        "alignment": "center",
+                        "container": {
                           "backgroundType": "gradient",
                           "backgroundColor": "#6366F1",
-                          "backgroundGradient": "linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)",
-                          "textColor": "#ffffff",
-                          "subtitleColor": "#E0E7FF",
-                          "minHeight": "50vh"
+                          "gradientBackground": "linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)",
+                          "padding": 0,
+                          "borderRadius": 0,
+                          "gradientBorder": {
+                            "enabled": false,
+                            "colors": [
+                              "#ec4899",
+                              "#8b5cf6"
+                            ],
+                            "angle": 135
+                          },
+                          "borderWidth": 2,
+                          "shadow": "none"
                         }
                       }
                     }
@@ -6786,25 +7659,72 @@
                         "marginBottom": 0
                       },
                       "settings": {
-                        "hero": {
-                          "title": "Get Your Free Digital Marketing Audit",
-                          "subtitle": "Discover untapped opportunities in your online presence. Our experts will analyze your website, SEO, social media, and advertising to create a custom growth roadmap.",
-                          "badge": "Free Audit",
-                          "alignment": "center",
+                        "badge": {
+                          "show": true,
+                          "icon": "TrendingUp",
+                          "text": "Free Audit",
+                          "style": "pill",
+                          "bgColor": "#6366F133",
+                          "textColor": "#818CF8",
+                          "borderColor": "#6366F180"
+                        },
+                        "headline": {
+                          "text": "Get Your Free Digital Marketing Audit",
+                          "highlightWords": "",
+                          "highlightColor": "#818CF8",
+                          "size": "xl",
+                          "color": "#ffffff"
+                        },
+                        "subheadline": {
+                          "text": "Discover untapped opportunities in your online presence. Our experts will analyze your website, SEO, social media, and advertising to create a custom growth roadmap.",
+                          "show": true,
+                          "size": "lg",
+                          "color": "#E0E7FF"
+                        },
+                        "features": {
+                          "show": false,
+                          "items": [],
+                          "columns": 3,
+                          "iconColor": "#818CF8",
+                          "iconPosition": "left",
+                          "layout": "list"
+                        },
+                        "primaryButton": {
+                          "show": true,
+                          "text": "Get Started Below",
+                          "link": "#audit-form",
+                          "openInNewTab": false
+                        },
+                        "secondaryButton": {
+                          "show": false,
+                          "text": "Learn More",
+                          "link": "/",
+                          "openInNewTab": false
+                        },
+                        "trustText": {
+                          "show": false,
+                          "rating": 4.9,
+                          "text": "4.9/5 from 500+ clients",
+                          "textColor": "#E0E7FF",
+                          "starColor": "#818CF8"
+                        },
+                        "alignment": "center",
+                        "container": {
                           "backgroundType": "gradient",
                           "backgroundColor": "#6366F1",
-                          "backgroundGradient": "linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)",
-                          "textColor": "#ffffff",
-                          "subtitleColor": "#E0E7FF",
-                          "minHeight": "50vh",
-                          "ctaButtons": [
-                            {
-                              "text": "Get Started Below",
-                              "url": "#audit-form",
-                              "variant": "secondary",
-                              "size": "lg"
-                            }
-                          ]
+                          "gradientBackground": "linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)",
+                          "padding": 0,
+                          "borderRadius": 0,
+                          "gradientBorder": {
+                            "enabled": false,
+                            "colors": [
+                              "#ec4899",
+                              "#8b5cf6"
+                            ],
+                            "angle": 135
+                          },
+                          "borderWidth": 2,
+                          "shadow": "none"
                         }
                       }
                     }

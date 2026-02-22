@@ -91,7 +91,7 @@ function renderHighlightedText(
 }
 
 // Header Section Component
-function SectionHeader({ settings }: { settings: ProcessStepsWidgetSettings }) {
+function SectionHeader({ settings, accentColor }: { settings: ProcessStepsWidgetSettings; accentColor?: string }) {
   const { header } = settings;
 
   if (!header?.show) return null;
@@ -101,10 +101,12 @@ function SectionHeader({ settings }: { settings: ProcessStepsWidgetSettings }) {
   const heading = { ...DEFAULT_PROCESS_STEPS_SETTINGS.header.heading, ...header.heading };
   const description = { ...DEFAULT_PROCESS_STEPS_SETTINGS.header.description, ...header.description };
 
+  const accentBgLight = accentColor ? `color-mix(in srgb, ${accentColor} 10%, transparent)` : undefined;
+  const accentBorder = accentColor ? `color-mix(in srgb, ${accentColor} 30%, transparent)` : undefined;
   const badgeStyles = getBadgeStyles(badge.style, {
-    bgColor: badge.bgColor,
-    textColor: badge.textColor,
-    borderColor: badge.borderColor,
+    bgColor: accentBgLight || badge.bgColor,
+    textColor: accentColor || badge.textColor,
+    borderColor: accentBorder || badge.borderColor,
   });
 
   const headingSizeClasses = {
@@ -150,7 +152,7 @@ function SectionHeader({ settings }: { settings: ProcessStepsWidgetSettings }) {
         {renderHighlightedText(
           heading.text,
           heading.highlightWords,
-          heading.highlightColor
+          accentColor || heading.highlightColor
         )}
       </h2>
 
@@ -171,7 +173,7 @@ function SectionHeader({ settings }: { settings: ProcessStepsWidgetSettings }) {
 }
 
 // Horizontal Connector Line - spans grid gap between steps
-function HorizontalConnectorLine({ settings }: { settings: ProcessStepsWidgetSettings }) {
+function HorizontalConnectorLine({ settings, accentColor }: { settings: ProcessStepsWidgetSettings; accentColor?: string }) {
   const connector = { ...DEFAULT_PROCESS_STEPS_SETTINGS.connector, ...settings.connector };
   const layout = { ...DEFAULT_PROCESS_STEPS_SETTINGS.layout, ...settings.layout };
 
@@ -183,7 +185,7 @@ function HorizontalConnectorLine({ settings }: { settings: ProcessStepsWidgetSet
 
   const animationDuration = speedMap[connector.animationSpeed] || "4s";
   const color = connector.color || "#fde8d7";
-  const secondaryColor = connector.secondaryColor || "#f97316";
+  const secondaryColor = accentColor || connector.secondaryColor || "#f97316";
   const direction = "to right";
 
   // Get background styles based on line style
@@ -314,7 +316,7 @@ function HorizontalConnectorLine({ settings }: { settings: ProcessStepsWidgetSet
           style={{
             width: `${connector.dotSize || 8}px`,
             height: `${connector.dotSize || 8}px`,
-            backgroundColor: connector.dotColor || "#f97316",
+            backgroundColor: accentColor || connector.dotColor || "#f97316",
             top: "50%",
             marginTop: `-${(connector.dotSize || 8) / 2}px`,
             animation: `dot-travel-h ${animationDuration} linear infinite`,
@@ -329,9 +331,11 @@ function HorizontalConnectorLine({ settings }: { settings: ProcessStepsWidgetSet
 function VerticalConnectorLine({
   settings,
   isLast,
+  accentColor,
 }: {
   settings: ProcessStepsWidgetSettings;
   isLast: boolean;
+  accentColor?: string;
 }) {
   const connector = { ...DEFAULT_PROCESS_STEPS_SETTINGS.connector, ...settings.connector };
   const layout = { ...DEFAULT_PROCESS_STEPS_SETTINGS.layout, ...settings.layout };
@@ -346,7 +350,7 @@ function VerticalConnectorLine({
 
   const animationDuration = speedMap[connector.animationSpeed] || "4s";
   const color = connector.color || "#fde8d7";
-  const secondaryColor = connector.secondaryColor || "#f97316";
+  const secondaryColor = accentColor || connector.secondaryColor || "#f97316";
   const direction = "to bottom";
 
   // Get background styles based on line style
@@ -475,7 +479,7 @@ function VerticalConnectorLine({
           style={{
             width: `${connector.dotSize || 8}px`,
             height: `${connector.dotSize || 8}px`,
-            backgroundColor: connector.dotColor || "#f97316",
+            backgroundColor: accentColor || connector.dotColor || "#f97316",
             left: "50%",
             marginLeft: `-${(connector.dotSize || 8) / 2}px`,
             animation: `dot-travel-v ${animationDuration} linear infinite`,
@@ -493,12 +497,14 @@ function StepItem({
   settings,
   isLast,
   isVertical,
+  accentColor,
 }: {
   step: ProcessStep;
   index: number;
   settings: ProcessStepsWidgetSettings;
   isLast: boolean;
   isVertical: boolean;
+  accentColor?: string;
 }) {
   const [isHovered, setIsHovered] = useState(false);
   const Icon = getLucideIcon(step.icon);
@@ -693,7 +699,7 @@ function StepItem({
           >
             <Icon
               className={iconSizeClasses[stepIcon.size].icon}
-              style={{ color: stepIcon.iconColor || "#f97316" }}
+              style={{ color: accentColor || stepIcon.iconColor || "#f97316" }}
             />
           </div>
 
@@ -711,12 +717,12 @@ function StepItem({
               )}
               style={{
                 backgroundColor: stepNumber.style !== "circle-outline"
-                  ? (stepNumber.bgColor || "#f97316")
+                  ? (accentColor || stepNumber.bgColor || "#f97316")
                   : "white",
                 color: stepNumber.style !== "circle-outline"
                   ? (stepNumber.textColor || "#ffffff")
-                  : (stepNumber.bgColor || "#f97316"),
-                borderColor: stepNumber.borderColor || stepNumber.bgColor || "#f97316",
+                  : (accentColor || stepNumber.bgColor || "#f97316"),
+                borderColor: stepNumber.borderColor || accentColor || stepNumber.bgColor || "#f97316",
               }}
             >
               {step.number ?? index + 1}
@@ -728,7 +734,7 @@ function StepItem({
 
       {/* Horizontal Connector Line - positioned at StepItem level for better alignment */}
       {!isVertical && !isLast && connector.show && (
-        <HorizontalConnectorLine settings={settings} />
+        <HorizontalConnectorLine settings={settings} accentColor={accentColor} />
       )}
 
       {/* Title */}
@@ -752,6 +758,7 @@ function StepItem({
         <VerticalConnectorLine
           settings={settings}
           isLast={isLast}
+          accentColor={accentColor}
         />
       )}
     </div>
@@ -790,6 +797,9 @@ export function ProcessStepsWidget({
   settings,
   isPreview = false,
 }: ProcessStepsWidgetProps) {
+  // Theme-aware accent color
+  const accentColor = settings.colors?.useTheme !== false ? "var(--color-primary)" : undefined;
+
   // Deep merge with defaults to guarantee all properties exist
   const animation = {
     ...DEFAULT_PROCESS_STEPS_SETTINGS.animation,
@@ -914,7 +924,7 @@ export function ProcessStepsWidget({
       }}
     >
       <div data-field-id="section-header">
-        <SectionHeader settings={settings} />
+        <SectionHeader settings={settings} accentColor={accentColor} />
       </div>
 
       <div
@@ -947,6 +957,7 @@ export function ProcessStepsWidget({
               settings={settings}
               isLast={index === steps.length - 1}
               isVertical={isVertical || isAlternating}
+              accentColor={accentColor}
             />
           </div>
         ))}

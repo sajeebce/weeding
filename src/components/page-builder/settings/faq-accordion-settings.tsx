@@ -119,9 +119,9 @@ export function FaqAccordionWidgetSettingsPanel({
               ]}
             />
             {settings.source === "service" && (
-              <p className="text-xs text-muted-foreground">
-                Pulls FAQs from the current service&apos;s FAQ list. Use this in Service Details templates.
-              </p>
+              <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">
+                <strong>Service Detail pages only.</strong> This mode reads FAQs from the current service page context. For Homepage or other pages, use &quot;All Categories&quot; instead.
+              </div>
             )}
             {settings.source === "category" && (
               <div className="space-y-2">

@@ -139,7 +139,7 @@ function renderHighlightedText(
 }
 
 // Header Section Component
-function SectionHeader({ settings }: { settings: ServiceListWidgetSettings }) {
+function SectionHeader({ settings, accentColor }: { settings: ServiceListWidgetSettings; accentColor?: string }) {
   // Deep merge header with defaults
   const header = {
     ...DEFAULT_SERVICE_LIST_SETTINGS.header,
@@ -160,10 +160,12 @@ function SectionHeader({ settings }: { settings: ServiceListWidgetSettings }) {
 
   if (!header?.show) return null;
 
+  const accentBgLight = accentColor ? `color-mix(in srgb, ${accentColor} 10%, transparent)` : undefined;
+  const accentBorder = accentColor ? `color-mix(in srgb, ${accentColor} 30%, transparent)` : undefined;
   const badgeStyles = getBadgeStyles(header.badge.style, {
-    bgColor: header.badge.bgColor,
-    textColor: header.badge.textColor,
-    borderColor: header.badge.borderColor,
+    bgColor: accentBgLight || header.badge.bgColor,
+    textColor: accentColor || header.badge.textColor,
+    borderColor: accentBorder || header.badge.borderColor,
   });
 
   const headingSizeClasses = {
@@ -209,7 +211,7 @@ function SectionHeader({ settings }: { settings: ServiceListWidgetSettings }) {
         {renderHighlightedText(
           header.heading.text,
           header.heading.highlightWords,
-          header.heading.highlightColor
+          accentColor || header.heading.highlightColor
         )}
       </h2>
 
@@ -510,9 +512,11 @@ function ServiceItem({
 function CategoryCard({
   category,
   settings,
+  accentColor,
 }: {
   category: CategoryData;
   settings: ServiceListWidgetSettings;
+  accentColor?: string;
 }) {
   const filters = {
     ...DEFAULT_SERVICE_LIST_SETTINGS.filters,
@@ -604,12 +608,14 @@ function CategoryCard({
               categoryCard.iconStyle === "square" && "rounded-none"
             )}
             style={{
-              backgroundColor: categoryCard.iconBgColor,
+              backgroundColor: accentColor
+                ? `color-mix(in srgb, ${accentColor} 10%, transparent)`
+                : categoryCard.iconBgColor,
             }}
           >
             <Icon
               className={iconSize.icon}
-              style={{ color: categoryCard.iconColor }}
+              style={{ color: accentColor || categoryCard.iconColor }}
             />
           </div>
         )}
@@ -666,6 +672,9 @@ export function ServiceListWidget({
   settings,
   isPreview = false,
 }: ServiceListWidgetProps) {
+  // Theme-aware accent color
+  const accentColor = settings.colors?.useTheme !== false ? "var(--color-primary)" : undefined;
+
   // Deep merge with defaults to guarantee all properties exist
   const filters = {
     ...DEFAULT_SERVICE_LIST_SETTINGS.filters,
@@ -743,7 +752,7 @@ export function ServiceListWidget({
     return (
       <WidgetContainer container={settings.container}>
       <div>
-        <SectionHeader settings={settings} />
+        <SectionHeader settings={settings} accentColor={accentColor} />
         <div
           className={cn(
             "grid",
@@ -778,7 +787,7 @@ export function ServiceListWidget({
     return (
       <WidgetContainer container={settings.container}>
       <div>
-        <SectionHeader settings={settings} />
+        <SectionHeader settings={settings} accentColor={accentColor} />
         <div className="flex items-center justify-center h-32 bg-muted/30 rounded-xl border border-dashed border-muted-foreground/30">
           <p className="text-sm text-muted-foreground">
             No service categories found. Add services from the admin panel.
@@ -793,7 +802,7 @@ export function ServiceListWidget({
     <WidgetContainer container={settings.container}>
     <div>
       <div data-field-id="section-header">
-        <SectionHeader settings={settings} />
+        <SectionHeader settings={settings} accentColor={accentColor} />
       </div>
       <div
         data-field-id="cards"
@@ -808,6 +817,7 @@ export function ServiceListWidget({
             key={category.id}
             category={category}
             settings={settings}
+            accentColor={accentColor}
           />
         ))}
       </div>

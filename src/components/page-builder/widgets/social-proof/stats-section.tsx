@@ -224,7 +224,8 @@ export function StatsSectionWidget({ settings, isPreview = false }: StatsSection
   const containerRef = useRef<HTMLDivElement>(null);
 
   const layout = style.layout ?? "vertical";
-  const iconColor = style.iconColor ?? "#f97316";
+  const useTheme = settings.colors?.useTheme !== false;
+  const iconColor = useTheme ? "var(--color-primary)" : (style.iconColor ?? "#f97316");
   const iconSize = style.iconSize ?? "md";
 
   // Intersection observer for scroll animation

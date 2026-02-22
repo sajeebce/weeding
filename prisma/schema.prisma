@@ -1310,6 +1310,7 @@ model ActiveTheme {
   colorPalette         Json?
   fontConfig           Json?
   originalColorPalette Json?
+  widgetDefaults       Json?    // Theme-bound widget defaults: { "hero-content": {...}, ... }
 
   @@index([themeId])
 }
