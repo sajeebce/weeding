@@ -10,6 +10,8 @@ import {
   ToggleSwitch,
   NumberInput,
 } from "@/app/admin/appearance/landing-page/components/ui/form-controls";
+import { AccordionSection } from "@/app/admin/appearance/landing-page/components/ui/accordion-section";
+import { useFieldAccordion } from "@/components/page-builder/settings/use-field-accordion";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -43,9 +45,9 @@ export function TestimonialsWidgetSettingsPanel({
   settings,
   onChange,
   activeTab = "content",
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   activeFieldId,
 }: TestimonialsWidgetSettingsPanelProps) {
+  const { getAccordionProps } = useFieldAccordion(activeFieldId);
   // Dynamic tags from API
   const [availableTags, setAvailableTags] = useState<TestimonialTag[]>([]);
 
@@ -418,12 +420,7 @@ export function TestimonialsWidgetSettingsPanel({
           )}
 
           {/* Header Section */}
-          <Collapsible defaultOpen>
-            <CollapsibleTrigger className="flex w-full items-center justify-between py-2 text-sm font-medium">
-              Header Section
-              <ChevronDown className="h-4 w-4" />
-            </CollapsibleTrigger>
-            <CollapsibleContent className="space-y-3 pt-2">
+          <AccordionSection title="Header Section" defaultOpen {...getAccordionProps("header")}>
               <ToggleSwitch
                 label="Show Header"
                 checked={s.header.show}
@@ -537,16 +534,10 @@ export function TestimonialsWidgetSettingsPanel({
                   />
                 </>
               )}
-            </CollapsibleContent>
-          </Collapsible>
+          </AccordionSection>
 
           {/* Trust Footer */}
-          <Collapsible>
-            <CollapsibleTrigger className="flex w-full items-center justify-between py-2 text-sm font-medium">
-              Trust Footer
-              <ChevronDown className="h-4 w-4" />
-            </CollapsibleTrigger>
-            <CollapsibleContent className="space-y-3 pt-2">
+          <AccordionSection title="Trust Footer" {...getAccordionProps("trust-footer")}>
               <ToggleSwitch
                 label="Show Trust Footer"
                 checked={s.trustFooter.show}
@@ -592,8 +583,7 @@ export function TestimonialsWidgetSettingsPanel({
                   </div>
                 </>
               )}
-            </CollapsibleContent>
-          </Collapsible>
+          </AccordionSection>
         </>
       )}
 

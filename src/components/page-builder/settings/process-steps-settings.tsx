@@ -166,7 +166,7 @@ export function ProcessStepsWidgetSettingsPanel({
 
       {/* Badge */}
       {s.header.show && (
-        <AccordionSection title="Badge">
+        <AccordionSection title="Badge" {...getAccordionProps("badge")}>
           <ToggleSwitch
             label="Show Badge"
             checked={s.header.badge.show}
@@ -187,7 +187,7 @@ export function ProcessStepsWidgetSettingsPanel({
 
       {/* Heading */}
       {s.header.show && (
-        <AccordionSection title="Heading">
+        <AccordionSection title="Heading" {...getAccordionProps("heading")}>
           <div className="space-y-4">
             <TextInput
               label="Heading Text"
@@ -207,7 +207,7 @@ export function ProcessStepsWidgetSettingsPanel({
 
       {/* Description */}
       {s.header.show && (
-        <AccordionSection title="Description">
+        <AccordionSection title="Description" {...getAccordionProps("description")}>
           <ToggleSwitch
             label="Show Description"
             checked={s.header.description.show}

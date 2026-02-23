@@ -207,6 +207,7 @@ export function TestimonialsWidget({ settings: partialSettings, isPreview = fals
 
     return (
       <div
+        data-field-id="trust-footer"
         className={cn(
           "flex flex-wrap items-center gap-8",
           alignmentClasses[settings.trustFooter.alignment]

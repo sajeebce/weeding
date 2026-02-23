@@ -10,7 +10,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
  */
 export function useFieldAccordion(activeFieldId?: string | null) {
   const [forcedField, setForcedField] = useState<string | null>(null);
-  const prevFieldRef = useRef(activeFieldId);
+  const prevFieldRef = useRef<string | null | undefined>(undefined);
 
   useEffect(() => {
     if (activeFieldId && activeFieldId !== prevFieldRef.current) {

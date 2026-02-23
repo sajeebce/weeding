@@ -220,12 +220,13 @@ function SectionHeader({ settings }: { settings: PricingTableWidgetSettings }) {
       style={{ marginBottom: `${rawHeader.marginBottom}px` }}
     >
       {badge.show && (
-        <span className={badgeStyles.className} style={badgeStyles.style}>
+        <span data-field-id="badge" className={badgeStyles.className} style={badgeStyles.style}>
           {badge.text}
         </span>
       )}
 
       <h2
+        data-field-id="heading"
         className={cn(
           "font-bold tracking-tight",
           headingSizeClasses[heading.size]
@@ -241,6 +242,7 @@ function SectionHeader({ settings }: { settings: PricingTableWidgetSettings }) {
 
       {description.show && (
         <p
+          data-field-id="description"
           className={cn(
             "max-w-3xl",
             descriptionSizeClasses[description.size]
