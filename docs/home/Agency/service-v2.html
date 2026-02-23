@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEO Optimization — AgencyX</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#06080f;
+  --bg-card:rgba(255,255,255,0.03);
+  --bg-glass:rgba(255,255,255,0.05);
+  --border:rgba(255,255,255,0.06);
+  --border-hover:rgba(255,255,255,0.12);
+  --text:#f0f0f5;
+  --text-muted:#8a8f9e;
+  --accent:#6366f1;
+  --accent-glow:rgba(99,102,241,0.25);
+  --accent2:#8b5cf6;
+  --green:#22c55e;
+  --nav-h:72px;
+}
+html{scroll-behavior:smooth;overflow-x:hidden}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button{cursor:pointer;font-family:inherit}
+
+/* ===== UTILITY ===== */
+.container{max-width:1200px;margin:0 auto;padding:0 24px}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid var(--border)}
+.badge--secondary{background:var(--bg-glass);color:var(--text-muted)}
+.badge--popular{background:rgba(99,102,241,.15);border-color:rgba(99,102,241,.4);color:#a5b4fc}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:13px 28px;border-radius:12px;font-size:15px;font-weight:600;border:none;transition:all .3s ease}
+.btn--primary{background:var(--accent);color:#fff}
+.btn--primary:hover{background:#4f46e5;transform:translateY(-2px);box-shadow:0 8px 30px var(--accent-glow)}
+.btn--outline{background:transparent;color:var(--text);border:1px solid var(--border)}
+.btn--outline:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-2px)}
+.btn svg{width:16px;height:16px;transition:transform .3s}
+.btn:hover svg{transform:translateX(3px)}
+.section-title{font-size:clamp(22px,3vw,32px);font-weight:800;letter-spacing:-.02em;line-height:1.2}
+.section-title--center{text-align:center}
+.section-subtitle{font-size:15px;color:var(--text-muted);margin-top:10px}
+.section-subtitle--center{text-align:center}
+
+/* ===== ANIMATIONS ===== */
+@keyframes pulse-glow{0%,100%{opacity:.3}50%{opacity:.7}}
+@keyframes gradient-shift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+.reveal{opacity:0;transform:translateY(24px);transition:all .7s cubic-bezier(.16,1,.3,1)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.reveal-delay-1{transition-delay:.1s}.reveal-delay-2{transition-delay:.2s}
+.reveal-delay-3{transition-delay:.3s}.reveal-delay-4{transition-delay:.4s}
+
+/* ===== NAV ===== */
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 24px;height:var(--nav-h);display:flex;align-items:center;transition:all .4s}
+.nav.scrolled{background:rgba(6,8,15,.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.nav__inner{max-width:1200px;margin:0 auto;width:100%;display:flex;align-items:center;justify-content:space-between}
+.nav__logo{font-size:22px;font-weight:800;display:flex;align-items:center;gap:8px}
+.nav__logo span{color:var(--accent)}
+.nav__links{display:flex;gap:32px;list-style:none}
+.nav__links a{font-size:14px;font-weight:500;color:var(--text-muted);transition:color .3s}
+.nav__links a:hover,.nav__links a.active{color:var(--text)}
+.nav__cta{display:flex;gap:12px}
+.nav__cta .btn{padding:9px 20px;font-size:13px}
+.nav__burger{display:none;flex-direction:column;gap:5px;background:none;border:none;padding:4px;cursor:pointer}
+.nav__burger span{width:24px;height:2px;background:var(--text);border-radius:2px}
+
+/* ===== MOBILE MENU ===== */
+.mobile-menu{position:fixed;top:0;right:-100%;width:280px;height:100vh;background:#0d1020;z-index:200;display:flex;flex-direction:column;padding:80px 32px 32px;gap:8px;transition:right .4s cubic-bezier(.16,1,.3,1);border-left:1px solid var(--border)}
+.mobile-menu.open{right:0}
+.mobile-menu a{font-size:16px;font-weight:500;padding:12px 0;border-bottom:1px solid var(--border);color:var(--text-muted);transition:color .3s}
+.mobile-menu a:last-child{border-bottom:none;margin-top:8px}
+.mobile-menu__close{position:absolute;top:20px;right:20px;background:none;border:none;color:var(--text);padding:4px;cursor:pointer}
+.mobile-menu__close svg{width:24px;height:24px}
+
+/* ===== BREADCRUMB ===== */
+.breadcrumb{padding:calc(var(--nav-h) + 20px) 0 0}
+.breadcrumb__inner{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-muted)}
+.breadcrumb__inner a{display:flex;align-items:center;gap:6px;transition:color .3s}
+.breadcrumb__inner a:hover{color:var(--text)}
+.breadcrumb__inner a svg{width:14px;height:14px}
+.breadcrumb__sep{color:var(--border-hover)}
+
+/* ===== HERO SPLIT ===== */
+.hero-split{position:relative;padding:32px 0 72px;overflow:hidden}
+.hero-split__bg{position:absolute;inset:0;z-index:0;pointer-events:none}
+.hero-orb{position:absolute;border-radius:50%;filter:blur(120px);animation:pulse-glow 6s ease-in-out infinite}
+.hero-orb--1{width:700px;height:700px;background:#6366f1;top:-350px;left:-200px;opacity:.07}
+.hero-orb--2{width:500px;height:500px;background:#8b5cf6;top:-200px;right:-100px;opacity:.05;animation-delay:3s}
+.hero-split__inner{position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start}
+.hero-split__left{padding-top:20px}
+.hero-split__icon-badge{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.hero-split__icon{width:52px;height:52px;background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.hero-split__icon svg{width:26px;height:26px;stroke:var(--accent)}
+.gradient-text{background:linear-gradient(135deg,var(--accent),#a78bfa,var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;background-size:200% 200%;animation:gradient-shift 4s ease infinite}
+.hero-split__title{font-size:clamp(32px,4.5vw,56px);font-weight:900;letter-spacing:-.03em;line-height:1.05;margin-bottom:16px}
+.hero-split__desc{font-size:16px;color:var(--text-muted);line-height:1.75;max-width:420px;margin-bottom:24px}
+.hero-split__checks{display:flex;flex-direction:column;gap:10px;margin-bottom:28px}
+.hero-split__check{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500}
+.hero-split__check svg{width:15px;height:15px;stroke:var(--green);flex-shrink:0}
+.hero-split__btns{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+.hero-split__meta{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-muted)}
+.hero-split__stars{display:flex;gap:2px}
+.hero-split__stars svg{width:13px;height:13px;fill:#f59e0b;stroke:#f59e0b}
+
+/* ===== RIGHT ORDER CARD ===== */
+.order-card{background:var(--bg-card);border:1px solid var(--border);border-radius:22px;padding:28px;position:relative;overflow:hidden}
+.order-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.order-card__label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px}
+.order-card__plan{font-size:16px;font-weight:700;margin-bottom:4px}
+.order-card__sub{font-size:13px;color:var(--text-muted);margin-bottom:20px}
+.order-card__price{font-size:44px;font-weight:900;letter-spacing:-.03em;line-height:1;margin-bottom:4px}
+.order-card__price span{font-size:15px;font-weight:500;color:var(--text-muted)}
+.order-card__time{font-size:12px;color:var(--text-muted);padding:14px 0;margin-bottom:16px;border-bottom:1px solid var(--border)}
+.order-card__feat-label{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px}
+.order-card__feats{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:22px}
+.order-card__feats li{display:flex;align-items:center;gap:10px;font-size:14px}
+.order-card__feats li.dim{color:var(--text-muted)}
+.order-card__feats svg.chk{width:16px;height:16px;stroke:var(--green);flex-shrink:0}
+.order-card__feats svg.xmk{width:14px;height:14px;stroke:#4a4f62;flex-shrink:0}
+.order-card__cta{display:flex;flex-direction:column;gap:10px}
+.order-card__cta .btn{justify-content:center}
+.order-card__note{font-size:12px;color:var(--text-muted);text-align:center;margin-top:10px;opacity:.7}
+
+/* ===== WHAT'S INCLUDED ===== */
+.included-section{padding:72px 0;border-top:1px solid var(--border)}
+.included-section__head{margin-bottom:36px}
+.included-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.included-item{display:flex;align-items:flex-start;gap:14px;padding:18px 20px;background:rgba(255,255,255,.025);border:1px solid var(--border);border-radius:12px;transition:border-color .3s}
+.included-item:hover{border-color:var(--border-hover)}
+.included-item__icon{width:36px;height:36px;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.included-item__icon svg{width:18px;height:18px;stroke:var(--accent)}
+.included-item__body{flex:1}
+.included-item__title{font-size:14px;font-weight:600;margin-bottom:3px}
+.included-item__desc{font-size:12px;color:var(--text-muted);line-height:1.5}
+
+/* ===== CHOOSE YOUR PACKAGE ===== */
+.packages-section{padding:72px 0;border-top:1px solid var(--border)}
+.packages-section__head{margin-bottom:36px}
+.packages-table{display:grid;grid-template-columns:repeat(3,1fr);margin-top:8px;border:1px solid var(--border);border-radius:20px;overflow:hidden}
+.pkg-col{padding:32px 24px;border-right:1px solid var(--border);position:relative}
+.pkg-col:last-child{border-right:none}
+.pkg-col--popular{background:linear-gradient(180deg,rgba(99,102,241,.09) 0%,rgba(99,102,241,.03) 100%)}
+.pkg-col__badge{display:inline-flex;align-items:center;gap:5px;background:var(--accent);color:#fff;font-size:11px;font-weight:700;padding:3px 12px;border-radius:999px;margin-bottom:14px}
+.pkg-col__badge svg{width:11px;height:11px;fill:#fff}
+.pkg-col__name{font-size:18px;font-weight:700;margin-bottom:4px}
+.pkg-col__desc{font-size:13px;color:var(--text-muted);margin-bottom:18px;line-height:1.5}
+.pkg-col__price{font-size:40px;font-weight:900;letter-spacing:-.03em;line-height:1;margin-bottom:4px}
+.pkg-col__price span{font-size:15px;font-weight:500;color:var(--text-muted)}
+.pkg-col__time{font-size:12px;color:var(--text-muted);padding:14px 0;margin-bottom:18px;border-bottom:1px solid var(--border)}
+.pkg-col__feats{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:26px}
+.pkg-col__feats li{display:flex;align-items:center;gap:9px;font-size:13px}
+.pkg-col__feats li.off{color:var(--text-muted)}
+.pkg-chk{width:16px;height:16px;stroke:var(--green);flex-shrink:0}
+.pkg-xmk{width:14px;height:14px;stroke:#4a4f62;flex-shrink:0}
+.pkg-col .btn{width:100%;justify-content:center}
+
+/* ===== ABOUT SECTION ===== */
+.about-section{padding:72px 0;border-top:1px solid var(--border)}
+.about-section__inner{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start}
+.about-section__left h2{font-size:clamp(20px,2.5vw,30px);font-weight:800;letter-spacing:-.02em;margin-bottom:16px}
+.about-section__left p{font-size:15px;color:var(--text-muted);line-height:1.8;margin-bottom:14px}
+.about-section__left p:last-child{margin-bottom:0}
+.about-section__right{display:flex;flex-direction:column;gap:16px}
+.about-stat{background:rgba(255,255,255,.025);border:1px solid var(--border);border-radius:14px;padding:20px 24px}
+.about-stat__num{font-size:32px;font-weight:900;letter-spacing:-.02em;color:var(--accent);margin-bottom:4px}
+.about-stat__label{font-size:13px;color:var(--text-muted)}
+
+/* ===== FAQ ===== */
+.faq-section{padding:72px 0;border-top:1px solid var(--border)}
+.faq-section__head{max-width:640px;margin-bottom:40px}
+.faq-list{max-width:800px}
+.faq-item{border-bottom:1px solid var(--border)}
+.faq-item__q{width:100%;background:none;border:none;color:var(--text);display:flex;align-items:center;justify-content:space-between;padding:20px 0;font-size:15px;font-weight:600;text-align:left;gap:16px;cursor:pointer;transition:color .3s}
+.faq-item__q:hover{color:var(--accent)}
+.faq-icon{width:30px;height:30px;border:1px solid var(--border);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .3s}
+.faq-icon svg{width:13px;height:13px;transition:transform .3s}
+.faq-item.open .faq-icon{background:var(--accent);border-color:var(--accent)}
+.faq-item.open .faq-icon svg{transform:rotate(45deg)}
+.faq-item__a{max-height:0;overflow:hidden;transition:max-height .35s ease}
+.faq-item.open .faq-item__a{max-height:200px}
+.faq-item__a-inner{padding:0 0 20px;font-size:14px;color:var(--text-muted);line-height:1.75}
+
+/* ===== RELATED SERVICES ===== */
+.related-section{padding:72px 0;border-top:1px solid var(--border)}
+.related-section__head{margin-bottom:28px}
+.related-section__head h2{font-size:clamp(18px,2.5vw,26px);font-weight:800;letter-spacing:-.02em}
+.related-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.related-card{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:20px;transition:all .3s;cursor:pointer;display:flex;flex-direction:column}
+.related-card:hover{border-color:var(--accent);transform:translateY(-4px);box-shadow:0 12px 32px rgba(0,0,0,.25)}
+.related-card__icon{width:42px;height:42px;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);border-radius:11px;display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+.related-card__icon svg{width:21px;height:21px;stroke:var(--accent)}
+.related-card__name{font-size:14px;font-weight:700;margin-bottom:7px}
+.related-card__desc{font-size:12px;color:var(--text-muted);line-height:1.55;margin-bottom:12px;flex:1;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.related-card__price{font-size:12px;font-weight:700;color:var(--accent)}
+
+/* ===== FOOTER ===== */
+footer{border-top:1px solid var(--border)}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;padding:56px 0 36px}
+.footer-brand{font-size:20px;font-weight:800;display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.footer-brand span{color:var(--accent)}
+.footer-brand-desc{font-size:13px;color:var(--text-muted);line-height:1.7;max-width:230px}
+.footer-col h4{font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted);margin-bottom:14px}
+.footer-col ul{list-style:none;display:flex;flex-direction:column;gap:9px}
+.footer-col ul a{font-size:13px;color:var(--text-muted);transition:color .3s}
+.footer-col ul a:hover{color:var(--text)}
+.footer-bottom{display:flex;justify-content:space-between;padding:20px 0;border-top:1px solid var(--border);font-size:12px;color:var(--text-muted);flex-wrap:wrap;gap:8px}
+.footer-disclaimer{font-size:11px;color:var(--text-muted);opacity:.45;padding-bottom:20px;line-height:1.6}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:1024px){
+  .packages-table{grid-template-columns:1fr}
+  .packages-table .pkg-col{border-right:none;border-bottom:1px solid var(--border)}
+  .packages-table .pkg-col:last-child{border-bottom:none}
+}
+@media(max-width:900px){
+  .hero-split__inner{grid-template-columns:1fr}
+  .about-section__inner{grid-template-columns:1fr}
+  .included-grid{grid-template-columns:1fr}
+  .related-grid{grid-template-columns:repeat(2,1fr)}
+  .footer-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:600px){
+  .nav__links,.nav__cta{display:none}
+  .nav__burger{display:flex}
+  .related-grid{grid-template-columns:1fr 1fr}
+  .footer-grid{grid-template-columns:1fr}
+  .footer-bottom{flex-direction:column;text-align:center}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav" id="nav">
+  <div class="nav__inner">
+    <a href="#" class="nav__logo">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="8" fill="#6366f1"/><text x="14" y="20" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" font-weight="800" fill="#fff">AX</text></svg>
+      Agency<span>X</span>
+    </a>
+    <ul class="nav__links">
+      <li><a href="#" class="active">Services</a></li>
+      <li><a href="#">How It Works</a></li>
+      <li><a href="#">Pricing</a></li>
+      <li><a href="#">Reviews</a></li>
+      <li><a href="#">FAQ</a></li>
+    </ul>
+    <div class="nav__cta">
+      <a href="#" class="btn btn--outline">Log In</a>
+      <a href="#" class="btn btn--primary">Get Started</a>
+    </div>
+    <button class="nav__burger" id="burger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-menu__close" id="menuClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+  <a href="#">Services</a><a href="#">How It Works</a><a href="#">Pricing</a><a href="#">Reviews</a><a href="#">FAQ</a>
+  <a href="#" class="btn btn--primary">Get Started</a>
+</div>
+
+<!-- 1. BREADCRUMB -->
+<div class="breadcrumb">
+  <div class="container">
+    <div class="breadcrumb__inner reveal">
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg> Services</a>
+      <span class="breadcrumb__sep">/</span>
+      <span>SEO Optimization</span>
+    </div>
+  </div>
+</div>
+
+<!-- 2. HERO SPLIT -->
+<section class="hero-split">
+  <div class="hero-split__bg">
+    <div class="hero-orb hero-orb--1"></div>
+    <div class="hero-orb hero-orb--2"></div>
+  </div>
+  <div class="container">
+    <div class="hero-split__inner">
+
+      <!-- LEFT -->
+      <div class="hero-split__left">
+        <div class="hero-split__icon-badge reveal">
+          <div class="hero-split__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          </div>
+          <span class="badge badge--popular">Popular</span>
+        </div>
+        <h1 class="hero-split__title reveal reveal-delay-1">SEO <span class="gradient-text">Optimization</span></h1>
+        <p class="hero-split__desc reveal reveal-delay-2">Rank higher on Google with technical SEO, on-page optimization, and authoritative link building.</p>
+        <div class="hero-split__checks reveal reveal-delay-3">
+          <div class="hero-split__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Average 320% ROI for clients</div>
+          <div class="hero-split__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Dedicated account manager</div>
+          <div class="hero-split__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Monthly performance reports</div>
+        </div>
+        <div class="hero-split__btns reveal reveal-delay-4">
+          <a href="#packages" class="btn btn--primary">Get Started — From $499/mo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+          <a href="#" class="btn btn--outline">Ask a Question</a>
+        </div>
+        <div class="hero-split__meta reveal reveal-delay-4">
+          <div class="hero-split__stars">
+            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          4.9/5 from 500+ reviews
+        </div>
+      </div>
+
+      <!-- RIGHT: Order Card -->
+      <div class="order-card reveal reveal-delay-2">
+        <div class="order-card__label">Most Popular Plan</div>
+        <div class="order-card__plan">Growth</div>
+        <div class="order-card__sub">Full digital marketing suite for scaling brands</div>
+        <div class="order-card__price">$1,499 <span>/mo</span></div>
+        <div class="order-card__time">Setup in 3–5 business days</div>
+        <div class="order-card__feat-label">What's Included</div>
+        <ul class="order-card__feats">
+          <li><svg class="chk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Advanced SEO Strategy</li>
+          <li><svg class="chk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>PPC Campaign Management</li>
+          <li><svg class="chk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Social Media (5 platforms)</li>
+          <li><svg class="chk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Email Marketing Automation</li>
+          <li><svg class="chk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Dedicated Account Manager</li>
+          <li class="dim"><svg class="xmk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>Content Marketing (+$599)</li>
+        </ul>
+        <div class="order-card__cta">
+          <a href="#packages" class="btn btn--primary">Select This Plan <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+          <a href="#" class="btn btn--outline">Ask a Question</a>
+        </div>
+        <p class="order-card__note">No commitment required. Cancel anytime.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="container">
+
+  <!-- 3. WHAT'S INCLUDED -->
+  <section class="included-section">
+    <div class="included-section__head reveal">
+      <h2 class="section-title">What's Included</h2>
+      <p class="section-subtitle">Everything you get with your SEO Optimization service</p>
+    </div>
+    <div class="included-grid">
+      <div class="included-item reveal reveal-delay-1">
+        <div class="included-item__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></div>
+        <div class="included-item__body"><div class="included-item__title">SEO Audit &amp; Optimization</div><div class="included-item__desc">Full technical audit and on-page fixes to boost your search rankings</div></div>
+      </div>
+      <div class="included-item reveal reveal-delay-2">
+        <div class="included-item__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+        <div class="included-item__body"><div class="included-item__title">Advanced SEO Strategy</div><div class="included-item__desc">Custom data-driven strategy aligned with your revenue targets</div></div>
+      </div>
+      <div class="included-item reveal reveal-delay-1">
+        <div class="included-item__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+        <div class="included-item__body"><div class="included-item__title">PPC Campaign Management</div><div class="included-item__desc">Expertly managed Google Ads and Meta Ads campaigns that convert</div></div>
+      </div>
+      <div class="included-item reveal reveal-delay-2">
+        <div class="included-item__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg></div>
+        <div class="included-item__body"><div class="included-item__title">Social Media (5 platforms)</div><div class="included-item__desc">Strategic content and community management across all key platforms</div></div>
+      </div>
+      <div class="included-item reveal reveal-delay-1">
+        <div class="included-item__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+        <div class="included-item__body"><div class="included-item__title">Email Marketing Automation</div><div class="included-item__desc">Automated sequences that nurture leads and generate recurring revenue</div></div>
+      </div>
+      <div class="included-item reveal reveal-delay-2">
+        <div class="included-item__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+        <div class="included-item__body"><div class="included-item__title">Monthly Performance Reports</div><div class="included-item__desc">Comprehensive reports covering traffic, leads, conversions, and revenue</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. CHOOSE YOUR PACKAGE -->
+  <section class="packages-section" id="packages">
+    <div class="packages-section__head reveal">
+      <h2 class="section-title">Choose Your Package</h2>
+      <p class="section-subtitle">Compare features and select the best plan for your business</p>
+    </div>
+    <div class="packages-table reveal reveal-delay-1">
+      <!-- Starter -->
+      <div class="pkg-col">
+        <div class="pkg-col__name">Starter</div>
+        <div class="pkg-col__desc">For small businesses just getting started</div>
+        <div class="pkg-col__price">$799 <span>/mo</span></div>
+        <div class="pkg-col__time">Setup in 3–5 business days</div>
+        <ul class="pkg-col__feats">
+          <li><svg class="pkg-chk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>SEO Audit &amp; Optimization</li>
+          <li><svg class="pkg-chk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Social Media (2 platforms)</li>
+          <li><svg class="pkg-chk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Monthly Performance Report</li>
+          <li class="off"><svg class="pkg-xmk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>PPC Campaign Management</li>
+          <li class="off"><svg class="pkg-xmk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>Email Marketing Automation</li>
+        </ul>
+        <a href="#" class="btn btn--outline">Select Starter</a>
+      </div>
+      <!-- Growth -->
+      <div class="pkg-col pkg-col--popular">
+        <div class="pkg-col__badge"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>Most Popular</div>
+        <div class="pkg-col__name">Growth</div>
+        <div class="pkg-col__desc">Full digital marketing suite for scaling brands</div>
+        <div class="pkg-col__price">$1,499 <span>/mo</span></div>
+        <div class="pkg-col__time">Setup in 3–5 business days</div>
+        <ul class="pkg-col__feats">
+          <li><svg class="pkg-chk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Advanced SEO Strategy</li>
+          <li><svg class="pkg-chk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>PPC Campaign Management</li>
+          <li><svg class="pkg-chk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Social Media (5 platforms)</li>
+          <li><svg class="pkg-chk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Email Marketing Automation</li>
+          <li class="off"><svg class="pkg-xmk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>Content Marketing (+$599)</li>
+        </ul>
+        <a href="#" class="btn btn--primary">Select Growth</a>
+      </div>
+      <!-- Enterprise -->
+      <div class="pkg-col">
+        <div class="pkg-col__name">Enterprise</div>
+        <div class="pkg-col__desc">Complete agency partnership for rapid growth</div>
+        <div class="pkg-col__price">$2,999 <span>/mo</span></div>
+        <div class="pkg-col__time">Setup in 3–5 business days</div>
+        <ul class="pkg-col__feats">
+          <li><svg class="pkg-chk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Everything in Growth</li>
+          <li><svg class="pkg-chk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Full Content Marketing</li>
+          <li><svg class="pkg-chk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Web Design &amp; CRO</li>
+          <li><svg class="pkg-chk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Brand Identity Package</li>
+          <li><svg class="pkg-chk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Priority Support &amp; Weekly Calls</li>
+        </ul>
+        <a href="#" class="btn btn--outline">Select Enterprise</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. ABOUT -->
+  <section class="about-section">
+    <div class="about-section__inner">
+      <div class="about-section__left reveal">
+        <h2>About SEO Optimization</h2>
+        <p>Rank higher on Google with technical SEO, on-page optimization, and authoritative link building. Data-driven digital marketing agency helping ambitious brands achieve measurable growth through SEO, PPC, Social Media &amp; Content Marketing.</p>
+        <p>From search engine optimization to paid ads and social media, we provide full-stack digital marketing for growing brands. We analyze results, double down on what works, and scale your campaigns for maximum growth.</p>
+        <p>Every client receives a comprehensive monthly report covering traffic, leads, conversions, revenue attribution, and campaign performance. We track every dollar spent and every result achieved.</p>
+      </div>
+      <div class="about-section__right reveal reveal-delay-2">
+        <div class="about-stat"><div class="about-stat__num">500+</div><div class="about-stat__label">Projects Completed</div></div>
+        <div class="about-stat"><div class="about-stat__num">320%</div><div class="about-stat__label">Average Client ROI</div></div>
+        <div class="about-stat"><div class="about-stat__num">98%</div><div class="about-stat__label">Client Retention Rate</div></div>
+        <div class="about-stat"><div class="about-stat__num">$50M+</div><div class="about-stat__label">Revenue Generated</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. FAQ -->
+  <section class="faq-section">
+    <div class="faq-section__head reveal">
+      <h2 class="section-title">Frequently Asked Questions</h2>
+      <p class="section-subtitle">Common questions about SEO Optimization</p>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item open">
+        <button class="faq-item__q" onclick="toggleFaq(this)">What digital marketing services do you offer?<span class="faq-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></span></button>
+        <div class="faq-item__a"><div class="faq-item__a-inner">We offer a full suite of digital marketing services including SEO, PPC advertising (Google &amp; Meta Ads), social media marketing, content marketing, email automation, web design, brand identity, and analytics reporting.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-item__q" onclick="toggleFaq(this)">How long before I see results from SEO?<span class="faq-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></span></button>
+        <div class="faq-item__a"><div class="faq-item__a-inner">SEO is a long-term strategy. Most clients see measurable improvements in rankings and traffic within 3–6 months. PPC campaigns typically show results within the first 2 weeks of launch.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-item__q" onclick="toggleFaq(this)">How do you measure and report ROI?<span class="faq-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></span></button>
+        <div class="faq-item__a"><div class="faq-item__a-inner">Every client receives a comprehensive monthly report covering traffic, leads, conversions, revenue attribution, and campaign performance. We track every dollar spent and every result achieved.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-item__q" onclick="toggleFaq(this)">Do you work with small businesses and startups?<span class="faq-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></span></button>
+        <div class="faq-item__a"><div class="faq-item__a-inner">Absolutely! Our Starter plan is designed for small businesses and startups. We scale our services to fit your budget and goals, and grow with you as your business expands.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-item__q" onclick="toggleFaq(this)">Is there a minimum contract period?<span class="faq-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></span></button>
+        <div class="faq-item__a"><div class="faq-item__a-inner">We recommend a minimum 3-month engagement to see meaningful results, especially for SEO. Month-to-month plans are available with a 30-day notice period. No long-term lock-ins.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-item__q" onclick="toggleFaq(this)">How do I get started with AgencyX?<span class="faq-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></span></button>
+        <div class="faq-item__a"><div class="faq-item__a-inner">Simply click "Get Started" and book a free 30-minute strategy call. We'll audit your current marketing, understand your goals, and recommend the best package for your business.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. RELATED SERVICES -->
+  <section class="related-section reveal">
+    <div class="related-section__head">
+      <h2>Related Services</h2>
+    </div>
+    <div class="related-grid">
+      <a href="#" class="related-card reveal reveal-delay-1">
+        <div class="related-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+        <div class="related-card__name">PPC Advertising</div>
+        <div class="related-card__desc">Maximize ad spend with expertly managed Google Ads and Meta Ads campaigns that convert.</div>
+        <div class="related-card__price">From $699/mo</div>
+      </a>
+      <a href="#" class="related-card reveal reveal-delay-2">
+        <div class="related-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg></div>
+        <div class="related-card__name">Social Media Marketing</div>
+        <div class="related-card__desc">Build an engaged audience and drive sales with strategic social media content and community management.</div>
+        <div class="related-card__price">From $399/mo</div>
+      </a>
+      <a href="#" class="related-card reveal reveal-delay-3">
+        <div class="related-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8"/></svg></div>
+        <div class="related-card__name">Content Marketing</div>
+        <div class="related-card__desc">Attract and convert prospects with high-quality blogs, videos, infographics, and lead magnets.</div>
+        <div class="related-card__price">From $599/mo</div>
+      </a>
+      <a href="#" class="related-card reveal reveal-delay-4">
+        <div class="related-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+        <div class="related-card__name">Email Marketing</div>
+        <div class="related-card__desc">Nurture leads and retain customers with automated email sequences that generate recurring revenue.</div>
+        <div class="related-card__price">From $299/mo</div>
+      </a>
+    </div>
+  </section>
+
+</div><!-- /container -->
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand"><svg width="24" height="24" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="8" fill="#6366f1"/><text x="14" y="20" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" font-weight="800" fill="#fff">AX</text></svg>Agency<span>X</span></div>
+        <p class="footer-brand-desc">Data-driven digital marketing agency helping ambitious brands achieve measurable growth.</p>
+      </div>
+      <div class="footer-col"><h4>Services</h4><ul><li><a href="#">SEO Optimization</a></li><li><a href="#">PPC Advertising</a></li><li><a href="#">Social Media</a></li><li><a href="#">Content Marketing</a></li><li><a href="#">Email Marketing</a></li></ul></div>
+      <div class="footer-col"><h4>Company</h4><ul><li><a href="#">About Us</a></li><li><a href="#">Case Studies</a></li><li><a href="#">Blog</a></li><li><a href="#">Contact</a></li><li><a href="#">Careers</a></li></ul></div>
+      <div class="footer-col"><h4>Legal</h4><ul><li><a href="#">Privacy Policy</a></li><li><a href="#">Terms of Service</a></li><li><a href="#">Refund Policy</a></li><li><a href="#">Cookie Policy</a></li></ul></div>
+    </div>
+    <div class="footer-bottom"><span>&copy; 2026 AgencyX. All rights reserved.</span><span>Results-focused digital marketing</span></div>
+    <p class="footer-disclaimer">AgencyX is a digital marketing agency. Results may vary based on industry, competition, budget, and campaign duration. Past results do not guarantee future performance.</p>
+  </div>
+</footer>
+
+<script>
+const nav=document.getElementById('nav');
+window.addEventListener('scroll',()=>nav.classList.toggle('scrolled',window.scrollY>50));
+document.getElementById('burger').addEventListener('click',()=>document.getElementById('mobileMenu').classList.add('open'));
+document.getElementById('menuClose').addEventListener('click',()=>document.getElementById('mobileMenu').classList.remove('open'));
+const ro=new IntersectionObserver((e,o)=>{e.forEach(i=>{if(i.isIntersecting){i.target.classList.add('visible');o.unobserve(i.target);}});},{threshold:.1,rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.reveal').forEach(el=>ro.observe(el));
+function toggleFaq(btn){const item=btn.closest('.faq-item');const was=item.classList.contains('open');document.querySelectorAll('.faq-item').forEach(i=>i.classList.remove('open'));if(!was)item.classList.add('open');}
+document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{const t=document.querySelector(a.getAttribute('href'));if(t){e.preventDefault();t.scrollIntoView({behavior:'smooth'});}}));
+</script>
+</body>
+</html>

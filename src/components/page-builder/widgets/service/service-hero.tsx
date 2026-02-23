@@ -143,12 +143,12 @@ export function ServiceHeroWidget({
     return styles;
   };
 
-  // Spacing classes
+  // Spacing classes (extra padding on top of the section's built-in paddingTop/paddingBottom)
   const spacingClasses = {
-    sm: "py-8",
-    md: "py-12",
-    lg: "py-16 lg:py-20",
-    xl: "py-20 lg:py-28",
+    sm: "",
+    md: "py-4",
+    lg: "py-8",
+    xl: "py-12 lg:py-16",
   };
 
   // Title size classes
@@ -181,14 +181,14 @@ export function ServiceHeroWidget({
       )}>
         {/* Service Icon */}
         {service.icon && (
-          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+          <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
             <ServiceIcon name={service.icon} className="h-8 w-8" />
           </div>
         )}
 
         {/* Price Badge */}
         {settings.showPriceBadge && (
-          <span data-field-id="price-badge" className="inline-block px-4 py-1.5 bg-orange-100 text-orange-800 rounded-full text-sm font-medium mb-4">
+          <span data-field-id="price-badge" className="inline-block px-4 py-1.5 bg-primary/10 text-primary rounded-full text-sm font-medium mb-4">
             {priceBadgeText}
           </span>
         )}
@@ -259,10 +259,10 @@ function ServiceHeroPlaceholder({
   settings: ServiceHeroWidgetSettings;
 }) {
   const spacingClasses = {
-    sm: "py-8",
-    md: "py-12",
-    lg: "py-16",
-    xl: "py-20",
+    sm: "",
+    md: "py-4",
+    lg: "py-8",
+    xl: "py-12 lg:py-16",
   };
 
   const titleSizeClasses = {
@@ -318,13 +318,13 @@ function ServiceHeroPlaceholder({
         alignmentClasses[settings.textAlignment]
       )}>
         {/* Placeholder Icon */}
-        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+        <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
           <span className="text-2xl">🏢</span>
         </div>
 
         {/* Price Badge */}
         {settings.showPriceBadge && (
-          <span className="inline-block px-4 py-1.5 bg-orange-100 text-orange-800 rounded-full text-sm font-medium mb-4">
+          <span className="inline-block px-4 py-1.5 bg-primary/10 text-primary rounded-full text-sm font-medium mb-4">
             {settings.priceBadgeText || "From $199"}
           </span>
         )}

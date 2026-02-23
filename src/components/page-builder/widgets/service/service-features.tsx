@@ -196,7 +196,7 @@ export function ServiceFeaturesWidget({
           {features.map((feature) => (
             <span
               key={feature.id}
-              className="inline-flex items-center gap-2 rounded-lg border bg-emerald-500/5 border-emerald-500/20 px-4 py-2.5 text-sm font-medium"
+              className="inline-flex items-center gap-2 rounded-lg border bg-primary/5 border-primary/20 px-4 py-2.5 text-sm font-medium"
             >
               {s.showIcons && (
                 <CircleCheck
@@ -325,7 +325,7 @@ function ServiceFeaturesPlaceholder({
           {PLACEHOLDER_FEATURES.map((feature) => (
             <span
               key={feature.id}
-              className="inline-flex items-center gap-2 rounded-lg border bg-emerald-500/5 border-emerald-500/20 px-4 py-2.5 text-sm font-medium"
+              className="inline-flex items-center gap-2 rounded-lg border bg-primary/5 border-primary/20 px-4 py-2.5 text-sm font-medium"
             >
               {s.showIcons && (
                 <CircleCheck

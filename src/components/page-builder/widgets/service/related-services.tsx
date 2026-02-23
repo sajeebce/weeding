@@ -168,7 +168,7 @@ export function RelatedServicesWidget({
   if (isLoading) {
     return (
       <WidgetContainer container={partialSettings.container}>
-      <section className="py-12 lg:py-16">
+      <section className="py-4">
         <div className="mx-auto max-w-7xl px-4">
           {s.header.show && (
             <div
