@@ -89,6 +89,9 @@ export async function GET() {
       search: {
         enabled: header.searchEnabled,
       },
+      languageSwitcher: {
+        enabled: header.showLanguageSwitcher,
+      },
       styling: {
         bgColor: header.bgColor,
         textColor: header.textColor,

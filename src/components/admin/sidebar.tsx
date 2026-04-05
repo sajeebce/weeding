@@ -23,6 +23,7 @@ import {
   Target,
   Paintbrush,
   Database,
+  CalendarHeart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useBusinessConfig } from "@/hooks/use-business-config";
@@ -111,6 +112,15 @@ const navItems: NavItem[] = [
     icon: UserCog,
   },
   {
+    title: "Wedding Projects",
+    icon: CalendarHeart,
+    children: [
+      { title: "All Projects", href: "/admin/planner" },
+      { title: "Manage Vendors", href: "/admin/vendors" },
+      { title: "View All Vendors", href: "/vendors" },
+    ],
+  },
+  {
     title: "Appearance",
     icon: Palette,
     children: [
@@ -174,6 +184,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Target,
   Paintbrush,
   Database,
+  CalendarHeart,
 };
 
 export function AdminSidebar() {

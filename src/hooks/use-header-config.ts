@@ -38,6 +38,9 @@ const defaultConfig: PublicHeaderResponse = {
   search: {
     enabled: false,
   },
+  languageSwitcher: {
+    enabled: false,
+  },
   styling: {},
 };
 

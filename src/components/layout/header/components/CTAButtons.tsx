@@ -8,6 +8,7 @@ import { CraftButton, CraftButtonLabel, CraftButtonIcon } from "@/components/ui/
 import { PrimaryFlowButton } from "@/components/ui/flow-button";
 import { NeuralButton } from "@/components/ui/neural-button";
 import { UserMenu } from "./UserMenu";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 import type { CTAButtonsProps } from "../types";
 import type { CTAButton } from "@/lib/header-footer/types";
 import { cn } from "@/lib/utils";
@@ -189,6 +190,7 @@ function CTAButtonItem({ btn, index }: { btn: CTAButton; index: number }) {
 export function CTAButtons({
   buttons,
   showAuth,
+  showLanguageSwitcher = false,
   authConfig,
   user,
   session,
@@ -203,6 +205,7 @@ export function CTAButtons({
   if (isLoading) {
     return (
       <div className="flex items-center gap-x-4">
+        {showLanguageSwitcher && <div className="h-9 w-24 animate-pulse rounded-md bg-muted" />}
         {/* CTA buttons placeholder */}
         {safeButtons.length > 0 &&
           safeButtons.map((_, index) => (
@@ -220,6 +223,7 @@ export function CTAButtons({
   if (isLoggedIn) {
     return (
       <div className="flex items-center gap-x-4">
+        {showLanguageSwitcher && <LanguageSwitcher />}
         {/* Show CTA buttons for logged in users too */}
         {safeButtons.length > 0 &&
           safeButtons.map((btn, index) => (
@@ -352,6 +356,7 @@ export function CTAButtons({
 
   return (
     <div className="flex items-center gap-x-4">
+      {showLanguageSwitcher && <LanguageSwitcher />}
       {renderAuthButton()}
 
       {safeButtons.length > 0 ? (

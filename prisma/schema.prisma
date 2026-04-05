@@ -34,6 +34,10 @@ model User {
   sentMessages        SupportMessage[] @relation("SentMessages")
   assignedTickets     SupportTicket[]  @relation("AssignedTickets")
   customerTickets     SupportTicket[]  @relation("CustomerTickets")
+  weddingProjects       WeddingProject[]
+  projectMemberships    ProjectMember[]
+  vendorProfile         VendorProfile?
+  coupleConversations   VendorConversation[] @relation("CoupleConversations")
 
   @@index([email])
   @@index([role])
@@ -833,8 +837,9 @@ model HeaderConfig {
   loginText        String       @default("Sign In")
   registerText     String       @default("Get Started")
   registerUrl      String       @default("/services/llc-formation")
-  searchEnabled    Boolean      @default(false)
-  mobileBreakpoint Int          @default(1024)
+  searchEnabled          Boolean      @default(false)
+  showLanguageSwitcher   Boolean      @default(false)
+  mobileBreakpoint       Int          @default(1024)
   bgColor          String?
   textColor        String?
   accentColor      String?
@@ -1321,6 +1326,7 @@ enum UserRole {
   CONTENT_MANAGER
   SALES_AGENT
   SUPPORT_AGENT
+  VENDOR
 }
 
 enum FeatureValueType {
@@ -1592,9 +1598,579 @@ enum LeadSource {
   OTHER
 }
 
+// ─── Wedding / Event Planner ─────────────────────────────────────────────────
+
+model WeddingProject {
+  id          String        @id @default(cuid())
+  title       String        @default("Untitled")
+  eventType   EventType     @default(WEDDING)
+  eventDate   DateTime?
+  status      ProjectStatus @default(ACTIVE)
+  coverImage  String?
+  settings    Json?
+  brideName   String?
+  groomName   String?
+  budgetGoal  Float         @default(0)
+  userId      String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  members          ProjectMember[]
+  guests           WeddingGuest[]
+  budgetCategories BudgetCategory[]
+  budgetItems      BudgetItem[]
+  checklistTasks   ChecklistTask[]
+  itineraryEvents  ItineraryEvent[]
+  notes            ProjectNote[]
+  seatingLayouts   SeatingLayout[]
+  seatingTables    SeatingTable[]
+  weddingWebsites  WeddingWebsite[]
+  eventVenues      EventVenue[]
+  vendors               WeddingVendor[]
+  vendorConversations   VendorConversation[]
+  briefTokens           EventBriefToken[]
+  @@index([userId])
+  @@index([status])
+}
+
+// ─── Seating Chart ────────────────────────────────────────────────────────────
+
+model SeatingLayout {
+  id        String         @id @default(cuid())
+  projectId String
+  name      String         @default("Layout")
+  type      String         @default("RECEPTION") // CEREMONY | RECEPTION
+  width     Int            @default(1200)
+  height    Int            @default(800)
+  bgColor   String         @default("#f5f5f0")
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  project WeddingProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tables  SeatingTable[]
+
+  @@index([projectId])
+}
+
+model SeatingTable {
+  id        String   @id @default(cuid())
+  layoutId  String
+  projectId String
+  name      String   @default("Table")
+  type      String   @default("ROUND") // ROUND | RECTANGULAR | SQUARE | OBLONG | HALF_ROUND | CHAIRS_ROW | BUFFET
+  x         Float    @default(100)
+  y         Float    @default(100)
+  seats     Int      @default(8)
+  rotation  Float    @default(0)
+  color     String   @default("#ffffff")
+  guestIds  Json     @default("[]")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  layout  SeatingLayout  @relation(fields: [layoutId], references: [id], onDelete: Cascade)
+  project WeddingProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([layoutId])
+  @@index([projectId])
+}
+
+// ─── Wedding Website Builder ──────────────────────────────────────────────────
+
+model WeddingWebsite {
+  id           String   @id @default(cuid())
+  projectId    String   @unique
+  slug         String   @unique
+  published    Boolean  @default(false)
+  theme        String   @default("modern")  // modern | floral | rustic | minimal
+  primaryColor String   @default("#be185d")
+  accentColor  String   @default("#f9a8d4")
+  fontFamily   String   @default("Inter")
+  blocks       Json     @default("[]")
+  customDomain String?
+  password     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  project          WeddingProject   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  guestbookEntries GuestbookEntry[]
+  guestPhotos      GuestPhoto[]
+
+  @@index([projectId])
+  @@index([slug])
+}
+
+model GuestbookEntry {
+  id         String   @id @default(cuid())
+  websiteId  String
+  authorName String
+  message    String
+  createdAt  DateTime @default(now())
+
+  website WeddingWebsite @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+
+  @@index([websiteId])
+  @@index([websiteId, createdAt(sort: Desc)])
+}
+
+model GuestPhoto {
+  id           String   @id @default(cuid())
+  websiteId    String
+  uploaderName String?
+  caption      String?
+  photoData    String   // base64 — resized to max 800px client-side before upload
+  createdAt    DateTime @default(now())
+
+  website WeddingWebsite @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+
+  @@index([websiteId])
+  @@index([websiteId, createdAt(sort: Desc)])
+}
+
+// ─── Wedding Vendors ──────────────────────────────────────────────────────────
+
+model WeddingVendor {
+  id        String       @id @default(cuid())
+  projectId String
+  name      String
+  category  VendorCategory
+  email     String?
+  phone     String?
+  website   String?
+  notes     String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  project WeddingProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([projectId, category])
+}
+
+enum VendorCategory {
+  VENUE
+  PHOTOGRAPHY
+  VIDEOGRAPHY
+  CATERING
+  MUSIC_DJ
+  FLOWERS
+  DRESS_ATTIRE
+  RINGS
+  DECORATIONS
+  TRANSPORTATION
+  HAIR_MAKEUP
+  WEDDING_PLANNER
+  OTHER
+}
+
+model WeddingGuest {
+  id               String        @id @default(cuid())
+  projectId        String
+  firstName        String
+  lastName         String?
+  title            String?       // Ms. Mr. Mrs. Dr.
+  side             GuestSide     @default(BRIDE)
+  relation         GuestRelation @default(OTHER)
+  email            String?
+  phone            String?
+  dietary          String?
+  rsvpStatus       RsvpStatus    @default(PENDING)
+  tableNumber      Int?
+  notes            String?
+  rsvpToken        String?       @unique
+  rsvpMessage      String?
+  rsvpSubmittedAt  DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  project     WeddingProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, side])
+  @@index([projectId, rsvpStatus])
+}
+
+model ProjectMember {
+  id          String      @id @default(cuid())
+  projectId   String
+  userId      String
+  role        MemberRole
+  displayName String?
+  createdAt   DateTime    @default(now())
+
+  project     WeddingProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@index([projectId])
+  @@index([userId])
+}
+
+// ─── Budget Tracker ───────────────────────────────────────────────────────────
+
+model BudgetCategory {
+  id        String       @id @default(cuid())
+  projectId String
+  name      String
+  planned   Float        @default(0)
+  color     String       @default("#6366f1")
+  order     Int          @default(0)
+  items     BudgetItem[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  project   WeddingProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+}
+
+model BudgetItem {
+  id          String        @id @default(cuid())
+  categoryId  String
+  projectId   String
+  description String
+  planned     Float         @default(0)
+  actual      Float         @default(0)
+  paid        Float         @default(0)
+  status      BudgetPaymentStatus @default(UNPAID)
+  notes       String?
+  order       Int                 @default(0)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  category    BudgetCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  project     WeddingProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([categoryId])
+  @@index([projectId])
+}
+
+// ─── Checklist ────────────────────────────────────────────────────────────────
+
+model ChecklistTask {
+  id          String    @id @default(cuid())
+  projectId   String
+  title       String
+  description String?
+  subtasks    Json      @default("[]")
+  dueMonths   Int?      // months before wedding (12 = 12 months before)
+  category    String?
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+  isDefault   Boolean   @default(false)
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  project     WeddingProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, completed])
+}
+
+// ─── Itinerary ────────────────────────────────────────────────────────────────
+
+model ItineraryEvent {
+  id          String   @id @default(cuid())
+  projectId   String
+  title       String
+  description String?
+  startTime   String   // HH:mm
+  endTime     String?  // HH:mm
+  location    String?
+  category    String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project     WeddingProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+}
+
+// ─── Notes ────────────────────────────────────────────────────────────────────
+
+model ProjectNote {
+  id        String   @id @default(cuid())
+  projectId String
+  title     String   @default("Untitled")
+  content   String   @default("")
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project   WeddingProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+}
+
+enum BudgetPaymentStatus {
+  UNPAID
+  PARTIAL
+  PAID
+}
+
+// ─── Venue Details (Ceremony & Reception) ────────────────────────────────────
+
+model EventVenue {
+  id          String    @id @default(cuid())
+  projectId   String
+  type        VenueType
+  venueName   String?
+  address     String?
+  city        String?
+  country     String?
+  date        DateTime?
+  time        String?
+  capacity    Int?
+  description String?
+  notes       String?
+  layoutNotes String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  project WeddingProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, type])
+  @@index([projectId])
+}
+
+enum VenueType {
+  CEREMONY
+  RECEPTION
+}
+
+enum EventType {
+  WEDDING
+  BAPTISM
+  PARTY
+  CORPORATE
+}
+
+enum ProjectStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+  COMPLETED
+}
+
+enum MemberRole {
+  BRIDE
+  GROOM
+  PLANNER
+  OTHER
+}
+
+enum GuestSide {
+  BRIDE
+  GROOM
+}
+
+enum GuestRelation {
+  BRIDE
+  GROOM
+  MAID_OF_HONOR
+  MATRON_OF_HONOR
+  BRIDESMAID
+  BEST_MAN
+  GROOMSMAN
+  PARENT
+  CLOSE_RELATIVE
+  RELATIVE
+  CLOSE_FRIEND
+  FRIEND
+  PARTNER
+  OTHER
+}
+
+enum RsvpStatus {
+  PENDING
+  ATTENDING
+  NOT_ATTENDING
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 enum LeadPriority {
   LOW
   MEDIUM
   HIGH
   URGENT
+}
+
+// ─── Public Vendor Marketplace ────────────────────────────────────────────────
+
+model VendorProfile {
+  id              String         @id @default(cuid())
+  slug            String         @unique
+  userId          String?        @unique
+  status          VendorStatus   @default(PENDING)
+  businessName    String
+  category        VendorCategory
+  description     String?
+  tagline         String?
+  email           String?
+  phone           String?
+  website         String?
+  city            String?
+  country         String         @default("SE")
+  lat             Float?
+  lng             Float?
+  serviceRadiusKm Int?
+  photos          String[]       @default([])
+  videoUrls       String[]       @default([])
+  startingPrice   Int?
+  currency        String         @default("SEK")
+  yearsInBusiness Int?
+  languages       String[]       @default([])
+  isApproved      Boolean        @default(false)
+  isActive        Boolean        @default(true)
+  isFeatured      Boolean        @default(false)
+  trialEndsAt     DateTime?
+  planTier        VendorPlanTier @default(TRIAL)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  user            User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
+  inquiries       VendorInquiry[]
+  reviews         VendorReview[]
+  conversations   VendorConversation[]
+  quickReplies    VendorQuickReply[]
+
+  @@index([category])
+  @@index([isApproved, isActive])
+  @@index([city])
+  @@index([isFeatured])
+  @@index([userId])
+  @@index([status])
+}
+
+model VendorInquiry {
+  id        String        @id @default(cuid())
+  vendorId  String
+  name      String
+  email     String
+  phone     String?
+  eventType String
+  eventDate DateTime?
+  message   String
+  budget    String?
+  status    InquiryStatus @default(NEW)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  vendor       VendorProfile       @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  conversation VendorConversation?
+
+  @@index([vendorId])
+  @@index([vendorId, status])
+}
+
+model VendorReview {
+  id         String   @id @default(cuid())
+  vendorId   String
+  authorName String
+  rating     Int
+  comment    String?
+  reply      String?
+  isApproved Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  vendor     VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@index([vendorId])
+  @@index([vendorId, isApproved])
+}
+
+model VendorConversation {
+  id            String           @id @default(cuid())
+  vendorId      String
+  inquiryId     String?          @unique
+  guestName     String
+  guestEmail    String
+  projectId     String?
+  coupleUserId  String?
+  status        VendorConvStatus @default(ACTIVE)
+  lastMessageAt DateTime         @default(now())
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  vendor      VendorProfile   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  inquiry     VendorInquiry?  @relation(fields: [inquiryId], references: [id], onDelete: SetNull)
+  project     WeddingProject? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  coupleUser  User?           @relation("CoupleConversations", fields: [coupleUserId], references: [id], onDelete: SetNull)
+  messages    VendorMessage[]
+
+  @@index([vendorId, lastMessageAt(sort: Desc)])
+  @@index([vendorId, status])
+  @@index([projectId])
+  @@index([coupleUserId])
+}
+
+model VendorMessage {
+  id             String            @id @default(cuid())
+  conversationId String
+  senderRole     MessageSenderRole
+  content        String
+  isRead         Boolean           @default(false)
+  createdAt      DateTime          @default(now())
+
+  conversation VendorConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt(sort: Desc)])
+}
+
+model VendorQuickReply {
+  id        String   @id @default(cuid())
+  vendorId  String
+  title     String
+  content   String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  vendor VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@index([vendorId])
+}
+
+model EventBriefToken {
+  id        String    @id @default(cuid())
+  projectId String
+  token     String    @unique
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  project WeddingProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+}
+
+enum VendorConvStatus {
+  ACTIVE
+  ARCHIVED
+  SPAM
+}
+
+enum MessageSenderRole {
+  VENDOR
+  GUEST
+}
+
+enum InquiryStatus {
+  NEW
+  VIEWED
+  RESPONDED
+  ARCHIVED
+}
+
+enum VendorPlanTier {
+  TRIAL     // 30-day free trial after admin approval
+  BUSINESS  // Active paid Business plan ($19/mo)
+  EXPIRED   // Trial or plan expired — dashboard access only
+}
+
+enum VendorStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
 }

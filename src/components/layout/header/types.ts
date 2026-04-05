@@ -106,6 +106,7 @@ export interface TopBarProps {
 export interface CTAButtonsProps {
   buttons: CTAButton[];
   showAuth: boolean;
+  showLanguageSwitcher?: boolean;
   authConfig: {
     loginText: string;
     loginUrl?: string;

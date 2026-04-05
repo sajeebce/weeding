@@ -75,6 +75,7 @@ export function HeaderSplit({
           <CTAButtons
             buttons={config.cta || []}
             showAuth={config.auth?.showButtons ?? true}
+            showLanguageSwitcher={config.languageSwitcher?.enabled ?? false}
             authConfig={{
               loginText: config.auth?.loginText || "Sign In",
               loginUrl: config.auth?.loginUrl || "/login",

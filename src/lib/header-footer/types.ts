@@ -213,6 +213,7 @@ export interface HeaderConfig {
   registerUrl: string;
   registerStyle?: ButtonCustomStyle | null;
   searchEnabled: boolean;
+  showLanguageSwitcher: boolean;
   mobileBreakpoint: number;
   bgColor?: string | null;
   textColor?: string | null;
@@ -500,6 +501,9 @@ export interface PublicHeaderResponse {
     registerUrl: string;
   };
   search: {
+    enabled: boolean;
+  };
+  languageSwitcher: {
     enabled: boolean;
   };
   styling: {

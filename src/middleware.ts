@@ -49,9 +49,23 @@ export async function middleware(request: NextRequest) {
   if (pathname.startsWith("/admin") && token) {
     const userRole = token.role as string;
     if (!adminRoles.includes(userRole)) {
-      // Redirect non-admin users to their dashboard
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
+  }
+
+  // If trying to access vendor portal, must be VENDOR role
+  if (pathname.startsWith("/vendor") && !pathname.startsWith("/vendor/register") && token) {
+    const userRole = token.role as string;
+    if (userRole !== "VENDOR") {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+  }
+
+  // /vendor/register requires login but not VENDOR role (they're registering)
+  if (pathname.startsWith("/vendor") && !pathname.startsWith("/vendor/register") && !token) {
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("callbackUrl", pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
   // If already authenticated and trying to access auth routes, redirect to appropriate dashboard
@@ -59,6 +73,9 @@ export async function middleware(request: NextRequest) {
     const userRole = token.role as string;
     if (adminRoles.includes(userRole)) {
       return NextResponse.redirect(new URL("/admin", request.url));
+    }
+    if (userRole === "VENDOR") {
+      return NextResponse.redirect(new URL("/vendor/dashboard", request.url));
     }
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
@@ -68,13 +85,10 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Match all admin routes
     "/admin/:path*",
-    // Match dashboard routes
     "/dashboard/:path*",
-    // Match account routes
     "/account/:path*",
-    // Match auth routes
+    "/vendor/:path*",
     "/login",
     "/register",
   ],

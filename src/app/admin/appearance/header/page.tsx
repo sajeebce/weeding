@@ -19,6 +19,7 @@ import {
   Pin,
   Layers,
   Search,
+  Globe,
   ArrowUpRight,
 } from "lucide-react";
 import { DynamicIcon } from "lucide-react/dynamic";
@@ -545,6 +546,7 @@ export default function HeaderBuilderPage() {
       hoverBgColor: "#EA580C",
     } as ButtonCustomStyle,
     searchEnabled: false,
+    showLanguageSwitcher: false,
     mobileBreakpoint: 1024,
     height: 80,
     bgColor: "",
@@ -594,6 +596,7 @@ export default function HeaderBuilderPage() {
             hoverBgColor: "#EA580C",
           },
           searchEnabled: activeHeader.searchEnabled,
+          showLanguageSwitcher: activeHeader.showLanguageSwitcher ?? false,
           mobileBreakpoint: activeHeader.mobileBreakpoint,
           height: activeHeader.height,
           bgColor: activeHeader.bgColor || "",
@@ -1169,7 +1172,26 @@ export default function HeaderBuilderPage() {
                   </div>
                 </div>
 
-                {/* 4. Top Announcement Bar - Collapsible */}
+                {/* 4. Language Switcher */}
+                <div className="rounded-lg border">
+                  <div className="flex items-center justify-between p-4">
+                    <div className="flex items-center gap-3">
+                      <Globe className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <Label className="text-base">Language Switcher</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Show EN / SV / AR switcher in header
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={formData.showLanguageSwitcher}
+                      onCheckedChange={(checked) => setFormData({ ...formData, showLanguageSwitcher: checked })}
+                    />
+                  </div>
+                </div>
+
+                {/* 5. Top Announcement Bar - Collapsible */}
                 <div className="rounded-lg border">
                   <div className="flex items-center justify-between p-4">
                     <div className="flex items-center gap-3">

@@ -12,42 +12,11 @@ import {
   LogOut,
   ChevronLeft,
   Menu,
+  CalendarHeart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-
-const navigation = [
-  {
-    name: "Overview",
-    href: "/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    name: "Orders",
-    href: "/dashboard/orders",
-    icon: ShoppingBag,
-  },
-  {
-    name: "Invoices",
-    href: "/dashboard/invoices",
-    icon: Receipt,
-  },
-  {
-    name: "Documents",
-    href: "/dashboard/documents",
-    icon: FileText,
-  },
-  {
-    name: "Profile",
-    href: "/dashboard/profile",
-    icon: User,
-  },
-  {
-    name: "Support",
-    href: "/dashboard/support",
-    icon: HelpCircle,
-  },
-];
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface SidebarProps {
   collapsed?: boolean;
@@ -61,6 +30,17 @@ export function DashboardSidebar({
   mobile = false,
 }: SidebarProps) {
   const pathname = usePathname();
+  const { t } = useLanguage();
+
+  const navigation = [
+    { name: t("dash.overview"),        href: "/dashboard",           icon: LayoutDashboard },
+    { name: t("dash.orders"),          href: "/dashboard/orders",    icon: ShoppingBag },
+    { name: t("dash.invoices"),        href: "/dashboard/invoices",  icon: Receipt },
+    { name: t("dash.documents"),       href: "/dashboard/documents", icon: FileText },
+    { name: t("common.profile"),       href: "/dashboard/profile",   icon: User },
+    { name: t("dash.support"),         href: "/dashboard/support",   icon: HelpCircle },
+    { name: t("dash.weddingProjects"), href: "/planner",             icon: CalendarHeart },
+  ];
 
   return (
     <aside
@@ -139,10 +119,10 @@ export function DashboardSidebar({
             "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
             collapsed && "justify-center px-2"
           )}
-          title={collapsed ? "Sign Out" : undefined}
+          title={collapsed ? t("common.signOut") : undefined}
         >
           <LogOut className="h-5 w-5 shrink-0" />
-          {!collapsed && <span>Sign Out</span>}
+          {!collapsed && <span>{t("common.signOut")}</span>}
         </button>
       </div>
     </aside>

@@ -24,6 +24,7 @@ const headerConfigSchema = z.object({
   registerUrl: z.string().default("/services/llc-formation"),
   registerStyle: z.any().optional(),
   searchEnabled: z.boolean().default(false),
+  showLanguageSwitcher: z.boolean().default(false),
   mobileBreakpoint: z.number().default(1024),
   bgColor: z.string().optional().nullable(),
   textColor: z.string().optional().nullable(),

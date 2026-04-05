@@ -4,6 +4,7 @@ import { AuthProvider } from "@/components/providers/auth-provider";
 import { ToasterProvider } from "@/components/providers/toaster-provider";
 import { ScrollToTop } from "@/components/ui/scroll-to-top";
 import { ThemeColorProvider } from "@/lib/theme/color-provider";
+import { LanguageProvider } from "@/lib/i18n/language-context";
 import "./globals.css";
 
 const inter = Inter({
@@ -63,11 +64,13 @@ export default function RootLayout({
     <html lang="en" className={inter.variable}>
       <body className="min-h-screen bg-background font-sans antialiased">
         <ThemeColorProvider />
-        <AuthProvider>
-          {children}
-          <ScrollToTop />
-          <ToasterProvider />
-        </AuthProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            {children}
+            <ScrollToTop />
+            <ToasterProvider />
+          </AuthProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

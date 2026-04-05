@@ -4,6 +4,11 @@ const nextConfig: NextConfig = {
   // Standalone output for VPS deployment
   output: "standalone",
 
+  // Reduce parallel build workers to avoid OOM
+  experimental: {
+    cpus: 1,
+  },
+
 
   // Image optimization
   images: {
@@ -23,6 +28,10 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "cdn.llcpad.com", // R2 CDN for uploaded files
+      },
+      {
+        protocol: "https",
+        hostname: "flagcdn.com", // Flag images for language switcher
       },
     ],
   },
