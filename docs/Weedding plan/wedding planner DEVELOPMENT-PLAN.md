@@ -1108,6 +1108,15 @@ interface LocalProject {
 | 20 | Bug fix — add guest on authenticated projects | ✅ Done | `POST /guests` returned 400 for empty `firstName`. Fixed: removed validation, now accepts empty string → user fills in inline. `src/app/api/planner/projects/[id]/guests/route.ts` |
 | 21 | i18n keys | ✅ Done | Added `guests.headingDesc` with `{guidelineLink}` placeholder, `guests.guidelineLink`, `guests.exportPdf` in all 4 languages |
 
+**Phase 2A — Blueprint Features Not Yet Implemented:**
+
+| # | Task | Status | Details |
+|---|------|--------|---------|
+| 22 | Plus-one management | ⬜ Pending | Each guest can have a +1 linked (name, meal). Blueprint: "Plus-one management" |
+| 23 | Chief guest assignment | ⬜ Pending | Flag a guest as "chief guest" — shown with special badge in list |
+| 24 | Family grouping | ⬜ Pending | Group guests into family units — shared table assignment, bulk RSVP |
+| 25 | Bulk actions | ⬜ Pending | Select multiple guests → bulk: export selection, assign to table, send invitations |
+
 #### Phase 2B: RSVP Engine — ✅ IMPLEMENTATION DONE (2026-03-30)
 
 | # | Task | Status | Details |
@@ -1118,8 +1127,11 @@ interface LocalProject {
 | 4 | Unique RSVP URL per guest | ✅ Done | `POST /api/planner/projects/[id]/guests/[guestId]/token` generates `randomBytes(16).toString("hex")` token, stores in DB, returns URL `/rsvp/[token]` |
 | 5 | QR code generation | ✅ Done | `qrcode` package installed. `RsvpLinkModal` component generates QR PNG via `QRCode.toDataURL()`. Modal shows QR + copy link button. Accessible from guest row (hover → link icon) and full-table view. |
 | 6 | Public RSVP page | ✅ Done | `src/app/rsvp/[token]/page.tsx` — no auth required, shows event name + date, attending/declining toggle, dietary + message fields, confirmation screen |
-| 7 | Email notifications | ⬜ Skipped (Phase 3) | Requires Nodemailer / SendGrid setup — deferred |
+| 7 | Email notifications | ✅ Done (2026-04-05) | Fire-and-forget after RSVP submission — couple gets HTML email with guest name, status, dietary, message via Nodemailer |
 | 8 | Guest list integration | ✅ Done | Link icon button on hover in all 3 views. Calls token API once, caches in state. `isLocal` guests hide the button. |
+| 9 | Custom RSVP questions | ⬜ Pending | Blueprint: 4 types — short text, long text, single choice, multiple choice. Couple creates custom questions per project; answers stored per guest |
+| 10 | GDPR consent checkbox | ⬜ Pending | Blueprint: consent checkbox on public RSVP form — required before submission |
+| 11 | SMS delivery (Elite) | ⬜ Pending | Send RSVP link via SMS (46elks/Twilio). Elite plan only |
 
 **Files created/modified (Phase 2B):**
 - `scripts/add-rsvp-cols.mjs` — raw SQL to add RSVP columns
@@ -1143,7 +1155,11 @@ interface LocalProject {
 | 8 | Bottom summary + PDF | ✅ Done | Bottom section shows 4 totals + "Download PDF file" button. PDF generated via `@react-pdf/renderer`. PDF fixed (2026-04-01): was using `item.actual` (always 0); changed to `item.planned`. Added full summary section (Budget / Spent / Paid / Remaining) to PDF. |
 | 9 | Auto-load default categories | ✅ Done | Removed manual "Load default categories" button — 12 default categories (Venue, Catering, Photography, etc.) auto-seeded on first visit via `autoSeededRef`. |
 | 10 | Per-item paid checkbox | ✅ Done (2026-04-01) | Checkbox per item row: checked → `paid = planned` (item turns green + strikethrough on title); unchecked → `paid = 0`. Saves to DB (`PUT /budget/[catId]/items/[itemId]`) or localStorage. Reloads budget after save. Fixed bug: `catId` variable was undefined inside `.map()` — changed to `cat.id`. |
-| 11 | Pie chart / Overspending alerts | ⬜ Pending | Polish items — future phase |
+| 11 | Pie chart visualization | ⬜ Pending | Budget breakdown by category as pie chart |
+| 12 | Overspending alerts | ⬜ Pending | Blueprint: visual warning when actual > planned per category |
+| 13 | Cost-per-head analysis | ⬜ Pending | Blueprint: total budget ÷ guest count — shows per-person cost live |
+| 14 | Contingency fund recommendation | ⬜ Pending | Blueprint: suggest 12–15% buffer, shown as a recommendation card |
+| 15 | Multi-currency support | ⬜ Pending | Blueprint: Premium feature — select currency per project (SEK, USD, EUR, GBP) |
 
 #### Phase 2D: Checklist, Itinerary & Notes — ✅ IMPLEMENTATION DONE (2026-03-30, updated 2026-03-31)
 
@@ -1263,6 +1279,23 @@ daysLeft  < 7  → Wedding Day only
 
 **Phase 2 Status:** ✅ IMPLEMENTATION DONE (2026-04-03) — all sub-phases + enhancements complete
 
+> **Blueprint gap (not yet planned):** Phase 2A items #22–25 (plus-one, chief guest, family grouping, bulk actions), Phase 2B items #9–11 (custom RSVP questions, GDPR consent, SMS), Phase 2C items #12–15 (overspending alerts, cost-per-head, contingency fund, multi-currency) — to be planned in a future enhancement phase.
+
+---
+
+#### Phase 2E: Files Tab — ⬜ NOT STARTED
+
+**Blueprint:** Dashboard has 13 tabs — "Files" is one of them (document storage). Currently missing from dev plan and not implemented.
+
+| # | Task | Status | Details |
+|---|------|--------|---------|
+| 1 | Prisma schema — `ProjectFile` model | ⬜ Pending | fileName, fileUrl, fileType, fileSize, uploadedAt, projectId |
+| 2 | File upload API | ⬜ Pending | `POST /api/planner/projects/[id]/files` — upload to Cloudflare R2, save metadata to DB |
+| 3 | File list API | ⬜ Pending | `GET /api/planner/projects/[id]/files` — list all uploaded files |
+| 4 | File delete API | ⬜ Pending | `DELETE /api/planner/projects/[id]/files/[fileId]` — delete from R2 + DB |
+| 5 | Files page UI | ⬜ Pending | `/planner/[id]/files` — drag-drop upload zone, file list with preview/download/delete |
+| 6 | Sidebar nav item | ⬜ Pending | Add "Files" between Notes and Post-Event in sidebar (matching blueprint menu order) |
+
 ---
 
 ### Phase 3: Visual Editors — 🔄 IN PROGRESS (3A ✅ · 3B ✅ · 3C ✅ · 3D ⬜)
@@ -1277,11 +1310,15 @@ daysLeft  < 7  → Wedding Day only
 | 1 | Canvas setup (Konva.js) | ✅ Done | Zoom/pan, draggable, responsive resize |
 | 2 | Table types (7 types) | ✅ Done | Round, Rectangular, Square, Oblong, Half-round, Row, Buffet |
 | 3 | Dual layouts | ✅ Done | Ceremony ⛪ + Reception 🥂 layout tabs, full CRUD |
-| 4 | Starter templates (6) | ⬜ Deferred | Future enhancement |
+| 4 | Starter templates (6) | ⬜ Pending | Blueprint: 6 pre-built layout templates (classroom, banquet, U-shape, etc.) |
 | 5 | Guest assignment | ✅ Done | Search modal, bride/groom indicators, RSVP status |
 | 6 | Guest avatars | ✅ Done | Colored dots (rose=bride, blue=groom) per occupied seat |
-| 7 | History/snapshots | ⬜ Deferred | Future enhancement |
-| 8 | Catering mode | ⬜ Deferred | Future enhancement |
+| 7 | History/snapshots | ⬜ Pending | Blueprint: auto-save every 5 min, manual snapshots, version restore |
+| 8 | Catering mode toggle | ⬜ Pending | Blueprint: toggle to show meal counts per table for catering team |
+| 16 | QR Entrance Mode | ⬜ Pending | Blueprint: unique URL for venue staff — search guest by name on mobile, see seat info. Premium/Elite plan only |
+| 17 | Upload venue SVG blueprint | ⬜ Pending | Blueprint: couple can upload venue floor plan as SVG background on canvas |
+| 18 | Export PDF — full set | ⬜ Pending | Blueprint: seating chart PDF, table cards PDF, place cards PDF, menus PDF, guest list PDF |
+| 19 | Export Excel | ⬜ Pending | Blueprint: export seating assignments as XLS |
 | 9 | Export PNG | ✅ Done | Full canvas PNG via Konva toDataURL @2x |
 | 10 | Checklist & cleanup | ✅ Done | All seating flows working (local + API modes) |
 | 11 | Reference UI redesign — Seating Chart & Supplies | ✅ Done | Full page redesign matching planning.wedding reference. 7 tab cards (Ceremony Layout, Reception Layout, Alphabetical Guest Atlas, Seating Cards by Table, Classic Name Cards, Table Numbers, Reception Menu). Dashed SVG curve connector from selected tab to content. Ceremony tab: live SVG diagram (arch + curved near-arch rows + 8 numbered pew rows + center aisle gradient). Reception tab: SVG diagram (9 round tables + seats + dance floor). "Click here to edit layout" → toggles canvas editor inline with ← Back button. Download PDF button, Recommendation box, gallery placeholder row. Other 5 tabs: proper SVG preview diagrams. Default tab = Reception Layout on direct sidebar click. |
@@ -1393,17 +1430,19 @@ daysLeft  < 7  → Wedding Day only
 - `prisma/schema.prisma` — `WeddingWebsite` model added
 - `prisma/migrations/20260331000000_add_wedding_website/migration.sql` — **Created** — table creation SQL
 
-#### Phase 3D: Invitation Designer
+#### Phase 3D: Invitation Designer — ⬜ NOT STARTED
+
+**Blueprint:** Full invitation design system — templates, customization, multi-channel delivery, tracking.
 
 | # | Task | Status | Details |
 |---|------|--------|---------|
-| 1 | Template system (10+) | ⬜ Pending | Letterpress, rustic, elegant, minimalist |
-| 2 | Customization editor | ⬜ Pending | Colors, fonts, logo, live preview |
-| 3 | QR code per invitation | ⬜ Pending | Unique RSVP link |
-| 4 | Multi-channel delivery | ⬜ Pending | Email, SMS, shareable link |
-| 5 | Tracking dashboard | ⬜ Pending | Open/response tracking |
-| 6 | Export (digital + print PDF) | ⬜ Pending | 300 DPI print-ready |
-| 7 | Checklist & cleanup | ⬜ Pending | Verify all invitation flows |
+| 1 | Template system (10+) | ⬜ Pending | Blueprint: Letterpress, rustic, elegant, minimalist styles — theme engine matches wedding website |
+| 2 | Customization editor | ⬜ Pending | Colors, fonts, logo upload, couple photo, live preview |
+| 3 | QR code per invitation | ⬜ Pending | Each guest gets unique QR → RSVP link embedded in their invitation |
+| 4 | Multi-channel delivery | ⬜ Pending | Email (HTML + attached PDF), shareable link, SMS (Elite) |
+| 5 | Tracking dashboard | ⬜ Pending | Open rate, RSVP response rate, bounces |
+| 6 | Export digital + print PDF | ⬜ Pending | 300 DPI print-ready A5/A4 PDF per guest |
+| 7 | Checklist & cleanup | ⬜ Pending | Verify all invitation flows end-to-end |
 
 **Deliverable:** Ceremony/Reception venue details, seating charts, wedding websites, and invitations functional
 **Phase 3 Status:** 🔄 IN PROGRESS (3A ✅ · 3B ✅ · 3C ✅ · 3D ⬜ Pending)
@@ -1412,7 +1451,7 @@ daysLeft  < 7  → Wedding Day only
 
 ---
 
-### Phase 4: Guest Experience & Public Sites — 🔄 IN PROGRESS
+### Phase 4: Guest Experience & Public Sites — ✅ COMPLETE (2026-04-05)
 
 **Goal:** Public-facing guest interactions + post-event features
 **Depends on:** Phase 3 completed
@@ -1423,13 +1462,13 @@ daysLeft  < 7  → Wedding Day only
 | 2 | Public RSVP submission | ✅ Done | `/rsvp/[token]` page — unique token per guest, conditional form, updates DB. Implemented in Phase 2B. |
 | 3 | Guestbook (public) | ✅ Done (2026-04-03) | `GET/POST /api/guestbook/[websiteId]` + `GuestbookSection` client component with live submit + entries list |
 | 4 | Guest photo upload | ✅ Done (2026-04-03) | `GET/POST /api/guest-photos/[websiteId]` + `GuestPhotoUpload` component — client-side resize to 800px, base64 stored in DB, photo grid + lightbox |
-| 5 | QR Seat Finder | ⬜ Pending | Search by name/seat → table + map position |
-| 6 | Post-event module | ✅ Done (2026-04-03) | `/planner/[id]/post-wedding` — 3 tabs (Overview/Guestbook/Photos), RSVP bar chart, guestbook download, photo grid + lightbox |
-| 7 | Push notifications | ⬜ Pending | RSVP received, deadline reminders |
-| 8 | Checklist & cleanup | ⬜ Pending | Verify all public flows |
+| 5 | QR Seat Finder | ✅ Done (2026-04-05) | `GET /api/public/seat-finder/[projectId]` (no auth) returns tables + guests. `/seat-finder/[projectId]` public page — search by name, shows table + tablemates |
+| 6 | Post-event module | ✅ Done (2026-04-03, enhanced 2026-04-05) | `/planner/[id]/post-wedding` — 3 tabs (Overview/Guestbook/Photos), RSVP bar chart, guestbook download, photo grid + lightbox. **Enhancement (2026-04-05):** Overview page Post-Wedding section now fetches real data (`guestPhotos`, `guestbookEntries`, `rsvpCounts.attending`) from `/api/.../post-wedding` and shows live stats + link. Was previously hardcoded "Photos not added yet!" with no API call. |
+| 7 | Push notifications | ⏭️ DEFERRED | Requires service workers + VAPID keys — complex infra, deferred to Phase 6. Email notifications implemented instead (item 8) |
+| 8 | RSVP Email notifications | ✅ Done (2026-04-05) | `POST /api/rsvp/[token]` now sends email to couple after RSVP submission (fire-and-forget via Nodemailer). Guest name, status (✅/❌), dietary, message included in HTML email. |
 
 **Deliverable:** Guests can visit websites, RSVP, upload photos, find seats; post-event archive works
-**Phase 4 Status:** 🔄 IN PROGRESS (items 1 ✅ · 2 ✅ · 3 ✅ · 4 ✅ · 6 ✅ done · items 5 · 7 · 8 ⬜ pending)
+**Phase 4 Status:** ✅ COMPLETE (items 1 ✅ · 2 ✅ · 3 ✅ · 4 ✅ · 5 ✅ · 6 ✅ · 7 ⏭️ deferred · 8 ✅)
 
 **Files created/modified (Phase 4 #3, #4, #6 — 2026-04-03):**
 - `src/app/api/guestbook/[websiteId]/route.ts` — NEW: `GET` (list entries, public) + `POST` (submit message, validates name ≤100 / message ≤1000)
@@ -1448,7 +1487,7 @@ daysLeft  < 7  → Wedding Day only
 
 ---
 
-### Phase 5: Marketplace, Messaging & Payments — 🔄 IN PROGRESS
+### Phase 5: Marketplace, Messaging & Payments — ✅ COMPLETE (2026-04-05)
 
 **Goal:** Revenue-generating features, vendor ecosystem, couple-vendor communication
 **Depends on:** Phase 4 completed
@@ -1492,7 +1531,13 @@ daysLeft  < 7  → Wedding Day only
 | 4 | Inquiry system | ✅ Done | "Request Pricing" form → `POST /api/vendors/[slug]/inquiries` → DB |
 | 5 | Booking request flow | ✅ Done | 7-field form: name, email, phone, event type, date, budget, message |
 | 6 | Admin vendor management | ✅ Done | `GET/POST /api/admin/vendors` + `PUT/DELETE /api/admin/vendors/[id]`. Button renamed "View All Vendors" (was "View Public Directory"). Admin sidebar nav renamed "View All Vendors" (was "View Directory"). |
-| 7 | Vendor plans ($19/mo) | ⬜ Deferred | Deferred to Phase 5C (billing & plan gating) |
+| 7 | Vendor plans ($19/mo) | ✅ Done (2026-04-05) | Implemented in Phase 5C (plan gating) + Phase 5E (Stripe checkout) |
+| 8 | Map view toggle | ⬜ Pending | Blueprint: list/map toggle on vendor directory — show vendors on interactive map |
+| 9 | Filter: price range, rating, availability date, distance | ⬜ Pending | Blueprint: extended filtering beyond category+location |
+| 10 | Vendor profile — FAQ section | ⬜ Pending | Blueprint: vendor adds Q&A on profile page |
+| 11 | Vendor profile — social links | ⬜ Pending | Blueprint: Instagram, Facebook, Pinterest links on vendor profile |
+| 12 | Response SLA badge | ⬜ Pending | Blueprint: "Typically responds within X hours" badge on vendor profile + directory card |
+| 13 | Availability calendar (public) | ⬜ Pending | Blueprint: color-coded calendar on vendor profile showing booked/available dates |
 
 **Files created (Phase 5A-1):**
 - `prisma/schema.prisma` — Added `VendorProfile`, `VendorInquiry`, `VendorReview` models + `InquiryStatus` enum + `VENDOR` role in `UserRole`
@@ -2091,16 +2136,36 @@ Vendor response time is calculated and displayed publicly:
   overnight messages don't count against response time
 ```
 
-#### Phase 5E: Billing & Payments
+#### Phase 5E: Billing & Payments — ✅ CORE COMPLETE (2026-04-05)
 
 | # | Task | Status | Details |
 |---|------|--------|---------|
-| 1 | Stripe integration | ⬜ Pending | Checkout, subscriptions, Customer Portal |
-| 2 | 3-tier subscription | ⬜ Pending | Basic (Free) / Premium / Elite with feature gating |
-| 3 | Vendor billing ($19/mo) | ⬜ Pending | Business Profile plan |
-| 4 | Invoice generation | ⬜ Pending | Auto PDF with VAT |
-| 5 | Webhook handlers | ⬜ Pending | payment_intent.succeeded, subscription.deleted, invoice.paid |
-| 6 | Checklist & cleanup | ⬜ Pending | Verify all payment flows |
+| 1 | Stripe subscription functions | ✅ Done (2026-04-05) | `src/lib/stripe.ts` — `createSubscriptionCheckout()`, `createCustomerPortalSession()`, `getOrCreateStripeCustomer()`. `PLANNER_PLANS` (basic/premium/elite) + `VENDOR_PLAN` constants. Env vars: `STRIPE_PRICE_BASIC/PREMIUM/ELITE/VENDOR` |
+| 2 | DB migration — billing fields | ✅ Done (2026-04-05) | `scripts/add-billing-fields.mjs` — adds `plannerTier`, `plannerStatus`, `plannerPeriodEnd`, `stripeCustomerId`, `stripeSubscriptionId` to `User`; adds `stripeCustomerId`, `stripeSubscriptionId` to `VendorProfile`. Applied + `prisma generate` run. |
+| 3 | 3-tier couple subscription | ✅ Done (2026-04-05) | Basic (free) / Premium (299 SEK/mo) / Elite (499 SEK/mo). `POST /api/billing/checkout` → Stripe checkout session. `POST /api/billing/portal` → Customer Portal URL. `GET /api/billing/subscription` → current tier + status. `/planner/billing` pricing page with 3 cards, feature comparison, upgrade/portal buttons. Sidebar "Plans & Billing" link added. |
+| 4 | Vendor billing ($19/mo) | ✅ Done (2026-04-05) | `POST /api/vendor/billing/checkout` → Stripe checkout (subscription mode). `/vendor/billing` page updated — Stripe checkout button enabled (was disabled stub). Portal link added for active Business vendors. |
+| 5 | Webhook handlers | ✅ Done (2026-04-05) | `POST /api/webhooks/stripe` updated — `checkout.session.completed` routes by metadata (planner/vendor/order), `customer.subscription.created/updated` updates `User.plannerTier`/`VendorProfile.planTier`, `customer.subscription.deleted` downgrades to basic/EXPIRED. All existing order flows preserved. |
+| 6 | Invoice PDF generation | ⏭️ DEFERRED | Swedish VAT Kvitto PDF deferred to Phase 6 (requires @react-pdf/renderer template + VAT logic) |
+| 7 | Feature gating | ⬜ Pending | Per-plan limits (guest export, seating, custom domain) — add in Phase 6 as feature flags |
+| 8 | Swish payments (SE mobile) | ⬜ Pending | Blueprint: Swish integration for Swedish mobile payments |
+| 9 | Klarna BNPL | ⬜ Pending | Blueprint: Klarna buy-now-pay-later option for couples |
+| 10 | White-label tier ($120/mo) | ⬜ Pending | Blueprint: custom subdomain, auto-premium for their clients, 14-day free trial. Target: professional wedding planners |
+
+#### Phase 5G: Stationery Engine — ⬜ NOT STARTED
+
+**Blueprint:** Elite-tier printable assets — generated as background jobs (never blocks API). All assets match wedding website theme/colors.
+
+| # | Task | Status | Details |
+|---|------|--------|---------|
+| 1 | Table number cards | ⬜ Pending | 300 DPI PDF — styled table number cards, 1 per table. @react-pdf/renderer. |
+| 2 | Place cards | ⬜ Pending | 300 DPI PDF — name card per guest, with table number |
+| 3 | Food menus | ⬜ Pending | 300 DPI PDF — per-table menu, dietary variants highlighted |
+| 4 | Seating chart A1 poster | ⬜ Pending | A1 landscape PDF — full seating layout for venue entrance display |
+| 5 | Table list view PDF | ⬜ Pending | Printable table-by-table guest list for catering team |
+| 6 | Background job queue | ⬜ Pending | Blueprint: BullMQ background job (never blocks API) — generate on demand |
+| 7 | Download page | ⬜ Pending | `/planner/[id]/seating?tab=supplies` — shows all generated assets with download buttons |
+
+> **Note:** This is an Elite plan feature. Blocked on: Feature gating (Phase 5E #7) being implemented first.
 
 #### Phase 5F: Event Brief Sharing — ✅ COMPLETE (Layer 1 ✅ · Layer 2 ✅)
 
@@ -2209,7 +2274,7 @@ Layer 2 — Shareable Event Brief Link (couple controlled)
 
 **Deliverable:** Vendor receives structured wedding context automatically in chat + couple can share a beautiful read-only brief link with full relevant details and PDF export.
 
-**Phase 5 Status:** 🔄 IN PROGRESS (5A-0 ✅ · 5A-1 ✅ · 5B ✅ · 5C ✅ · 5D ✅ · 5E ⬜ · 5F ✅)
+**Phase 5 Status:** ✅ COMPLETE (5A-0 ✅ · 5A-1 ✅ · 5B ✅ · 5C ✅ · 5D ✅ · 5E ✅ core · 5F ✅)
 
 ---
 
@@ -2261,18 +2326,35 @@ Layer 2 — Shareable Event Brief Link (couple controlled)
 
 ## 15a. Implementation Status Summary
 
-| Phase | Name | Status | Sub-phases | Completed |
-|-------|------|--------|------------|-----------|
+| Phase | Name | Status | Sub-phases | Notes |
+|-------|------|--------|------------|-------|
 | 0 | UX/UI Design | ⏭️ SKIPPED | — | Using planning.wedding reference |
 | 1 | Core Foundation | ✅ DONE | 1A–1E | 5/5 sub-phases |
-| 2 | Planning Tools | ✅ DONE | 2A ✅ · 2B ✅ · 2C ✅ · 2D ✅ | 4/4 sub-phases |
-| 3 | Visual Editors | 🔄 IN PROGRESS | 3A ✅ · 3B ✅ · 3C ✅ · 3D ⬜ | 3/4 |
-| 4 | Guest Experience | 🔄 IN PROGRESS | items 1 ✅ · 2 ✅ · 3 ✅ · 4 ✅ · 6 ✅ · items 5 · 7 · 8 ⬜ | 5/8 items |
-| 5 | Marketplace & Payments | 🔄 IN PROGRESS | 5A-0 ✅ · 5A-1 ✅ · 5B ✅ · 5C ✅ · 5D ✅ · 5F ✅ · 5E ⬜ | 6/7 |
+| 2 | Planning Tools | ✅ CORE DONE | 2A ✅ · 2B ✅ · 2C ✅ · 2D ✅ · 2E ⬜ | Blueprint gaps: plus-one, custom RSVP Qs, GDPR, Files tab, budget analytics |
+| 3 | Visual Editors | 🔄 IN PROGRESS | 3A ✅ · 3B ✅ · 3C ✅ · 3D ⬜ | Blueprint gaps: QR Entrance Mode, seating exports, starter templates |
+| 4 | Guest Experience | ✅ COMPLETE | 1 ✅ · 2 ✅ · 3 ✅ · 4 ✅ · 5 ✅ · 6 ✅ · 7 ⏭️ · 8 ✅ | 7/8 (push notifications deferred) |
+| 5 | Marketplace & Payments | ✅ CORE DONE | 5A ✅ · 5B ✅ · 5C ✅ · 5D ✅ · 5E ✅ · 5F ✅ · 5G ⬜ | Blueprint gaps: map view, vendor FAQ, SLA badge, availability calendar, Stationery Engine, White-label, Swish/Klarna |
 | 6 | Admin & Launch | ⬜ NOT STARTED | 6A–6C | 0/3 |
 
-**Last Updated:** 2026-04-05 (session 2)
-**Current Focus:** Phase 5F ✅ complete · Vendor bug fixes ✅ — next: Phase 5E (Billing & Payments / Stripe) or Phase 4 remaining items (#5 QR Seat Finder, #7 Push Notifications, #8 Checklist cleanup)
+**Last Updated:** 2026-04-05 (session 5 — blueprint gap analysis)
+**Current Focus:** Blueprint gaps identified + dev plan updated — next: Phase 2E (Files Tab) or Phase 3D (Invitation Designer) or Phase 6 (Admin Panel)
+
+**Session log (2026-04-05, session 4 — Overview Post-Wedding section fix):**
+- **Overview page — Post-Wedding section real data:** Overview page (`/planner/[id]/page.tsx`) এর Post-Wedding section আগে hardcoded `"Photos not added yet!"` দেখাত — কোনো API call ছিল না। এখন `fetchAll()` এ `GET /api/planner/projects/[id]/post-wedding` যোগ করা হয়েছে। Response থেকে `pwPhotos` (guest photo count), `pwGuestbook` (guestbook entry count), `pwAttending` (RSVP attending count) state এ store করা হয়। Section এখন: data থাকলে → 3টি stat + "View post-wedding memories →" link দেখায়; local project হলে → sign in বার্তা; DB project এ data না থাকলে → "Post-wedding memories will appear here..." দেখায়।
+- Files modified: `src/app/planner/[id]/page.tsx` — added `pwPhotos`/`pwGuestbook`/`pwAttending` state, added `post-wedding` to `Promise.all()`, replaced hardcoded Post-Wedding section with data-driven UI
+
+**Session log (2026-04-05, session 3 — Phase 4 remaining + Phase 5E Billing):**
+- **Phase 4 #5 — QR Seat Finder:** `GET /api/public/seat-finder/[projectId]` (no auth) returns `SeatingLayout[]` + `SeatingTable[]` with guest names. `/seat-finder/[projectId]` client page — name search, shows table + tablemates with avatar initials. Layout selector (ceremony/reception) auto-defaults to RECEPTION.
+- **Phase 4 #8 — RSVP Email Notification:** `POST /api/rsvp/[token]` now fire-and-forgets email to couple after submission. Fetches `project.user.email` via `include`. HTML email shows guest name, attending/declining status (✅/❌), dietary requirements, message. Uses existing Nodemailer `sendEmail()`.
+- **Phase 5E — DB migration:** `scripts/add-billing-fields.mjs` — adds `plannerTier` (default: `basic`), `plannerStatus` (default: `active`), `plannerPeriodEnd`, `stripeCustomerId` (@unique), `stripeSubscriptionId` to `User`; adds `stripeCustomerId`, `stripeSubscriptionId` to `VendorProfile`. Applied to DB + `npx prisma generate` run.
+- **Phase 5E — Stripe functions:** `src/lib/stripe.ts` extended with `PLANNER_PLANS` (basic/premium 299 SEK/elite 499 SEK), `VENDOR_PLAN` ($19/mo), `getOrCreateStripeCustomer()`, `createSubscriptionCheckout()` (mode: "subscription"), `createCustomerPortalSession()`. Env vars: `STRIPE_PRICE_BASIC`, `STRIPE_PRICE_PREMIUM`, `STRIPE_PRICE_ELITE`, `STRIPE_PRICE_VENDOR`.
+- **Phase 5E — Couple Billing APIs:** `GET /api/billing/subscription` (plan status), `POST /api/billing/checkout` (Stripe checkout for premium/elite), `POST /api/billing/portal` (Customer Portal URL).
+- **Phase 5E — Vendor Billing API:** `POST /api/vendor/billing/checkout` → Stripe subscription checkout for $19/mo Business plan. Persists `stripeCustomerId` on VendorProfile.
+- **Phase 5E — Webhook:** `POST /api/webhooks/stripe` fully updated. Routes `checkout.session.completed` by metadata type (plannerTier/planType=vendor_business/orderId). Handles `customer.subscription.created/updated/deleted` → updates `User.plannerTier`/`User.plannerStatus`/`VendorProfile.planTier`. Existing order payment flow preserved.
+- **Phase 5E — Couple Billing Page:** `/planner/billing` — 3-column pricing page (Basic free / Premium 299 SEK / Elite 499 SEK) with feature comparison, current plan badge, upgrade buttons, Customer Portal link. Added "Plans & Billing" (`CreditCard` icon) to planner sidebar.
+- **Phase 5E — Vendor Billing Page:** `/vendor/billing` updated — Stripe checkout button enabled (was disabled stub). Portal management link shown for active Business vendors.
+- Files created: `src/app/api/public/seat-finder/[projectId]/route.ts`, `src/app/seat-finder/[projectId]/page.tsx`, `scripts/add-billing-fields.mjs`, `src/app/api/billing/checkout/route.ts`, `src/app/api/billing/portal/route.ts`, `src/app/api/billing/subscription/route.ts`, `src/app/api/vendor/billing/checkout/route.ts`, `src/app/planner/billing/page.tsx`
+- Files modified: `src/app/api/rsvp/[token]/route.ts`, `src/app/api/webhooks/stripe/route.ts`, `src/app/vendor/billing/page.tsx`, `src/lib/stripe.ts`, `src/components/planner/sidebar.tsx`, `prisma/schema.prisma`
 
 **Session log (2026-04-05, session 2 — Vendor portal fixes):**
 - **Bug fix — Admin-added vendor cannot login:** `POST /api/admin/vendors` now accepts optional `password` field. If email + password provided, creates `User` record (role=VENDOR, bcrypt hash) + links `VendorProfile.userId`. If no password, profile-only (existing behavior).

@@ -195,6 +195,11 @@ export default function PlannerOverviewPage() {
   const [ceremony, setCeremony] = useState<LocalVenueDetails | null>(null);
   const [reception, setReception] = useState<LocalVenueDetails | null>(null);
 
+  // post-wedding
+  const [pwPhotos, setPwPhotos] = useState(0);
+  const [pwGuestbook, setPwGuestbook] = useState(0);
+  const [pwAttending, setPwAttending] = useState(0);
+
   // couple name editing
   const { brideName, groomName, updateBrideName, updateGroomName } = usePlannerCouple();
   const [editingBride, setEditingBride] = useState(false);
@@ -238,7 +243,7 @@ export default function PlannerOverviewPage() {
 
     async function fetchAll() {
       try {
-        const [projRes, guestsRes, budgetRes, checklistRes, itinRes, ceremRes, recepRes] = await Promise.all([
+        const [projRes, guestsRes, budgetRes, checklistRes, itinRes, ceremRes, recepRes, pwRes] = await Promise.all([
           fetch(`/api/planner/projects/${projectId}`),
           fetch(`/api/planner/projects/${projectId}/guests`),
           fetch(`/api/planner/projects/${projectId}/budget`),
@@ -246,6 +251,7 @@ export default function PlannerOverviewPage() {
           fetch(`/api/planner/projects/${projectId}/itinerary`),
           fetch(`/api/planner/projects/${projectId}/ceremony`),
           fetch(`/api/planner/projects/${projectId}/reception`),
+          fetch(`/api/planner/projects/${projectId}/post-wedding`),
         ]);
         if (!projRes.ok) { router.push("/planner"); return; }
         const data = await projRes.json();
@@ -278,6 +284,12 @@ export default function PlannerOverviewPage() {
         if (itinRes.ok) { const d = await itinRes.json(); setItineraryEvents(d.events ?? []); }
         if (ceremRes.ok) { const d = await ceremRes.json(); setCeremony(d.venue ?? null); }
         if (recepRes.ok) { const d = await recepRes.json(); setReception(d.venue ?? null); }
+        if (pwRes.ok) {
+          const d = await pwRes.json();
+          setPwPhotos((d.guestPhotos ?? []).length);
+          setPwGuestbook((d.guestbookEntries ?? []).length);
+          setPwAttending(d.rsvpCounts?.attending ?? 0);
+        }
       } catch {
         router.push("/planner");
       } finally {
@@ -683,10 +695,29 @@ export default function PlannerOverviewPage() {
 
           {/* ── Post-Wedding ──────────────────────────────────────────── */}
           <Section title="Post-Wedding">
-            <div className="px-6 pt-4 pb-5 text-center">
-              <button className="text-sm text-violet-600 border-b border-dashed border-violet-400">
-                Photos not added yet!
-              </button>
+            <div className="px-6 pt-4 pb-5">
+              {!isLocal && (pwPhotos > 0 || pwGuestbook > 0 || pwAttending > 0) ? (
+                <>
+                  <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-gray-500 mb-3">
+                    <span>Attending: <span className="text-violet-600 font-semibold">{pwAttending}</span></span>
+                    <span>Guestbook: <span className="text-pink-500 font-semibold">{pwGuestbook}</span></span>
+                    <span>Photos: <span className="text-violet-600 font-semibold">{pwPhotos}</span></span>
+                  </div>
+                  <button
+                    onClick={() => router.push(`/planner/${projectId}/post-wedding`)}
+                    className="text-sm text-violet-600 border-b border-dashed border-violet-400"
+                  >
+                    View post-wedding memories →
+                  </button>
+                </>
+              ) : (
+                <p className="text-sm text-gray-400 text-center py-2">
+                  {isLocal
+                    ? "Sign in to save your project and access post-wedding memories."
+                    : "Post-wedding memories will appear here once guests submit them."
+                  }
+                </p>
+              )}
             </div>
           </Section>
 

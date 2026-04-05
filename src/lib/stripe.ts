@@ -134,6 +134,107 @@ export async function constructWebhookEvent(
   return stripe.webhooks.constructEvent(payload, signature, config.webhookSecret);
 }
 
+// ─── Planner subscription plans ──────────────────────────────────────────────
+// Price amounts in öre (SEK×100). Set real Stripe Price IDs in admin settings.
+export const PLANNER_PLANS = {
+  basic:   { label: "Basic",   priceId: process.env.STRIPE_PRICE_BASIC   ?? "", amount: 0,     currency: "sek" },
+  premium: { label: "Premium", priceId: process.env.STRIPE_PRICE_PREMIUM ?? "", amount: 29900, currency: "sek" },
+  elite:   { label: "Elite",   priceId: process.env.STRIPE_PRICE_ELITE   ?? "", amount: 49900, currency: "sek" },
+} as const;
+
+export const VENDOR_PLAN = {
+  label: "Business Profile",
+  priceId: process.env.STRIPE_PRICE_VENDOR ?? "",
+  amount: 1900, // $19.00 USD
+  currency: "usd",
+};
+
+export type PlannerTier = "basic" | "premium" | "elite";
+
+/**
+ * Get or create a Stripe customer for a user
+ */
+export async function getOrCreateStripeCustomer({
+  email,
+  name,
+  existingCustomerId,
+}: {
+  email: string;
+  name?: string;
+  existingCustomerId?: string | null;
+}): Promise<string> {
+  const stripe = await getStripe();
+
+  if (existingCustomerId) {
+    return existingCustomerId;
+  }
+
+  const customer = await stripe.customers.create({
+    email,
+    name: name ?? undefined,
+  });
+
+  return customer.id;
+}
+
+/**
+ * Create a Stripe subscription checkout session for a couple plan
+ */
+export async function createSubscriptionCheckout({
+  priceId,
+  customerId,
+  customerEmail,
+  metadata,
+  successUrl,
+  cancelUrl,
+}: {
+  priceId: string;
+  customerId?: string;
+  customerEmail?: string;
+  metadata?: Record<string, string>;
+  successUrl?: string;
+  cancelUrl?: string;
+}) {
+  const stripe = await getStripe();
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
+
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ["card"],
+    mode: "subscription",
+    line_items: [{ price: priceId, quantity: 1 }],
+    customer: customerId,
+    customer_email: customerId ? undefined : customerEmail,
+    success_url: successUrl ?? `${appUrl}/planner/billing?success=1&session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: cancelUrl ?? `${appUrl}/planner/billing?cancelled=1`,
+    metadata: metadata ?? {},
+    subscription_data: { metadata: metadata ?? {} },
+    allow_promotion_codes: true,
+  });
+
+  return session;
+}
+
+/**
+ * Create a Stripe billing portal session for a customer to manage their subscription
+ */
+export async function createCustomerPortalSession({
+  customerId,
+  returnUrl,
+}: {
+  customerId: string;
+  returnUrl?: string;
+}) {
+  const stripe = await getStripe();
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
+
+  const session = await stripe.billingPortal.sessions.create({
+    customer: customerId,
+    return_url: returnUrl ?? `${appUrl}/planner/billing`,
+  });
+
+  return session;
+}
+
 /**
  * Get Stripe publishable key for frontend
  */

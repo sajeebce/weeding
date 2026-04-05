@@ -20,6 +20,12 @@ model User {
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
   isActive            Boolean          @default(true)
+  // Wedding planner subscription
+  plannerTier         String           @default("basic")  // basic | premium | elite
+  plannerStatus       String           @default("active") // active | canceled | past_due
+  plannerPeriodEnd    DateTime?
+  stripeCustomerId    String?          @unique
+  stripeSubscriptionId String?
   accounts            Account[]
   cannedResponses     CannedResponse[] @relation("CreatedCannedResponses")
   documents           Document[]
@@ -2024,8 +2030,10 @@ model VendorProfile {
   isApproved      Boolean        @default(false)
   isActive        Boolean        @default(true)
   isFeatured      Boolean        @default(false)
-  trialEndsAt     DateTime?
-  planTier        VendorPlanTier @default(TRIAL)
+  trialEndsAt          DateTime?
+  planTier             VendorPlanTier @default(TRIAL)
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 

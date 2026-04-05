@@ -4,14 +4,24 @@ import { constructWebhookEvent } from "@/lib/stripe";
 import prisma from "@/lib/db";
 import Stripe from "stripe";
 
-// Disable body parsing, we need raw body for webhook verification
 export const runtime = "nodejs";
 
-async function handleCheckoutSessionCompleted(
-  session: Stripe.Checkout.Session
-) {
+// ─── One-time payment handlers (existing LLCPad orders) ──────────────────────
+
+async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
   const metadata = session.metadata;
 
+  // Route by plan type
+  if (metadata?.plannerTier) {
+    await handlePlannerSubscriptionActivated(session);
+    return;
+  }
+  if (metadata?.planType === "vendor_business") {
+    await handleVendorSubscriptionActivated(session);
+    return;
+  }
+
+  // Existing order payment flow
   if (!metadata?.orderId) {
     console.log("Checkout session without orderId metadata, skipping");
     return;
@@ -20,17 +30,9 @@ async function handleCheckoutSessionCompleted(
   const orderId = metadata.orderId;
 
   try {
-    // Idempotency check — skip if already paid
-    const existingOrder = await prisma.order.findUnique({
-      where: { orderNumber: orderId },
-    });
+    const existingOrder = await prisma.order.findUnique({ where: { orderNumber: orderId } });
+    if (existingOrder?.paymentStatus === "PAID") return;
 
-    if (existingOrder?.paymentStatus === "PAID") {
-      console.log(`Order ${orderId} already paid, skipping`);
-      return;
-    }
-
-    // Update order payment status
     const order = await prisma.order.update({
       where: { orderNumber: orderId },
       data: {
@@ -42,16 +44,11 @@ async function handleCheckoutSessionCompleted(
       },
     });
 
-    // Update linked invoice to PAID
     await prisma.invoice.updateMany({
       where: { orderId: order.id, status: { not: "PAID" } },
-      data: {
-        status: "PAID",
-        paidAt: new Date(),
-      },
+      data: { status: "PAID", paidAt: new Date() },
     });
 
-    // Log the activity
     await prisma.activityLog.create({
       data: {
         userId: order.userId,
@@ -77,24 +74,138 @@ async function handleCheckoutSessionCompleted(
   }
 }
 
-async function handlePaymentIntentSucceeded(
-  paymentIntent: Stripe.PaymentIntent
-) {
-  console.log("Payment succeeded:", paymentIntent.id);
+// ─── Planner subscription handlers ───────────────────────────────────────────
 
-  // Find order by payment ID and update if exists
+async function handlePlannerSubscriptionActivated(session: Stripe.Checkout.Session) {
+  const { userId, plannerTier } = session.metadata ?? {};
+  if (!userId || !plannerTier) return;
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      plannerTier,
+      plannerStatus: "active",
+      stripeCustomerId: session.customer as string,
+      stripeSubscriptionId: session.subscription as string,
+    },
+  });
+  console.log(`Planner plan activated: user=${userId} tier=${plannerTier}`);
+}
+
+async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
+  const meta = subscription.metadata;
+
+  if (meta?.planType === "vendor_business") {
+    await handleVendorSubscriptionUpdated(subscription);
+    return;
+  }
+
+  // Couple planner subscription
+  const userId = meta?.userId;
+  if (!userId) return;
+
+  const tier = meta?.plannerTier ?? "basic";
+  const status = subscription.status === "active" || subscription.status === "trialing"
+    ? "active"
+    : subscription.status === "past_due"
+      ? "past_due"
+      : "canceled";
+
+  const periodEnd = subscription.items.data[0]?.["current_period_end"]
+    ? new Date((subscription.items.data[0] as unknown as { current_period_end: number }).current_period_end * 1000)
+    : null;
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      plannerTier: status === "canceled" ? "basic" : tier,
+      plannerStatus: status,
+      plannerPeriodEnd: periodEnd,
+      stripeSubscriptionId: subscription.id,
+    },
+  });
+  console.log(`Planner subscription updated: user=${userId} status=${status}`);
+}
+
+async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
+  const meta = subscription.metadata;
+
+  if (meta?.planType === "vendor_business") {
+    await handleVendorSubscriptionDeleted(subscription);
+    return;
+  }
+
+  const userId = meta?.userId;
+  if (!userId) return;
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      plannerTier: "basic",
+      plannerStatus: "canceled",
+      stripeSubscriptionId: null,
+    },
+  });
+  console.log(`Planner subscription canceled: user=${userId}`);
+}
+
+// ─── Vendor subscription handlers ────────────────────────────────────────────
+
+async function handleVendorSubscriptionActivated(session: Stripe.Checkout.Session) {
+  const { vendorProfileId } = session.metadata ?? {};
+  if (!vendorProfileId) return;
+
+  await prisma.vendorProfile.update({
+    where: { id: vendorProfileId },
+    data: {
+      planTier: "BUSINESS",
+      stripeCustomerId: session.customer as string,
+      stripeSubscriptionId: session.subscription as string,
+    },
+  });
+  console.log(`Vendor Business plan activated: vendor=${vendorProfileId}`);
+}
+
+async function handleVendorSubscriptionUpdated(subscription: Stripe.Subscription) {
+  const vendorProfileId = subscription.metadata?.vendorProfileId;
+  if (!vendorProfileId) return;
+
+  const isActive =
+    subscription.status === "active" || subscription.status === "trialing";
+
+  await prisma.vendorProfile.update({
+    where: { id: vendorProfileId },
+    data: {
+      planTier: isActive ? "BUSINESS" : "EXPIRED",
+      stripeSubscriptionId: subscription.id,
+    },
+  });
+  console.log(`Vendor subscription updated: vendor=${vendorProfileId} active=${isActive}`);
+}
+
+async function handleVendorSubscriptionDeleted(subscription: Stripe.Subscription) {
+  const vendorProfileId = subscription.metadata?.vendorProfileId;
+  if (!vendorProfileId) return;
+
+  await prisma.vendorProfile.update({
+    where: { id: vendorProfileId },
+    data: {
+      planTier: "EXPIRED",
+      stripeSubscriptionId: null,
+    },
+  });
+  console.log(`Vendor subscription canceled: vendor=${vendorProfileId}`);
+}
+
+// ─── Existing payment handlers ────────────────────────────────────────────────
+
+async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent) {
   try {
-    const order = await prisma.order.findFirst({
-      where: { paymentId: paymentIntent.id },
-    });
-
+    const order = await prisma.order.findFirst({ where: { paymentId: paymentIntent.id } });
     if (order && order.paymentStatus !== "PAID") {
       await prisma.order.update({
         where: { id: order.id },
-        data: {
-          paymentStatus: "PAID",
-          paidAt: new Date(),
-        },
+        data: { paymentStatus: "PAID", paidAt: new Date() },
       });
       console.log(`Order ${order.orderNumber} marked as paid`);
     }
@@ -104,22 +215,13 @@ async function handlePaymentIntentSucceeded(
 }
 
 async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent) {
-  console.log("Payment failed:", paymentIntent.id);
-
-  // Find order by payment ID and update if exists
   try {
-    const order = await prisma.order.findFirst({
-      where: { paymentId: paymentIntent.id },
-    });
-
+    const order = await prisma.order.findFirst({ where: { paymentId: paymentIntent.id } });
     if (order) {
       await prisma.order.update({
         where: { id: order.id },
-        data: {
-          paymentStatus: "FAILED",
-        },
+        data: { paymentStatus: "FAILED" },
       });
-
       await prisma.activityLog.create({
         data: {
           userId: order.userId,
@@ -134,13 +236,13 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent) {
           },
         },
       });
-
-      console.log(`Order ${order.orderNumber} payment failed`);
     }
   } catch (error) {
     console.error("Error handling payment_intent.payment_failed:", error);
   }
 }
+
+// ─── Main webhook handler ─────────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
   try {
@@ -149,57 +251,46 @@ export async function POST(request: NextRequest) {
     const signature = headersList.get("stripe-signature");
 
     if (!signature) {
-      console.error("No Stripe signature found");
-      return NextResponse.json(
-        { error: "No signature" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "No signature" }, { status: 400 });
     }
 
     let event: Stripe.Event;
-
     try {
       event = await constructWebhookEvent(body, signature);
     } catch (err) {
       console.error("Webhook signature verification failed:", err);
-      return NextResponse.json(
-        { error: "Invalid signature" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
     }
 
-    // Handle different event types
     switch (event.type) {
-      case "checkout.session.completed": {
-        const session = event.data.object as Stripe.Checkout.Session;
-        await handleCheckoutSessionCompleted(session);
+      case "checkout.session.completed":
+        await handleCheckoutSessionCompleted(event.data.object as Stripe.Checkout.Session);
         break;
-      }
-
-      case "payment_intent.succeeded": {
-        const paymentIntent = event.data.object as Stripe.PaymentIntent;
-        await handlePaymentIntentSucceeded(paymentIntent);
-        break;
-      }
-
-      case "payment_intent.payment_failed": {
-        const paymentIntent = event.data.object as Stripe.PaymentIntent;
-        await handlePaymentIntentFailed(paymentIntent);
-        break;
-      }
 
       case "customer.subscription.created":
       case "customer.subscription.updated":
-      case "customer.subscription.deleted": {
-        console.log("Subscription event:", event.type);
+        await handleSubscriptionUpdated(event.data.object as Stripe.Subscription);
         break;
-      }
+
+      case "customer.subscription.deleted":
+        await handleSubscriptionDeleted(event.data.object as Stripe.Subscription);
+        break;
 
       case "invoice.paid":
-      case "invoice.payment_failed": {
-        console.log("Invoice event:", event.type);
+        console.log("Invoice paid:", (event.data.object as Stripe.Invoice).id);
         break;
-      }
+
+      case "invoice.payment_failed":
+        console.log("Invoice payment failed:", (event.data.object as Stripe.Invoice).id);
+        break;
+
+      case "payment_intent.succeeded":
+        await handlePaymentIntentSucceeded(event.data.object as Stripe.PaymentIntent);
+        break;
+
+      case "payment_intent.payment_failed":
+        await handlePaymentIntentFailed(event.data.object as Stripe.PaymentIntent);
+        break;
 
       default:
         console.log(`Unhandled event type: ${event.type}`);
@@ -208,9 +299,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ received: true });
   } catch (error) {
     console.error("Webhook error:", error);
-    return NextResponse.json(
-      { error: "Webhook handler failed" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Webhook handler failed" }, { status: 500 });
   }
 }

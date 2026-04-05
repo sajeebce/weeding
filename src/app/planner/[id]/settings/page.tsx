@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-import { Save } from "lucide-react";
+import { Save, CreditCard, ChevronRight } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -203,6 +204,30 @@ export default function SettingsPage() {
           </Button>
         </CardContent>
       </Card>
+
+      {/* Plans & Billing */}
+      {!isLocal && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Plans & Billing</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Link
+              href="/planner/billing"
+              className="flex items-center justify-between rounded-lg border border-gray-200 px-4 py-3 hover:bg-gray-50 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <CreditCard className="h-5 w-5 text-gray-500" />
+                <div>
+                  <p className="text-sm font-medium text-gray-900">Manage subscription</p>
+                  <p className="text-xs text-gray-500">View plans, upgrade or manage billing</p>
+                </div>
+              </div>
+              <ChevronRight className="h-4 w-4 text-gray-400" />
+            </Link>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Crown, Zap, XCircle, Check, Clock } from "lucide-react";
+import { Crown, Zap, XCircle, Check, Clock, Loader2, ExternalLink } from "lucide-react";
 import type { VendorPlanStatus } from "@/lib/vendor-plan";
 
 const BUSINESS_FEATURES = [
@@ -20,6 +20,9 @@ const BUSINESS_FEATURES = [
 export default function VendorBillingPage() {
   const [plan, setPlan] = useState<VendorPlanStatus | null>(null);
   const [loading, setLoading] = useState(true);
+  const [upgrading, setUpgrading] = useState(false);
+  const [managingPortal, setManagingPortal] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/vendor/plan")
@@ -28,6 +31,34 @@ export default function VendorBillingPage() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  async function handleUpgrade() {
+    setUpgrading(true);
+    setErrorMsg(null);
+    try {
+      const res = await fetch("/api/vendor/billing/checkout", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Failed to start checkout");
+      window.location.href = data.url;
+    } catch (e) {
+      setErrorMsg(e instanceof Error ? e.message : "Something went wrong");
+      setUpgrading(false);
+    }
+  }
+
+  async function handleManagePortal() {
+    setManagingPortal(true);
+    setErrorMsg(null);
+    try {
+      const res = await fetch("/api/billing/portal", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Failed to open portal");
+      window.location.href = data.url;
+    } catch (e) {
+      setErrorMsg(e instanceof Error ? e.message : "Something went wrong");
+      setManagingPortal(false);
+    }
+  }
 
   if (loading) {
     return (
@@ -98,6 +129,13 @@ export default function VendorBillingPage() {
         )}
       </div>
 
+      {/* Error */}
+      {errorMsg && (
+        <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+          {errorMsg}
+        </div>
+      )}
+
       {/* Upgrade card — shown for non-Business tiers */}
       {tier !== "BUSINESS" && (
         <div className="bg-gradient-to-br from-purple-600 to-indigo-700 rounded-xl p-6 text-white">
@@ -108,7 +146,7 @@ export default function VendorBillingPage() {
                 <span className="text-sm font-semibold text-purple-200 uppercase tracking-wider">Business Plan</span>
               </div>
               <p className="text-3xl font-bold">$19<span className="text-lg font-normal text-purple-200">/month</span></p>
-              <p className="text-sm text-purple-200 mt-1">30-day free trial included</p>
+              <p className="text-sm text-purple-200 mt-1">30-day free trial included · Cancel anytime</p>
             </div>
           </div>
 
@@ -121,18 +159,19 @@ export default function VendorBillingPage() {
             ))}
           </ul>
 
-          {/* Stripe payment — wired in Phase 5E */}
           <button
-            disabled
-            className="w-full py-3 bg-white text-purple-700 font-semibold rounded-xl text-sm cursor-not-allowed opacity-80"
-            title="Online payment coming soon — contact us to upgrade"
+            onClick={handleUpgrade}
+            disabled={upgrading}
+            className="w-full py-3 bg-white text-purple-700 font-semibold rounded-xl text-sm hover:bg-purple-50 transition-colors disabled:opacity-70 flex items-center justify-center gap-2"
           >
-            Upgrade to Business — $19/mo
+            {upgrading ? (
+              <><Loader2 className="w-4 h-4 animate-spin" /> Redirecting to checkout…</>
+            ) : (
+              <>Upgrade to Business — $19/mo <ExternalLink className="w-4 h-4" /></>
+            )}
           </button>
           <p className="text-xs text-center text-purple-300 mt-2">
-            Payment integration coming soon. Contact{" "}
-            <a href="mailto:support@ceremoney.se" className="underline">support@ceremoney.se</a>{" "}
-            to upgrade manually.
+            Secure payment via Stripe · Cancel anytime from billing portal
           </p>
         </div>
       )}
@@ -142,20 +181,26 @@ export default function VendorBillingPage() {
         <div className="bg-white rounded-xl border border-gray-200 p-6">
           <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Manage Subscription</h2>
           <p className="text-sm text-gray-600 mb-4">
-            To cancel or update your subscription, contact{" "}
-            <a href="mailto:support@ceremoney.se" className="text-purple-600 underline">
-              support@ceremoney.se
-            </a>.
-            Full billing portal coming soon.
+            Update payment method, view invoices, or cancel your subscription through the Stripe billing portal.
           </p>
-          <div className="text-xs text-gray-400">Payment processing via Stripe (Phase 5E)</div>
+          <button
+            onClick={handleManagePortal}
+            disabled={managingPortal}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-60"
+          >
+            {managingPortal ? (
+              <><Loader2 className="w-4 h-4 animate-spin" /> Opening portal…</>
+            ) : (
+              <><ExternalLink className="w-4 h-4" /> Manage billing</>
+            )}
+          </button>
         </div>
       )}
 
-      {/* Feature comparison */}
+      {/* Feature list */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-100">
-          <h2 className="text-sm font-semibold text-gray-700">What&apos;s included</h2>
+          <h2 className="text-sm font-semibold text-gray-700">What&apos;s included in Business</h2>
         </div>
         <ul className="divide-y divide-gray-100">
           {BUSINESS_FEATURES.map((f) => (
