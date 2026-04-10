@@ -41,6 +41,7 @@ import type {
   EventGalleryGridItem,
   EventCategoriesGridWidgetSettings,
   CtaBannerWidgetSettings,
+  TopUtilityBarWidgetSettings,
 } from "./types";
 
 // ============================================
@@ -2366,6 +2367,25 @@ export const DEFAULT_CTA_BANNER_SETTINGS: CtaBannerWidgetSettings = {
   },
 };
 
+export const DEFAULT_TOP_UTILITY_BAR_SETTINGS: TopUtilityBarWidgetSettings = {
+  gradientFrom: "#9333ea",
+  gradientTo: "#ec4899",
+  gradientAngle: 90,
+  borderBottomColor: "#7e22ce",
+  showBorderBottom: true,
+  height: 40,
+  textColor: "#ffffff",
+  hoverColor: "#e9d5ff",
+  fontSize: 14,
+  paddingX: 32,
+  gap: 24,
+  links: [
+    { id: "link-1", label: "ARE YOU A VENDOR?", href: "/vendor/register", showIcon: true, icon: "ShoppingCart" },
+    { id: "link-2", label: "Log in",  href: "/login",    showIcon: false, icon: "" },
+    { id: "link-3", label: "Join now", href: "/register", showIcon: false, icon: "" },
+  ],
+};
+
 // ============================================
 // EXPORT ALL DEFAULTS
 // ============================================
@@ -2405,4 +2425,5 @@ export const WIDGET_DEFAULTS: Record<string, unknown> = {
   "event-gallery-grid": DEFAULT_EVENT_GALLERY_GRID_SETTINGS,
   "event-categories-grid": DEFAULT_EVENT_CATEGORIES_GRID_SETTINGS,
   "cta-banner": DEFAULT_CTA_BANNER_SETTINGS,
+  "top-utility-bar": DEFAULT_TOP_UTILITY_BAR_SETTINGS,
 };

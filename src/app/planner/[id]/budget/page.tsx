@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams } from "next/navigation";
 import { PlusCircle, Trash2, ChevronDown, ChevronRight, Download, Search } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { usePlannerTier, isPremiumOrElite } from "@/hooks/use-planner-tier";
+import { UpgradeModal } from "@/components/planner/upgrade-modal";
 import {
   getLocalBudget,
   addLocalBudgetCategory,
@@ -77,6 +79,10 @@ export default function BudgetPage() {
 
   // Track whether budgetGoal has been loaded from source of truth
   const budgetGoalLoadedRef = useRef(false);
+
+  // Feature gating
+  const { tier } = usePlannerTier(id);
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
   const loadBudget = useCallback(async () => {
     setLoading(true);
@@ -324,6 +330,7 @@ export default function BudgetPage() {
 
   // ── PDF export ────────────────────────────────────────────────────────────
   async function exportBudgetPDF() {
+    if (!isPremiumOrElite(tier)) { setShowUpgrade(true); return; }
     const { pdf, Document, Page, Text, View, StyleSheet } = await import("@react-pdf/renderer");
     const styles = StyleSheet.create({
       page: { padding: 40, fontFamily: "Helvetica" },
@@ -411,6 +418,7 @@ export default function BudgetPage() {
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
+    <>
     <div className="mx-auto max-w-3xl px-4 py-8">
       {/* Page header */}
       <div className="mb-6 flex items-center justify-between">
@@ -742,5 +750,7 @@ export default function BudgetPage() {
         );
       })()}
     </div>
+    <UpgradeModal open={showUpgrade} onClose={() => setShowUpgrade(false)} defaultTab="premium" />
+    </>
   );
 }

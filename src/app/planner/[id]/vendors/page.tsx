@@ -13,6 +13,8 @@ import {
   getLocalVendors, addLocalVendor, updateLocalVendor, deleteLocalVendor,
   VENDOR_CATEGORY_LABELS, VendorCategory, LocalVendor,
 } from "@/lib/planner-storage";
+import { usePlannerTier, isPremiumOrElite } from "@/hooks/use-planner-tier";
+import { UpgradeModal } from "@/components/planner/upgrade-modal";
 
 const isLocal = (id: string) => id.startsWith("local-");
 
@@ -191,6 +193,8 @@ const formatTime = (iso: string) => {
 export default function VendorsPage() {
   const { id } = useParams<{ id: string }>();
   const local = isLocal(id);
+  const { tier } = usePlannerTier(id);
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
   const [vendors, setVendors] = useState<LocalVendor[]>([]);
   const [publicVendors, setPublicVendors] = useState<PublicVendor[]>([]);
@@ -584,6 +588,7 @@ export default function VendorsPage() {
   }
 
   async function handleDownloadPDF() {
+    if (!isPremiumOrElite(tier)) { setShowUpgrade(true); return; }
     const { pdf, Document, Page, Text, View, StyleSheet } = await import("@react-pdf/renderer");
     const styles = StyleSheet.create({
       page: { padding: 40, fontFamily: "Helvetica" },
@@ -620,6 +625,7 @@ export default function VendorsPage() {
   const totalUnread = conversations.reduce((n, c) => n + c.unreadCount, 0);
 
   return (
+    <>
     <div className="p-4 sm:p-6 max-w-5xl mx-auto">
       {/* Header */}
       <div className="mb-6 text-center">
@@ -1224,5 +1230,7 @@ export default function VendorsPage() {
         </div>
       )}
     </div>
+    <UpgradeModal open={showUpgrade} onClose={() => setShowUpgrade(false)} defaultTab="premium" />
+    </>
   );
 }

@@ -23,6 +23,7 @@ import { StatsSectionWidget } from "../widgets/social-proof/stats-section";
 import { TestimonialsWidget } from "../widgets/social-proof/testimonials-widget";
 import { DividerWidget } from "../widgets/layout/divider-widget";
 import { FaqAccordionWidget } from "../widgets/layout/faq-accordion-widget";
+import { TopUtilityBarWidget } from "../widgets/layout/top-utility-bar-widget";
 import { LeadFormWidget } from "../widgets/forms/lead-form-widget";
 import { ButtonGroupWidget } from "../widgets/cta/button-group-widget";
 import { PricingTableWidget } from "../widgets/commerce/pricing-table-widget";
@@ -90,6 +91,7 @@ const WIDGET_COMPONENTS: Partial<Record<WidgetType, React.ComponentType<any>>> =
   "divider": DividerWidget,
   "faq": FaqAccordionWidget,
   "faq-accordion": FaqAccordionWidget,
+  "top-utility-bar": TopUtilityBarWidget,
 
   // Service widgets
   "service-hero": ServiceHeroWidget,

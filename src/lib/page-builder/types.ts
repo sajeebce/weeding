@@ -215,7 +215,9 @@ export type WidgetType =
   | "event-search-hero"
   | "event-gallery-grid"
   | "event-categories-grid"
-  | "cta-banner";
+  | "cta-banner"
+  // Navigation Widgets
+  | "top-utility-bar";
 
 export type WidgetCategory =
   | "most-used"
@@ -3245,5 +3247,30 @@ export interface CtaBannerWidgetSettings {
     href: string;
     icon: string;              // lucide icon name, default "Play"
   };
+}
+
+// ── Top Utility Bar Widget ────────────────────────────────────────────────────
+
+export interface TopUtilityBarLink {
+  id: string;
+  label: string;
+  href: string;
+  showIcon: boolean;
+  icon: string;  // lucide icon name
+}
+
+export interface TopUtilityBarWidgetSettings {
+  gradientFrom: string;      // default "#9333ea"
+  gradientTo: string;        // default "#ec4899"
+  gradientAngle: number;     // default 90 (to right)
+  borderBottomColor: string; // default "#7e22ce"
+  showBorderBottom: boolean; // default true
+  height: number;            // default 40 (px)
+  textColor: string;         // default "#ffffff"
+  hoverColor: string;        // default "#e9d5ff"
+  fontSize: number;          // default 14 (px)
+  paddingX: number;          // default 32 (px)
+  gap: number;               // default 24 (px)
+  links: TopUtilityBarLink[];
 }
 

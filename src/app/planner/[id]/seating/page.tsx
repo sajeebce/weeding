@@ -2,7 +2,9 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Plus, Users, Download, X, ChevronDown, ChevronLeft, ChevronRight, Eye, UtensilsCrossed } from "lucide-react";
+import { Plus, Users, Download, X, ChevronDown, ChevronLeft, ChevronRight, Eye, UtensilsCrossed, Lock } from "lucide-react";
+import { usePlannerTier, isPremiumOrElite, isElite } from "@/hooks/use-planner-tier";
+import { UpgradeModal } from "@/components/planner/upgrade-modal";
 import { cn } from "@/lib/utils";
 import { CeremonyDiagram, ReceptionDiagram } from "@/components/planner/venue-diagrams";
 import {
@@ -89,6 +91,9 @@ const TABS = [
   { id: "table-numbers", lines: ["Table", "Numbers"] },
   { id: "menu",          lines: ["Reception", "Menu"] },
 ];
+
+// Elite-only stationery tabs
+const ELITE_TABS = ["name-cards", "table-numbers", "menu"];
 
 // ─── Dashed curve connector ───────────────────────────────────────────────────
 
@@ -2096,6 +2101,15 @@ export default function SeatingPage() {
   const router = useRouter();
   const local = isLocal(projectId);
 
+  const { tier } = usePlannerTier(projectId);
+  const [showUpgrade, setShowUpgrade] = useState(false);
+  const [upgradeTab, setUpgradeTab] = useState<"premium" | "elite">("premium");
+
+  function openUpgrade(requiredTier: "premium" | "elite") {
+    setUpgradeTab(requiredTier);
+    setShowUpgrade(true);
+  }
+
   const [activeTab, setActiveTab] = useState("reception");
   const [layouts, setLayouts] = useState<Layout[]>([]);
   const [activeLayoutId, setActiveLayoutId] = useState<string | null>(null);
@@ -2229,6 +2243,7 @@ export default function SeatingPage() {
   const activeTabIndex = TABS.findIndex(t => t.id === activeTab);
 
   return (
+    <>
     <div className="min-h-full bg-[#ede9f0] px-4 py-10">
       <div className="mx-auto max-w-4xl">
 
@@ -2257,20 +2272,32 @@ export default function SeatingPage() {
 
         {/* Tab cards */}
         <div className="grid grid-cols-7 gap-2">
-          {TABS.map((tab, i) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                "rounded-xl border px-2 py-3 text-center text-xs leading-snug transition-colors",
-                activeTab === tab.id
-                  ? "border-gray-700 bg-white font-semibold text-gray-800 shadow-sm"
-                  : "border-gray-200 bg-white/70 text-gray-500 hover:bg-white hover:text-gray-700"
-              )}
-            >
-              {tab.lines.map((line, li) => <div key={li}>{line}</div>)}
-            </button>
-          ))}
+          {TABS.map((tab, i) => {
+            const isEliteTab = ELITE_TABS.includes(tab.id);
+            const locked = isEliteTab && !isElite(tier);
+            return (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  if (locked) { openUpgrade("elite"); return; }
+                  setActiveTab(tab.id);
+                }}
+                className={cn(
+                  "relative rounded-xl border px-2 py-3 text-center text-xs leading-snug transition-colors",
+                  activeTab === tab.id
+                    ? "border-gray-700 bg-white font-semibold text-gray-800 shadow-sm"
+                    : "border-gray-200 bg-white/70 text-gray-500 hover:bg-white hover:text-gray-700"
+                )}
+              >
+                {tab.lines.map((line, li) => <div key={li}>{line}</div>)}
+                {locked && (
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-purple-500">
+                    <Lock className="h-2.5 w-2.5 text-white" />
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
 
         {/* Dashed curve connector */}
@@ -2286,7 +2313,7 @@ export default function SeatingPage() {
                 ? <CeremonyLayoutPreview elements={ceremonyElements} guests={guests} venueImage={ceremonyVenueBg} />
                 : <CeremonyDiagram />
             }
-            onEdit={() => router.push(`/planner/${projectId}/seating/ceremony-layout-edit`)}
+            onEdit={() => isPremiumOrElite(tier) ? router.push(`/planner/${projectId}/seating/ceremony-layout-edit`) : openUpgrade("premium")}
             photos={GALLERY.ceremony}
             pdfSvgId="ceremony-layout-svg"
             wide
@@ -2302,7 +2329,7 @@ export default function SeatingPage() {
                   ? <CeremonyLayoutPreview elements={receptionElements} guests={guests} svgId="reception-layout-svg" venueImage={receptionVenueBg} />
                   : <ReceptionDiagram />
               }
-              onEdit={() => router.push(`/planner/${projectId}/seating/reception-layout-edit`)}
+              onEdit={() => isPremiumOrElite(tier) ? router.push(`/planner/${projectId}/seating/reception-layout-edit`) : openUpgrade("premium")}
               photos={GALLERY.reception}
               pdfSvgId="reception-layout-svg"
               wide
@@ -2425,7 +2452,7 @@ export default function SeatingPage() {
             currentIndex={cardsIndex}
             onPrev={() => setCardsIndex(i => Math.max(0, i - 1))}
             onNext={() => setCardsIndex(i => Math.min(Math.max(cardsTables.length - 1, 0), i + 1))}
-            onEdit={() => router.push(`/planner/${projectId}/seating/cards-edit`)}
+            onEdit={() => isPremiumOrElite(tier) ? router.push(`/planner/${projectId}/seating/cards-edit`) : openUpgrade("premium")}
           />
         )}
         {activeTab === "name-cards" && (
@@ -2437,11 +2464,13 @@ export default function SeatingPage() {
         {activeTab === "menu" && (
           <ReceptionMenuPanel
             projectId={projectId}
-            onEdit={() => router.push(`/planner/${projectId}/seating/menu-edit`)}
+            onEdit={() => isElite(tier) ? router.push(`/planner/${projectId}/seating/menu-edit`) : openUpgrade("elite")}
           />
         )}
 
       </div>
     </div>
+    <UpgradeModal open={showUpgrade} onClose={() => setShowUpgrade(false)} defaultTab={upgradeTab} />
+    </>
   );
 }

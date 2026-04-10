@@ -66,10 +66,47 @@ export async function getActiveTemplate(
 }
 
 /**
- * Get the HOME template
+ * Get a page by slug
+ */
+async function getTemplateBySlug(slug: string): Promise<TemplateData | null> {
+  try {
+    const page = await prisma.landingPage.findFirst({
+      where: { slug, isActive: true },
+      include: {
+        blocks: {
+          where: { type: "widget-page-sections", isActive: true },
+        },
+      },
+    });
+
+    if (!page) return null;
+
+    const widgetBlock = page.blocks.find((b) => b.type === "widget-page-sections");
+    const sections = Array.isArray(widgetBlock?.settings)
+      ? (widgetBlock.settings as unknown as Section[])
+      : [];
+
+    if (sections.length === 0) return null;
+
+    return {
+      id: page.id,
+      name: page.name,
+      slug: page.slug,
+      sections,
+      metaTitle: page.metaTitle,
+      metaDescription: page.metaDescription,
+      ogImage: page.ogImage,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Get the HOME template — falls back to the "home" slug if no template is assigned
  */
 export async function getHomeTemplate(): Promise<TemplateData | null> {
-  return getActiveTemplate("HOME");
+  return (await getActiveTemplate("HOME")) ?? (await getTemplateBySlug("home"));
 }
 
 /**

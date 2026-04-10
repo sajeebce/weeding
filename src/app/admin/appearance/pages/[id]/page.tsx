@@ -243,11 +243,19 @@ export default function PageEditorPage({ params }: { params: Promise<{ id: strin
     const themeDefaults = themeWidgetDefaults[widgetType] as Record<string, unknown> | undefined;
     const newWidget = createWidget(widgetType, themeDefaults);
 
+    // Widgets that should have zero section padding by default
+    const zeroPaddingWidgets: WidgetType[] = ["top-utility-bar"];
+    const needsZeroPadding = zeroPaddingWidgets.includes(widgetType);
+
     setSections((prev) =>
       prev.map((section) => {
         if (section.id !== sectionId) return section;
         return {
           ...section,
+          // Auto-zero section padding for utility/nav widgets
+          settings: needsZeroPadding
+            ? { ...section.settings, paddingTop: 0, paddingBottom: 0, marginTop: 0, marginBottom: 0 }
+            : section.settings,
           columns: section.columns.map((column) => {
             if (column.id !== columnId) return column;
             return {

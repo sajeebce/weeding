@@ -48,15 +48,20 @@ const ELITE_FEATURES = [
 interface UpgradeModalProps {
   open: boolean;
   onClose: () => void;
+  defaultTab?: "premium" | "elite";
 }
 
-export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
+export function UpgradeModal({ open, onClose, defaultTab }: UpgradeModalProps) {
   const [sub, setSub] = useState<SubscriptionInfo | null>(null);
   const [loading, setLoading] = useState(false);
   const [upgrading, setUpgrading] = useState<PlanId | null>(null);
   const [managingPortal, setManagingPortal] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedTab, setSelectedTab] = useState<"premium" | "elite">("premium");
+  const [selectedTab, setSelectedTab] = useState<"premium" | "elite">(defaultTab ?? "premium");
+
+  useEffect(() => {
+    if (open && defaultTab) setSelectedTab(defaultTab);
+  }, [open, defaultTab]);
 
   useEffect(() => {
     if (!open) return;

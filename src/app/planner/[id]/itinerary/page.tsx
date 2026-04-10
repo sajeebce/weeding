@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams } from "next/navigation";
 import { FileText, RotateCcw, Plus, MoreVertical, X, Check, Table2 } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { usePlannerTier, isPremiumOrElite } from "@/hooks/use-planner-tier";
+import { UpgradeModal } from "@/components/planner/upgrade-modal";
 import {
   getLocalItinerary,
   getLocalProject,
@@ -164,6 +166,8 @@ export default function ItineraryPage() {
   const { id } = useParams<{ id: string }>();
   const { t } = useLanguage();
   const local = isLocal(id);
+  const { tier } = usePlannerTier(id);
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
   const [events, setEvents] = useState<LocalItineraryEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -416,7 +420,7 @@ export default function ItineraryPage() {
             <h1 className="text-2xl font-semibold text-[#2d2b4a] tracking-tight">{t("itinerary.heading")}</h1>
             <p className="mt-2 text-sm text-[#6b6890] leading-relaxed max-w-sm mx-auto">
               Make and{" "}
-              <button onClick={() => window.print()} className="text-[#4f46bd] hover:underline">print</button>
+              <button onClick={() => { if (!isPremiumOrElite(tier)) { setShowUpgrade(true); return; } window.print(); }} className="text-[#4f46bd] hover:underline">print</button>
               {" "}a schedule for the big day. From wake-up to{" "}
               <span className="text-[#4f46bd]">I dos</span>
               , create a complete itinerary that walks you through the day.
@@ -646,7 +650,7 @@ export default function ItineraryPage() {
               {/* Export buttons */}
               <div className="mt-8 flex flex-wrap justify-center gap-3">
                 <button
-                  onClick={() => window.print()}
+                  onClick={() => { if (!isPremiumOrElite(tier)) { setShowUpgrade(true); return; } window.print(); }}
                   className="flex items-center gap-2 rounded-xl border border-[#c5c2db] bg-white/70 px-6 py-2.5 text-sm text-[#6b6890] shadow-sm hover:bg-white transition-colors"
                 >
                   <FileText className="h-4 w-4 text-red-400" />
@@ -654,6 +658,7 @@ export default function ItineraryPage() {
                 </button>
                 <button
                   onClick={() => {
+                    if (!isPremiumOrElite(tier)) { setShowUpgrade(true); return; }
                     import("xlsx").then((XLSX) => {
                       const rows = sorted.map((ev) => {
                         const dur = getDuration(ev.startTime, ev.endTime);
@@ -683,6 +688,7 @@ export default function ItineraryPage() {
           )}
         </div>
       </div>
+      <UpgradeModal open={showUpgrade} onClose={() => setShowUpgrade(false)} defaultTab="premium" />
     </>
   );
 }

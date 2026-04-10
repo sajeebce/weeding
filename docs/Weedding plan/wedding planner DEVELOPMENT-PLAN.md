@@ -2425,6 +2425,44 @@ Layer 2 — Shareable Event Brief Link (couple controlled)
 
 ---
 
+### Phase 5H: Feature Gating — ✅ IMPLEMENTATION DONE (2026-04-10)
+
+**Goal:** Plan-based access control — Basic/Premium/Elite tiers properly enforced on all premium features. Subscription data already exists in DB (`plannerTier`), gating only missing on the client side.
+
+**Context:** Pricing modal UI already exists (`upgrade-modal.tsx`) but not connected to any feature. All PDF exports, seating editor, and stationery tabs are currently accessible by Basic (free) users without payment.
+
+| # | Task | Status | Details |
+|---|------|--------|---------|
+| 1 | `usePlannerTier` hook | ✅ Done (2026-04-10) | `src/hooks/use-planner-tier.ts` — fetches `/api/billing/subscription` once, caches per session. Anonymous (`local-` prefix) → always returns `"basic"`. |
+| 2 | `UpgradeModal` — `defaultTab` prop | ✅ Done (2026-04-10) | `src/components/planner/upgrade-modal.tsx` — added optional `defaultTab?: "premium" \| "elite"` so modal opens on the correct tab based on which gate triggered it. |
+| 3 | Budget PDF gate (Premium) | ✅ Done (2026-04-10) | `src/app/planner/[id]/budget/page.tsx` — `exportBudgetPDF()` gated — Basic users see upgrade modal instead. |
+| 4 | Guest List PDF + XLS gate (Premium) | ✅ Done (2026-04-10) | `src/app/planner/[id]/guests/page.tsx` — `exportPDF()` and `exportXLS()` gated. CSV export stays free. |
+| 5 | Seating editor gate (Premium) | ✅ Done (2026-04-10) | `src/app/planner/[id]/seating/page.tsx` — canvas editor nav buttons (ceremony/reception layout edit, cards edit) gated for Basic users. |
+| 6 | Stationery tabs gate (Elite) | ✅ Done (2026-04-10) | `src/app/planner/[id]/seating/page.tsx` — `name-cards`, `table-numbers`, `menu` tabs gated for non-Elite users. Lock icon badge on tabs. Modal opens on Elite tab. |
+| 7 | Checklist PDF gate (Premium) | ✅ Done (2026-04-10) | `src/app/planner/[id]/checklist/page.tsx` — `handleDownloadPdf()` gated. |
+| 8 | Ceremony PDF gate (Premium) | ✅ Done (2026-04-10) | `src/app/planner/[id]/ceremony/page.tsx` — `handleDownloadPDF()` gated. |
+| 9 | Reception PDF gate (Premium) | ✅ Done (2026-04-10) | `src/app/planner/[id]/reception/page.tsx` — `handleDownloadPDF()` gated. |
+| 10 | Itinerary PDF + XLS gate (Premium) | ✅ Done (2026-04-10) | `src/app/planner/[id]/itinerary/page.tsx` — all 3 print/export triggers gated. |
+| 11 | Vendors PDF gate (Premium) | ✅ Done (2026-04-10) | `src/app/planner/[id]/vendors/page.tsx` — `handleDownloadPDF()` gated. |
+
+**Files created/modified:**
+- `src/hooks/use-planner-tier.ts` — new hook
+- `src/components/planner/upgrade-modal.tsx` — add `defaultTab` prop
+- `src/app/planner/[id]/budget/page.tsx` — tier check
+- `src/app/planner/[id]/guests/page.tsx` — tier check
+- `src/app/planner/[id]/seating/page.tsx` — tier checks (Premium + Elite)
+- `src/app/planner/[id]/checklist/page.tsx` — tier check
+- `src/app/planner/[id]/ceremony/page.tsx` — tier check
+- `src/app/planner/[id]/reception/page.tsx` — tier check
+- `src/app/planner/[id]/itinerary/page.tsx` — tier check
+- `src/app/planner/[id]/vendors/page.tsx` — tier check
+
+**No DB/API/schema changes required** — `plannerTier` already in User model, `/api/billing/subscription` already working.
+
+**Phase 5H Status:** ✅ IMPLEMENTATION DONE (2026-04-10)
+
+---
+
 ### Phase 6: Admin Panel, Polish & Launch — ⬜ NOT STARTED
 
 **Goal:** Platform management + production readiness
@@ -2485,7 +2523,7 @@ Layer 2 — Shareable Event Brief Link (couple controlled)
 | 2 | Planning Tools | ✅ CORE DONE | 2A ✅ · 2B ✅ · 2C ✅ · 2D ✅ · 2E ⬜ · 2F ✅ | 5/6 done. 2F (Settings: copy project, tab visibility, share link+QR, accessibility mode, itinerary XLS export) ✅ 2026-04-07. Remaining: 2E Files tab, budget analytics (2C #11–15) |
 | 3 | Visual Editors | 🔄 IN PROGRESS | 3A ✅ · 3B ✅ · 3C ✅ · 3D ⬜ | 3/4 done. All 7 seating tabs complete. Phase 3A fully complete (2026-04-08): venue blueprint upload, history/snapshots, 6 starter templates, catering mode, CSV export, QR entrance. Remaining: Phase 3D (Invitation Designer) only. |
 | 4 | Guest Experience | ✅ COMPLETE | 1 ✅ · 2 ✅ · 3 ✅ · 4 ✅ · 5 ✅ · 6 ✅ · 7 ⏭️ · 8 ✅ | 7/8 (push notifications deferred) |
-| 5 | Marketplace & Payments | ✅ CORE DONE | 5A ✅ · 5B ✅ · 5C ✅ · 5D ✅ · 5E ✅ · 5F ✅ · 5G ⬜ | 6/7 done. Remaining: 5G Stationery Engine, White-label, Swish/Klarna, 5E feature gating |
+| 5 | Marketplace & Payments | ✅ CORE DONE | 5A ✅ · 5B ✅ · 5C ✅ · 5D ✅ · 5E ✅ · 5F ✅ · 5G ⬜ · 5H ✅ | 7/8 done. 5G Stationery Engine: functionally complete via existing seating tabs. 5H Feature Gating: ✅ DONE (2026-04-10) — all 8 PDF pages + seating editor + stationery tabs gated. |
 | 6 | Admin & Launch | ⬜ NOT STARTED | 6A–6C | 0/3 |
 
 ### Overall Implementation Progress
@@ -2500,8 +2538,8 @@ Layer 2 — Shareable Event Brief Link (couple controlled)
 
 **What's pending:** Admin panel (Phase 6), Files tab (2E), Invitation Designer (3D), budget analytics/multi-currency (2C #11–15), Stationery Engine (5G), White-label, Swish/Klarna payments.
 
-**Last Updated:** 2026-04-08 (Full i18n coverage — ceremony, reception, vendors, settings pages + Bengali)
-**Current Focus:** i18n ✅ complete (all client pages). Next candidates: Phase 2E (Files Tab), Phase 6 (Admin Panel), Phase 3D (Invitation Designer), or budget analytics (2C #11–15).
+**Last Updated:** 2026-04-10 (Phase 5H Feature Gating — all PDF exports, seating editor, stationery tabs gated by tier)
+**Current Focus:** Phase 5H ✅ complete. Next candidates: Phase 6 (Admin Panel), Phase 2E (Files Tab), Phase 3D (Invitation Designer), or budget analytics (2C #11–15).
 
 **Session log (2026-04-06, session 13 — Reception Menu tab editor + preview sync):**
 - **`menu-edit/page.tsx` created:** Full-screen reception menu editor. Sections are clickable — click selects element (purple dashed outline), right panel shows element-specific: type label, editable `<textarea>`, `x: N  y: N` coords (via `getBoundingClientRect`), red Delete button. Blank canvas click deselects → right panel shows global style: Template dropdown (Basic/Elegant/Minimal), Main heading / Second heading / Paragraph each with font ◄► + size slider. "Add element" dropdown (Main heading, Second heading, Paragraph, Flourish) + auto-selects new element immediately via `setSelectedId(newId)` + position-recompute `useEffect`. Default 10 sections (Flourish → Appetizer → Salad → Entrees → Dessert → Heading). Google Fonts loaded inline. All saved to `menu-sections-${projectId}` + `menu-settings-${projectId}` localStorage. Close → `?tab=menu`.
@@ -2550,6 +2588,19 @@ Layer 2 — Shareable Event Brief Link (couple controlled)
 - **Result:** Zero TypeScript errors in seating files. `seating/page.tsx` is clean — no dead code, no unused state.
 - Files created: `src/app/planner/[id]/seating/reception-layout-edit/page.tsx`
 - Files modified: `src/app/planner/[id]/seating/page.tsx` (reception wiring + dead code removal + import cleanup), `docs/Weedding plan/wedding planner DEVELOPMENT-PLAN.md`
+
+**Session log (2026-04-10 — Phase 5H Extension: Full PDF gating across all planner pages):**
+- **Problem:** Phase 5H initially gated Budget, Guests, and Seating pages. Five additional pages — Checklist, Ceremony, Reception, Itinerary, Vendors — still allowed Basic (free) users to download PDFs without any tier check.
+- **Fix:** Added `usePlannerTier` + `isPremiumOrElite` to all 5 remaining pages. Each PDF/print handler now gates on tier before executing.
+- **Checklist** (`checklist/page.tsx`): `handleDownloadPdf()` → `window.print()` gated.
+- **Ceremony** (`ceremony/page.tsx`): `handleDownloadPDF()` → `@react-pdf/renderer` export gated. Fragment wrapper added to support `<UpgradeModal>` sibling.
+- **Reception** (`reception/page.tsx`): `handleDownloadPDF()` → `@react-pdf/renderer` export gated. Fragment wrapper added.
+- **Itinerary** (`itinerary/page.tsx`): All 3 print/export triggers gated — inline "print" link in heading text, "Download PDF file" button, "Download XLS file" button.
+- **Vendors** (`vendors/page.tsx`): `handleDownloadPDF()` → `@react-pdf/renderer` export gated. Fragment wrapper added.
+- **Pattern:** All pages follow identical pattern — `usePlannerTier(id)`, `[showUpgrade, setShowUpgrade]` state, gate check at top of each handler, `<UpgradeModal open={showUpgrade} onClose={...} defaultTab="premium" />` in JSX.
+- **Anonymous users:** `local-` prefix → hook returns `"basic"` immediately without API call → modal shown → "Unlock" button redirects to login.
+- **TypeScript:** No new errors introduced. All pre-existing errors in unrelated files remain unchanged.
+- Files modified: `src/app/planner/[id]/checklist/page.tsx`, `src/app/planner/[id]/ceremony/page.tsx`, `src/app/planner/[id]/reception/page.tsx`, `src/app/planner/[id]/itinerary/page.tsx`, `src/app/planner/[id]/vendors/page.tsx`, `docs/Weedding plan/wedding planner DEVELOPMENT-PLAN.md`
 
 **Session log (2026-04-07, session 15 — Auth system fixes: register API + login branding cleanup):**
 - **Problem:** Registration form was a stub — `handleSubmit` had a `TODO` comment, `console.log` + fake `setTimeout(1000ms)` instead of any real API call. Users could "register" and land on `/dashboard` but no data was saved to DB. Subsequent login always failed with "Invalid email or password".

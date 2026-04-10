@@ -21,6 +21,7 @@ export { EventGalleryGridSettingsPanel } from "./event-gallery-grid-settings";
 export { EventCategoriesGridSettingsPanel } from "./event-categories-grid-settings";
 export { CtaBannerSettingsPanel } from "./cta-banner-settings";
 export { VendorListingSettingsPanel } from "./vendor-listing-settings";
+export { TopUtilityBarSettingsPanel } from "./top-utility-bar-settings";
 
 // Blog widget settings
 export { BlogPostGridSettingsPanel } from "./blog/blog-post-grid-settings";

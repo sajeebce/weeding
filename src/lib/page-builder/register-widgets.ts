@@ -37,6 +37,7 @@ import {
   DEFAULT_EVENT_GALLERY_GRID_SETTINGS,
   DEFAULT_EVENT_CATEGORIES_GRID_SETTINGS,
   DEFAULT_CTA_BANNER_SETTINGS,
+  DEFAULT_TOP_UTILITY_BAR_SETTINGS,
 } from "./defaults";
 
 // Import widget components
@@ -47,7 +48,7 @@ import {
   StatsSectionWidget,
   TestimonialsWidget,
 } from "@/components/page-builder/widgets/social-proof";
-import { DividerWidget, FaqAccordionWidget } from "@/components/page-builder/widgets/layout";
+import { DividerWidget, FaqAccordionWidget, TopUtilityBarWidget } from "@/components/page-builder/widgets/layout";
 import { ServiceCardWidget, ServiceListWidget, PricingTableWidget, VendorListingWidget } from "@/components/page-builder/widgets/commerce";
 import { LeadFormWidget } from "@/components/page-builder/widgets/forms";
 import { ButtonGroupWidget } from "@/components/page-builder/widgets/cta";
@@ -400,6 +401,17 @@ export function registerAllWidgets() {
     category: "cta",
     defaultSettings: DEFAULT_CTA_BANNER_SETTINGS,
     component: CtaBannerWidget,
+  });
+
+  // Top Utility Bar Widget
+  WidgetRegistry.register({
+    type: "top-utility-bar",
+    name: "Top Utility Bar",
+    description: "Gradient top bar with navigation links — vendor portal, login, register",
+    icon: "AlignJustify",
+    category: "layout",
+    defaultSettings: DEFAULT_TOP_UTILITY_BAR_SETTINGS,
+    component: TopUtilityBarWidget,
   });
 }
 

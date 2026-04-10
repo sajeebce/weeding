@@ -14,7 +14,7 @@ export async function GET(
       eventVenues: { select: { type: true, venueName: true, address: true, city: true, country: true, date: true, time: true } },
       vendors: { select: { id: true, name: true, category: true } },
       guests: { select: { id: true } },
-      checklistTasks: { select: { completed: true } },
+      checklistTasks: { select: { completed: true, subtasks: true } },
       budgetCategories: { select: { name: true, planned: true } },
     },
   });
@@ -32,8 +32,14 @@ export async function GET(
     venues: project.eventVenues,
     vendors: project.vendors,
     guestCount: project.guests.length,
-    checklistTotal: project.checklistTasks.length,
-    checklistDone: project.checklistTasks.filter((t) => t.completed).length,
+    checklistTotal: project.checklistTasks.reduce((s, t) => {
+      const subs = (t.subtasks as { completed: boolean }[] | null) ?? [];
+      return s + (subs.length > 0 ? subs.length : 1);
+    }, 0),
+    checklistDone: project.checklistTasks.reduce((s, t) => {
+      const subs = (t.subtasks as { completed: boolean }[] | null) ?? [];
+      return s + (subs.length > 0 ? subs.filter((sub) => sub.completed).length : (t.completed ? 1 : 0));
+    }, 0),
     budgetTotal: project.budgetCategories.reduce((s, c) => s + c.planned, 0),
   });
 }

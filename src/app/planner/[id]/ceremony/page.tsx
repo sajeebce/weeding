@@ -5,6 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import { Calendar, MapPin, LayoutTemplate, Download, CloudUpload } from "lucide-react";
 import { getLocalVenue, updateLocalVenue, updateLocalProject, LocalVenueDetails } from "@/lib/planner-storage";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { usePlannerTier, isPremiumOrElite } from "@/hooks/use-planner-tier";
+import { UpgradeModal } from "@/components/planner/upgrade-modal";
 
 const isLocal = (id: string) => id.startsWith("local-");
 
@@ -78,6 +80,8 @@ export default function CeremonyPage() {
   const router = useRouter();
   const local = isLocal(id);
   const { t } = useLanguage();
+  const { tier } = usePlannerTier(id);
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
   const [form, setForm] = useState<VenueForm>(emptyForm());
   const [loading, setLoading] = useState(true);
@@ -132,6 +136,7 @@ export default function CeremonyPage() {
   }
 
   async function handleDownloadPDF() {
+    if (!isPremiumOrElite(tier)) { setShowUpgrade(true); return; }
     const { pdf, Document, Page, Text, View, StyleSheet } = await import("@react-pdf/renderer");
     const styles = StyleSheet.create({
       page:    { padding: 48, fontFamily: "Helvetica", backgroundColor: "#ffffff" },
@@ -186,6 +191,7 @@ export default function CeremonyPage() {
   }
 
   return (
+    <>
     <div className="min-h-full bg-[#ede9f0] px-4 py-10">
       <div className="mx-auto max-w-3xl">
 
@@ -314,6 +320,8 @@ export default function CeremonyPage() {
 
       </div>
     </div>
+    <UpgradeModal open={showUpgrade} onClose={() => setShowUpgrade(false)} defaultTab="premium" />
+    </>
   );
 }
 

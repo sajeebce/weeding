@@ -23,6 +23,7 @@ import {
   EventGalleryGridWidget,
   CtaBannerWidget,
 } from "@/components/page-builder/widgets";
+import { TopUtilityBarWidget } from "@/components/page-builder/widgets/layout";
 import { ServiceCardWidget, ServiceListWidget, PricingTableWidget, VendorListingWidget } from "@/components/page-builder/widgets/commerce";
 import { ButtonGroupWidget } from "@/components/page-builder/widgets/cta";
 import {
@@ -370,6 +371,9 @@ function WidgetRenderer({ widget }: WidgetRendererProps) {
 
       case "cta-banner":
         return <CtaBannerWidget settings={widget.settings as any} />;
+
+      case "top-utility-bar":
+        return <TopUtilityBarWidget settings={widget.settings as any} />;
 
       case "vendor-listing":
         return <VendorListingWidget settings={widget.settings as any} />;

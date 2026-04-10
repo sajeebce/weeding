@@ -64,6 +64,7 @@ import {
   EventCategoriesGridSettingsPanel,
   CtaBannerSettingsPanel,
   VendorListingSettingsPanel,
+  TopUtilityBarSettingsPanel,
 } from "@/components/page-builder/settings";
 import { NumberInput } from "@/app/admin/appearance/landing-page/components/ui/form-controls";
 import { AccordionSection } from "@/app/admin/appearance/landing-page/components/ui/accordion-section";
@@ -702,8 +703,17 @@ function EditMode({ widget, section, columnId, activeFieldId, onBack, onUpdateSe
             />
           )}
 
+          {/* Top Utility Bar Widget */}
+          {widget.type === "top-utility-bar" && (
+            <TopUtilityBarSettingsPanel
+              settings={widget.settings as any}
+              onChange={onUpdateSettings}
+              activeTab={activeTab}
+            />
+          )}
+
           {/* Fallback for unknown widget types */}
-          {!["hero-content", "heading", "text-block", "image", "image-slider", "trust-badges", "stats-section", "divider", "service-card", "service-list", "process-steps", "pricing-table", "testimonials-carousel", "lead-form", "service-hero", "faq", "faq-accordion", "service-features", "service-description", "service-breadcrumb", "related-services", "blog-post-grid", "blog-post-carousel", "blog-featured-post", "blog-post-list", "blog-recent-posts", "event-search-hero", "event-gallery-grid", "event-categories-grid", "cta-banner"].includes(widget.type) && (
+          {!["hero-content", "heading", "text-block", "image", "image-slider", "trust-badges", "stats-section", "divider", "service-card", "service-list", "process-steps", "pricing-table", "testimonials-carousel", "lead-form", "service-hero", "faq", "faq-accordion", "service-features", "service-description", "service-breadcrumb", "related-services", "blog-post-grid", "blog-post-carousel", "blog-featured-post", "blog-post-list", "blog-recent-posts", "event-search-hero", "event-gallery-grid", "event-categories-grid", "cta-banner", "top-utility-bar"].includes(widget.type) && (
             <p className="text-center text-sm text-muted-foreground">
               Settings for {widget.type} coming soon.
             </p>

@@ -5,6 +5,8 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Plus, Trash2, ChevronDown, ChevronRight, Settings, FileText } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { usePlannerTier, isPremiumOrElite } from "@/hooks/use-planner-tier";
+import { UpgradeModal } from "@/components/planner/upgrade-modal";
 import {
   getLocalChecklist,
   getLocalProject,
@@ -240,6 +242,8 @@ export default function ChecklistPage() {
   const { id } = useParams<{ id: string }>();
   const { t } = useLanguage();
   const local = isLocal(id);
+  const { tier } = usePlannerTier(id);
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
   const [tasks, setTasks] = useState<LocalChecklistTask[]>([]);
   const [loading, setLoading] = useState(true);
@@ -519,6 +523,7 @@ export default function ChecklistPage() {
   const pct = totalItems > 0 ? Math.round((totalDone / totalItems) * 100) : 0;
 
   function handleDownloadPdf() {
+    if (!isPremiumOrElite(tier)) { setShowUpgrade(true); return; }
     window.print();
   }
 
@@ -908,6 +913,7 @@ export default function ChecklistPage() {
         </div>
       )}
     </div>
+    <UpgradeModal open={showUpgrade} onClose={() => setShowUpgrade(false)} defaultTab="premium" />
     </>
   );
 }

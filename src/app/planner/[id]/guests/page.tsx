@@ -19,6 +19,8 @@ import {
 } from "@/lib/planner-storage";
 import { useLanguage } from "@/lib/i18n/language-context";
 import { usePlannerCouple } from "@/lib/planner-context";
+import { usePlannerTier, isPremiumOrElite } from "@/hooks/use-planner-tier";
+import { UpgradeModal } from "@/components/planner/upgrade-modal";
 
 type ViewMode = "two-sides" | "alphabetic" | "full-table" | "by-family";
 
@@ -778,6 +780,8 @@ export default function GuestListPage() {
 
   const { t } = useLanguage();
   const { brideName, groomName, updateBrideName, updateGroomName } = usePlannerCouple();
+  const { tier } = usePlannerTier(projectId);
+  const [showUpgrade, setShowUpgrade] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("alphabetic");
   const [guests, setGuests] = useState<Guest[]>([]);
   const [families, setFamilies] = useState<LocalGuestFamily[]>([]);
@@ -1154,6 +1158,7 @@ export default function GuestListPage() {
 
   // ── Export as XLS ──────────────────────────────────────────────────────────
   function exportXLS() {
+    if (!isPremiumOrElite(tier)) { setShowUpgrade(true); return; }
     const data = guests.map((g) => ({
       Title: g.title ?? "",
       "First Name": g.firstName,
@@ -1175,6 +1180,7 @@ export default function GuestListPage() {
 
   // ── Export as PDF ──────────────────────────────────────────────────────────
   async function exportPDF() {
+    if (!isPremiumOrElite(tier)) { setShowUpgrade(true); return; }
     const { pdf, Document, Page, Text, View, StyleSheet } = await import("@react-pdf/renderer");
 
     const styles = StyleSheet.create({
@@ -1411,6 +1417,7 @@ export default function GuestListPage() {
   }
 
   return (
+    <>
     <div className="max-w-3xl mx-auto pb-16">
       {/* RSVP Link Modal */}
       {rsvpModal && (
@@ -2065,5 +2072,7 @@ export default function GuestListPage() {
         </button>
       </div>
     </div>
+    <UpgradeModal open={showUpgrade} onClose={() => setShowUpgrade(false)} defaultTab="premium" />
+    </>
   );
 }
